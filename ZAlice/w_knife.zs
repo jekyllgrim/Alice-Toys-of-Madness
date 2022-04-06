@@ -77,7 +77,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayPivot(OverlayID(), 0.5, 0.5);
 			//A_OverlayRotate(OverlayID(), frandom[wrot](-30,0), WOF_INTERPOLATE);
 		}
-		VKNF ###BB 1
+		VKNF AAABB 1
 		{
 			A_WeaponOffset(16, 0, WOF_ADD);
 			//A_OverlayRotate(OverlayID(), -5, WOF_ADD);
@@ -98,7 +98,7 @@ class ToM_Knife : ToM_BaseWeapon
 			//A_OverlayRotate(OverlayID(), 3, WOF_ADD);
 			A_Overlay(PSP_KnifeTrail, "AfterImage");
 		}
-		VKNF CCCCCAAAAA 1
+		VKNF CCCHHHHAAA 1
 		{
 			A_WeaponOffset(17.2, 0, WOF_ADD);
 			//A_OverlayRotate(OverlayID(), -0.1, WOF_ADD);
@@ -112,13 +112,13 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayPivot(OverlayID(), 0.9, 0.7);
 			//A_OverlayRotate(OverlayID(), frandom[wrot](0,30), WOF_INTERPOLATE);
 		}
-		VKNF ###DD 1
+		VKNF ADDEE 1
 		{
 			A_WeaponOffset(-32, -4, WOF_ADD);
 			//A_OverlayRotate(OverlayID(), 5, WOF_ADD);
 		}
 		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
-		VKNF DDD 1
+		VKNF EEE 1
 		{
 			A_WeaponOffset(44, 4, WOF_ADD);
 			//A_OverlayRotate(OverlayID(), -5, WOF_ADD);
@@ -127,13 +127,13 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_CustomPunch(15, true, CPF_NOTURN, "ToM_KnifePuff");
 		}
-		VKNF EEE 1
+		VKNF FFF 1
 		{
 			A_WeaponOffset(44, 4, WOF_ADD);
 			//A_OverlayRotate(OverlayID(), -3, WOF_ADD);
 			A_Overlay(PSP_KnifeTrail, "AfterImage");
 		}
-		VKNF EEEEFFFAAA 1
+		VKNF FFFEEEDDAA 1
 		{
 			A_WeaponOffset(-10.4, -0.4, WOF_ADD);
 			//A_OverlayRotate(OverlayID(), 0.1, WOF_ADD);
@@ -147,25 +147,25 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayPivot(OverlayID(), 0.5, 1);
 			//A_OverlayRotate(OverlayID(), frandom[wrot](-10,10), WOF_INTERPOLATE);
 		}
-		VKNF FFFF 1
+		VKNF GGGG 1
 		{
 			A_WeaponOffset(5, -4, WOF_ADD);
 		}
 		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);		
-		VKNF FFG 1
+		VKNF GGH 1
 		{
 			A_WeaponOffset(-12, 18, WOF_ADD);
 		}		
-		TNT1 G 0 
+		TNT1 H 0 
 		{
 			A_CustomPunch(25, true, CPF_NOTURN, "ToM_KnifePuff");
 		}
-		VKNF GGG 1
+		VKNF HHHH 1
 		{
 			A_Overlay(PSP_KnifeTrail, "AfterImage");
 			A_WeaponOffset(-18, 18, WOF_ADD);
 		}
-		VKNF GGGFFFAA 1
+		VKNF HHHHAAAAA 1
 		{
 			A_WeaponOffset(8.75, -7.5, WOF_ADD);
 			A_WeaponReady(WRF_NOBOB);

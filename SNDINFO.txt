@@ -1,0 +1,30 @@
+
+weapons/knife/draw "sounds/knife/knife_ready.wav"
+weapons/knife/fly	"sounds/knife/knife_spin.wav"
+weapons/knife/throw	"sounds/knife/knife_throw.wav"
+
+$random weapons/knife/swing { knswing1 knswing2 knswing3 }
+knswing1 "sounds/knife/knife_swing1.wav"
+knswing2 "sounds/knife/knife_swing2.wav"
+knswing3 "sounds/knife/knife_swing3.wav"
+
+$random weapons/knife/hitflesh { kflesh1 kflesh2 kflesh3 kflesh4 }
+kflesh1	"sounds/knife/knife_hit_flesh.wav"
+kflesh2	"sounds/knife/knife_hit_flesh1.wav"
+kflesh3 "sounds/knife/knife_hit_flesh2.wav"
+kflesh4	"sounds/knife/knife_hit_flesh3.wav"
+
+$random weapons/knife/hitwall { kwall1 kwall2 kwall3 }
+kwall1	"sounds/knife/knife_hit_world1.wav"
+kwall2	"sounds/knife/knife_hit_world2.wav"
+kwall3	"sounds/knife/knife_hit_world3.wav"
+
+$random weapons/knife/throwflesh { kthrowflesh1 kthrowflesh2 kthrowflesh3 }
+kthrowflesh1	"sounds/knife/knife_phit_flesh1.wav"
+kthrowflesh2	"sounds/knife/knife_phit_flesh2.wav"
+kthrowflesh3	"sounds/knife/knife_phit_flesh3.wav"
+
+$random weapons/knife/throwwall { kthrowwall1 kthrowwall2 kthrowwall3 }
+kthrowwall1	"sounds/knife/knife_phit_world1.wav"
+kthrowwall2	"sounds/knife/knife_phit_world2.wav"
+kthrowwall3	"sounds/knife/knife_phit_world3.wav"

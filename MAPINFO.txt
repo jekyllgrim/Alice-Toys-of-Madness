@@ -1,0 +1,4 @@
+Gameinfo
+{
+	PlayerClasses = "ToM_AlicePlayer"
+}

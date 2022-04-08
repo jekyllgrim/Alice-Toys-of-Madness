@@ -1,0 +1,3 @@
+server int tom_debugmessages = 0;
+
+user int tom_particles = 2;

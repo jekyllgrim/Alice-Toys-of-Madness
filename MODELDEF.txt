@@ -1,0 +1,75 @@
+Model ToM_KnifeProjectileModel 
+{
+	AngleOffset 90
+	path "Models/Knife"
+	Model 0 "vorpal_knife.md3"
+	Skin 0 "knife.png"
+	Scale 1 1 1
+	Offset 12 0 0
+	USEACTORPITCH
+	
+	FrameIndex MODL A 0 0
+}
+
+Model ToM_CardProjectile 
+{
+	AngleOffset 90
+	path "Models/Cards"
+	Model 0 "singlecard.obj"
+	Scale 1 1 1
+	Offset 5 0 0
+	USEACTORPITCH
+	
+	Skin 0 "txACC1.png" FrameIndex ACC1 A 0 0
+	Skin 0 "txACC2.png" FrameIndex ACC2 A 0 0
+	Skin 0 "txACC3.png" FrameIndex ACC3 A 0 0
+	Skin 0 "txACC4.png" FrameIndex ACC4 A 0 0
+	Skin 0 "txACC5.png" FrameIndex ACC5 A 0 0
+	Skin 0 "txACC6.png" FrameIndex ACC6 A 0 0
+	Skin 0 "txACC7.png" FrameIndex ACC7 A 0 0
+	Skin 0 "txACC8.png" FrameIndex ACC8 A 0 0
+	Skin 0 "txACC9.png" FrameIndex ACC9 A 0 0
+	Skin 0 "txACCT.png" FrameIndex ACCT A 0 0
+	Skin 0 "txACCJ.png" FrameIndex ACCJ A 0 0
+	Skin 0 "txACCQ.png" FrameIndex ACCQ A 0 0
+	Skin 0 "txACCK.png" FrameIndex ACCK A 0 0
+	Skin 0 "txACS1.png" FrameIndex ACS1 A 0 0
+	Skin 0 "txACS2.png" FrameIndex ACS2 A 0 0
+	Skin 0 "txACS3.png" FrameIndex ACS3 A 0 0
+	Skin 0 "txACS4.png" FrameIndex ACS4 A 0 0
+	Skin 0 "txACS5.png" FrameIndex ACS5 A 0 0
+	Skin 0 "txACS6.png" FrameIndex ACS6 A 0 0
+	Skin 0 "txACS7.png" FrameIndex ACS7 A 0 0
+	Skin 0 "txACS8.png" FrameIndex ACS8 A 0 0
+	Skin 0 "txACS9.png" FrameIndex ACS9 A 0 0
+	Skin 0 "txACST.png" FrameIndex ACST A 0 0
+	Skin 0 "txACSJ.png" FrameIndex ACSJ A 0 0
+	Skin 0 "txACSQ.png" FrameIndex ACSQ A 0 0
+	Skin 0 "txACSK.png" FrameIndex ACSK A 0 0
+	Skin 0 "txACH1.png" FrameIndex ACH1 A 0 0
+	Skin 0 "txACH2.png" FrameIndex ACH2 A 0 0
+	Skin 0 "txACH3.png" FrameIndex ACH3 A 0 0
+	Skin 0 "txACH4.png" FrameIndex ACH4 A 0 0
+	Skin 0 "txACH5.png" FrameIndex ACH5 A 0 0
+	Skin 0 "txACH6.png" FrameIndex ACH6 A 0 0
+	Skin 0 "txACH7.png" FrameIndex ACH7 A 0 0
+	Skin 0 "txACH8.png" FrameIndex ACH8 A 0 0
+	Skin 0 "txACH9.png" FrameIndex ACH9 A 0 0
+	Skin 0 "txACHT.png" FrameIndex ACHT A 0 0
+	Skin 0 "txACHJ.png" FrameIndex ACHJ A 0 0
+	Skin 0 "txACHQ.png" FrameIndex ACHQ A 0 0
+	Skin 0 "txACHK.png" FrameIndex ACHK A 0 0
+	Skin 0 "txACD1.png" FrameIndex ACD1 A 0 0
+	Skin 0 "txACD2.png" FrameIndex ACD2 A 0 0
+	Skin 0 "txACD3.png" FrameIndex ACD3 A 0 0
+	Skin 0 "txACD4.png" FrameIndex ACD4 A 0 0
+	Skin 0 "txACD5.png" FrameIndex ACD5 A 0 0
+	Skin 0 "txACD6.png" FrameIndex ACD6 A 0 0
+	Skin 0 "txACD7.png" FrameIndex ACD7 A 0 0
+	Skin 0 "txACD8.png" FrameIndex ACD8 A 0 0
+	Skin 0 "txACD9.png" FrameIndex ACD9 A 0 0
+	Skin 0 "txACDT.png" FrameIndex ACDT A 0 0
+	Skin 0 "txACDJ.png" FrameIndex ACDJ A 0 0
+	Skin 0 "txACDQ.png" FrameIndex ACDQ A 0 0
+	Skin 0 "txACDK.png" FrameIndex ACDK A 0 0
+}

@@ -1,7 +1,10 @@
 
+// KNIFE
+
 weapons/knife/draw "sounds/knife/knife_ready.wav"
 weapons/knife/fly	"sounds/knife/knife_spin.wav"
 weapons/knife/throw	"sounds/knife/knife_throw.wav"
+weapons/knife/restore "sounds/jacks_toss.wav"
 
 $random weapons/knife/swing { knswing1 knswing2 knswing3 }
 knswing1 "sounds/knife/knife_swing1.wav"
@@ -28,3 +31,16 @@ $random weapons/knife/throwwall { kthrowwall1 kthrowwall2 kthrowwall3 }
 kthrowwall1	"sounds/knife/knife_phit_world1.wav"
 kthrowwall2	"sounds/knife/knife_phit_world2.wav"
 kthrowwall3	"sounds/knife/knife_phit_world3.wav"
+
+
+// CARDS 
+
+weapons/cards/fire "sounds/cards/cards_toss1.wav"
+
+$random weapons/cards/hitwall { cardhitwall1 cardhitwall2 }
+cardhitwall1 "sounds/cards/cards_hit_world1.wav"
+cardhitwall2 "sounds/cards/cards_hit_world2.wav"
+
+$random weapons/cards/hitflesh { cardhitflesh1 cardhitflesh2 }
+cardhitflesh1 "sounds/cards/cards_hit_flesh1.wav"
+cardhitflesh2 "sounds/cards/cards_hit_flesh2.wav"

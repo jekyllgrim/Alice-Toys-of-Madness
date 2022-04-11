@@ -36,6 +36,7 @@ kthrowwall3	"sounds/knife/knife_phit_world3.wav"
 // CARDS 
 
 weapons/cards/fire "sounds/cards/cards_toss1.wav"
+weapons/cards/altfire "sounds/jacks_bounce.wav"
 
 $random weapons/cards/hitwall { cardhitwall1 cardhitwall2 }
 cardhitwall1 "sounds/cards/cards_hit_world1.wav"

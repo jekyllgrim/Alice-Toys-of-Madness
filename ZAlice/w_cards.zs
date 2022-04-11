@@ -28,29 +28,33 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 	}
 	
-	action Actor A_FireCard(double xspread = 0, double yspread = 0, double damagemul = 1)
+	action Actor A_FireCard(double xspread = 0, double yspread = 0)
 	{
-		let proj = ToM_CardProjectile(A_FireProjectile("ToM_CardProjectile"/*, angle: frandom[firecard](-xspread, xspread), pitch:pitch[firecard](-yspread, yspread)*/));
+		let proj = ToM_CardProjectile(A_FireProjectile("ToM_CardProjectile"));
 		if (proj)
 		{
+			proj.A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
 			proj.sprite = GetSpriteIndex(invoker.cardName);
 			proj.SetDamage(invoker.cardDamage);
-			proj.angleCurve = frandom[firecard](-xspread, xspread);
-			proj.pitchCurve = frandom[firecard](-xspread, xspread);
 			return proj;
 		}
 		return null;
 	}
 	
-	action void A_FireCardsMultiple()
+	action void A_FireCardsMultiple(int amount = 7, double xspread = 8, double yspread = 4.6, double curve = 0)
 	{
-		for (int i = 8; i > 0; i--)
+		A_StartSound("weapons/cards/altfire", CHAN_AUTO);
+		for (int i = amount; i > 0; i--)
 		{
-			let proj = A_FireProjectile("ToM_CardProjectile", frandom(-7, 7), pitch: frandom(-4.2, 4.2));
+			let proj = ToM_CardProjectile(A_FireProjectile("ToM_CardProjectile", angle: frandom[firecard](-xspread, xspread), pitch:frandom[firecard](-yspread, yspread)));
 			if (proj)
 			{
 				proj.sprite = GetSpriteIndex(invoker.cardName);
 				proj.SetDamage(invoker.cardDamage);
+				proj.angleCurve = frandom[firecard](-curve, curve);
+				proj.pitchCurve = frandom[firecard](-curve, curve);
+				proj.angle += proj.angleCurve;
+				proj.pitch += proj.pitchCurve;
 			}
 			PickACard();
 		}
@@ -170,13 +174,13 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 		PDEK AABBC 1 A_WeaponOffset(2, -1.4, WOF_ADD);
 	AltFireEnd:
-		TNT1 A 0 A_FireCardsMultiple();
+		TNT1 A 0 A_FireCardsMultiple(curve: 1.5);
 		PDEK EEEEE 1 
 		{
 			A_WeaponOffset(1, 2, WOF_ADD);
 			A_OverlayRotate(OverlayID(), -2, WOF_ADD);
 		}
-		PDEK EEEEEEEEEEEEEE 1 
+		PDEK EEEEEEEEEEEEEEEEEE 1 
 		{
 			A_WeaponOffset(-1, -0.5, WOF_ADD);
 			A_OverlayRotate(OverlayID(), 0.714, WOF_ADD);
@@ -203,12 +207,11 @@ class ToM_Cards : ToM_BaseWeapon
 			A_OverlayFlags(OverlayID(), PSPF_AddWeapon|PSPF_AddBob, false);
 		}
 		PDEK HIIJJ 1 A_OverlayOffset(OverlayID(), 2, -2, WOF_ADD);
-		TNT1 A 0 A_FireCardsMultiple();
 		PDEK KKK 1 A_OverlayOffset(OverlayID(), -3, -1, WOF_ADD);
 		PDEK LLL 1 A_OverlayOffset(OverlayID(), -5, 0, WOF_ADD);
 		PDEK LLL 1 A_OverlayOffset(OverlayID(), 1, 2, WOF_ADD);
 		PDEK MMMM 1 A_OverlayOffset(OverlayID(), 2, 3, WOF_ADD);
-		PDEK NNNIIIHHHHHH 1 A_OverlayOffset(OverlayID(), 2, 6, WOF_ADD);
+		PDEK NNNIIIIIIIIHHH 1 A_OverlayOffset(OverlayID(), 2, 5, WOF_ADD);
 		stop;
 	Cache:
 		PDEK A 0;
@@ -293,7 +296,7 @@ class ToM_CardProjectile : ToM_StakeProjectile
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
-		A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
+		//A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
 		//console.printf("card damage: %d", damage);
 		broll = frandom[card](8,15);
 	}
@@ -306,16 +309,17 @@ class ToM_CardProjectile : ToM_StakeProjectile
 			A_SetRoll(roll + broll);
 			A_SetAngle(angle + angleCurve);
 			A_SetPitch(pitch + pitchCurve);
+			Vel3DFromAngle(speed, angle, pitch);
 		}
 		loop;
 	XDeath:
-		TNT1 A 1 A_StartSound("weapons/cards/hitflesh", CHAN_AUTO);
+		TNT1 A 1 A_StartSound("weapons/cards/hitflesh", CHAN_AUTO, attenuation: 8);
 		stop;
 	Death:
 		#### A 60
 		{
 			A_SetRenderstyle(alpha, Style_Translucent);
-			A_StartSound("weapons/cards/hitwall", CHAN_AUTO);
+			A_StartSound("weapons/cards/hitwall", CHAN_AUTO, attenuation: 8);
 			StickToWall();
 		}
 		#### A 1 

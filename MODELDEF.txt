@@ -19,6 +19,7 @@ Model ToM_CardProjectile
 	Scale 1 1 1
 	Offset 5 0 0
 	USEACTORPITCH
+	USEACTORROLL
 	
 	Skin 0 "txACC1.png" FrameIndex ACC1 A 0 0
 	Skin 0 "txACC2.png" FrameIndex ACC2 A 0 0

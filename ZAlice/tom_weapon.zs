@@ -1,14 +1,17 @@
 class ToM_BaseWeapon : Weapon abstract
 {
 	mixin ToM_Math;
+	
+	double PSpriteStartX[200];
+	double PSpriteStartY[200];
 
 	enum ToM_PSprite_Layers
 	{
-		APSP_UnderLayer = -30,
+		APSP_UnderLayer = -10,
 		APSP_Overlayer = 5,
 		APSP_Card = 2,
 		APSP_Thumb = 3,
-		APSP_TopFX = 30,
+		APSP_TopFX = 10,
 	}
 	
 	Default 
@@ -19,15 +22,42 @@ class ToM_BaseWeapon : Weapon abstract
 		weapon.BobSpeed 1.85;
 	}
 	
-	action void ResetPSprite(int layer)
-	
-{
+	// Reset the specified PSprite's offset, scale and angle
+	// to default values. If staggertics is above 1, performs
+	// only a partial reset. This argument is meant to be used
+	// for a gradual reset, to be called over the matching number
+	// of frames.
+	action void A_ResetPSprite(int layer, int staggertics = 1)
+	{
 		if (!player)
 			return;
 		let psp = player.FindPSprite(layer);
 		if (!psp)
 			return;
-		A_OverlayOffset(layer, 0, layer == PSP_WEAPON ? 32 : 0, WOF_INTERPOLATE);
+		vector2 targetofs = (0, layer == PSP_WEAPON ? WEAPONTOP : 0);
+		if (staggertics > 1)
+		{
+			int id = layer + 100;
+			if (id < 0 || id >= invoker.PSpriteStartX.Size() || id >= invoker.PSpriteStartX.Size())
+				return;			
+			vector2 ofs = ( invoker.PSpriteStartX[id] == 0 ? psp.x : invoker.PSpriteStartX[id], invoker.PSpriteStartY[id] == 0 ? psp.y : invoker.PSpriteStartY[id]);
+			//vector2 sc = psp.scale;
+			//double ang = psp.rotation;
+			vector2 ofsStep = (-(ofs.x - targetOfs.x) / staggertics, -(ofs.y - targetOfs.y) / staggertics);
+			/*console.printf("target ofs: (%1.f, %1.f) \ncurrent ofs: (%1.f, %1.f) \ncurrent step: target ofs: (%1.f, %1.f)",
+				targetofs.x, targetOfs.y, 
+				ofs.x, ofs.y, 
+				ofsStep.x, ofsStep.y
+			);*/
+			
+			A_OverlayOffset(layer, ofsStep.x, ofsStep.y, WOF_ADD);
+			if (psp.x == targetOfs.x) invoker.PSpriteStartX[id] = 0;
+			if (psp.y == targetOfs.y) invoker.PSpriteStartY[id] = 0;
+			//A_OverlayRotate(layer, -ang / staggertics, WOF_ADD);
+			//A_OverlayScale(layer, -(sc.x - 1) / staggertics, -(sc.y - 1) / staggertics, WOF_ADD);
+			return;
+		}
+		A_OverlayOffset(layer, targetOfs.x, targetOfs.y, WOF_INTERPOLATE);
 		A_OverlayRotate(layer, 0, WOF_INTERPOLATE);
 		A_OverlayScale(layer, 1, 1, WOF_INTERPOLATE);
 	}

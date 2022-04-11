@@ -121,7 +121,7 @@ class ToM_Knife : ToM_BaseWeapon
 	Ready:
 		TNT1 A 0 
 		{
-			ResetPSprite(OverlayID());
+			A_ResetPSprite(OverlayID());
 			invoker.rightSlash = false;
 			invoker.combo = 0;
 		}
@@ -147,7 +147,7 @@ class ToM_Knife : ToM_BaseWeapon
 	RightSlash:
 		TNT1 A 0 
 		{
-			ResetPSprite(OverlayID());
+			A_ResetPSprite(OverlayID());
 			A_OverlayPivot(OverlayID(), 0.5, 0.5);
 			//A_OverlayRotate(OverlayID(), frandom[wrot](-30,0), WOF_INTERPOLATE);
 		}
@@ -181,7 +181,7 @@ class ToM_Knife : ToM_BaseWeapon
 	LeftSlash:
 		TNT1 A 0 
 		{
-			ResetPSprite(OverlayID());
+			A_ResetPSprite(OverlayID());
 			A_OverlayPivot(OverlayID(), 0.9, 0.7);
 			//A_OverlayRotate(OverlayID(), frandom[wrot](0,30), WOF_INTERPOLATE);
 		}
@@ -215,7 +215,7 @@ class ToM_Knife : ToM_BaseWeapon
 	DownSlash:
 		TNT1 A 0 
 		{
-			ResetPSprite(OverlayID());
+			A_ResetPSprite(OverlayID());
 			A_OverlayPivot(OverlayID(), 0.5, 1);
 			//A_OverlayRotate(OverlayID(), frandom[wrot](-10,10), WOF_INTERPOLATE);
 		}
@@ -243,7 +243,7 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		goto ready;
 	AltFire:
-		TNT1 A 0 ResetPSprite(OverlayID());
+		TNT1 A 0 A_ResetPSprite(OverlayID());
 		VKNF HHH 1
 		{
 			A_WeaponOffset(4, -4, WOF_ADD);
@@ -310,7 +310,7 @@ class ToM_Knife : ToM_BaseWeapon
 /*	RestoreKnife:
 		TNT1 A 0
 		{
-			ResetPSprite(OverlayID());
+			A_ResetPSprite(OverlayID());
 			A_OverlayFlags(OverlayID(), PSPF_ForceAlpha, true);
 			A_OverlayAlpha(OverlayID(), 0);
 			A_Overlay(APSP_UnderLayer, "RestoreKnifeUnderlay");

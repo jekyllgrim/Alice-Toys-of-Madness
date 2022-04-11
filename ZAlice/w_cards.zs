@@ -28,6 +28,34 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 	}
 	
+	action Actor A_FireCard(double xspread = 0, double yspread = 0, double damagemul = 1)
+	{
+		let proj = ToM_CardProjectile(A_FireProjectile("ToM_CardProjectile"/*, angle: frandom[firecard](-xspread, xspread), pitch:pitch[firecard](-yspread, yspread)*/));
+		if (proj)
+		{
+			proj.sprite = GetSpriteIndex(invoker.cardName);
+			proj.SetDamage(invoker.cardDamage);
+			proj.angleCurve = frandom[firecard](-xspread, xspread);
+			proj.pitchCurve = frandom[firecard](-xspread, xspread);
+			return proj;
+		}
+		return null;
+	}
+	
+	action void A_FireCardsMultiple()
+	{
+		for (int i = 8; i > 0; i--)
+		{
+			let proj = A_FireProjectile("ToM_CardProjectile", frandom(-7, 7), pitch: frandom(-4.2, 4.2));
+			if (proj)
+			{
+				proj.sprite = GetSpriteIndex(invoker.cardName);
+				proj.SetDamage(invoker.cardDamage);
+			}
+			PickACard();
+		}
+	}
+	
 	static const name CardSuits[] = { "C", "S", "H", "D" };
 	static const name CardValues[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K" };
 	
@@ -108,7 +136,7 @@ class ToM_Cards : ToM_BaseWeapon
 	Ready:
 		TNT1 A 0
 		{
-			ResetPSprite(OverlayID());
+			A_ResetPSprite(OverlayID());
 			CreateCardLayers();
 			if (invoker.cardDamage < 0 || invoker.cardSuit < 0)
 				PickACard();
@@ -122,26 +150,66 @@ class ToM_Cards : ToM_BaseWeapon
 		#### # 1 PickFrame();
 		loop;
 	Fire:
-		TNT1 A 0 ResetPSprite(OverlayID());
+		TNT1 A 0 A_ResetPSprite(OverlayID());
 		PDEK ABC 1 A_WeaponOffset(6, -2, WOF_ADD);
-		TNT1 A 0 
-		{
-			let proj = A_FireProjectile("ToM_CardProjectile");
-			if (proj)
-			{
-				proj.sprite = GetSpriteIndex(invoker.cardName);
-				proj.SetDamage(invoker.cardDamage);
-			}
-		}
+		TNT1 A 0 A_FireCard(3.5);
 		PDEK EEEEE 1 A_WeaponOffset(3, -1, WOF_ADD);
 		TNT1 A 0 PickACard();
-		PDEK FDBA 2 A_WeaponOffset(-3.5, 1.15, WOF_ADD);
-		PDEK AAAAA 1 
+		PDEK FFGGDBB 1 A_WeaponOffset(-3.83, 1, WOF_ADD);
+		PDEK BBAAA 1 
 		{
 			A_ReFire();
-			A_WeaponOffset(-3.66, 1.22, WOF_ADD);
+			A_WeaponOffset(-2.6, 1, WOF_ADD);
 		}
 		goto ready;
+	AltFire:
+		TNT1 A 0 
+		{
+			A_ResetPSprite(OverlayID());
+			A_Overlay(APSP_Overlayer, "LeftArm");
+		}
+		PDEK AABBC 1 A_WeaponOffset(2, -1.4, WOF_ADD);
+	AltFireEnd:
+		TNT1 A 0 A_FireCardsMultiple();
+		PDEK EEEEE 1 
+		{
+			A_WeaponOffset(1, 2, WOF_ADD);
+			A_OverlayRotate(OverlayID(), -2, WOF_ADD);
+		}
+		PDEK EEEEEEEEEEEEEE 1 
+		{
+			A_WeaponOffset(-1, -0.5, WOF_ADD);
+			A_OverlayRotate(OverlayID(), 0.714, WOF_ADD);
+		}
+		PDEK FFGGDDBBAAA 1 
+		{
+			A_ReFire();
+			A_overlayRotate(OverlayID(), 0);
+			A_ResetPSprite(OverlayID(), 5);
+		}
+		goto ready;
+	AltHold:
+		TNT1 A 0 
+		{
+			A_WeaponOffset(5, WEAPONTOP + 7, WOF_INTERPOLATE);
+			A_Overlay(APSP_Overlayer, "LeftArm");
+		}
+		PDEK EEEEE 1 A_WeaponOffset(1, -2, WOF_ADD);
+		goto AltFireEnd;
+	LeftArm:
+		TNT1 A 0 
+		{
+			A_ResetPSprite(OverlayID());
+			A_OverlayFlags(OverlayID(), PSPF_AddWeapon|PSPF_AddBob, false);
+		}
+		PDEK HIIJJ 1 A_OverlayOffset(OverlayID(), 2, -2, WOF_ADD);
+		TNT1 A 0 A_FireCardsMultiple();
+		PDEK KKK 1 A_OverlayOffset(OverlayID(), -3, -1, WOF_ADD);
+		PDEK LLL 1 A_OverlayOffset(OverlayID(), -5, 0, WOF_ADD);
+		PDEK LLL 1 A_OverlayOffset(OverlayID(), 1, 2, WOF_ADD);
+		PDEK MMMM 1 A_OverlayOffset(OverlayID(), 2, 3, WOF_ADD);
+		PDEK NNNIIIHHHHHH 1 A_OverlayOffset(OverlayID(), 2, 6, WOF_ADD);
+		stop;
 	Cache:
 		PDEK A 0;
 		PDET A 0;
@@ -202,12 +270,17 @@ class ToM_Cards : ToM_BaseWeapon
 
 class ToM_CardProjectile : ToM_StakeProjectile
 {	
+	double broll;
+	double angleCurve;
+	double pitchCurve;
+	
 	Default
 	{
 		ToM_Projectile.trailcolor "f4f4f4";
 		ToM_Projectile.trailscale 0.013;
 		ToM_Projectile.trailfade 0.024;
 		ToM_Projectile.trailalpha 0.2;
+		+ROLLSPRITE
 		renderstyle "Translucent";
 		speed 40;
 		damage (10);
@@ -221,14 +294,20 @@ class ToM_CardProjectile : ToM_StakeProjectile
 	{
 		super.PostBeginPlay();
 		A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
-		console.printf("card damage: %d", damage);
+		//console.printf("card damage: %d", damage);
+		broll = frandom[card](8,15);
 	}
 	
 	States
 	{
 	Spawn:
-		#### A -1;
-		stop;
+		#### A 1
+		{
+			A_SetRoll(roll + broll);
+			A_SetAngle(angle + angleCurve);
+			A_SetPitch(pitch + pitchCurve);
+		}
+		loop;
 	XDeath:
 		TNT1 A 1 A_StartSound("weapons/cards/hitflesh", CHAN_AUTO);
 		stop;

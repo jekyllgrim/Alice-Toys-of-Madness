@@ -53,8 +53,6 @@ class ToM_Cards : ToM_BaseWeapon
 				proj.SetDamage(invoker.cardDamage);
 				proj.angleCurve = frandom[firecard](-curve, curve);
 				proj.pitchCurve = frandom[firecard](-curve, curve);
-				proj.angle += proj.angleCurve;
-				proj.pitch += proj.pitchCurve;
 			}
 			PickACard();
 		}
@@ -299,6 +297,12 @@ class ToM_CardProjectile : ToM_StakeProjectile
 		//A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
 		//console.printf("card damage: %d", damage);
 		broll = frandom[card](8,15);
+		if (target)
+		{
+			angle = target.angle + angleCurve;
+			pitch = target.pitch + pitchCurve;
+			Vel3DFromAngle(speed, angle, pitch);
+		}
 	}
 	
 	States

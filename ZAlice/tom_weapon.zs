@@ -27,11 +27,11 @@ class ToM_BaseWeapon : Weapon abstract
 	// only a partial reset. This argument is meant to be used
 	// for a gradual reset, to be called over the matching number
 	// of frames.
-	action void A_ResetPSprite(int layer, int staggertics = 1)
+	action void A_ResetPSprite(int layer = -1, int staggertics = 1)
 	{
 		if (!player)
 			return;
-		let psp = player.FindPSprite(layer);
+		let psp = player.FindPSprite(layer == -1 ? OverlayID() : layer);
 		if (!psp)
 			return;
 		vector2 targetofs = (0, layer == PSP_WEAPON ? WEAPONTOP : 0);
@@ -60,6 +60,16 @@ class ToM_BaseWeapon : Weapon abstract
 		A_OverlayOffset(layer, targetOfs.x, targetOfs.y, WOF_INTERPOLATE);
 		A_OverlayRotate(layer, 0, WOF_INTERPOLATE);
 		A_OverlayScale(layer, 1, 1, WOF_INTERPOLATE);
+	}
+	
+	action actor A_FireArchingProjectile(class<Actor> missiletype, double angle = 0, bool useammo = true, double spawnofs_xy = 0, double spawnheight = 0, int flags = 0, double pitch = 0) 
+	{
+		if (!self || !self.player) 
+			return null;
+		double pitchOfs = pitch;
+		if (pitch != 0 && self.pitch < 0)
+			pitchOfs = invoker.LinearMap(self.pitch, 0, -90, pitchOfs, 0);
+		return A_FireProjectile(missiletype, angle, useammo, spawnofs_xy, spawnheight, flags, pitchOfs);
 	}
 }
 

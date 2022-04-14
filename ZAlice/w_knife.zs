@@ -67,7 +67,7 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			knifeReload--;
 			if (knifeReload == 0)
-				A_StartSound("weapons/knife/restore", CHAN_AUTO);
+				owner.A_StartSound("weapons/knife/restore", CHAN_AUTO);
 		}
 		let weap = owner.player.readyweapon;
 		let plr = owner.player;

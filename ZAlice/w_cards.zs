@@ -105,7 +105,7 @@ class ToM_Cards : ToM_BaseWeapon
 	States
 	{
 	Select:
-		PDEK A 0 
+		TNT1 A 0 
 		{
 			A_WeaponOffset(-24, 86);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
@@ -125,8 +125,6 @@ class ToM_Cards : ToM_BaseWeapon
 		{
 			A_OverlayPivot(OverlayID(), 1, 1);	
 			let psp = player.FindPSprite(PSP_Weapon);
-			CreateCardLayers();
-			PickACard();
 		}
 		PDEK AAAAAA 1
 		{

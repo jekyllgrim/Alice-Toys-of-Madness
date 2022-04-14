@@ -3,13 +3,28 @@
 
 weapons/knife/draw "sounds/knife/knife_ready.wav"
 weapons/knife/fly	"sounds/knife/knife_spin.wav"
-weapons/knife/throw	"sounds/knife/knife_throw.wav"
-weapons/knife/restore "sounds/jacks_toss.wav"
+//weapons/knife/throw	"sounds/knife/knife_throw.wav"
+weapons/knife/restore "sounds/knife/vorpal_spin_end.ogg"
 
-$random weapons/knife/swing { knswing1 knswing2 knswing3 }
+//$random weapons/knife/swing { knswing1 knswing2 knswing3 }
 knswing1 "sounds/knife/knife_swing1.wav"
 knswing2 "sounds/knife/knife_swing2.wav"
 knswing3 "sounds/knife/knife_swing3.wav"
+
+$random weapons/knife/swing { vorpalslash1 vorpalslash2 vorpalslash3 vorpalslash4 vorpalslash5 vorpalslash6 vorpalslash7 }
+vorpalslash1 "sounds/knife/vorpal_slash01.ogg"
+vorpalslash2 "sounds/knife/vorpal_slash02.ogg"
+vorpalslash3 "sounds/knife/vorpal_slash03.ogg"
+vorpalslash4 "sounds/knife/vorpal_slash04.ogg"
+vorpalslash5 "sounds/knife/vorpal_slash05.ogg"
+vorpalslash6 "sounds/knife/vorpal_slash06.ogg"
+vorpalslash7 "sounds/knife/vorpal_slash07.ogg"
+
+$random weapons/knife/throw { vorpalspin1 vorpalspin2 vorpalspin3 vorpalspin4 }
+vorpalspin1 "sounds/knife/vorpal_spin01.ogg"
+vorpalspin2 "sounds/knife/vorpal_spin02.ogg"
+vorpalspin3 "sounds/knife/vorpal_spin03.ogg"
+vorpalspin4 "sounds/knife/vorpal_spin04.ogg"
 
 $random weapons/knife/hitflesh { kflesh1 kflesh2 kflesh3 kflesh4 }
 kflesh1	"sounds/knife/knife_hit_flesh.wav"
@@ -45,3 +60,22 @@ cardhitwall2 "sounds/cards/cards_hit_world2.wav"
 $random weapons/cards/hitflesh { cardhitflesh1 cardhitflesh2 }
 cardhitflesh1 "sounds/cards/cards_hit_flesh1.wav"
 cardhitflesh2 "sounds/cards/cards_hit_flesh2.wav"
+
+// TEAPOT
+
+$random weapons/teapot/charge { teacharge1 teacharge2}
+teacharge1 "sounds/teapot/teacannon_charge_a01.ogg"
+teacharge2 "sounds/teapot/teacannon_charge_a02.ogg"
+
+weapons/teapot/heatloop "sounds/teapot/teacannon_charged_loop.ogg"
+weapons/teapot/highheat "sounds/teapot/para.wav"
+
+$random weapons/teapot/explode { teaboom1 teaboom2 }
+teaboom1 "sounds/teapot/teacannon_explode01.ogg"
+teaboom2 "sounds/teapot/teacannon_explode02.ogg"
+
+weapons/teapot/firecharged "sounds/teapot/teacannon_fire_charged01.ogg"
+
+$random weapons/teapot/fire { teafire1 teafire2 }
+teafire1 "sounds/teapot/teacannon_fire01.ogg"
+teafire2 "sounds/teapot/teacannon_fire02.ogg"

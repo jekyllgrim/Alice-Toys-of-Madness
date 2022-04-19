@@ -30,18 +30,19 @@ class ToM_Cards : ToM_BaseWeapon
 	
 	action Actor A_FireCard(double xspread = 0, double yspread = 0)
 	{
-		let proj = ToM_CardProjectile(A_FireProjectile("ToM_CardProjectile"));
+		let proj = ToM_CardProjectile(A_FireProjectile("ToM_CardProjectile", angle: frandom[firecard](-xspread, xspread), pitch:frandom[firecard](-yspread, yspread)));
 		if (proj)
 		{
 			proj.A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
 			proj.sprite = GetSpriteIndex(invoker.cardName);
 			proj.SetDamage(invoker.cardDamage);
+			proj.broll = frandom[card](4,6);
 			return proj;
 		}
 		return null;
 	}
 	
-	action void A_FireCardsMultiple(int amount = 7, double xspread = 8, double yspread = 4.6, double curve = 0)
+	action void A_FireCardsMultiple(int amount = 7, double xspread = 12, double yspread = 6, double curve = 0)
 	{
 		A_StartSound("weapons/cards/altfire", CHAN_AUTO);
 		for (int i = amount; i > 0; i--)
@@ -53,6 +54,7 @@ class ToM_Cards : ToM_BaseWeapon
 				proj.SetDamage(invoker.cardDamage);
 				proj.angleCurve = frandom[firecard](-curve, curve);
 				proj.pitchCurve = frandom[firecard](-curve, curve);
+				proj.broll = frandom[card](-5,5);
 			}
 			PickACard();
 		}
@@ -152,7 +154,7 @@ class ToM_Cards : ToM_BaseWeapon
 	Fire:
 		TNT1 A 0 A_ResetPSprite(OverlayID());
 		PDEK ABC 1 A_WeaponOffset(6, -2, WOF_ADD);
-		TNT1 A 0 A_FireCard(3.5);
+		TNT1 A 0 A_FireCard(4, 3.2);
 		PDEK EEEEE 1 A_WeaponOffset(3, -1, WOF_ADD);
 		TNT1 A 0 PickACard();
 		PDEK FFGGDBB 1 A_WeaponOffset(-3.83, 1, WOF_ADD);
@@ -170,7 +172,7 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 		PDEK AABBC 1 A_WeaponOffset(2, -1.4, WOF_ADD);
 	AltFireEnd:
-		TNT1 A 0 A_FireCardsMultiple(curve: 1.5);
+		TNT1 A 0 A_FireCardsMultiple(curve: 1.8);
 		PDEK EEEEE 1 
 		{
 			A_WeaponOffset(1, 2, WOF_ADD);
@@ -294,7 +296,6 @@ class ToM_CardProjectile : ToM_StakeProjectile
 		super.PostBeginPlay();
 		//A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
 		//console.printf("card damage: %d", damage);
-		broll = frandom[card](8,15);
 		if (target)
 		{
 			angle = target.angle + angleCurve;
@@ -307,8 +308,9 @@ class ToM_CardProjectile : ToM_StakeProjectile
 	{
 	Spawn:
 		#### A 1
-		{
-			A_SetRoll(roll + broll);
+		{			
+			if (GetAge() > 5)
+				roll += broll;
 			A_SetAngle(angle + angleCurve);
 			A_SetPitch(pitch + pitchCurve);
 			Vel3DFromAngle(speed, angle, pitch);

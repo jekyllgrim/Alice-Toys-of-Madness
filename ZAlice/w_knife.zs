@@ -9,7 +9,7 @@ class ToM_Knife : ToM_BaseWeapon
 	const KNIFE_PARTIAL_RELOAD_TIME = 20;
 	const KNIFE_RELOAD_FRAME = 11;
 	
-	action void Knife_WeaponReady(int flags = 0)
+	action void A_KnifeReady(int flags = 0)
 	{
 		SetKnifeFrame();
 		if (invoker.knifeReload > 0)
@@ -17,9 +17,9 @@ class ToM_Knife : ToM_BaseWeapon
 			flags |= WRF_NOFIRE;
 			if (invoker.knifeReload <= KNIFE_PARTIAL_RELOAD_TIME)
 			{
-				A_Overlay(APSP_Overlayer, "KnifeFadeIn", true);
-				A_OverlayFlags(APSP_Overlayer, PSPF_ForceAlpha, true);
-				let psp = player.FindPSprite(APSP_Overlayer);
+				A_Overlay(APSP_TopFX, "KnifeFadeIn", true);
+				A_OverlayFlags(APSP_TopFX, PSPF_ForceAlpha, true);
+				let psp = player.FindPSprite(APSP_TopFX);
 				if (psp)
 					psp.alpha = invoker.LinearMap(invoker.knifeReload, KNIFE_PARTIAL_RELOAD_TIME, 0, 0.0, 0.8);
 			}
@@ -27,7 +27,6 @@ class ToM_Knife : ToM_BaseWeapon
 		else
 		{
 			player.SetPSprite(APSP_TopFX, ResolveState("Null"));
-			player.SetPSprite(APSP_Overlayer, ResolveState("Null"));
 		}
 		A_WeaponReady(flags);
 	}
@@ -121,12 +120,32 @@ class ToM_Knife : ToM_BaseWeapon
 	Ready:
 		TNT1 A 0 
 		{
-			A_ResetPSprite(OverlayID());
+			//A_ResetPSprite(OverlayID());
 			invoker.rightSlash = false;
 			invoker.combo = 0;
 		}
-		VKNF A 1 Knife_WeaponReady;
+		VKNF A 1 
+		{
+			A_KnifeReady();
+			if (invoker.knifeReload <= 0 && level.time % (35 * 3) == 0)
+				return ResolveState("IdleAnim");
+			return ResolveState(null);
+		}
 		wait;
+	IdleAnim:
+		VKNI ABC 2 A_WeaponReady();
+		VKNI DDEEFFGGHHIIJJKK 1 
+		{
+			A_OverlayRotate(OverlayID(), 2);
+			A_WeaponReady();
+		}
+		VKNI LLMMNNOO 1 
+		{
+			A_OverlayRotate(OverlayID(), -4);
+			A_WeaponReady();
+		}
+		VKNI BA 2 A_WeaponReady();
+		goto Ready;
 	KnifeFadeIn:
 		VKNF A -1;
 		stop;

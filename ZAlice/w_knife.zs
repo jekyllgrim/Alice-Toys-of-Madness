@@ -133,18 +133,18 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		wait;
 	IdleAnim:
-		VKNI ABC 2 A_WeaponReady();
+		VKNI ABC 2 A_WeaponReady(WRF_NOBOB);
 		VKNI DDEEFFGGHHIIJJKK 1 
 		{
 			A_OverlayRotate(OverlayID(), 2);
-			A_WeaponReady();
+			A_WeaponReady(WRF_NOBOB);
 		}
 		VKNI LLMMNNOO 1 
 		{
 			A_OverlayRotate(OverlayID(), -4);
-			A_WeaponReady();
+			A_WeaponReady(WRF_NOBOB);
 		}
-		VKNI BA 2 A_WeaponReady();
+		VKNI BA 2 A_WeaponReady(WRF_NOBOB);
 		goto Ready;
 	KnifeFadeIn:
 		VKNF A -1;
@@ -268,6 +268,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_WeaponOffset(4, -4, WOF_ADD);
 			A_OverlayRotate(OverlayID(), -2, WOF_ADD);
 		}
+		TNT1 A 0 A_StartSound("weapons/knife/throw", CHAN_WEAPON);
 		VKNF IIII 1
 		{
 			A_WeaponOffset(3, -2, WOF_ADD);
@@ -280,6 +281,7 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
+			A_StopSound(CHAN_WEAPON);
 			A_FireProjectile("ToM_KnifeProjectile");
 			invoker.knifeReload = KNIFE_RELOAD_TIME;
 		}
@@ -371,7 +373,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 	
 	Default
 	{
-		seesound "weapons/knife/throw";
+		seesound "";
 		//deathsound "weapons/knife/throwwall";
 		renderstyle "Translucent";
 		speed 25;
@@ -385,6 +387,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
+		A_StartSound("weapons/knife/throw", CHAN_AUTO, startTime: 0.25);
 		knifemodel = Spawn("ToM_KnifeProjectileModel", pos);
 		knifemodel.angle = angle;
 		knifemodel.pitch = pitch;			

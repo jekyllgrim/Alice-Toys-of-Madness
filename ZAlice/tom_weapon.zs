@@ -4,6 +4,15 @@ class ToM_BaseWeapon : Weapon abstract
 	
 	double PSpriteStartX[200];
 	double PSpriteStartY[200];
+	
+	protected int idleCounter;
+	
+	protected state s_fire;
+	protected state s_hold;
+	protected state s_altfire;
+	protected state s_althold;
+	protected state s_idle;
+	
 
 	enum ToM_PSprite_Layers
 	{
@@ -20,6 +29,25 @@ class ToM_BaseWeapon : Weapon abstract
 		weapon.BobRangeX 0.32;
 		weapon.BobRangeY 0.17;
 		weapon.BobSpeed 1.85;
+	}
+	
+	action void A_DoIdleAnimation(int frequency = 1, int chance = 0)
+	{
+		if (chance <= 0)
+			return;
+		if (!player)
+			return;
+		if (!invoker.s_idle)
+			return;			
+		chance = Clamp(chance, 0, 100);
+		if (level.maptime % 35 != 0)
+			return;
+		invoker.idleCounter++;
+		if (invoker.idleCounter % frequency == 0 && chance >= random[idleanim](1, 100))
+		{
+			invoker.idleCounter = 0;
+			player.SetPSprite(OverlayID(), invoker.s_idle);
+		}
 	}
 	
 	// Reset the specified PSprite's offset, scale and angle
@@ -70,6 +98,16 @@ class ToM_BaseWeapon : Weapon abstract
 		if (pitch != 0 && self.pitch < 0)
 			pitchOfs = invoker.LinearMap(self.pitch, 0, -90, pitchOfs, 0);
 		return A_FireProjectile(missiletype, angle, useammo, spawnofs_xy, spawnheight, flags, pitchOfs);
+	}
+
+	override void PostBeginPlay() 
+	{
+		super.PostBeginPlay();
+		s_fire = FindState("Fire");
+		s_hold = FindState("Hold");
+		s_altfire = FindState("AltFire");
+		s_althold = FindState("AltHold");
+		s_idle = FindState("IdleAnim");
 	}
 }
 

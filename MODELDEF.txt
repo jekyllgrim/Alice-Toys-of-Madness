@@ -1,9 +1,7 @@
 Model ToM_KnifeProjectileModel 
 {
-	AngleOffset 90
 	path "Models/Knife"
-	Model 0 "vorpal_knife.md3"
-	Skin 0 "knife.png"
+	Model 0 "vorpal_knifeMR.md3"
 	Scale 1 1 1
 	Offset 12 0 0
 	USEACTORPITCH

@@ -133,7 +133,7 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		wait;
 	IdleAnim:
-		VKNI ABC 2 A_WeaponReady(WRF_NOBOB);
+		VKNI ZABC 2 A_WeaponReady(WRF_NOBOB);
 		VKNI DDEEFFGGHHIIJJKK 1 
 		{
 			A_OverlayRotate(OverlayID(), 2);
@@ -144,7 +144,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayRotate(OverlayID(), -4);
 			A_WeaponReady(WRF_NOBOB);
 		}
-		VKNI BA 2 A_WeaponReady(WRF_NOBOB);
+		VKNI BAZ 2 A_WeaponReady(WRF_NOBOB);
 		goto Ready;
 	KnifeFadeIn:
 		VKNF A -1;

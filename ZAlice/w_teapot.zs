@@ -240,22 +240,51 @@ class ToM_TeaProjectile : ToM_Projectile
 		damage (25);
 		Renderstyle 'Translucent';
 		alpha 0.7;
-		scale 0.3;
+		xscale 0.3;
+		yscale 0.28;
 	}
 	
 	States
 	{
 	Spawn:
-		TGLO ABCDEFGHIJ 2;
+		TGLO ABCDEFGHIJ 2
+		{
+			if (GetAge() > 8)
+				ToM_WhiteSmoke.SpawnWhiteSmoke(
+					self, 
+					ofs: (frandom[wsmoke](-4,4),frandom[wsmoke](-4,4),frandom[wsmoke](-4,4) + (height * 0.5)), 
+					vel: (frandom[wsmoke](-0.2,0.2),frandom[wsmoke](-0.2,0.2),frandom[wsmoke](-0.2,0.2)),
+					scale: 0.15,
+					alpha: 0.4
+				);
+		}
 		loop;
 	Death:
 		TNT1 A 1
 		{
-			//bool onFloor = pos.z <= floorz + height;
+			A_SetScale(1);
+			bNOGRAVITY = true;
+			A_Explode();
+			
+			bool onFloor = (pos.z <= floorz + height);			
+			if (onFloor && !CheckLandingSize(32))
+				Spawn("ToM_TeaPool", (pos.x,pos.y,floorz));
+				
+			for (int i = 4; i > 0; i--)
+			{
+				ToM_WhiteSmoke.SpawnWhiteSmoke(
+					self, 
+					ofs: (frandom[wsmoke](-6,6),frandom[wsmoke](-6,6),frandom[wsmoke](10,16)), 
+					vel: (frandom[wsmoke](-0.2,0.2),frandom[wsmoke](-0.2,0.2),frandom[wsmoke](2,3)),
+					scale: 0.3,
+					alpha: 0.75
+				);
+			}
+			
 			for (int i = 20; i > 0; i--)
 			{
 				A_SpawnItemEx(
-					"ToM_WaterSplash",
+					"ToM_TeaSplashSplash",
 					xofs: frandom[wsplash](-12,12),
 					yofs: frandom[wsplash](-12,12),
 					zofs: frandom[wsplash](-4,12),
@@ -264,9 +293,6 @@ class ToM_TeaProjectile : ToM_Projectile
 					zvel: frandom[wsplash](1,3.5)
 				);
 			}
-			A_SetScale(1);
-			bNOGRAVITY = true;
-			A_Explode();
 			
 			
 			for (int i = 40; i > 0; i--)
@@ -299,7 +325,7 @@ class ToM_TeaProjectile : ToM_Projectile
 	}
 }
 
-class ToM_WaterSplash : ToM_SmallDebris
+class ToM_TeaSplashSplash : ToM_SmallDebris
 {
 	double wscale;
 	
@@ -343,5 +369,45 @@ class ToM_WaterSplash : ToM_SmallDebris
 		stop;
 	Cache:
 		WFSP ABCD 0;
+	}
+}
+
+class ToM_TeaPool : ToM_SmallDebris
+{
+	double wscale;
+	
+	Default
+	{
+		+NOINTERACTION
+		Renderstyle 'Translucent';
+		scale 3.4;
+	}
+	
+	override void PostBeginPlay() 
+	{
+		super.PostBeginPlay();
+		wscale = 0.05;
+		SetZ(Floorz + 0.1);
+	}
+	
+	States
+	{
+	Spawn:
+		AMRK A 1 
+		{
+			A_FadeOut(0.012);
+			scale *= (1 + wscale);
+			wscale *= 0.95;
+			if (alpha > 0.15 && random[vapr](1,3) == 3)
+				ToM_WhiteSmoke.SpawnWhiteSmoke(
+					self,
+					ofs: (frandom[wsmoke](-64,64),frandom[wsmoke](-64,64), 5), 
+					vel: (0, 0, frandom[wsmoke](0.5, 1)),
+					scale: 0.08,
+					alpha: 0.7,
+					fade: 0.01
+				);
+		}
+		wait;
 	}
 }

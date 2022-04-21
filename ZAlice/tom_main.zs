@@ -230,7 +230,8 @@ Class ToM_BaseActor : Actor abstract
 		return false;
 	}
 	
-	static const string ToM_LiquidFlats[] = { 
+	static const string ToM_LiquidFlats[] = 
+	{ 
 		"BLOOD", "LAVA", "NUKAGE", "SLIME01", "SLIME02", "SLIME03", "SLIME04", "SLIME05", "SLIME06", "SLIME07", "SLIME08", "BDT_"
 	};
 	
@@ -294,6 +295,49 @@ Class ToM_BaseActor : Actor abstract
 		}
 		return false;
 	}	
+	
+	static void AlignToPlane(Actor a, SecPlane sec = null, bool ceiling = false) 
+	{
+		if (!a)
+			return;
+		Vector3 norm;
+		a.pitch = 0;
+		a.roll = 0;
+		if (sec)
+			norm = sec.normal;
+		else 
+		{
+			FLineTraceData hit;
+			a.LineTrace(0,a.height+16,ceiling ? 90 : -90,flags:TRF_THRUACTORS|TRF_NOSKY,data:hit);
+			if (hit.Hit3DFloor) 
+			{
+				F3DFloor ff = hit.Hit3DFloor;
+				norm = ceiling ? ff.bottom.normal : -ff.top.normal;
+			}
+			else 
+				norm = ceiling ? a.CurSector.ceilingplane.normal : a.CurSector.floorplane.normal;
+		}
+		if (abs(norm.z) ~== 1) 
+		{
+			if (ceiling) 
+			{
+				a.pitch += 180;
+			}
+			return;		
+		}
+		a.angle = 0;
+		double ang = DeltaAngle(VectorAngle(norm.x, norm.y), a.angle);
+		double pch = 90 - asin(norm.z);
+		if (pch > 90)
+			pch -= 180;			
+		a.pitch = pch * cos(ang);
+		a.roll = pch * sin(ang);	
+		if (ceiling) 
+		{
+			a.pitch += 180;
+			a.roll *= -1;
+		}
+	}
 	
 	override void BeginPlay() 
 	{
@@ -1007,15 +1051,33 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 		renderstyle 'Translucent';
 		alpha 0.5;
 	}
+	
+	static ToM_WhiteSmoke SpawnWhiteSmoke(Actor self, vector3 ofs = (0,0,0), vector3 vel = (0,0,0), double scale = (0.1), double rotation = 4, double alpha = 0.5, double fade = 0)
+	{
+		if (!self)
+			return null;
+		let smk = ToM_WhiteSmoke(Actor.Spawn("ToM_WhiteSmoke", self.pos + ofs));
+		if (smk)
+		{
+			smk.vel = vel;
+			smk.scale = (scale, scale);
+			smk.wrot = rotation;
+			smk.alpha = alpha;
+			smk.fade = fade;
+		}
+		return smk;
+	}
+	
 	override void PostBeginPlay() 
 	{
 		super.PostBeginPlay();
 		scale *= frandom[sfx](0.9,1.1);
-		wrot = (random[sfx](2,5)*randompick[sfx](-1,1));
+		wrot *= (frandom[sfx](0.8, 1.2) * randompick[sfx](-1,1));
 		frame = random[sfx](0,5);
 		if (fade == 0)
 			fade = 0.01;
 	}	
+	
 	states 
 	{
 	Spawn:

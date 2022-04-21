@@ -72,3 +72,15 @@ Model ToM_CardProjectile
 	Skin 0 "txACDQ.png" FrameIndex ACDQ A 0 0
 	Skin 0 "txACDK.png" FrameIndex ACDK A 0 0
 }
+
+Model ToM_TeaPOol
+{
+	UseActorRoll
+	UseActorPitch
+	Scale 10.0 10.0 1
+
+	Path "models/pool"
+	Model 0 "pool.md3"
+	Skin 0 "pool.png"
+	FrameIndex AMRK A 0 0	
+}

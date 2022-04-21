@@ -6,6 +6,7 @@ class ToM_BaseWeapon : Weapon abstract
 	double PSpriteStartY[200];
 	
 	protected int idleCounter;
+	int particleLayer;
 	
 	protected state s_fire;
 	protected state s_hold;
@@ -16,11 +17,13 @@ class ToM_BaseWeapon : Weapon abstract
 
 	enum ToM_PSprite_Layers
 	{
+		APSP_BottomParticle = -300,
 		APSP_UnderLayer = -10,
 		APSP_Overlayer = 5,
 		APSP_Card = 2,
 		APSP_Thumb = 3,
 		APSP_TopFX = 10,
+		APSP_TopParticle = 300,
 	}
 	
 	Default 
@@ -88,6 +91,25 @@ class ToM_BaseWeapon : Weapon abstract
 		A_OverlayOffset(layer, targetOfs.x, targetOfs.y, WOF_INTERPOLATE);
 		A_OverlayRotate(layer, 0, WOF_INTERPOLATE);
 		A_OverlayScale(layer, 1, 1, WOF_INTERPOLATE);
+	}
+	
+	action void A_SpawnPSParticle(stateLabel statename, bool bottom = false, int thickness = 1, double xofs = 0, double yofs = 0, int chance = 100)
+	{
+		if (random[pspart](0, 100) > chance)
+			return;
+		state tstate = ResolveState(statename);
+		if (!tstate)
+			return;
+		int startlayer = bottom ? APSP_BottomParticle : APSP_TopParticle;
+		for (int i = 0; i < thickness; i++) 
+		{
+			int layer = startlayer+invoker.particleLayer;
+			player.SetPSprite(layer, tstate);
+			A_OverlayOffset(layer,frandom[pspart](-xofs,xofs),frandom[pspart](-yofs, yofs));
+			invoker.particleLayer++;
+			if (invoker.particleLayer >= 50)
+				invoker.particleLayer = 0;
+		}
 	}
 	
 	action actor A_FireArchingProjectile(class<Actor> missiletype, double angle = 0, bool useammo = true, double spawnofs_xy = 0, double spawnheight = 0, int flags = 0, double pitch = 0) 

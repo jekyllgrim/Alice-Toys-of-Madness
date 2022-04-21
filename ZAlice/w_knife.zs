@@ -4,7 +4,6 @@ class ToM_Knife : ToM_BaseWeapon
 	int combo;
 	int trailFrame;
 	int knifeReload;
-	int particleLayer;
 	const KNIFE_RELOAD_TIME = 88;
 	const KNIFE_PARTIAL_RELOAD_TIME = 20;
 	const KNIFE_RELOAD_FRAME = 11;
@@ -282,15 +281,7 @@ class ToM_Knife : ToM_BaseWeapon
 	RestoreKnife:
 		TNT1 A 1 
 		{
-			for (int i = 0; i < 4; i++) 
-			{
-				int layer = 300+invoker.particleLayer;
-				A_Overlay(layer,"RestoreKnifeParticle");
-				A_OverlayOffset(layer,frandom[sfx](-80,80),frandom[sfx](-80,80));
-				invoker.particleLayer++;
-				if (invoker.particleLayer >= 50)
-					invoker.particleLayer = 0;
-			}
+			A_SpawnPSParticle("RestoreKnifeParticle", thickness: 4, xofs: 80, yofs: 80);
 			
 			if (invoker.knifeReload <= KNIFE_PARTIAL_RELOAD_TIME)
 			{

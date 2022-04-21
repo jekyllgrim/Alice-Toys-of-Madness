@@ -2,9 +2,7 @@ Mixin class ToM_Math {
 	
 	int Sign (double i) 
 	{
-		if (i >= 0)
-			return 1;
-		return -1;
+		return (i >= 0) ? 1 : -1;
 	}
 	
 	clearscope double LinearMap(double val, double o_min, double o_max, double n_min, double n_max) 
@@ -451,7 +449,7 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 	}
 	//a cheaper version of SetOrigin that also doesn't update floorz/ceilingz (because they're updated manually in Tick) - thanks phantombeta
     void ToM_SetOrigin (Vector3 newPos) 
-{
+	{
         LinkContext ctx;
         UnlinkFromWorld (ctx);
         SetXYZ (newPos);

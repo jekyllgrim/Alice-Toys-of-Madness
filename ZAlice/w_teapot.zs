@@ -164,6 +164,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		}
 		loop;
 	ReadyOverHeatEnd:
+		TNT1 A 0 A_StartSound("weapons/teapot/close", CHAN_AUTO);
 		TPOT AB 4;
 		TNT1 A 1 A_PickReady;
 		wait;
@@ -217,7 +218,78 @@ class ToM_Teapot : ToM_BaseWeapon
 		stop;
 	}
 }
+
+class ToM_TeaBurnControl : ToM_InventoryToken 
+{
+	protected int timer;
+	protected uint prevtrans;
 	
+	void ResetTimer() 
+	{
+		timer = 35*5;
+	}
+	
+	override void AttachToOwner(actor other) 
+	{
+		super.AttachToOwner(other);
+		if (!owner)
+			return;
+		ResetTimer();
+		prevtrans = owner.translation;
+		owner.A_SetTranslation("GreenTea");
+		if (tom_debugmessages > 0)
+			console.printf("giving %s to %s", GetClassName(), owner.GetClassName());
+	}
+	
+	override void DoEffect() 
+	{
+		super.DoEffect();
+		if (!owner || !owner.target)
+		{
+			DepleteOrDestroy();
+			return;
+		}
+		if (owner.isFrozen())
+			return;
+		if (timer <= 0) 
+		{
+			DepleteOrDestroy();
+			return;
+		}
+		timer--;
+		if (timer % 35 == 0) 
+		{
+			int fl = (random[tea](1,3) == 1) ? 0 : DMG_NO_PAIN;
+			owner.DamageMobj(self,owner.target,4,"Normal",flags:DMG_THRUSTLESS|fl);
+		}
+		/*if (owner.health <= 0) 
+		{
+			owner.A_SetTRanslation("Scorched");
+		}*/
+		double rad = owner.radius*0.75;		
+		if (!s_particles)
+			s_particles = CVar.GetCVar('ToM_particles', players[consoleplayer]);
+		if (s_particles.GetInt() >= 1) 
+		{
+			ToM_WhiteSmoke.SpawnWhiteSmoke(
+				owner, 
+				ofs: (frandom[wsmoke](-rad,rad), frandom[wsmoke](-rad,rad), frandom[wsmoke](owner.pos.z,owner.height*0.75)), 
+				vel: (frandom[wsmoke](-0.2,0.2),frandom[wsmoke](-0.2,0.2),frandom[wsmoke](0.5,1.2)),
+				scale: 0.15,
+				alpha: 0.4
+			);
+		}
+	}
+	
+	override void DetachFromOwner() 
+	{
+		if (owner)
+		{
+			owner.translation = prevtrans;
+		}	
+		super.DetachFromOwner();
+	}
+}
 	
 class ToM_TeaProjectile : ToM_Projectile
 {
@@ -266,9 +338,10 @@ class ToM_TeaProjectile : ToM_Projectile
 			bNOGRAVITY = true;
 			A_Explode();
 			
-			bool onFloor = (pos.z <= floorz + height);			
-			if (onFloor && !CheckLandingSize(32))
-				Spawn("ToM_TeaPool", (pos.x,pos.y,floorz));
+			double fz = CurSector.floorplane.ZAtPoint(pos.xy);
+			bool onFloor = (pos.z <= fz + 32 && waterlevel <= 0);			
+			if (onFloor && (!CheckLandingSize(32) || !(CurSector.FloorPlane.Normal == (0,0,1))))
+				Spawn("ToM_TeaPool", (pos.x,pos.y, fz+0.5));
 				
 			for (int i = 4; i > 0; i--)
 			{
@@ -284,7 +357,7 @@ class ToM_TeaProjectile : ToM_Projectile
 			for (int i = 20; i > 0; i--)
 			{
 				A_SpawnItemEx(
-					"ToM_TeaSplashSplash",
+					"ToM_TeaSplash",
 					xofs: frandom[wsplash](-12,12),
 					yofs: frandom[wsplash](-12,12),
 					zofs: frandom[wsplash](-4,12),
@@ -325,7 +398,7 @@ class ToM_TeaProjectile : ToM_Projectile
 	}
 }
 
-class ToM_TeaSplashSplash : ToM_SmallDebris
+class ToM_TeaSplash : ToM_SmallDebris
 {
 	double wscale;
 	
@@ -354,6 +427,8 @@ class ToM_TeaSplashSplash : ToM_SmallDebris
 		if (isFrozen())
 			return;
 		super.Tick();
+		if (waterlevel > 0)
+			vel.xy *= 0.9;
 		scale *= (1 + wscale);
 		wscale *= 0.97;
 		roll += wrot;
@@ -387,7 +462,7 @@ class ToM_TeaPool : ToM_SmallDebris
 	{
 		super.PostBeginPlay();
 		wscale = 0.05;
-		SetZ(Floorz + 0.1);
+		AlignToPlane(self);
 	}
 	
 	States

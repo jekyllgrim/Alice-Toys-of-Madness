@@ -1,4 +1,5 @@
 Gameinfo
 {
 	PlayerClasses = "ToM_AlicePlayer"
+	AddEventhandlers = "ToM_Mainhandler"
 }

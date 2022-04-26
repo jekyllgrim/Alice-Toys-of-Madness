@@ -1,3 +1,13 @@
+Model "ToM_LaserBeam"
+{
+	Path "Models/GZBeam"
+	Model 0 "beam.md3"
+	Skin 0 "beam.png"
+	USEACTORPITCH
+	
+	FrameIndex MODL A 0 0
+}
+
 Model ToM_KnifeProjectileModel 
 {
 	path "Models/Knife"

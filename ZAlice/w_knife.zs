@@ -281,7 +281,7 @@ class ToM_Knife : ToM_BaseWeapon
 	RestoreKnife:
 		TNT1 A 1 
 		{
-			A_SpawnPSParticle("RestoreKnifeParticle", thickness: 4, xofs: 80, yofs: 80);
+			A_SpawnPSParticle("RestoreKnifeParticle", density: 4, xofs: 80, yofs: 80);
 			
 			if (invoker.knifeReload <= KNIFE_PARTIAL_RELOAD_TIME)
 			{

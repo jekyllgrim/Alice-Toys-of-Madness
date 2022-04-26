@@ -236,39 +236,38 @@ Class ToM_BaseActor : Actor abstract
 	};
 	
 	//water check by Boondorl
-	double GetWaterTop()
-	
-{
+	double GetWaterTop()	
+	{
 		if (CurSector.MoreFlags & Sector.SECMF_UNDERWATER)
 			return CurSector.ceilingPlane.ZAtPoint(pos.xy);
 		else
 		
-	{
+		{
 			let hsec = CurSector.GetHeightSec();
 			if (hsec)
 			
-		{
+			{
 				double top = hsec.floorPlane.ZAtPoint(pos.xy);
 				if ((hsec.MoreFlags & Sector.SECMF_UNDERWATERMASK)
 					&& (pos.z < top
 					|| (!(hsec.MoreFlags & Sector.SECMF_FAKEFLOORONLY) && pos.z > hsec.ceilingPlane.ZAtPoint(pos.xy))))
 				
-			{
+				{
 					return top;
 				}
 			}
 			else
 			
-		{
+			{
 				for (uint i = 0; i < CurSector.Get3DFloorCount(); ++i)
 				
-			{
+				{
 					let ffloor = CurSector.Get3DFloor(i);
 					if (!(ffloor.flags & F3DFloor.FF_EXISTS)
 						|| (ffloor.flags & F3DFloor.FF_SOLID)
 						|| !(ffloor.flags & F3DFloor.FF_SWIMMABLE))
 					
-				{
+					{
 						continue;
 					}
 						

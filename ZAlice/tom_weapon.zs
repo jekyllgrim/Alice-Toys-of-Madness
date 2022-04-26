@@ -4,9 +4,11 @@ class ToM_BaseWeapon : Weapon abstract
 	
 	double PSpriteStartX[200];
 	double PSpriteStartY[200];
+	protected vector2 targOfs; //used by DampedRandomOffset
+	protected vector2 shiftOfs; //used by DampedRandomOffset
+	protected int idleCounter; //used by idle animations 
+	protected int particleLayer; //used by multi-layer particle effects
 	
-	protected int idleCounter;
-	int particleLayer;
 	
 	protected state s_fire;
 	protected state s_hold;
@@ -26,12 +28,67 @@ class ToM_BaseWeapon : Weapon abstract
 		APSP_TopParticle = 300,
 	}
 	
+	enum PABCheck
+	{
+		PAB_ANY,		//don't check if the button is held down
+		PAB_HELD,		//check if the button is held down
+		PAB_NOTHELD,	//check if the button is NOT held down
+		PAB_HELDONLY	//check ONLY if the button is held down and ignore if it's pressed now
+	}
+	
 	Default 
 	{
 		weapon.BobStyle "InverseSmooth";
 		weapon.BobRangeX 0.32;
 		weapon.BobRangeY 0.17;
 		weapon.BobSpeed 1.85;
+	}
+
+	//A variation on GetPlayerInput that incorporates the switching primary/secondary attack feature:
+	action bool PressingAttackButton(bool secondary = false, int holdCheck = PAB_ANY) 
+	{
+		if (!player)
+			return false;
+		//get the button:
+		int button = secondary ? BT_ALTATTACK : BT_ATTACK;
+		
+		bool pressed = (player.cmd.buttons & button); //check if pressed now 
+		bool held = (player.oldbuttons & button); //check if it was held from previous tic
+		
+		switch (holdCheck) 
+		{
+		case PAB_HELDONLY:			//true if held and not pressed
+			return held;
+			break;
+		case PAB_NOTHELD:				//true if not held, only pressed
+			return !held && pressed;
+			break;
+		case PAB_HELD:					//true if held and pressed
+			return held && pressed;
+			break;
+		}
+		return pressed;				//true if pressed, ignore held check
+	}
+	
+	/*	This function staggers an overlay offset change over a few tics, so that
+		I can randomize layer offsets but make it smoother than if it were called
+		every tic.
+	*/
+	action void A_DampedRandomOffset(double rangeX, double rangeY, double rate = 1) 
+	{
+		if (!player)
+			return;
+		let psp = Player.FindPSprite(PSP_WEAPON);
+		if (!psp)
+			return;
+		if (abs(psp.x) >= abs(invoker.targOfs.x) || abs(psp.y) >= abs(invoker.targOfs.y)) 
+		{
+			invoker.targOfs = (frandom[sfx](0,rangeX),frandom[sfx](0,rangeY)+WEAPONTOP);
+			vector2 shift = (rangeX * rate, rangeY * rate);
+			shift = (shift.x == 0 ? 1 : shift.x, shift.y == 0 ? 1 : shift.y);
+			invoker.shiftOfs = ((invoker.targOfs.x - psp.x) / shift.x, (invoker.targOfs.y - psp.y) / shift.y);
+		}
+		A_WeaponOffset(invoker.shiftOfs.x, invoker.shiftOfs.y, WOF_ADD);
 	}
 	
 	action void A_DoIdleAnimation(int frequency = 1, int chance = 0)
@@ -61,16 +118,28 @@ class ToM_BaseWeapon : Weapon abstract
 	action void A_ResetPSprite(int layer = -1, int staggertics = 1)
 	{
 		if (!player)
+		{
+			if (ToM_debugmessages)
+				console.printf("Error: Tried calling A_ResetPSprite on invalid player");
 			return;
+		}
 		let psp = player.FindPSprite(layer == -1 ? OverlayID() : layer);
 		if (!psp)
+		{
+			if (ToM_debugmessages)
+				console.printf("Error: PSprite %d doesn't exist", layer);
 			return;
+		}
 		vector2 targetofs = (0, layer == PSP_WEAPON ? WEAPONTOP : 0);
 		if (staggertics > 1)
 		{
 			int id = layer + 100;
 			if (id < 0 || id >= invoker.PSpriteStartX.Size() || id >= invoker.PSpriteStartX.Size())
-				return;			
+			{
+				if (ToM_debugmessages)
+					console.printf("Error: PSprite index %d is out of PSpriteStart offset bounds", id);
+				return;
+			}
 			vector2 ofs = ( invoker.PSpriteStartX[id] == 0 ? psp.x : invoker.PSpriteStartX[id], invoker.PSpriteStartY[id] == 0 ? psp.y : invoker.PSpriteStartY[id]);
 			//vector2 sc = psp.scale;
 			//double ang = psp.rotation;
@@ -91,9 +160,13 @@ class ToM_BaseWeapon : Weapon abstract
 		A_OverlayOffset(layer, targetOfs.x, targetOfs.y, WOF_INTERPOLATE);
 		A_OverlayRotate(layer, 0, WOF_INTERPOLATE);
 		A_OverlayScale(layer, 1, 1, WOF_INTERPOLATE);
+		if (ToM_debugmessages)
+		{
+			console.printf("PSprite offset: %.1f:%.1f | PSprite scale: %.1f:%.1f", psp.x, psp.y, psp.scale.x, psp.scale.y);
+		}
 	}
 	
-	action void A_SpawnPSParticle(stateLabel statename, bool bottom = false, int thickness = 1, double xofs = 0, double yofs = 0, int chance = 100)
+	action void A_SpawnPSParticle(stateLabel statename, bool bottom = false, int density = 1, double xofs = 0, double yofs = 0, int chance = 100)
 	{
 		if (random[pspart](0, 100) > chance)
 			return;
@@ -101,7 +174,7 @@ class ToM_BaseWeapon : Weapon abstract
 		if (!tstate)
 			return;
 		int startlayer = bottom ? APSP_BottomParticle : APSP_TopParticle;
-		for (int i = 0; i < thickness; i++) 
+		for (int i = 0; i < density; i++) 
 		{
 			int layer = startlayer+invoker.particleLayer;
 			player.SetPSprite(layer, tstate);

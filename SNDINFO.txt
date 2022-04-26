@@ -69,6 +69,7 @@ teacharge2 "sounds/teapot/teacannon_charge_a02.ogg"
 
 weapons/teapot/heatloop "sounds/teapot/teacannon_charged_loop.ogg"
 weapons/teapot/highheat "sounds/teapot/para.wav"
+weapons/teapot/close "sounds/teapot/metal_lid_close.mp3"
 
 $random weapons/teapot/explode { teaboom1 teaboom2 }
 teaboom1 "sounds/teapot/teacannon_explode01.ogg"
@@ -79,3 +80,13 @@ weapons/teapot/firecharged "sounds/teapot/teacannon_fire_charged01.ogg"
 $random weapons/teapot/fire { teafire1 teafire2 }
 teafire1 "sounds/teapot/teacannon_fire01.ogg"
 teafire2 "sounds/teapot/teacannon_fire02.ogg"
+
+// EYE STAFF
+
+weapons/eyestaff/beam			"sounds/Eyestaff/beam_loop.wav"
+weapons/eyestaff/charge1		"sounds/Eyestaff/charge1.wav"
+weapons/eyestaff/charge2		"sounds/Eyestaff/charge2.wav"
+weapons/eyestaff/chargeoff	"sounds/Eyestaff/charge_off.wav"
+weapons/eyestaff/boom1			"sounds/Eyestaff/explode1.wav"
+weapons/eyestaff/boom2			"sounds/Eyestaff/explode2.wav"
+weapons/eyestaff/fireProjectile "sounds/Eyestaff/liftoff.wav"

@@ -583,3 +583,59 @@ Class ToM_StakeProjectile : ToM_Projectile
 		}
 	}
 }
+
+
+class ToM_CrosshairSpawner : ToM_InventoryToken
+{
+	protected vector3 aimPos;
+	protected PlayerPawn ppawn;
+	
+	vector3 GetAimPos()
+	{
+		return aimPos;
+	}
+	
+	override void DoEffect()
+	{
+		super.DoEffect();
+		if (!owner || !owner.player || owner.player != players[consoleplayer] || !owner.player.readyweapon || owner.health <= 0)
+			return;
+				
+		if (!ppawn) ppawn = PlayerPawn(owner);
+		
+		FLineTracedata tr;
+		owner.LineTrace(owner.angle, 2048, owner.pitch, TRF_SOLIDACTORS, owner.height * 0.5 - owner.floorclip + ppawn.AttackZOffset*ppawn.player.crouchFactor, data: tr);
+		aimPos = tr.hitLocation;
+		SpawnCrosshair();
+	}
+	
+	void SpawnCrosshair()
+	{
+		Spawn("ToM_CrosshairSpot", aimPos);
+	}
+}
+
+
+class ToM_CrosshairSpot : ToM_BaseDebris
+{
+	Default
+	{
+		+NOINTERACTION
+		+NOBLOCKMAP
+		+BRIGHT
+		+FORCEXYBILLBOARD
+		scale 0.26;
+		+NOTIMEFREEZE
+		radius 2;
+		height 2;
+		renderstyle "Add";
+	}
+	
+	States
+	{
+	Spawn:
+		AMCR X 1 A_FadeOut(0.1);
+		loop;
+	}
+}
+	

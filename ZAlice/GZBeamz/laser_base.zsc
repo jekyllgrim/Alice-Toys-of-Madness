@@ -1,4 +1,3 @@
-
 class ToM_LaserBeam : Actor
 {
 	Color shade;
@@ -7,8 +6,10 @@ class ToM_LaserBeam : Actor
 	int ontics;
 	bool enabled;
 	Actor source;
+	vector3 curPos;
 	vector3 offsets;
 	vector2 angleOffsets;
+	vector3 curOffs;
 	transient FLineTraceData hitData;
 	
 	bool trackingPos;
@@ -28,6 +29,7 @@ class ToM_LaserBeam : Actor
 	{
 		Scale 1.0;
 		+NOINTERACTION;
+		+NOBLOCKMAP
 		+INTERPOLATEANGLES;
 		RenderStyle "AddShaded";
 		
@@ -62,8 +64,24 @@ class ToM_LaserBeam : Actor
 		targetPos = toPos;
 	}
 	
+	void aimAtCrosshair()
+	{
+		double zoffs = source.height*0.5;
+		if(source.player) zoffs = source.player.viewz - source.pos.z;
+	
+		FLineTraceData lt;
+		source.LineTrace(source.angle, maxDist, source.pitch, offsetz:zoffs, offsetforward:source.radius, data:lt);
+		if(lt.HitType != TRACE_HitNone) 
+		{
+			vector3 aimAngles = level.SphericalCoords(curPos, lt.HitLocation, (source.angle,source.pitch));
+			angleOffsets.x = aimAngles.x;
+			angleOffsets.y = aimAngles.y;
+		}
+	}
+	
 	void stopTracking()
 	{
+		if(trackingPos) ontics = 0;
 		trackingPos = false;
 	}
 	
@@ -85,10 +103,15 @@ class ToM_LaserBeam : Actor
 		// Implement custom laser logic here.
 	}
 	
+	virtual void OnImpact(vector3 hitPos, Actor hitActor)
+	{
+		// On impact with something
+	}
+	
 	override void Tick()
 	{
 		if(isFrozen()) return;
-		if(!enabled) 
+		if(!enabled || !source) 
 		{
 			ontics = 0;
 			bInvisible = true;
@@ -97,41 +120,34 @@ class ToM_LaserBeam : Actor
 		ontics++;
 		bInvisible = ontics < 3;
 		if(shade) SetShade(shade);
+		
+		if(ontics == 2)
+		{
+			OnImpact(hitData.hitLocation, hitdata.hitActor);
+		}
 				
 		// PSprite tracking?
 		vector2 bob = (0,0);
-		if(trackPSprite)
+		if(trackPSprite && PlayerPawn(source))
 		{
 			let psp = source.player.GetPSprite(trackPSLayer);
 			bob = PlayerPawn(source).BobWeapon(1.0);
 			
-			bob.x *= 0.031;
-			bob.y *= 0.035;
 			bob.x += psp.x;
 			bob.y += (psp.y - 32);
+			bob.x *= 0.031;
+			bob.y *= 0.035;
 		}
 		
 		// Update laser and tracking.
-		vector3 offsPos = ToM_BeamzMath.offsetToGlobal(
+		curOffs = ToM_BeamzMath.offsetToGlobal(
 			source.angle, source.pitch, source.roll,
 			offsets.x, offsets.y + bob.x, offsets.z - bob.y
 		);
-		vector3 finalPos = level.vec3offset(getSourcePos(), offsPos);
-		SetOrigin(finalPos, true);
 		
-		if(trackingPos)
-		{
-			vector3 diff = level.vec3diff(finalPos, targetPos);
-			vector3 dir = diff.Unit();
-			
-			scale.y = diff.Length() * level.pixelstretch;
-			
-			double toAngle = atan2(dir.y, dir.x) + 180; 
-			double toPitch = asin(dir.z);
-			A_SetAngle(toAngle, SPF_INTERPOLATE);
-			A_SetPitch(toPitch - 90, SPF_INTERPOLATE);
-			return;
-		}
+		vector3 finalPos = level.vec3offset(getSourcePos(), curOffs);
+		SetOrigin(finalPos, true);
+		curPos = finalPos;
 		
 		double toAngle = source.angle + angleOffsets.x;
 		double toPitch = source.pitch + angleOffsets.y;
@@ -139,34 +155,43 @@ class ToM_LaserBeam : Actor
 		{
 			toAngle -= (bob.x * 10);
 			toPitch += (bob.y * 10);  
-		}		
+		}	
 		
-		// Update angles
-		if(followAngles)
+		// Track target and source's angles.
+		if(trackingPos)
 		{
-			// Credits: This interpolation magic was gleaned from Kodi's KLazer library
-			// code available in PainSlayer 
-			// (https://github.com/jekyllgrim/Painslayer/blob/master/ZPainkiller/klazer/KLAZ_Beam.zsc#L114)
-				
-			// First, track angles like normal.
+			vector3 diff = level.vec3diff(finalPos, targetPos);
+			vector3 dir = diff.Unit();
+			
+			toAngle = angleOffsets.x + atan2(dir.y, dir.x) + 180; 
+			toPitch = angleOffsets.y + asin(dir.z);
+			A_SetAngle(toAngle, SPF_INTERPOLATE);
+			A_SetPitch(toPitch - 90, SPF_INTERPOLATE);		
+		} 
+		else if(followAngles)
+		{
 			A_SetAngle(toAngle, SPF_INTERPOLATE);
 			A_SetPitch(toPitch+90, SPF_INTERPOLATE);
-		
-			// Odd interpolation magic.
-			double prevAngle = source.angle;
-			source.A_SetAngle(source.angle + 0.001, SPF_INTERPOLATE);
-			source.A_SetAngle(prevAngle, SPF_INTERPOLATE);
 		}
 		
-		// Do linetrace to determine out aim distance.
+		// Credits: This interpolation magic was gleaned from Kodi's KLazer library
+		// code available in PainSlayer 
+		// (https://github.com/jekyllgrim/Painslayer/blob/master/ZPainkiller/klazer/KLAZ_Beam.zsc#L114)
+		
+		// Odd interpolation magic.
+		double prevAngle = source.angle;
+		source.A_SetAngle(source.angle + 0.001, SPF_INTERPOLATE);
+		source.A_SetAngle(prevAngle, SPF_INTERPOLATE);
+		
+		// Do linetrace to determine aim distance.
 		double zoffs = source.player ? (source.player.viewz-source.pos.z) : source.height * 0.5;
 		source.LineTrace(angle, maxDist, pitch - 90, 0, zoffs+offsets.z-bob.y, offsets.x, offsets.y-bob.x, data:hitData);
 		
+		// Scale to Distance.
 		double dist = min(hitData.Distance, maxDist);
 		double dirPitch = pitch - 90;
-		vector3 dir = ToM_BeamzMath.GetAxes(angle, pitch - 90, roll);
 		scale.y = dist * level.pixelstretch;
-		
+					
 		BeamTick();
 	}
 	

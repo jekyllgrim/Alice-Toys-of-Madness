@@ -397,6 +397,9 @@ Class ToM_BaseDebris : ToM_BaseActor abstract
 		+FORCEXYBILLBOARD
 		+INTERPOLATEANGLES
 		-ALLOWPARTICLES
+		+SYNCHRONIZED
+		+DONTBLAST
+		FloatBobPhase 0;
 		renderstyle 'Translucent';
 		alpha 1.0;
 		radius 1;
@@ -480,9 +483,6 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 		bouncecount 8;
 		+MOVEWITHSECTOR
 		-NOBLOCKMAP
-		+SYNCHRONIZED
-		+DONTBLAST
-		FloatBobPhase 0;
 	}
 	
 	override void BeginPlay() 
@@ -1127,6 +1127,7 @@ Class ToM_DebugSpot : Actor {
 	Default 
 	{
 		+NOINTERACTION
+		+NOBLOCKMAP
 		+SYNCHRONIZED
 		+DONTBLAST
 		+BRIGHT

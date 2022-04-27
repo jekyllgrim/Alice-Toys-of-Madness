@@ -11,5 +11,5 @@ version "4.7.1"
 #include "ZAlice/w_teapot.zs"
 #include "ZAlice/w_eyestaff.zs"
 
-#include "ZAlice/GZBeam/laser_math.zsc"
-#include "ZAlice/GZBeam/laser_base.zsc"
+#include "ZAlice/GZBeamz/laser_math.zsc"
+#include "ZAlice/GZBeamz/laser_base.zsc"

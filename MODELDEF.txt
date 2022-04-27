@@ -8,6 +8,26 @@ Model "ToM_LaserBeam"
 	FrameIndex MODL A 0 0
 }
 
+Model "ToM_EyestaffBeam1"
+{
+	Path "Models/GZBeam"
+	Model 0 "beam.md3"
+	Skin 0 "beam.png"
+	USEACTORPITCH
+	
+	FrameIndex MODL A 0 0
+}
+
+Model "ToM_EyestaffBeam2"
+{
+	Path "Models/GZBeam"
+	Model 0 "beam.md3"
+	Skin 0 "beam.png"
+	USEACTORPITCH
+	
+	FrameIndex MODL A 0 0
+}
+
 Model ToM_KnifeProjectileModel 
 {
 	path "Models/Knife"

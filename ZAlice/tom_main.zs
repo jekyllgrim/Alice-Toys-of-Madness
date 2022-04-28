@@ -336,6 +336,37 @@ Class ToM_BaseActor : Actor abstract
 			a.pitch += 180;
 			a.roll *= -1;
 		}
+	}	
+	
+	static vector3 GetRelativePosition(actor mo, vector3 offset)
+	{
+		if (!mo)
+			return (0,0,0);
+		let cosang     = cos(mo.angle);
+		let cosvang    = cos(mo.pitch);
+		let cosrang    = cos(mo.roll);
+		let sinang     = sin(mo.angle);
+		let sinvang    = sin(-mo.pitch);
+		let sinrang    = sin(-mo.roll);
+
+		let up_no_roll = (
+		-   sinvang * cosang,
+		-   sinvang * sinang,
+			cosvang);
+		let left_no_roll = (
+		-   sinang,
+			cosang,
+			0);
+
+		// Now use these three:
+		let forw = (
+			cosvang * cosang,
+			cosvang * sinang,
+			sinvang);
+		let left    = cosrang * left_no_roll - sinrang * up_no_roll;
+		let up      = cosrang * up_no_roll + sinrang * left_no_roll;
+
+		return(mo.pos + forw * offset.x + left * offset.y + up * offset.z);
 	}
 	
 	override void BeginPlay() 

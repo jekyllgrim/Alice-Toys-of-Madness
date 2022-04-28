@@ -24,7 +24,6 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	{
 		if (invoker.atkzoom > 0)
 		{
-			console.printf("atkzoom: %f", invoker.atkzoom);
 			invoker.atkzoom -= mod;
 			A_ZoomFactor(1 - invoker.atkzoom,ZOOM_NOSCALETURNING);
 		}
@@ -36,11 +35,11 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			return;
 		if (!invoker.beam1)
 		{
-			invoker.beam1 = ToM_LaserBeam.Create(self, 5, 3.2, -2.6, type: "ToM_EyestaffBeam1");
+			invoker.beam1 = ToM_LaserBeam.Create(self, 7, 3.2, -2.8, type: "ToM_EyestaffBeam1");
 		}
 		if (!invoker.beam2)
 		{
-			invoker.beam2 = ToM_LaserBeam.Create(self, 5, 3.2, -2.6, type: "ToM_EyestaffBeam2");
+			invoker.beam2 = ToM_LaserBeam.Create(self, 7, 3.2, -2.6, type: "ToM_EyestaffBeam2");
 		}
 		if (invoker.beam1)
 		{
@@ -129,6 +128,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			}
 			if (PressingAttackButton(holdCheck:PAB_HELD))
 			{
+				A_SpawnPSParticle("ChargeParticle", bottom: true, density: 4, xofs: 120, yofs: 120);
 				invoker.charge++;
 				A_DampedRandomOffset(2, 2, 1.2);
 				invoker.atkzoom += 0.001;
@@ -154,7 +154,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			double sc = frandom[eye](0, 0.04);
 			A_OverlayScale(OverlayID(), 1 + sc, 1 + sc, WOF_INTERPOLATE);
 			//A_OverlayScale(PSP_Flash, 1 + sc, 1 + sc, WOF_INTERPOLATE);
-			A_ZoomFactor(1 - invoker.atkzoom + frandom[eye](-0.005,0.005),ZOOM_NOSCALETURNING);
+			A_ZoomFactor(1 - invoker.atkzoom + frandom[eye](-0.002,0.002),ZOOM_NOSCALETURNING);
 			//A_RailAttack(1, 5, color1: "", color2: "CC00FF", flags: RGF_SILENT|RGF_NOPIERCING);
 			A_FireBeam();
 			A_FireBullets(0, 0, 1, 3, pufftype: "ToM_EyeStaffPuff");
@@ -169,12 +169,29 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	BeamFlash:
 		JEYC F 2 bright;
 		stop;
+	ChargeParticle:
+		JEYC P 0 {
+			A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);
+			A_OverlayFlags(OverlayID(),PSPF_RENDERSTYLE|PSPF_FORCEALPHA,true);
+			A_OverlayRenderstyle(OverlayID(),Style_Add);
+			A_OverlayAlpha(OverlayID(),0);
+			A_OverlayScale(OverlayID(),0.5,0.5);
+		}
+		#### ############## 1 bright {
+			A_OverlayScale(OverlayID(),0.05,0.05,WOF_ADD);
+			let psp = player.FindPSprite(OverlayID());
+			if (psp) {
+				psp.alpha = Clamp(psp.alpha + 0.05, 0, 0.5);
+				A_OverlayOffset(OverlayID(),psp.x * 0.85, psp.y * 0.85, WOF_INTERPOLATE);
+			}
+		}
+		stop;
 	FireEnd:
 		TNT1 A 0 
 		{
 			A_StopBeam();
 			A_StopSound(CHAN_WEAPON);
-			let proj = A_FireProjectile("Rocket");
+			let proj = A_FireProjectile("ToM_EyeStaffProjectile");
 			if (proj)
 				proj.A_StartSound("weapons/eyestaff/fireProjectile");
 		}
@@ -235,7 +252,7 @@ class ToM_EyestaffBeam2 : ToM_EyestaffBeam1
 {
 	Default
 	{
-		ToM_LaserBeam.LaserColor "ffff30";
+		ToM_LaserBeam.LaserColor "ffee00";
 		xscale 2;
 	}
 	
@@ -245,4 +262,62 @@ class ToM_EyestaffBeam2 : ToM_EyestaffBeam1
 		alphadir = 0.05;
 		alpha = 0.5;
 	}
+}
+
+class ToM_EyeStaffProjectile : ToM_Projectile
+{
+	Default
+	{
+		ToM_Projectile.flarecolor "c334eb";
+		+FORCEXYBILLBOARD
+		+NOGRAVITY
+		+BRIGHT
+		deathsound "weapons/eyestaff/boom1";
+		translation "0:255=%[0.69,0.00,0.77]:[1.87,0.75,2.00]";
+		height 8;
+		radius 10;
+		speed 22;		
+		damage (40);
+		Renderstyle 'Add';
+		alpha 0.8;
+	}		
+	
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		A_FaceMovementDirection();
+	}
+	
+	override void Tick()
+	{
+		super.Tick();
+		if (isFrozen())
+			return;
+		roll += 8;
+		vector3 projpos = GetRelativePosition(self, (0, -16, 0));
+		Spawn("ToM_EStrail", projpos);
+		projpos = GetRelativePosition(self, (0, 16, 0));
+		Spawn("ToM_EStrail", projpos);
+	}
+	
+	States
+	{
+	Spawn:
+		BAL2 AB 4;
+		loop;
+	Death:
+		BAL2 CDE 3;
+		stop;
+	}
+}
+
+class ToM_EStrail : ToM_BaseFlare
+{
+	Default
+	{
+		ToM_BaseFlare.fcolor "c334eb";
+		ToM_BaseFlare.fadefactor 0.05;
+		alpha 1;
+		scale 0.06;
+	}	
 }

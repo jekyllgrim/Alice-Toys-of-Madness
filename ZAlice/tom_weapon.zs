@@ -178,7 +178,7 @@ class ToM_BaseWeapon : Weapon abstract
 		{
 			int layer = startlayer+invoker.particleLayer;
 			player.SetPSprite(layer, tstate);
-			A_OverlayOffset(layer,frandom[pspart](-xofs,xofs),frandom[pspart](-yofs, yofs));
+			A_OverlayOffset(layer,frandom[pspart](-xofs,xofs),frandom[pspart](-yofs, yofs), WOF_ADD);
 			invoker.particleLayer++;
 			if (invoker.particleLayer >= 50)
 				invoker.particleLayer = 0;

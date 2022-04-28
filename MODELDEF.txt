@@ -11,8 +11,8 @@ Model "ToM_LaserBeam"
 Model "ToM_EyestaffBeam1"
 {
 	Path "Models/GZBeam"
-	Model 0 "beam.md3"
-	Skin 0 "beam.png"
+	Model 0 "beam_cyl.md3"
+	Skin 0 "beam_cyl.png"
 	USEACTORPITCH
 	
 	FrameIndex MODL A 0 0
@@ -21,8 +21,8 @@ Model "ToM_EyestaffBeam1"
 Model "ToM_EyestaffBeam2"
 {
 	Path "Models/GZBeam"
-	Model 0 "beam.md3"
-	Skin 0 "beam.png"
+	Model 0 "beam_cyl.md3"
+	Skin 0 "beam_cyl.png"
 	USEACTORPITCH
 	
 	FrameIndex MODL A 0 0

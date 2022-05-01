@@ -151,13 +151,13 @@ class ToM_Cards : ToM_BaseWeapon
 		TNT1 A 0 A_ResetPSprite(OverlayID());
 		PDEK ABC 1 A_WeaponOffset(6, -2, WOF_ADD);
 		TNT1 A 0 A_FireCard(4, 3.2);
-		PDEK EEEEE 1 A_WeaponOffset(3, -1, WOF_ADD);
+		PDEK EEEE 1 A_WeaponOffset(3, -1, WOF_ADD);
 		TNT1 A 0 PickACard();
 		PDEK FFGGDBB 1 A_WeaponOffset(-3.83, 1, WOF_ADD);
 		PDEK BBAAA 1 
 		{
 			A_ReFire();
-			A_WeaponOffset(-2.6, 1, WOF_ADD);
+			A_ResetPSprite(staggertics: 5);
 		}
 		goto ready;
 	AltFire:

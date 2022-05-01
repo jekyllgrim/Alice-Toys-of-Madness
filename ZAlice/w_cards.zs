@@ -123,11 +123,7 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 		goto Ready;
 	Deselect:
-		TNT1 A 0 
-		{
-			A_OverlayPivot(OverlayID(), 1, 1);	
-			let psp = player.FindPSprite(PSP_Weapon);
-		}
+		TNT1 A 0 A_OverlayPivot(OverlayID(), 1, 1);
 		PDEK AAAAAA 1
 		{
 			A_WeaponOffset(-4, 9, WOF_ADD);

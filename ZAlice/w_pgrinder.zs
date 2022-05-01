@@ -26,13 +26,13 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	Select:
 		PPGR Y 0 
 		{
-			A_WeaponOffset(-24, 86);
+			A_WeaponOffset(-24, 90+WEAPONTOP);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
 			A_OverlayRotate(OverlayID(), 30);
 		}
 		#### ###### 1
 		{
-			A_WeaponOffset(4, -9, WOF_ADD);
+			A_WeaponOffset(4, -15, WOF_ADD);
 			A_OverlayRotate(OverlayID(), -5, WOF_ADD);
 			A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
 		}
@@ -46,7 +46,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		#### ###### 1
 		{
 			A_ResetZoom();
-			A_WeaponOffset(-4, 9, WOF_ADD);
+			A_WeaponOffset(-4, 15, WOF_ADD);
 			A_OverlayRotate(OverlayID(), 5, WOF_ADD);
 		}
 		TNT1 A 0 A_Lower;

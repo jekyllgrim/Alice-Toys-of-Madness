@@ -4,7 +4,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	private ToM_LaserBeam beam1;	
 	private ToM_LaserBeam beam2;	
 	
-	const ES_FULLCHARGE = 70;
+	const ES_FULLCHARGE = 42;
 	
 	Default
 	{
@@ -53,6 +53,14 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 	}
 	
+	action void A_EyeStaffFlash()
+	{
+		A_Overlay(PSP_Flash, "BeamFlash");
+		A_OverlayFlags(PSP_Flash, PSPF_Renderstyle|PSPF_ForceAlpha, true);
+		A_OverlayRenderstyle(PSP_Flash, Style_Add);
+		A_OverlayAlpha(PSP_Flash, frandom[eye](0.3, 1));
+	}
+	
 	/*override void DoEffect()
 	{
 		super.DoEffect();
@@ -80,11 +88,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 		goto Ready;
 	Deselect:
-		TNT1 A 0
-		{
-			A_ZoomFactor(1,ZOOM_NOSCALETURNING);
-			A_StopSound(CHAN_WEAPON);
-		}
+		TNT1 A 0 A_StopSound(CHAN_WEAPON);
 		JEYC CCBBAA 1
 		{
 			A_ResetZoom();
@@ -132,25 +136,17 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	FireBeam:
 		JEYC C 2
 		{
-			A_Overlay(PSP_Flash, "BeamFlash");
-			A_OverlayFlags(PSP_Flash, PSPF_Renderstyle|PSPF_ForceAlpha, true);
-			A_OverlayRenderstyle(PSP_Flash, Style_Add);
-			A_OverlayAlpha(PSP_Flash, frandom[eye](0.3, 1));
-			A_OverlayPivot(OverlayID(),0.1, 0.1);
-			A_OverlayPivot(PSP_Flash,0.2, 0.2);
+			A_EyeStaffFlash();
 			A_StartSound("weapons/eyestaff/beam", CHAN_WEAPON, CHANF_LOOPING);
-			//A_DampedRandomOffset(3,3, 2);
+			A_DampedRandomOffset(3,3, 2);
+			/*A_OverlayPivot(OverlayID(),0, 0);
+			A_OverlayPivot(PSP_Flash, 0, 0);
 			double sc = frandom[eye](0, 0.04);
 			A_OverlayScale(OverlayID(), 1 + sc, 1 + sc, WOF_INTERPOLATE);
 			A_OverlayScale(PSP_Flash, 1 + sc, 1 + sc, WOF_INTERPOLATE);
-			A_AttackZoom(0.001, 0.05, 0.002);
+			A_AttackZoom(0.001, 0.05, 0.002);*/
 			A_FireBeam();
 			A_FireBullets(0, 0, 1, 3, pufftype: "ToM_EyeStaffPuff");
-			/*let psp = player.FindPSprite(OverlayID());
-			if (psp)
-			{
-				psp.frame = random[eye](0, 2);
-			}*/
 		}
 		TNT1 A 0 A_ReFire("FireBeam");
 		goto FireEnd;

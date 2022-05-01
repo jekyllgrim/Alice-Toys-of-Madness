@@ -2213,112 +2213,112 @@ Sprite "JEYCP0", 64, 64
 Sprite "PPGRA0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGRA", 0, 0
 }
 
 Sprite "PPGRB0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGRB", 0, 0
 }
 
 Sprite "PPGRC0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGRC", 0, 0
 }
 
 Sprite "PPGRD0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGRD", 0, 0
 }
 
 Sprite "PPGRE0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGRE", 0, 0
 }
 
 Sprite "PPGRF0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGRF", 0, 0
 }
 
 Sprite "PPGRG0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGRG", 0, 0
 }
 
 Sprite "PPGRH0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGRH", 0, 0
 }
 
 Sprite "PPGRI0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGRI", 0, 0
 }
 
 Sprite "PPGRJ0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGRJ", 0, 0
 }
 
 Sprite "PPGFA0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGFA", 0, 0
 }
 
 Sprite "PPGFB0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGFB", 0, 0
 }
 
 Sprite "PPGFC0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGFC", 0, 0
 }
 
 Sprite "PPGFZ0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGFZ", 0, 0
 }
 
 Sprite "PPGRZ0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGRZ", 0, 0
 }
 
 Sprite "PPGRY0", 511, 226
 {
 	YScale 1.200
-	Offset -43, 14
+	Offset -64, 14
 	Patch "PPGRY", 0, 0
 }
 

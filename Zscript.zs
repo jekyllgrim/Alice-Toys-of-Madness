@@ -8,6 +8,7 @@ version "4.7.1"
 #include "ZAlice/tom_weapon.zs"
 #include "ZAlice/w_knife.zs"
 #include "ZAlice/w_cards.zs"
+#include "ZAlice/w_pgrinder.zs"
 #include "ZAlice/w_teapot.zs"
 #include "ZAlice/w_eyestaff.zs"
 

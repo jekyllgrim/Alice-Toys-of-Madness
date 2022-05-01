@@ -61,6 +61,26 @@ $random weapons/cards/hitflesh { cardhitflesh1 cardhitflesh2 }
 cardhitflesh1 "sounds/cards/cards_hit_flesh1.wav"
 cardhitflesh2 "sounds/cards/cards_hit_flesh2.wav"
 
+// PEPPER GRINDER
+
+weapons/pgrinder/windup		"sounds/pgrinder/pepperg_windup.ogg"
+$random weapons/pgrinder/fire { grinderfire1 grinderfire2 grinderfire3 grinderfire4 grinderfire5 grinderfire6 }
+grinderfire1		"sounds/pgrinder/pepperg_fire01.ogg"
+grinderfire2		"sounds/pgrinder/pepperg_fire02.ogg"
+grinderfire3		"sounds/pgrinder/pepperg_fire03.ogg"
+grinderfire4		"sounds/pgrinder/pepperg_fire04.ogg"
+grinderfire5		"sounds/pgrinder/pepperg_fire05.ogg"
+grinderfire6		"sounds/pgrinder/pepperg_fire06.ogg"
+weapons/pgrinder/grindloop		"sounds/pgrinder/pepperg_grind.ogg"
+weapons/pgrinder/stop		"sounds/pgrinder/pepperg_off.ogg"
+$volume weapons/pgrinder/stop 0.6
+$random weapons/pgrinder/projdie { grinderproj1 grinderproj2 grinderproj3 grinderproj4 }
+$limit weapons/pgrinder/projdie 8
+grinderproj1		"sounds/pgrinder/pepperg_projectile01.ogg"
+grinderproj2		"sounds/pgrinder/pepperg_projectile02.ogg"
+grinderproj3		"sounds/pgrinder/pepperg_projectile03.ogg"
+grinderproj4		"sounds/pgrinder/pepperg_projectile04.ogg"
+
 // TEAPOT
 
 $random weapons/teapot/charge { teacharge1 teacharge2}

@@ -8,6 +8,7 @@ class ToM_BaseWeapon : Weapon abstract
 	protected vector2 shiftOfs; //used by DampedRandomOffset
 	protected int idleCounter; //used by idle animations 
 	protected int particleLayer; //used by multi-layer particle effects
+	protected double atkzoom;
 	
 	
 	protected state s_fire;
@@ -42,6 +43,26 @@ class ToM_BaseWeapon : Weapon abstract
 		weapon.BobRangeX 0.32;
 		weapon.BobRangeY 0.17;
 		weapon.BobSpeed 1.85;
+	}
+	
+	action void A_AttackZoom(double step = 0.001, double limit = 0.03, double jitter = 0.002)
+	{
+		if (invoker.atkzoom < limit)
+		{
+			invoker.atkzoom += step;
+			A_ZoomFactor(1 - invoker.atkzoom,ZOOM_NOSCALETURNING);
+		}
+		else
+			A_ZoomFactor(1 - invoker.atkzoom + frandom[atkzoom](-jitter, jitter),ZOOM_NOSCALETURNING);
+	}
+	
+	action void A_ResetZoom(double step = 0.005)
+	{
+		if (invoker.atkzoom > 0)
+		{
+			invoker.atkzoom -= step;
+			A_ZoomFactor(1 - invoker.atkzoom,ZOOM_NOSCALETURNING);
+		}
 	}
 
 	//A variation on GetPlayerInput that incorporates the switching primary/secondary attack feature:
@@ -89,6 +110,19 @@ class ToM_BaseWeapon : Weapon abstract
 			invoker.shiftOfs = ((invoker.targOfs.x - psp.x) / shift.x, (invoker.targOfs.y - psp.y) / shift.y);
 		}
 		A_WeaponOffset(invoker.shiftOfs.x, invoker.shiftOfs.y, WOF_ADD);
+	}
+	
+	action void A_PSPFadeOut(double factor)
+	{
+		if (!player)
+			return;
+		let psp = player.FindPSprite(OverlayID());
+		if (psp)
+		{
+			psp.alpha -= factor;
+			if (psp.alpha <= 0)
+				player.SetPSprite(OverlayID(), ResolveState("Null"));
+		}
 	}
 	
 	action void A_DoIdleAnimation(int frequency = 1, int chance = 0)

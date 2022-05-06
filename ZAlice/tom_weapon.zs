@@ -10,6 +10,13 @@ class ToM_BaseWeapon : Weapon abstract
 	protected int particleLayer; //used by multi-layer particle effects
 	protected double atkzoom;
 	
+	protected int swayTics;
+	protected double maxSwayTics; // starting point for the timer
+	protected double SwayAngle; // the target angle for the camera sway
+	protected double SwayPitch;
+	protected double currentAngleSway; // how much has the camera already been Sway?
+	protected double currentPitchSway;
+	protected transient CVar c_freelook;
 	
 	protected state s_fire;
 	protected state s_hold;
@@ -17,6 +24,11 @@ class ToM_BaseWeapon : Weapon abstract
 	protected state s_althold;
 	protected state s_idle;
 	
+	override void BeginPlay()
+	{
+		super.BeginPlay();
+		swayTics = -1;
+	}
 
 	enum ToM_PSprite_Layers
 	{
@@ -63,6 +75,40 @@ class ToM_BaseWeapon : Weapon abstract
 			invoker.atkzoom -= step;
 			A_ZoomFactor(1 - invoker.atkzoom,ZOOM_NOSCALETURNING);
 		}
+	}
+	
+	// Camera sway function by josh771
+	action void A_CameraSway(double aSway, double pSway, int tics) 
+	{
+		invoker.SwayTics = tics;
+		invoker.maxSwayTics = tics;
+		
+		invoker.SwayAngle = aSway;
+		//pitch Sway is ignored if freelook isn't in use:
+		invoker.SwayPitch = CheckFreeLook() ? pSway : 0;
+
+		invoker.currentAngleSway = 0.0;
+		invoker.currentPitchSway = 0.0;
+	}
+	
+	//check if freelook is in use
+	action bool CheckFreeLook() 
+	{
+		//double-check 'freelook' cvar was cached correctly
+		if (!invoker.c_freelook) 
+		{
+			invoker.c_freelook = CVar.GetCvar('freelook', player);
+		}
+		if (!invoker.c_freelook.GetBool())
+			return false;
+		//if singleplayer: return false if freelook is *disabled* OR if the player isn't *using* it
+		//if multiplayer: ignore player settings, since everyone should be on equal terms
+		if (!Level.IsFreelookAllowed() || (!multiplayer && !invoker.c_freelook)) 
+		{
+			//Console.Printf("Freelook allowed: %d | multiplayer: %d | Freelook in use: %d",Level.IsFreelookAllowed(),multiplayer,invoker.c_freelook);
+			return false;
+		}
+		return true;
 	}
 
 	//A variation on GetPlayerInput that incorporates the switching primary/secondary attack feature:
@@ -112,19 +158,6 @@ class ToM_BaseWeapon : Weapon abstract
 		A_WeaponOffset(invoker.shiftOfs.x, invoker.shiftOfs.y, WOF_ADD);
 	}
 	
-	action void A_PSPFadeOut(double factor)
-	{
-		if (!player)
-			return;
-		let psp = player.FindPSprite(OverlayID());
-		if (psp)
-		{
-			psp.alpha -= factor;
-			if (psp.alpha <= 0)
-				player.SetPSprite(OverlayID(), ResolveState("Null"));
-		}
-	}
-	
 	action void A_DoIdleAnimation(int frequency = 1, int chance = 0)
 	{
 		if (chance <= 0)
@@ -149,7 +182,7 @@ class ToM_BaseWeapon : Weapon abstract
 	// only a partial reset. This argument is meant to be used
 	// for a gradual reset, to be called over the matching number
 	// of frames.
-	action void A_ResetPSprite(int layer = -1, int staggertics = 1)
+	action void A_ResetPSprite(int layer = 0, int staggertics = 1)
 	{
 		if (!player)
 		{
@@ -157,14 +190,15 @@ class ToM_BaseWeapon : Weapon abstract
 				console.printf("Error: Tried calling A_ResetPSprite on invalid player");
 			return;
 		}
-		let psp = player.FindPSprite(layer == -1 ? OverlayID() : layer);
+		int tlayer = layer == 0 ? OverlayID() : layer;
+		let psp = player.FindPSprite(tlayer);
 		if (!psp)
 		{
 			if (ToM_debugmessages)
 				console.printf("Error: PSprite %d doesn't exist", layer);
 			return;
 		}
-		vector2 targetofs = (0, layer == PSP_WEAPON ? WEAPONTOP : 0);
+		vector2 targetofs = (0, tlayer == PSP_WEAPON ? WEAPONTOP : 0);
 		if (staggertics > 1)
 		{
 			int id = layer + 100;
@@ -191,13 +225,42 @@ class ToM_BaseWeapon : Weapon abstract
 			//A_OverlayScale(layer, -(sc.x - 1) / staggertics, -(sc.y - 1) / staggertics, WOF_ADD);
 			return;
 		}
-		A_OverlayOffset(layer, targetOfs.x, targetOfs.y, WOF_INTERPOLATE);
-		A_OverlayRotate(layer, 0, WOF_INTERPOLATE);
-		A_OverlayScale(layer, 1, 1, WOF_INTERPOLATE);
+		A_OverlayOffset(layer, targetOfs.x, targetOfs.y/*, WOF_INTERPOLATE*/);
+		A_OverlayRotate(layer, 0/*, WOF_INTERPOLATE*/);
+		A_OverlayScale(layer, 1, 1/*, WOF_INTERPOLATE*/);
 		if (ToM_debugmessages)
 		{
 			console.printf("PSprite offset: %.1f:%.1f | PSprite scale: %.1f:%.1f", psp.x, psp.y, psp.scale.x, psp.scale.y);
 		}
+	}
+	
+	/*
+		A version of A_OverlayRotate that allows additive rotation
+		without intepolation. Necessary because interpolation breaks 
+		when combined with animation. 
+		See stakegun primary fire for an example of use.
+	*/
+	action void A_RotatePSprite(int layer = 0, double degrees = 0, int flags = 0) 
+	{
+		let psp = player.FindPSprite(layer);
+		if (!psp)
+			return;
+		double targetAngle = degrees;
+		if (flags & WOF_ADD)
+			targetAngle += psp.rotation;
+		A_OverlayRotate(OverlayID(), targetAngle);
+	}
+	
+	// Same but for scale:
+	action void A_ScalePSprite(int layer = 0, double wx = 1, double wy = 1, int flags = 0) 
+	{
+		let psp = player.FindPsprite(OverlayID());
+		if (!psp)
+			return;
+		vector2 targetScale = (wx,wy);
+		if (flags & WOF_ADD)
+			targetScale += psp.scale;
+		A_OverlayScale(OverlayID(), targetScale.x, targetScale.y);
 	}
 	
 	action void A_SpawnPSParticle(stateLabel statename, bool bottom = false, int density = 1, double xofs = 0, double yofs = 0, int chance = 100)
@@ -219,6 +282,19 @@ class ToM_BaseWeapon : Weapon abstract
 		}
 	}
 	
+	action void A_PSPFadeOut(double factor)
+	{
+		if (!player)
+			return;
+		let psp = player.FindPSprite(OverlayID());
+		if (psp)
+		{
+			psp.alpha -= factor;
+			if (psp.alpha <= 0)
+				player.SetPSprite(OverlayID(), ResolveState("Null"));
+		}
+	}
+	
 	action actor A_FireArchingProjectile(class<Actor> missiletype, double angle = 0, bool useammo = true, double spawnofs_xy = 0, double spawnheight = 0, int flags = 0, double pitch = 0) 
 	{
 		if (!self || !self.player) 
@@ -237,6 +313,24 @@ class ToM_BaseWeapon : Weapon abstract
 		s_altfire = FindState("AltFire");
 		s_althold = FindState("AltHold");
 		s_idle = FindState("IdleAnim");
+	}
+	
+	override void DoEffect()
+	{
+		super.DoEffect();
+		if (SwayTics >= 0) 
+		{
+			double phase = (SwayTics / maxSwayTics) * 90.0;
+			double newAngleSway = (cos(phase) * SwayAngle);
+			double newPitchSway = (cos(phase) * SwayPitch);
+			double finalAngle = (owner.angle - currentAngleSway) + newAngleSway;
+			double finalPitch = (owner.pitch - currentPitchSway) + newPitchSway;
+			currentAngleSway = newAngleSway;
+			currentPitchSway = newPitchSway;
+			owner.A_SetAngle(finalAngle, SPF_INTERPOLATE);
+			owner.A_SetPitch(finalPitch, SPF_INTERPOLATE);
+			SwayTics--;
+		}
 	}
 }
 

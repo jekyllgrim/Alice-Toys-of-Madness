@@ -48,6 +48,38 @@ kthrowwall2	"sounds/knife/knife_phit_world2.wav"
 kthrowwall3	"sounds/knife/knife_phit_world3.wav"
 
 
+// HOBBY HORSE
+
+$random weapons/hhorse/swing { hhswing1 hhswing2 hhswing3 hhswing4}
+hhswing1 "sounds/hhorse/hobby_attack01_01.ogg"
+hhswing2 "sounds/hhorse/hobby_attack01_02.ogg"
+hhswing3 "sounds/hhorse/hobby_attack01_03.ogg"
+hhswing4 "sounds/hhorse/hobby_attack01_04.ogg"
+
+$random weapons/hhorse/heavyswing { hhheavyswing1 hhheavyswing2 hhheavyswing3 hhheavyswing4}
+hhheavyswing1 "sounds/hhorse/hobby_attack02_01.ogg"
+hhheavyswing2 "sounds/hhorse/hobby_attack02_02.ogg"
+hhheavyswing3 "sounds/hhorse/hobby_attack02_03.ogg"
+hhheavyswing4 "sounds/hhorse/hobby_attack02_04.ogg"
+
+$random weapons/hhorse/hitflesh { hhhitflesh1 hhhitflesh2 hhhitflesh3 hhhitflesh4 hhhitflesh5 hhhitflesh6 hhhitflesh7 }
+hhhitflesh1 "sounds/hhorse/hobby_imp_flesh01.ogg"
+hhhitflesh2 "sounds/hhorse/hobby_imp_flesh02.ogg"
+hhhitflesh3 "sounds/hhorse/hobby_imp_flesh03.ogg"
+hhhitflesh4 "sounds/hhorse/hobby_imp_flesh04.ogg"
+hhhitflesh5 "sounds/hhorse/hobby_imp_flesh05.ogg"
+hhhitflesh6 "sounds/hhorse/hobby_imp_flesh06.ogg"
+hhhitflesh7 "sounds/hhorse/hobby_imp_flesh07.ogg"
+
+$random weapons/hhorse/hitwall { hhhitwall1 hhhitwall2 hhhitwall3 hhhitwall4 hhhitwall5 hhhitwall6 }
+hhhitwall1 "sounds/hhorse/hobby_imp_metal01.ogg"
+hhhitwall2 "sounds/hhorse/hobby_imp_metal02.ogg"
+hhhitwall3 "sounds/hhorse/hobby_imp_metal06.ogg"
+hhhitwall4 "sounds/hhorse/hobby_imp_metal07.ogg"
+hhhitwall5 "sounds/hhorse/hobby_imp_metal08.ogg"
+hhhitwall6 "sounds/hhorse/hobby_imp_metal09.ogg"
+
+
 // CARDS 
 
 weapons/cards/fire "sounds/cards/cards_toss1.wav"

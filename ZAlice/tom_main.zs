@@ -1,5 +1,5 @@
-Mixin class ToM_Math {	
-	
+Mixin class ToM_Math 
+{		
 	int Sign (double i) 
 	{
 		return (i >= 0) ? 1 : -1;
@@ -16,8 +16,8 @@ Mixin class ToM_Math {
 	clearscope int PointOnLineSide( Vector2 p, Line l ) 
 	{
 		if ( !l ) return 0;
-		return (((p.y-l.v1.p.y)*l.delta.x+(l.v1.p.x-p.x)*l.delta.y) > double.epsilon);
-    }
+		return (((p.y-l.v1.p.y)*l.delta.x+(l.v1.p.x-p.x)*l.delta.y) > double.epsilon);	
+	}
 	
 	//Returns -1 if the box (normally an actor's radius) intersects a linedef:
     int BoxOnLineSide( double top, double bottom, double left, double right, Line l ) 
@@ -293,7 +293,7 @@ Class ToM_BaseActor : Actor abstract
 				return true;
 		}
 		return false;
-	}	
+	}
 	
 	static void AlignToPlane(Actor a, SecPlane sec = null, bool ceiling = false) 
 	{
@@ -336,7 +336,15 @@ Class ToM_BaseActor : Actor abstract
 			a.pitch += 180;
 			a.roll *= -1;
 		}
-	}	
+	}
+	
+	static clearscope double GetPlayerAtkHeight(PlayerPawn ppawn)
+	{
+		let player = ppawn.player;
+		if (!ppawn)
+			return 0;
+		return ppawn.height * 0.5 - ppawn.floorclip + ppawn.AttackZOffset*player.crouchFactor;
+	}
 	
 	static vector3 GetRelativePosition(actor mo, vector3 offset)
 	{

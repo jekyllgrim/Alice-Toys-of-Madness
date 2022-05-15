@@ -24,11 +24,6 @@ class ToM_BaseWeapon : Weapon abstract
 	protected state s_althold;
 	protected state s_idle;
 	
-	override void BeginPlay()
-	{
-		super.BeginPlay();
-		swayTics = -1;
-	}
 
 	enum ToM_PSprite_Layers
 	{
@@ -57,6 +52,12 @@ class ToM_BaseWeapon : Weapon abstract
 		weapon.BobSpeed 1.85;
 	}
 	
+	override void BeginPlay()
+	{
+		super.BeginPlay();
+		swayTics = -1;
+	}
+	
 	action void A_AttackZoom(double step = 0.001, double limit = 0.03, double jitter = 0.002)
 	{
 		if (invoker.atkzoom < limit)
@@ -72,7 +73,7 @@ class ToM_BaseWeapon : Weapon abstract
 	{
 		if (invoker.atkzoom > 0)
 		{
-			invoker.atkzoom -= step;
+			invoker.atkzoom = Clamp(invoker.atkzoom - step, 0, 1);
 			A_ZoomFactor(1 - invoker.atkzoom,ZOOM_NOSCALETURNING);
 		}
 	}

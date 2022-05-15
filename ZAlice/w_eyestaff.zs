@@ -138,13 +138,13 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			A_EyeStaffFlash();
 			A_StartSound("weapons/eyestaff/beam", CHAN_WEAPON, CHANF_LOOPING);
-			A_DampedRandomOffset(3,3, 2);
-			/*A_OverlayPivot(OverlayID(),0, 0);
+			//A_DampedRandomOffset(3,3, 2);
+			A_OverlayPivot(OverlayID(),0, 0);
 			A_OverlayPivot(PSP_Flash, 0, 0);
 			double sc = frandom[eye](0, 0.04);
 			A_OverlayScale(OverlayID(), 1 + sc, 1 + sc, WOF_INTERPOLATE);
 			A_OverlayScale(PSP_Flash, 1 + sc, 1 + sc, WOF_INTERPOLATE);
-			A_AttackZoom(0.001, 0.05, 0.002);*/
+			A_AttackZoom(0.001, 0.05, 0.002);
 			A_FireBeam();
 			A_FireBullets(0, 0, 1, 3, pufftype: "ToM_EyeStaffPuff");
 		}

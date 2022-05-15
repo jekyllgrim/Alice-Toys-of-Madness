@@ -1,12 +1,67 @@
 class ToM_HobbyHorse : ToM_BaseWeapon
 {
-	int combo;
+	int combo;	
+	protected array < Actor > swingVictims;
+	protected vector2 swingOfs;
+	protected vector2 swingStep;
 	
 	Default
 	{
 		Weapon.slotnumber 1;
 		Weapon.slotpriority 1;
 		Tag "Hobby Horse";
+	}
+	
+	
+	action void A_PrepareSwing(double startX, double startY, double stepX, double stepY)
+	{
+		invoker.swingVictims.Clear();
+		invoker.swingOfs = (startX, startY);
+		invoker.swingStep = (stepX, stepY);
+	}
+	
+	action void A_ArcMeleeAttack(int damage, double range = 64, class<Actor> pufftype = 'ToM_HorsePuff')
+	{			
+		FLineTraceData hit;
+		LineTrace(
+			angle + invoker.swingOfs.x, 
+			radius + range, 
+			pitch + invoker.swingOfs.y, 
+			TRF_NOSKY|TRF_SOLIDACTORS, 
+			ToM_BaseActor.GetPlayerAtkHeight(PlayerPawn(self)), 
+			data: hit
+		);
+		
+		let type = hit.HitType;
+		if (type == TRACE_HitFloor || type == TRACE_HitCeiling || type == TRACE_HitWall)
+		{
+			A_StartSound("weapons/hhorse/hitwall", CHAN_WEAPON, CHANF_NOSTOP);
+			int val = 1 * invoker.combo;
+			A_QuakeEx(val, val, val, 6, 0, 32, "");
+		}
+		
+		else if (type == TRACE_HitActor)
+		{
+			let victim = hit.HitActor;
+			if (victim && (victim.bSHOOTABLE || victim.bVULNERABLE || victim.bSOLID) && invoker.swingVictims.Find(victim) == invoker.swingVictims.Size())
+			{
+				invoker.swingVictims.Push(victim);
+				if (!victim.bDORMANT && (victim.bSHOOTABLE || victim.bVULNERABLE))
+				{
+					victim.DamageMobj(self, self, damage, 'normal');
+					A_StartSound("weapons/hhorse/hitflesh", CHAN_WEAPON);
+					if (!victim.bNOBLOOD)
+					{
+						victim.TraceBleed(damage, self);
+						victim.SpawnBlood(hit.HitLocation, AngleTo(victim), damage);
+					}
+				}
+				else
+					A_StartSound("weapons/hhorse/hitwall", CHAN_WEAPON, CHANF_NOSTOP);
+			}
+		}
+		Spawn("ToM_DebugSpot", hit.hitlocation);
+		invoker.swingOfs += invoker.swingStep;
 	}
 	
 	States
@@ -66,6 +121,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
+			A_PrepareSwing(25, -10, 10, 4);
 			A_StartSound("weapons/hhorse/swing", CHAN_AUTO);
 			A_CameraSway(4, 0, 6);
 		}
@@ -76,12 +132,13 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		HHRS DD 1 
 		{
+			A_ArcMeleeAttack(30);
 			A_WeaponOffset(-45, 18, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
-		TNT1 A 0 A_CustomPunch(35, true, CPF_NOTURN, "ToM_HorsePuff");
 		HHRS DDD 1 
 		{
+			A_ArcMeleeAttack(30);
 			A_WeaponOffset(-45, 18, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}

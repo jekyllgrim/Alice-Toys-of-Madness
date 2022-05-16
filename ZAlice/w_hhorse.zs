@@ -4,9 +4,12 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	protected array < Actor > swingVictims;
 	protected vector2 swingOfs;
 	protected vector2 swingStep;
+	protected int swingSndCounter;
+	const SWINGSTAGGER = 8;
 	
 	Default
 	{
+		+WEAPON.MELEEWEAPON
 		Weapon.slotnumber 1;
 		Weapon.slotpriority 1;
 		Tag "Hobby Horse";
@@ -20,7 +23,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		invoker.swingStep = (stepX, stepY);
 	}
 	
-	action void A_ArcMeleeAttack(int damage, double range = 64, class<Actor> pufftype = 'ToM_HorsePuff')
+	action void A_SwingAttack(int damage, double range = 64, class<Actor> pufftype = 'ToM_HorsePuff')
 	{			
 		FLineTraceData hit;
 		LineTrace(
@@ -35,9 +38,13 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		let type = hit.HitType;
 		if (type == TRACE_HitFloor || type == TRACE_HitCeiling || type == TRACE_HitWall)
 		{
-			A_StartSound("weapons/hhorse/hitwall", CHAN_WEAPON, CHANF_NOSTOP);
-			int val = 1 * invoker.combo;
-			A_QuakeEx(val, val, val, 6, 0, 32, "");
+			if (invoker.swingSndCounter <= 0)
+			{
+				invoker.swingSndCounter = SWINGSTAGGER;
+				A_StartSound("weapons/hhorse/hitwall", CHAN_AUTO);
+				int val = 1 * invoker.combo;
+				A_QuakeEx(val, val, val, 6, 0, 32, "");				
+			}
 		}
 		
 		else if (type == TRACE_HitActor)
@@ -57,11 +64,19 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 					}
 				}
 				else
-					A_StartSound("weapons/hhorse/hitwall", CHAN_WEAPON, CHANF_NOSTOP);
+					A_StartSound("weapons/hhorse/hitwall", CHAN_AUTO);
 			}
 		}
-		Spawn("ToM_DebugSpot", hit.hitlocation);
+		//let spot = Spawn("ToM_DebugSpot", hit.hitlocation);
+		//spot.A_SetHealth(1);
 		invoker.swingOfs += invoker.swingStep;
+	}
+	
+	override void DoEffect()
+	{
+		super.DoEffect();
+		if (swingSndCounter > 0)
+			swingSndCounter--;
 	}
 	
 	States
@@ -121,24 +136,25 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
-			A_PrepareSwing(25, -10, 10, 4);
+			A_PrepareSwing(-25, -10, 10, 4);
 			A_StartSound("weapons/hhorse/swing", CHAN_AUTO);
 			A_CameraSway(4, 0, 6);
 		}
 		HHRS BB 1 
 		{
+			A_SwingAttack(30);
 			A_WeaponOffset(-35, 12, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		HHRS DD 1 
 		{
-			A_ArcMeleeAttack(30);
+			A_SwingAttack(30);
 			A_WeaponOffset(-45, 18, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		HHRS DDD 1 
 		{
-			A_ArcMeleeAttack(30);
+			A_SwingAttack(30);
 			A_WeaponOffset(-45, 18, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
@@ -157,22 +173,25 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
+			A_PrepareSwing(25, -10, -10, 5);
 			A_StartSound("weapons/hhorse/swing", CHAN_AUTO);
 			A_CameraSway(-4, 0, 6);
 		}
 		HHRS FF 1 
 		{
+			A_SwingAttack(30);
 			A_WeaponOffset(35, 12, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		HHRS HH 1 
 		{
+			A_SwingAttack(30);
 			A_WeaponOffset(45, 18, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
-		TNT1 A 0 A_CustomPunch(35, true, CPF_NOTURN, "ToM_HorsePuff");
 		HHRS HHH 1 
 		{
+			A_SwingAttack(30);
 			A_WeaponOffset(45, 18, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
@@ -193,18 +212,20 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
+			A_PrepareSwing(-5, -30, 1.5, 12);
 			A_StartSound("weapons/hhorse/heavyswing", CHAN_AUTO);
 			A_CameraSway(0, 5, 7);
 		}
 		HHRS NOO 1 
 		{
+			A_SwingAttack(60);
 			A_WeaponOffset(-24, 35, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.1, WOF_ADD);
 			A_ScalePSprite(OverlayID(), -0.003, -0.003, WOF_ADD);
 		}
-		TNT1 A 0 A_CustomPunch(60, true, CPF_NOTURN, "ToM_HorsePuff");
 		HHRS OO 1 
 		{
+			A_SwingAttack(60);
 			A_WeaponOffset(-24, 35, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.1, WOF_ADD);
 			A_ScalePSprite(OverlayID(), -0.003, -0.003, WOF_ADD);

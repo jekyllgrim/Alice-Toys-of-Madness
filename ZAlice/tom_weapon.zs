@@ -732,6 +732,10 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 				
 		if (!ppawn) ppawn = PlayerPawn(owner);
 		
+		let weap = owner.player.readyweapon;
+		if (weap && weap.bMELEEWEAPON)
+			return;
+		
 		FLineTracedata tr;
 		owner.LineTrace(owner.angle, 2048, owner.pitch, TRF_SOLIDACTORS, owner.height * 0.5 - owner.floorclip + ppawn.AttackZOffset*ppawn.player.crouchFactor, data: tr);
 		aimPos = tr.hitLocation;
@@ -753,7 +757,7 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 		+NOBLOCKMAP
 		+BRIGHT
 		+FORCEXYBILLBOARD
-		scale 0.26;
+		scale 0.24;
 		+NOTIMEFREEZE
 		radius 2;
 		height 2;
@@ -767,4 +771,3 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 		loop;
 	}
 }
-	

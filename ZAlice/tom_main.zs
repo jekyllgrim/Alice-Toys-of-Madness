@@ -1162,7 +1162,8 @@ class ToM_WhiteDeathSmoke : ToM_BaseSmoke
 	}
 }
 
-Class ToM_DebugSpot : Actor {	
+Class ToM_DebugSpot : Actor 
+{	
 	Default 
 	{
 		+NOINTERACTION
@@ -1181,7 +1182,7 @@ Class ToM_DebugSpot : Actor {
 	
 	override void Tick() 
 	{
-		if (GetAge() > 35 * default.health)
+		if (GetAge() > 35 * health)
 			Destroy();
 	}
 	

@@ -21,6 +21,7 @@ class ToM_Mainhandler : EventHandler
 		if (IsVoodooDoll(plr))
 			return;
 		plr.GiveInventory("ToM_CrosshairSpawner", 1);
+		plr.GiveInventory("ToM_InvReplacementControl", 1);
 	}
 	
 	static bool IsVoodooDoll(PlayerPawn mo) 

@@ -14,7 +14,7 @@ class ToM_BaseWeapon : Weapon abstract
 	protected double maxSwayTics; // starting point for the timer
 	protected double SwayAngle; // the target angle for the camera sway
 	protected double SwayPitch;
-	protected double currentAngleSway; // how much has the camera already been Sway?
+	protected double currentAngleSway; // how much has the camera already been swayed
 	protected double currentPitchSway;
 	protected transient CVar c_freelook;
 	

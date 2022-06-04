@@ -12,6 +12,7 @@ version "4.7.1"
 #include "ZAlice/w_pgrinder.zs"
 #include "ZAlice/w_teapot.zs"
 #include "ZAlice/w_eyestaff.zs"
+#include "ZAlice/w_blunderbuss.zs"
 
 #include "ZAlice/GZBeamz/laser_math.zsc"
 #include "ZAlice/GZBeamz/laser_base.zsc"

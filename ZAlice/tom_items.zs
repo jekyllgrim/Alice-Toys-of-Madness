@@ -52,7 +52,7 @@ Class ToM_InvReplacementControl : ToM_InventoryToken {
 		"ToM_PepperGrinder",
 		"ToM_Teapot",
 		"ToM_Eyestaff",
-		"ToM_Eyestaff"
+		"ToM_Blunderbuss"
 	};
 	
 	/*

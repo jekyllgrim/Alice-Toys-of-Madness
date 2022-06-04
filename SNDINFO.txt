@@ -142,3 +142,10 @@ weapons/eyestaff/chargeoff	"sounds/Eyestaff/charge_off.wav"
 weapons/eyestaff/boom1			"sounds/Eyestaff/explode1.wav"
 weapons/eyestaff/boom2			"sounds/Eyestaff/explode2.wav"
 weapons/eyestaff/fireProjectile "sounds/Eyestaff/liftoff.wav"
+
+// BLUNDERBUSS
+
+weapons/blunderbuss/explode	"Sounds/blunderbuss/bb_explode.wav"
+weapons/blunderbuss/fire		"Sounds/blunderbuss/bb_fire.ogg"
+weapons/blunderbuss/cock		"Sounds/blunderbuss/bb_cock.ogg"
+weapons/blunderbuss/flyloop	"Sounds/blunderbuss/bb_loop.wav"

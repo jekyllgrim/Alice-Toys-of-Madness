@@ -77,22 +77,30 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	States
 	{
 	Select:
-		TNT1 A 0 
+		JEYC C 0 
 		{
-			A_WeaponOffset(0, WEAPONTOP + 102);
+			A_WeaponOffset(-24, 90+WEAPONTOP);
+			A_OverlayPivot(OverlayID(), 0.6, 0.8);
+			A_OverlayRotate(OverlayID(), 30);
 		}
-		JEYC AABBCC 1
+		#### ###### 1
 		{
-			A_WeaponOffset(0, -17, WOF_ADD);
+			A_WeaponOffset(4, -15, WOF_ADD);
+			A_OverlayRotate(OverlayID(), -5, WOF_ADD);
 			A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
 		}
 		goto Ready;
 	Deselect:
-		TNT1 A 0 A_StopSound(CHAN_WEAPON);
-		JEYC CCBBAA 1
+		JEYC C 0
+		{
+			A_OverlayPivot(OverlayID(), 0.6, 0.8);
+			A_StopSound(CHAN_WEAPON);
+		}
+		#### ###### 1
 		{
 			A_ResetZoom();
-			A_WeaponOffset(0, 17, WOF_ADD);
+			A_WeaponOffset(-4, 15, WOF_ADD);
+			A_OverlayRotate(OverlayID(), 5, WOF_ADD);
 		}
 		TNT1 A 0 A_Lower;
 		wait;
@@ -141,7 +149,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			//A_DampedRandomOffset(3,3, 2);
 			A_OverlayPivot(OverlayID(),0, 0);
 			A_OverlayPivot(PSP_Flash, 0, 0);
-			double sc = frandom[eye](0, 0.04);
+			double sc = frandom[eye](0, 0.025);
 			A_OverlayScale(OverlayID(), 1 + sc, 1 + sc, WOF_INTERPOLATE);
 			A_OverlayScale(PSP_Flash, 1 + sc, 1 + sc, WOF_INTERPOLATE);
 			A_AttackZoom(0.001, 0.05, 0.002);
@@ -154,17 +162,20 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		JEYC F 2 bright;
 		stop;
 	ChargeParticle:
-		JEYC P 0 {
+		JEYC P 0 
+		{
 			A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);
 			A_OverlayFlags(OverlayID(),PSPF_RENDERSTYLE|PSPF_FORCEALPHA,true);
 			A_OverlayRenderstyle(OverlayID(),Style_Add);
 			A_OverlayAlpha(OverlayID(),0);
 			A_OverlayScale(OverlayID(),0.5,0.5);
 		}
-		#### ############## 1 bright {
+		#### ############## 1 bright 
+		{
 			A_OverlayScale(OverlayID(),0.05,0.05,WOF_ADD);
 			let psp = player.FindPSprite(OverlayID());
-			if (psp) {
+			if (psp) 
+			{
 				psp.alpha = Clamp(psp.alpha + 0.05, 0, 0.5);
 				A_OverlayOffset(OverlayID(),psp.x * 0.85, psp.y * 0.85, WOF_INTERPOLATE);
 			}

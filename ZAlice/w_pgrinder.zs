@@ -72,7 +72,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		PPGR Z 5 
 		{
 			A_PepperFlash();
-			A_FireProjectile("ToM_PepperProjectile", spawnofs_xy: 6);
+			A_FireProjectile("ToM_PepperProjectile", spawnofs_xy: frandom[ppgr](5.5,7), frandom[ppgr](4.5,6.5));
 		}
 		TNT1 A 0 A_ReFire();
 		TNT1 A 0 
@@ -154,7 +154,7 @@ class ToM_PepperProjectile : ToM_Projectile
 		damage 4;
 		translation "0:255=%[0.00,0.00,0.00]:[1.99,0.42,0.09]";
 		renderstyle 'Add';
-		scale 0.45;
+		scale 0.65;
 		+BRIGHT
 		speed 60;
 	}

@@ -1,11 +1,11 @@
 class ToM_HobbyHorse : ToM_BaseWeapon
 {
 	int combo;	
-	protected array < Actor > swingVictims;
+	protected array < Actor > swingVictims; //actors hit by the attack
 	protected vector2 swingOfs;
 	protected vector2 swingStep;
-	protected int swingSndCounter;
-	const SWINGSTAGGER = 8;
+	protected int swingSndCounter; //delay the attack sound
+	const SWINGSTAGGER = 8; // by this much
 	
 	Default
 	{
@@ -15,7 +15,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		Tag "Hobby Horse";
 	}
 	
-	
+	// Set up the swing: initial coords and the step:
 	action void A_PrepareSwing(double startX, double startY, double stepX, double stepY)
 	{
 		invoker.swingVictims.Clear();
@@ -23,19 +23,28 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		invoker.swingStep = (stepX, stepY);
 	}
 	
+	// Do the attack and move the offset one step as defined above:
 	action void A_SwingAttack(int damage, double range = 64, class<Actor> pufftype = 'ToM_HorsePuff')
-	{			
+	{
+		// Get the screen-relative angle/pitch using Gutamatics:
+		ToM_GM_Quaternion view = ToM_GM_Quaternion.createFromAngles(angle, pitch, roll);
+		ToM_GM_Quaternion ofs = ToM_GM_Quaternion.createFromAngles(invoker.swingOfs.x, invoker.swingOfs.y, 0);
+		ToM_GM_Quaternion res = view.multiplyQuat(ofs);		
+		double aimAng, aimPch;
+		[aimAng, aimPch] = res.toAngles();
+		
 		FLineTraceData hit;
 		LineTrace(
-			angle + invoker.swingOfs.x, 
-			radius + range, 
-			pitch + invoker.swingOfs.y, 
+			aimAng, 
+			range, 
+			aimPch, 
 			TRF_NOSKY|TRF_SOLIDACTORS, 
 			ToM_BaseActor.GetPlayerAtkHeight(PlayerPawn(self)), 
 			data: hit
 		);
 		
 		let type = hit.HitType;
+		// Do this if we hit geometry:
 		if (type == TRACE_HitFloor || type == TRACE_HitCeiling || type == TRACE_HitWall)
 		{
 			if (invoker.swingSndCounter <= 0)
@@ -47,28 +56,36 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			}
 		}
 		
+		// Do this if we hit an actor:
 		else if (type == TRACE_HitActor)
 		{
 			let victim = hit.HitActor;
+			// Check the victim is valid and not yet in the array:
 			if (victim && (victim.bSHOOTABLE || victim.bVULNERABLE || victim.bSOLID) && invoker.swingVictims.Find(victim) == invoker.swingVictims.Size())
 			{
 				invoker.swingVictims.Push(victim);
+				// Can be damaged:
 				if (!victim.bDORMANT && (victim.bSHOOTABLE || victim.bVULNERABLE))
 				{
 					victim.DamageMobj(self, self, damage, 'normal');
 					A_StartSound("weapons/hhorse/hitflesh", CHAN_WEAPON);
+					// Bleed:
 					if (!victim.bNOBLOOD)
 					{
 						victim.TraceBleed(damage, self);
 						victim.SpawnBlood(hit.HitLocation, AngleTo(victim), damage);
 					}
 				}
+				// Can't be damaged:
 				else
 					A_StartSound("weapons/hhorse/hitwall", CHAN_AUTO);
 			}
 		}
-		//let spot = Spawn("ToM_DebugSpot", hit.hitlocation);
-		//spot.A_SetHealth(1);
+		// Debug spot:
+		// let spot = Spawn("ToM_DebugSpot", hit.hitlocation);
+		// spot.A_SetHealth(1);
+		
+		// Add a step:
 		invoker.swingOfs += invoker.swingStep;
 	}
 	
@@ -136,7 +153,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
-			A_PrepareSwing(-25, -10, 10, 4);
+			A_PrepareSwing(-25, -10, 14, 4);
 			A_StartSound("weapons/hhorse/swing", CHAN_AUTO);
 			A_CameraSway(4, 0, 6);
 		}
@@ -173,7 +190,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
-			A_PrepareSwing(25, -10, -10, 5);
+			A_PrepareSwing(25, -10, -15, 5);
 			A_StartSound("weapons/hhorse/swing", CHAN_AUTO);
 			A_CameraSway(-4, 0, 6);
 		}
@@ -212,7 +229,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
-			A_PrepareSwing(-5, -30, 1.5, 12);
+			A_PrepareSwing(-5, -30, 1.5, 16);
 			A_StartSound("weapons/hhorse/heavyswing", CHAN_AUTO);
 			A_CameraSway(0, 5, 7);
 		}

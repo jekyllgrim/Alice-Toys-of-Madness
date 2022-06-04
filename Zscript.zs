@@ -15,3 +15,8 @@ version "4.7.1"
 
 #include "ZAlice/GZBeamz/laser_math.zsc"
 #include "ZAlice/GZBeamz/laser_base.zsc"
+#include "ZAlice/ToM_Gutamatics/GlobalMaths.zsc"
+#include "ZAlice/ToM_Gutamatics/Matrix.zsc"
+#include "ZAlice/ToM_Gutamatics/Matrix4.zsc"
+#include "ZAlice/ToM_Gutamatics/Quaternion.zsc"
+#include "ZAlice/ToM_Gutamatics/VectorUtil.zsc"

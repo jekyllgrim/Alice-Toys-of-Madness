@@ -2446,13 +2446,6 @@ Sprite "BBUSX0", 399, 418
 	Patch "BBUS_X", 0, 0
 }
 
-Sprite "BBUSY0", 399, 418
-{
-	YScale 1.200
-	Offset -99, 150
-	Patch "BBUS_Y", 0, 0
-}
-
 Sprite "BBUSC0", 399, 418
 {
 	XScale 1.200
@@ -2525,7 +2518,7 @@ Sprite "BBUSS0", 256, 256
 	Offset -446, -126
 	Patch "SMO2A0", 0, 0
 	{
-		Blend "#0000FF", 0.3
+		Blend "#fd4181", 0.3
 	}
 }
 
@@ -2534,7 +2527,7 @@ Sprite "BBUSP0", 128, 128
 	XScale 6.300
 	YScale 7.600
 	Offset -1798, -1002
-	Patch "SPRKC0", 0, 0
+	Patch "SPRKE0", 0, 0
 }
 
 // End of texture definitions

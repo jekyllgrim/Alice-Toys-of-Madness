@@ -1,6 +1,6 @@
 class ToM_Teapot : ToM_BaseWeapon
 {
-	int heat;
+	double heat;
 	int lidframe;	
 	double vaporYvel;
 	double vaporScaleShift;
@@ -23,21 +23,48 @@ class ToM_Teapot : ToM_BaseWeapon
 	{
 		super.DoEffect();
 		if (!owner || !owner.player)
-			return;
+			return;		
+		let weap = owner.player.readyweapon;
 		
-		if (owner.health <= 0 || owner.player.readyweapon != self)
+		// Decay heat:
+		if (heat > 0 && weap)
+		{
+			//console.printf("heat : %f", heat);
+			double decayRate = 0.5;
+			// Decay at 50% rate if different weapon is selected:
+			if (weap != self)
+			{
+				decayRate *= 0.5;
+				heat -= decayRate;
+			}
+			// Otherwise decay only when not firing:
+			else
+			{
+				let psp = owner.player.FindPSprite(PSP_Weapon);
+				if (psp && !InStateSequence(psp.curstate, s_fire))
+				{
+					heat -= decayRate;
+				}
+			}
+		}
+		
+		// Stop looped sounds if dead or using different weapon:
+		if (owner.health <= 0 || !weap || weap != self)
 		{
 			owner.A_StopSound(CH_TPOTHEAT);
 			owner.A_StopSound(CH_TPOTCHARGE);
 			return;
 		}
 		
+		// Overheat sound:
 		if (heat >= HEAT_MAX)
 		{
 			owner.A_StartSound("weapons/teapot/highheat", CH_TPOTCHARGE, CHANF_LOOPING);
 		}
+		// Heat looped sound:
 		if (heat >= HEAT_MED)
 		{
+			// Do not play over overheat:
 			if (!owner.IsActorPlayingSound(CH_TPOTCHARGE))
 				owner.A_StartSound("weapons/teapot/heatloop", CH_TPOTHEAT, CHANF_LOOPING);
 			owner.A_SoundVolume(CH_TPOTHEAT, LinearMap(heat, HEAT_MED, HEAT_MAX, 0, 1.0));
@@ -64,29 +91,17 @@ class ToM_Teapot : ToM_BaseWeapon
 		return ResolveState("Ready");
 	}
 	
-	action int A_ReduceHeat()
+	/*action int A_ReduceHeat()
 	{
 		if (invoker.heat > 0 && level.time % 10 == 0)
 			invoker.heat--;	
 		return invoker.heat;
-	}
+	}*/
 	
 	action void A_TeapotReady(int flags = 0)
 	{
 		if (invoker.heat >= HEAT_MAX)
-			flags |= WRF_NOPRIMARY;		
-		
-		/*if (invoker.heat >= HEAT_MED)
-		{
-			A_StartSound("weapons/teapot/heatloop", CH_TPOTHEAT, CHANF_LOOPING);
-			A_SoundVolume(CH_TPOTHEAT, invoker.LinearMap(invoker.heat, HEAT_MED, HEAT_MAX, 0.05, 1.0));
-		}
-		else
-			A_StopSound(CH_TPOTHEAT);*/
-		
-		if (invoker.heat > 0 /*&& level.time % 10 == 0*/)
-			invoker.heat--;
-			
+			flags |= WRF_NOPRIMARY;			
 		A_WeaponReady(flags);
 	}
 	
@@ -132,7 +147,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		TNT1 A 0 A_Lower;
 		wait;
 	Ready:
-		TPOT C 2
+		TPOT C 1
 		{
 			A_ResetPSprite();
 			A_TeapotReady();

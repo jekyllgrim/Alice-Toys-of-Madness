@@ -25,11 +25,11 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			return;
 		if (!invoker.beam1)
 		{
-			invoker.beam1 = ToM_LaserBeam.Create(self, 7, 3.2, -2.8, type: "ToM_EyestaffBeam1");
+			invoker.beam1 = ToM_LaserBeam.Create(self, 7, 3.2, -2.3, type: "ToM_EyestaffBeam1");
 		}
 		if (!invoker.beam2)
 		{
-			invoker.beam2 = ToM_LaserBeam.Create(self, 7, 3.2, -2.6, type: "ToM_EyestaffBeam2");
+			invoker.beam2 = ToM_LaserBeam.Create(self, 7, 3.2, -2.1, type: "ToM_EyestaffBeam2");
 		}
 		if (invoker.beam1)
 		{
@@ -61,23 +61,23 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		A_OverlayAlpha(PSP_Flash, frandom[eye](0.3, 1));
 	}
 	
-	/*override void DoEffect()
+	override void DoEffect()
 	{
 		super.DoEffect();
-		if (!owner || !owner.player || !owner.player.readyweapon)
+		if (!owner || !owner.player)
 			return;
-		
-		let psp = owner.player.FindPSprite(PSP_Weapon);
-		if (!psp)
-			return;
-		
-		console.printf("PSprite offset: %.1f:%.1f | PSprite scale: %.1f:%.1f", psp.x, psp.y, psp.scale.x, psp.scale.y);
-	}*/
+		let weap = owner.player.readyweapon;
+		if (owner.health <= 0 || !weap || weap != self)
+		{
+			if (beam1) beam1.SetEnabled(false);
+			if (beam2) beam2.SetEnabled(false);
+		}
+	}
 
 	States
 	{
 	Select:
-		JEYC C 0 
+		JEYC A 0 
 		{
 			A_WeaponOffset(-24, 90+WEAPONTOP);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
@@ -91,7 +91,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 		goto Ready;
 	Deselect:
-		JEYC C 0
+		JEYC A 0
 		{
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
 			A_StopSound(CHAN_WEAPON);
@@ -106,14 +106,14 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		wait;
 	Ready:
 		TNT1 A 0 A_ResetPsprite;
-		JEYC C 1 
+		JEYC A 1 
 		{
 			A_ResetZoom();
 			A_WeaponReady();
 		}
 		wait;
 	Fire:
-		JEYC C 1
+		JEYC A 1
 		{
 			A_Overlay(PSP_Flash, "BeamFlash");
 			A_OverlayFlags(PSP_Flash, PSPF_Renderstyle|PSPF_ForceAlpha, true);
@@ -142,7 +142,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 		goto Ready;
 	FireBeam:
-		JEYC C 2
+		JEYC A 2
 		{
 			A_EyeStaffFlash();
 			A_StartSound("weapons/eyestaff/beam", CHAN_WEAPON, CHANF_LOOPING);
@@ -190,22 +190,19 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			if (proj)
 				proj.A_StartSound("weapons/eyestaff/fireProjectile");
 		}
-		JEYC CDE 1 
+		JEYC ACE 1;
+		JEYC EEEEEE 1 
 		{
-			A_WeaponOffset(6, -6, WOF_ADD);
-			A_OverlayScale(OverlayID(), 0.06, 0.06, WOF_ADD);
+			A_ResetZoom();
+			A_WeaponOffset(frandom[eye](-2, 2), frandom[eye](-2, 2), WOF_ADD);
 		}
-		JEYC EEEEEE 2 
+		JEYC EEEEEE 1
 		{
 			A_ResetZoom();
 			A_WeaponOffset(frandom[eye](-1, 1), frandom[eye](-1, 1), WOF_ADD);
 		}
-		JEYC DDDDCCCCC 1 
-		{
-			A_ResetZoom();
-			A_OverlayScale(OverlayID(), -0.02, -0.02, WOF_ADD);
-			A_WeaponOffset(-2, 2, WOF_ADD);
-		}
+		TNT1 A 0 A_WeaponOffset(0, WEAPONTOP, WOF_INTERPOLATE);
+		JEYC EEDDCCBBA 1;
 		goto ready;
 	}
 }
@@ -225,7 +222,7 @@ class ToM_EyestaffBeam1 : ToM_LaserBeam
 	Default
 	{
 		ToM_LaserBeam.LaserColor "c334eb";
-		xscale 4;
+		xscale 3.4;
 	}
 	
 	override void PostBeginPlay()
@@ -248,7 +245,7 @@ class ToM_EyestaffBeam2 : ToM_EyestaffBeam1
 	Default
 	{
 		ToM_LaserBeam.LaserColor "ffee00";
-		xscale 2;
+		xscale 1.6;
 	}
 	
 	override void PostBeginPlay()

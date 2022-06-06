@@ -151,9 +151,9 @@ class ToM_Cards : ToM_BaseWeapon
 		TNT1 A 0 A_ResetPSprite(OverlayID());
 		PDEK ABC 1 A_WeaponOffset(6, -2, WOF_ADD);
 		TNT1 A 0 A_FireCard(4, 3.2);
-		PDEK EEEE 1 A_WeaponOffset(3, -1, WOF_ADD);
+		PDEK EEE 1 A_WeaponOffset(3, -1, WOF_ADD);
 		TNT1 A 0 PickACard();
-		PDEK FFGGDBB 1 A_WeaponOffset(-3.83, 1, WOF_ADD);
+		PDEK FFGGDB 1 A_WeaponOffset(-3.83, 1, WOF_ADD);
 		PDEK BBAAA 1 
 		{
 			A_ReFire();
@@ -280,7 +280,7 @@ class ToM_CardProjectile : ToM_StakeProjectile
 		+ROLLSPRITE
 		renderstyle "Translucent";
 		speed 40;
-		damage (10);
+		damage (12);
 		gravity 0.6;
 		radius 8;
 		height 6;

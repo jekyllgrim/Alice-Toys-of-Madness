@@ -82,7 +82,13 @@ hhhitwall6 "sounds/hhorse/hobby_imp_metal09.ogg"
 
 // CARDS 
 
-weapons/cards/fire "sounds/cards/cards_toss1.wav"
+//weapons/cards/fire "sounds/cards/cards_toss1.wav"
+$random weapons/cards/fire { cardf1 cardf2 cardf3 cardf4 cardf5 }
+cardf1 "sounds/cards/card_fire1.ogg"
+cardf2 "sounds/cards/card_fire2.ogg"
+cardf3 "sounds/cards/card_fire3.ogg"
+cardf4 "sounds/cards/card_fire4.ogg"
+cardf5 "sounds/cards/card_fire5.ogg"
 weapons/cards/altfire "sounds/jacks_bounce.wav"
 
 $random weapons/cards/hitwall { cardhitwall1 cardhitwall2 }

@@ -49,7 +49,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		}
 		
 		// Stop looped sounds if dead or using different weapon:
-		if (owner.health <= 0 || !weap || weap != self)
+		if (owner.health <= 0 || !weap)
 		{
 			owner.A_StopSound(CH_TPOTHEAT);
 			owner.A_StopSound(CH_TPOTCHARGE);
@@ -67,8 +67,19 @@ class ToM_Teapot : ToM_BaseWeapon
 			// Do not play over overheat:
 			if (!owner.IsActorPlayingSound(CH_TPOTCHARGE))
 				owner.A_StartSound("weapons/teapot/heatloop", CH_TPOTHEAT, CHANF_LOOPING);
-			owner.A_SoundVolume(CH_TPOTHEAT, LinearMap(heat, HEAT_MED, HEAT_MAX, 0, 1.0));
-			owner.A_SoundVolume(CH_TPOTCHARGE, LinearMap(heat, HEAT_MED, HEAT_MAX, 0, 1.0));
+			// define volume based on heat:
+			double heatvol = LinearMap(heat, HEAT_MED, HEAT_MAX, 0, 1.0);
+			double chargevol = LinearMap(heat, HEAT_MED, HEAT_MAX, 0, 1.0);
+			// reduce by 50% if a different weapon is selected:
+			// (since the heat decays while in background,
+			// the sound cues should still be heard)
+			if (weap != self)
+			{
+				heatvol *= 0.5;
+				chargevol *= 0.6;
+			}
+			owner.A_SoundVolume(CH_TPOTHEAT, heatvol);
+			owner.A_SoundVolume(CH_TPOTCHARGE, chargevol);
 		}
 		else
 		{

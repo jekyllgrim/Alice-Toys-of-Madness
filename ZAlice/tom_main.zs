@@ -857,7 +857,94 @@ Class ToM_RandomDebris : ToM_SmallDebris
 		PFLD ABCDEF 0;
 	}
 }
-		
+
+//Debris that spawn white smoke:
+Class ToM_SmokingDebris : ToM_RandomDebris 
+{	
+	Default 
+	{
+		scale 0.5;
+		gravity 0.25;
+	}
+	override void Tick () 
+	{
+		super.Tick();	
+		if (isFrozen())
+			return;
+		let smk = Spawn("ToM_WhiteSmoke",pos+(frandom[smk](-4,4),frandom[smk](-4,4),frandom[smk](-4,4)));
+		if (smk) {
+			smk.alpha = alpha*0.4;
+			smk.vel = (frandom[smk](-1,1),frandom[smk](-1,1),frandom[smk](-1,1));
+		}
+		A_FadeOut(0.03);
+	}
+}
+
+//Flame spawned by burning debris:
+Class ToM_DebrisFlame : ToM_BaseFlare 
+{
+	Default 
+	{
+		scale 0.05;
+		renderstyle 'translucent';
+		alpha 1;
+	}
+	override void PostBeginPlay() 
+	{
+		super.PostBeginPlay();
+		roll = random[sfx](0,359);
+		wrot = frandom[sfx](5,10)+randompick[sfx](-1,1);
+	}
+	states 
+	{
+	Spawn:
+		TNT1 A 0 NoDelay A_Jump(256,1,3); //randomize appearance a bit:
+		BOM4 IJKLMNOPQ 1 {
+			A_FadeOut(0.05);
+			roll += wrot;
+			scale *= 1.1;
+		}
+		wait;
+	}
+}
+
+Class ToM_ExplosiveDebris : ToM_RandomDebris 
+{
+	Default 
+	{
+		scale 0.5;
+		gravity 0.3;
+	}
+	override void Tick () 
+	{
+		Vector3 oldPos = self.pos;		
+		Super.Tick();	
+		if (isFrozen())
+			return;
+		let smk = Spawn("ToM_BlackSmoke",pos+(frandom[smk](-9,9),frandom[smk](-9,9),frandom[smk](-9,9)));
+		if (smk) 
+		{
+			smk.A_SetScale(scale.x * 0.5);
+			smk.alpha = alpha*0.3;
+			smk.vel = (frandom[smk](-1,1),frandom[smk](-1,1),frandom[smk](-1,1));
+		}
+		Vector3 path = level.vec3Diff( self.pos, oldPos );
+		double distance = path.length() / 4; //this determines how far apart the particles are
+		Vector3 direction = path / distance;
+		int steps = int( distance );		
+		for( int i = 0; i < steps; i++ )  
+		{
+			let trl = Spawn("ToM_DebrisFlame",oldPos);
+			if (trl)
+			{
+				trl.alpha = alpha*0.75;
+				trl.scale *= scale.x;
+			}
+			oldPos = level.vec3Offset( oldPos, direction );
+		}
+		A_FadeOut(0.022);
+	}
+}
 
 Class ToM_Tracer : FastProjectile 
 {

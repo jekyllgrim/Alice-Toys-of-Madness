@@ -452,7 +452,9 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	{
 		Vector3 oldPos = self.pos;		
 		Super.Tick();
-		if (!trailcolor || !trailactor)
+		// Continue only if either a color is specified
+		// ir the trailactor is a custom actor:
+		if ( !(trailactor && (trailcolor || trailactor != "ToM_BaseFlare")) )
 			return;		
 		if (!s_particles)
 			s_particles = CVar.GetCVar('tom_particles', players[consoleplayer]);
@@ -490,7 +492,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 						trlflr.shrink = trailshrink;
 				}
 				if (trailvel != 0)
-					trl.vel = (frandom(-trailvel,trailvel),frandom(-trailvel,trailvel),frandom(-trailvel,trailvel));
+					trl.vel = (frandom[trlvel](-trailvel,trailvel),frandom[trlvel](-trailvel,trailvel),frandom[trlvel](-trailvel,trailvel));
 			}
 			oldPos = level.vec3Offset( oldPos, direction );
 		}
@@ -713,6 +715,155 @@ Class ToM_StakeProjectile : ToM_Projectile
 	}
 }
 
+//Decorative explosion actor that spawns debris and stuff:
+Class ToM_GenericExplosion : ToM_SmallDebris 
+{
+	int tics;
+	int randomDebris;
+	double randomDebrisVel;
+	double randomDebrisScale;
+	int explosiveDebris;
+	double explosiveDebrisVel;
+	double explosiveDebrisScale;
+	int smokingDebris;
+	double smokingDebrisVel;
+	double smokingDebrisScale;
+	int quakeIntensity;
+	int quakeDuration;
+	int quakeRadius;
+	/*property randomdebris : randomdebris;
+	property randomDebrisVel : randomDebrisVel;
+	property randomDebrisScale : randomDebrisScale;
+	property explosivedebris : explosivedebris;
+	property explosiveDebrisVel : explosiveDebrisVel;
+	property explosiveDebrisScale : explosiveDebrisScale;
+	property smokingdebris : smokingdebris;
+	property smokingDebrisVel : smokingDebrisVel;
+	property smokingDebrisScale : smokingDebrisScale;
+	property quakeintensity : quakeintensity;
+	property quakeduration : quakeduration;
+	property quakeradius : quakeradius;*/
+	
+	static ToM_GenericExplosion Create(
+		vector3 pos, double scale = 0.5, int tics = 1,
+		int randomdebris = 16, 
+		double randomDebrisVel = 7, 
+		double randomDebrisScale = 1,
+		int smokingdebris = 12, 
+		double smokingDebrisVel = 8, 
+		double smokingDebrisScale = 1, 
+		int explosivedebris = 0, 
+		double explosiveDebrisVel = 10, 
+		double explosiveDebrisScale = 1, 
+		int quakeintensity = 3, 
+		int quakeduration = 12, 
+		double quakeradius = 220
+	)
+	{
+		let exp = ToM_GenericExplosion(Spawn("ToM_GenericExplosion", pos));
+		if (exp)
+		{
+			exp.scale = (scale, scale);
+			exp.tics = abs(tics);
+			exp.randomdebris = randomdebris ;
+			exp.randomDebrisVel = randomDebrisVel ;
+			exp.randomDebrisScale = randomDebrisScale ;
+			exp.smokingdebris = smokingdebris ;
+			exp.smokingDebrisVel = smokingDebrisVel ;
+			exp.smokingDebrisScale = smokingDebrisScale ;
+			exp.explosivedebris = explosivedebris ;
+			exp.explosiveDebrisVel = explosiveDebrisVel ;
+			exp.explosiveDebrisScale = explosiveDebrisScale ;
+			exp.quakeintensity = quakeintensity ;
+			exp.quakeduration = quakeduration ;
+			exp.quakeradius = quakeradius;
+		}
+		return exp;
+	}
+	
+	Default 
+	{
+		/*ToM_GenericExplosion.randomDebris 16;
+		ToM_GenericExplosion.randomDebrisVel 7.0;
+		ToM_GenericExplosion.randomDebrisScale 1.0;
+		ToM_GenericExplosion.smokingDebris 12;
+		ToM_GenericExplosion.smokingDebrisVel 8.0;
+		ToM_GenericExplosion.smokingDebrisScale 1.0;
+		ToM_GenericExplosion.explosiveDebris 0;
+		ToM_GenericExplosion.explosiveDebrisVel 10.0;
+		ToM_GenericExplosion.explosiveDebrisScale 1.0;
+		ToM_GenericExplosion.quakeIntensity 3;
+		ToM_GenericExplosion.quakeDuration 12;
+		ToM_GenericExplosion.quakeRadius 220;*/
+		+NOINTERACTION
+		+NOBLOCKMAP
+		renderstyle 'add';
+		+BRIGHT;
+		alpha 1;
+		scale 0.5;
+	}
+	
+	override void PostBeginPlay() 
+	{
+		super.PostBeginPlay();
+		double rs = scale.x * frandom[sfx](0.8,1.1)*randompick[sfx](-1,1);
+		A_SetScale(rs);
+		roll = random[sfx](0,359);
+		A_Quake(quakeintensity,quakeduration,0,quakeradius,"");
+		if (!CheckPlayerSights())
+			return;
+		CVar s_particles = CVar.GetCVar('ToM_particles', players[consoleplayer]);
+		if (s_particles.GetInt() < 1)
+			return;
+		if (randomdebris > 0) 
+		{
+			for (int i = randomdebris*frandom[sfx](0.7,1.3); i > 0; i--) 
+			{
+				let debris = Spawn("ToM_RandomDebris",pos + (frandom[sfx](-8,8),frandom[sfx](-8,8),frandom[sfx](-8,8)));
+				if (debris) 
+				{
+					double zvel = (pos.z > floorz) ? frandom[sfx](-randomDebrisVel,randomDebrisVel) : frandom[sfx](randomDebrisVel,randomDebrisVel*2);
+					debris.vel = (frandom[sfx](-randomDebrisVel,randomDebrisVel),frandom[sfx](-randomDebrisVel,randomDebrisVel),zvel);
+					debris.A_SetScale(0.5 * randomDebrisScale);
+				}
+			}
+		}
+		if (s_particles.GetInt() < 2)
+			return;
+		if (smokingdebris > 0) 
+		{
+			for (int i = smokingdebris*frandom[sfx](0.7,1.3); i > 0; i--) 
+			{
+				let debris = Spawn("ToM_SmokingDebris",pos + (frandom[sfx](-12,12),frandom[sfx](-12,12),frandom[sfx](-12,12)));
+				if (debris) 
+				{
+					double zvel = (pos.z > floorz) ? frandom[sfx](-smokingDebrisVel / 2,smokingDebrisVel) : frandom[sfx](smokingDebrisVel / 2,smokingDebrisVel * 1.5);
+					debris.vel = (frandom[sfx](-smokingDebrisVel,smokingDebrisVel),frandom[sfx](-smokingDebrisVel,smokingDebrisVel),zvel);
+					debris.A_SetScale(smokingDebrisScale);
+				}
+			}
+		}
+		if (explosivedebris > 0) 
+		{
+			for (int i = explosivedebris*frandom[sfx](0.7,1.3); i > 0; i--) 
+			{
+				let debris = Spawn("ToM_ExplosiveDebris",pos + (frandom[sfx](-12,12),frandom[sfx](-12,12),frandom[sfx](-12,12)));
+				if (debris) 
+				{
+					double zvel = (pos.z > floorz) ? frandom[sfx](-explosiveDebrisVel / 2,explosiveDebrisVel) : frandom[sfx](explosiveDebrisVel / 2,explosiveDebrisVel * 1.5);
+					debris.vel = (frandom[sfx](-explosiveDebrisVel,explosiveDebrisVel),frandom[sfx](-explosiveDebrisVel,explosiveDebrisVel),zvel);
+					debris.A_SetScale(explosiveDebrisScale);
+				}
+			}
+		}
+	}
+	States 
+	{
+	Spawn:
+		BOM6 ABCDEFGHIJKLMNOPQRST 1 A_SetTics(tics);
+		stop;
+	}
+}
 
 class ToM_CrosshairSpawner : ToM_InventoryToken
 {
@@ -733,18 +884,23 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 		if (!ppawn) ppawn = PlayerPawn(owner);
 		
 		let weap = owner.player.readyweapon;
-		if (weap && weap.bMELEEWEAPON)
+		if (!weap || weap.bMELEEWEAPON)
 			return;
 		
 		FLineTracedata tr;
 		owner.LineTrace(owner.angle, 2048, owner.pitch, TRF_SOLIDACTORS, owner.height * 0.5 - owner.floorclip + ppawn.AttackZOffset*ppawn.player.crouchFactor, data: tr);
 		aimPos = tr.hitLocation;
-		SpawnCrosshair();
+		SpawnCrosshair(weap.GetClass());
 	}
 	
-	void SpawnCrosshair()
+	void SpawnCrosshair(class<Weapon> weapclass = null)
 	{
-		Spawn("ToM_CrosshairSpot", aimPos);
+		let spot = Spawn("ToM_CrosshairSpot", aimPos);
+		if (weapclass && weapclass == 'ToM_Blunderbuss')
+		{
+			spot.A_SetRenderstyle(spot.alpha, Style_AddShaded);
+			spot.SetShade("c00003");
+		}
 	}
 }
 

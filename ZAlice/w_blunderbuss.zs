@@ -168,19 +168,130 @@ class ToM_Cannonball : ToM_Projectile
 		xscale 0.25;
 		yscale 0.208;
 		speed 50;
+		//ToM_Projectile.trailactor "ToM_CannonballFireTrail";
+		//ToM_Projectile.trailz 16;
+		//ToM_Projectile.trailvel 2;
 	}
 	States
 	{
 	Spawn:
-		BCAN A 1 NoDelay A_StartSound("weapons/blunderbuss/flyloop", CHAN_BODY, CHANF_LOOPING);
+		BCAN A 1 NoDelay 
+		{
+			A_StartSound("weapons/blunderbuss/flyloop", CHAN_BODY, CHANF_LOOPING);
+			if (GetAge() > 3)
+			{
+				let trl = Spawn("ToM_CannonballFireTrail", pos + (0,0,16));
+				if (trl)
+				{
+					trl.vel = (frandom[bbus](-2, 2),frandom[bbus](-2, 2),frandom[bbus](-2, 2));
+				}
+			}
+		}
 		loop;
 	Death:
 		TNT1 A 0
 		{
 			A_StartSound("weapons/blunderbuss/explode", CHAN_BODY, attenuation: 1);
 			A_Explode(512, 512, XF_THRUSTZ, fulldamagedistance: 256);
+			let exp = ToM_GenericExplosion.Create(
+				pos, scale: 1.5, tics: 2,
+				randomdebris: 24,
+				randomDebrisVel: 18,
+				randomdebrisScale: 2,
+				smokingdebris: 0,
+				explosivedebris: 0,
+				explosivedebrisVel: 10,
+				explosivedebrisScale: 2,
+				quakeIntensity: 4,
+				quakeDuration: 20,
+				quakeradius: 512
+			);
+			if (exp)
+			{
+				exp.A_SetRenderstyle(2, Style_AddShaded);
+				exp.SetShade("ff0161");
+			}
 		}
-		MISL BCD 5 bright;
+		TNT1 AAAAAAAA 1
+		{
+			//int dist = 128;
+			//Spawn("ToM_CannonballExplosion", pos + (frandom[cbex](-dist, dist), frandom[cbex](-dist, dist), frandom[cbex](-dist, dist)));
+			double mom = frandom[cbex](8, 14);
+			let ex = Spawn("ToM_CannonballExplosion", pos);
+			if (ex)
+			{
+				ex.vel = (frandom[cbex](-mom, mom), frandom[cbex](-mom, mom), frandom[cbex](-mom, mom));
+			}
+		}
 		stop;
 	}
 }
+
+class ToM_CannonballExplosion : ToM_SmallDebris
+{
+	Default
+	{
+		+NOINTERACTION
+		+NOBLOCKMAP
+		renderstyle 'add';
+		+BRIGHT;
+		scale 0.5;
+		alpha 0.6;
+	}
+	
+	override void PostBeginPlay() 
+	{
+		super.PostBeginPlay();
+		A_SetScale(scale.x * frandom[sfx](0.5,1.5));
+		bSPRITEFLIP = randompick[sfx](0,1);
+		roll = frandom[sfx](0, 359);
+	}
+	States
+	{
+	Spawn:
+		BOM1 ABCDEFGHIJKLMNOPQRSTUVWX 1 
+		{
+			vel *= 0.86;
+		}
+		stop;
+	}
+}
+
+class ToM_CannonballFireTrail : ToM_BaseFlare
+{
+	double wscale;
+	
+	Default
+	{
+		renderstyle 'Translucent';
+		alpha 0.6;
+	}
+	
+	override void PostBeginPlay() 
+	{
+		super.PostBeginPlay();
+		wrot = frandom[ftrail](-10,10);
+		wscale = 1.15;
+	}
+	
+	override void Tick()
+	{
+		super.Tick();
+		if (!isFrozen())
+		{
+			scale *= wscale;
+			roll += wrot;
+			wscale = Clamp(wscale * 0.95, 1, 10);
+			wrot * 0.95;			
+		}
+	}
+		
+	States
+	{
+	Spawn:
+		BOM4 NOPQ 1;
+		BOM5 ABCDEFGHIJKLMN 1 A_FadeOut(0.02);
+		wait;
+	}
+}
+		

@@ -154,7 +154,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			A_OverlayScale(PSP_Flash, 1 + sc, 1 + sc, WOF_INTERPOLATE);
 			A_AttackZoom(0.001, 0.05, 0.002);
 			A_FireBeam();
-			A_FireBullets(0, 0, 1, 3, pufftype: "ToM_EyeStaffPuff");
+			A_FireBullets(0, 0, 1, 5, pufftype: "ToM_EyeStaffPuff", flags:FBF_NORANDOM);
 		}
 		TNT1 A 0 A_ReFire("FireBeam");
 		goto FireEnd;

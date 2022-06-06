@@ -72,7 +72,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		PPGR Z 5 
 		{
 			A_PepperFlash();
-			A_FireProjectile("ToM_PepperProjectile", spawnofs_xy: frandom[ppgr](5.5,7), frandom[ppgr](4.5,6.5));
+			A_FireProjectile("ToM_PepperProjectile", angle: frandom[ppgr](-2,2), spawnofs_xy: frandom[ppgr](5.5,7), frandom[ppgr](4.5,6.5), pitch: frandom[ppgr](-2,2));
 		}
 		TNT1 A 0 A_ReFire();
 		TNT1 A 0 
@@ -151,7 +151,7 @@ class ToM_PepperProjectile : ToM_Projectile
 		deathsound "";
 		ToM_Projectile.flarecolor "fb4834";
 		ToM_Projectile.trailcolor "fb4834";
-		damage 4;
+		damage 3;
 		translation "0:255=%[0.00,0.00,0.00]:[1.99,0.42,0.09]";
 		renderstyle 'Add';
 		scale 0.65;

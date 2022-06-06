@@ -106,7 +106,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 				psp.frame = invoker.spinframe;
 				if (invoker.spinframe <= 0)
 				{
-					player.SetPSprite(PSP_Weapon, ResolveState("Ready"));
+					//player.SetPSprite(PSP_Weapon, ResolveState("Ready"));
 					return ResolveState("Right.End");
 				}
 			}
@@ -114,7 +114,11 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		}
 		wait;
 	Right.End:
-		PPGR JIHGFEDCBA 2 A_ResetZoom();
+		PPGR JIHGFEDCB 2 A_ResetZoom();
+		PPGR A 2
+		{
+			player.SetPSprite(PSP_Weapon, ResolveState("Ready"));
+		}
 		goto Right.Ready;
 	Highlights:
 		PPGF Z 1 bright;

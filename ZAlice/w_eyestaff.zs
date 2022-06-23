@@ -25,11 +25,11 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			return;
 		if (!invoker.beam1)
 		{
-			invoker.beam1 = ToM_LaserBeam.Create(self, 7, 3.2, -2.3, type: "ToM_EyestaffBeam1");
+			invoker.beam1 = ToM_LaserBeam.Create(self, 7, 3.2, -1.9, type: "ToM_EyestaffBeam1");
 		}
 		if (!invoker.beam2)
 		{
-			invoker.beam2 = ToM_LaserBeam.Create(self, 7, 3.2, -2.1, type: "ToM_EyestaffBeam2");
+			invoker.beam2 = ToM_LaserBeam.Create(self, 7, 3.2, -1.7, type: "ToM_EyestaffBeam2");
 		}
 		if (invoker.beam1)
 		{

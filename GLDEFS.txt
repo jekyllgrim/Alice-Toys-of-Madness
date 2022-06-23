@@ -1,4 +1,0 @@
-brightmap sprite "JEYFA0" { map "JEYBA0" }
-brightmap sprite "JEYFB0" { map "JEYBB0" }
-brightmap sprite "JEYFC0" { map "JEYBC0" }
-brightmap sprite "JEYFD0" { map "JEYBD0" }

@@ -1,0 +1,3 @@
+jfaithart: Jabberwock's Eye Staff base model (https://skfb.ly/o9BQT)
+Lewisk3: GZBeamz API (https://github.com/Lewisk3/GZBeamz)
+Gutawer: Gutamatics API (https://gitlab.com/Gutawer/gzdoom-gutamatics/)

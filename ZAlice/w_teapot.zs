@@ -124,6 +124,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		if (proj)
 			proj.A_StartSound(snd);
 		A_StartSound("weapons/teapot/charge", CHAN_AUTO);
+		A_QuakeEX(1,1,0,6,0,1,sfx:"world/null", flags:QF_SCALEDOWN);
 	}
 	
 	action void A_PickLidFrame()
@@ -139,21 +140,29 @@ class ToM_Teapot : ToM_BaseWeapon
 	States
 	{
 	Select:
-		TNT1 A 0 
+		TPOT C 0 
 		{
-			A_WeaponOffset(-16, WEAPONTOP + 96);
-			//A_OverlayPivot(OverlayID(), 0.6, 0.8);
+			A_WeaponOffset(-48, 110+WEAPONTOP);
+			A_OverlayPivot(OverlayID(), 0.6, 0.8);
+			A_OverlayRotate(OverlayID(), 40);
 		}
-		TPOS DDCCBBAA 1
+		#### ######## 1
 		{
-			A_WeaponOffset(2, -12, WOF_ADD);
+			A_WeaponOffset(6, -13.75, WOF_ADD);
+			A_OverlayRotate(OverlayID(), -5, WOF_ADD);
 			A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
 		}
 		goto Ready;
 	Deselect:
-		TPOS AABBCCDD 1
+		TPOT C 0 
 		{
-			A_WeaponOffset(-2, 12, WOF_ADD);
+			A_OverlayPivot(OverlayID(), 0.6, 0.8);
+			A_StopSound(CHAN_WEAPON);
+		}
+		#### ###### 1
+		{
+			A_WeaponOffset(-6, 14, WOF_ADD);
+			A_OverlayRotate(OverlayID(), 5, WOF_ADD);
 		}
 		TNT1 A 0 A_Lower;
 		wait;
@@ -196,16 +205,32 @@ class ToM_Teapot : ToM_BaseWeapon
 		wait;
 	Fire:
 		TNT1 A 0 A_TeapotFire;
-		TPOT CFG 1 A_WeaponOffset(4, 4, WOF_ADD);
-		TPOT HHH 1 A_WeaponOffset(1.5, 1.5, WOF_ADD);
-		TPOT III 3 A_WeaponOffset(1.5, 1.5, WOF_ADD);
+		TPOT CFG 1 
+		{
+			A_WeaponOffset(4, 4, WOF_ADD);
+			A_AttackZoom(0.005, 0.1);
+		}
+		TPOT HHH 1 
+		{
+			A_WeaponOffset(4, 4, WOF_ADD);
+			A_AttackZoom(0.0035, 0.1);
+		}
+		TPOT III 3 
+		{
+			A_WeaponOffset(4, 4, WOF_ADD);
+			A_AttackZoom(0.0015, 0.1);
+		}
 		TNT1 A 0
 		{
 			if (invoker.heat >= HEAT_MAX)
 				return ResolveState("FireEndHeat");
 			return ResolveState(null);
 		}
-		TPOT IIKKAAABBB 1 A_ResetPSprite(OverlayID(), 10);
+		TPOT IIKKAAABBB 1 
+		{
+			A_ResetPSprite(OverlayID(), 10);
+			A_ResetZoom();
+		}
 		TNT1 A 0 A_ResetPSprite;
 		goto Ready;
 	FireEndHeat:

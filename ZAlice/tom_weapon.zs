@@ -210,8 +210,6 @@ class ToM_BaseWeapon : Weapon abstract
 				return;
 			}
 			vector2 ofs = ( invoker.PSpriteStartX[id] == 0 ? psp.x : invoker.PSpriteStartX[id], invoker.PSpriteStartY[id] == 0 ? psp.y : invoker.PSpriteStartY[id]);
-			//vector2 sc = psp.scale;
-			//double ang = psp.rotation;
 			vector2 ofsStep = (-(ofs.x - targetOfs.x) / staggertics, -(ofs.y - targetOfs.y) / staggertics);
 			/*console.printf("target ofs: (%1.f, %1.f) \ncurrent ofs: (%1.f, %1.f) \ncurrent step: target ofs: (%1.f, %1.f)",
 				targetofs.x, targetOfs.y, 
@@ -220,9 +218,13 @@ class ToM_BaseWeapon : Weapon abstract
 			);*/
 			
 			A_OverlayOffset(layer, ofsStep.x, ofsStep.y, WOF_ADD);
+			vector2 sc = psp.scale;
+			double ang = psp.rotation;
 			if (psp.x == targetOfs.x) invoker.PSpriteStartX[id] = 0;
 			if (psp.y == targetOfs.y) invoker.PSpriteStartY[id] = 0;
+			A_RotatePSprite(layer, -ang / staggertics, WOF_ADD);
 			//A_OverlayRotate(layer, -ang / staggertics, WOF_ADD);
+			A_ScalePSprite(layer, -(sc.x - 1) / staggertics, -(sc.y - 1) / staggertics, WOF_ADD);
 			//A_OverlayScale(layer, -(sc.x - 1) / staggertics, -(sc.y - 1) / staggertics, WOF_ADD);
 			return;
 		}

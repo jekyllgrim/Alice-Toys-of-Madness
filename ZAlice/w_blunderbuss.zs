@@ -13,6 +13,18 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 		Tag "Blunderbuss";
 	}
 	
+	action void A_FireBlunderbuss()
+	{
+		A_Overlay(APSP_UnderLayer, "MuzzleSmoke");
+		//A_Overlay(APSP_TopFX, "Flash");
+		A_FireProjectile("ToM_Cannonball");
+		invoker.charge = 0;
+		A_Recoil(14);
+		if (pos.z <= floorz)
+			vel.z += 6;
+		A_QuakeEX(2,2,1,10,0,1,sfx:"", flags:QF_SCALEDOWN);
+	}
+	
 	States
 	{
 	Select:
@@ -54,7 +66,7 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 	Fire:
 		TNT1 A 0 
 		{
-			A_StartSound("weapons/blunderbuss/fire");
+			A_StartSound("weapons/blunderbuss/fire", CHAN_AUTO);
 			A_StartSound("weapons/blunderbuss/pull", CHAN_AUTO);
 		}
 		BBUS BBBBBBBBBBBBBBBBBBBBBBBBB 1
@@ -64,16 +76,7 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 			A_Overlay(APSP_Overlayer, "Flint");
 			A_SpawnPSParticle("FireParticle", bottom: false, density: 3, xofs: 1.4, yofs: 1);
 		}
-		BBUS B 1 
-		{
-			A_Overlay(APSP_UnderLayer, "MuzzleSmoke");
-			//A_Overlay(APSP_TopFX, "Flash");
-			A_FireProjectile("ToM_Cannonball");
-			invoker.charge = 0;
-			A_Recoil(14);
-			if (pos.z <= floorz)
-				vel.z += 6;
-		}
+		BBUS B 1 A_FireBlunderbuss();
 		TNT1 A 0 A_CameraSway(0, -12, 10);
 		BBUS DF 1;
 		BBUS FFFFFFFFFF 1 

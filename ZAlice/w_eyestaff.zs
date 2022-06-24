@@ -61,6 +61,17 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		A_OverlayAlpha(PSP_Flash, frandom[eye](0.3, 1));
 	}
 	
+	action void A_EyeStaffRecoil()
+	{
+		//A_DampedRandomOffset(3,3, 2);
+		A_OverlayPivot(OverlayID(),0, 0);
+		A_OverlayPivot(PSP_Flash, 0, 0);
+		double sc = frandom[eye](0, 0.025);
+		A_OverlayScale(OverlayID(), 1 + sc, 1 + sc, WOF_INTERPOLATE);
+		A_OverlayScale(PSP_Flash, 1 + sc, 1 + sc, WOF_INTERPOLATE);
+		A_AttackZoom(0.001, 0.05, 0.002);
+	}
+	
 	override void DoEffect()
 	{
 		super.DoEffect();
@@ -146,13 +157,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			A_EyeStaffFlash();
 			A_StartSound("weapons/eyestaff/beam", CHAN_WEAPON, CHANF_LOOPING);
-			//A_DampedRandomOffset(3,3, 2);
-			A_OverlayPivot(OverlayID(),0, 0);
-			A_OverlayPivot(PSP_Flash, 0, 0);
-			double sc = frandom[eye](0, 0.025);
-			A_OverlayScale(OverlayID(), 1 + sc, 1 + sc, WOF_INTERPOLATE);
-			A_OverlayScale(PSP_Flash, 1 + sc, 1 + sc, WOF_INTERPOLATE);
-			A_AttackZoom(0.001, 0.05, 0.002);
+			A_EyeStaffRecoil();
 			A_FireBeam();
 			A_FireBullets(0, 0, 1, 5, pufftype: "ToM_EyeStaffPuff", flags:FBF_NORANDOM);
 		}
@@ -190,7 +195,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			if (proj)
 				proj.A_StartSound("weapons/eyestaff/fireProjectile");
 		}
-		JEYC ACE 1;
+		JEYC ACE 1 A_AttackZoom(0.03, 0.1);
 		JEYC EEEEEE 1 
 		{
 			A_ResetZoom();

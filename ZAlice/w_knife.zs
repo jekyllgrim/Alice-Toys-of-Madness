@@ -39,7 +39,7 @@ class ToM_Knife : ToM_BaseWeapon
 		+WEAPON.NOAUTOFIRE;
 		//Obituary "";
 		Tag "Vorpal Knife";
-		weapon.slotnumber 1;
+		weapon.slotnumber 2;
 		//inventory.icon "";
 		//weapon.upsound "weapons/knife/draw";
 	}
@@ -75,13 +75,13 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_WeaponOffset(-24, 86);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
-			A_OverlayRotate(OverlayID(), 30);		
+			A_RotatePSprite(OverlayID(), 30);		
 			SetKnifeFrame();
 		}
 		VKNF ###### 1
 		{
 			A_WeaponOffset(4, -9, WOF_ADD);
-			A_OverlayRotate(OverlayID(), -5, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -5, WOF_ADD);
 			A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
 		}
 		goto Ready;
@@ -95,7 +95,7 @@ class ToM_Knife : ToM_BaseWeapon
 		VKNF ###### 1
 		{
 			A_WeaponOffset(-4, 9, WOF_ADD);
-			A_OverlayRotate(OverlayID(), 5, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
 		}
 		TNT1 A 0 A_Lower;
 		wait;
@@ -115,12 +115,12 @@ class ToM_Knife : ToM_BaseWeapon
 		VKNI ZABC 2 A_WeaponReady(WRF_NOBOB);
 		VKNI DDEEFFGGHHIIJJKK 1 
 		{
-			A_OverlayRotate(OverlayID(), 2);
+			A_RotatePSprite(OverlayID(), 2);
 			A_WeaponReady(WRF_NOBOB);
 		}
 		VKNI LLMMNNOO 1 
 		{
-			A_OverlayRotate(OverlayID(), -4);
+			A_RotatePSprite(OverlayID(), -4);
 			A_WeaponReady(WRF_NOBOB);
 		}
 		VKNI BAZ 2 A_WeaponReady(WRF_NOBOB);
@@ -147,18 +147,18 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_ResetPSprite(OverlayID());
 			A_OverlayPivot(OverlayID(), 0.5, 0.5);
-			//A_OverlayRotate(OverlayID(), frandom[wrot](-30,0), WOF_INTERPOLATE);
+			A_RotatePSprite(OverlayID(), frandom[wrot](-15,0), WOF_INTERPOLATE);
 		}
 		VKNF AAABB 1
 		{
 			A_WeaponOffset(16, 0, WOF_ADD);
-			//A_OverlayRotate(OverlayID(), -5, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
 		VKNF BBB 1
 		{
-			A_WeaponOffset(-42, 0, WOF_ADD);
-			//A_OverlayRotate(OverlayID(), 5, WOF_ADD);
+			A_WeaponOffset(-55, 0, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
 		}
 		TNT1 C 0
 		{
@@ -166,13 +166,12 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		VKNS CCC 1
 		{
-			A_WeaponOffset(-42, 0, WOF_ADD);
-			//A_OverlayRotate(OverlayID(), 3, WOF_ADD);
+			A_WeaponOffset(-55, 0, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		VKNF CCCHHHHZZZ 1
 		{
-			A_WeaponOffset(17.2, 0, WOF_ADD);
-			//A_OverlayRotate(OverlayID(), -0.1, WOF_ADD);
+			A_ResetPSprite(OverlayID(), 10);
 			A_WeaponReady(WRF_NOBOB);
 		}
 		goto ready;
@@ -181,18 +180,18 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_ResetPSprite(OverlayID());
 			A_OverlayPivot(OverlayID(), 0.9, 0.7);
-			//A_OverlayRotate(OverlayID(), frandom[wrot](0,30), WOF_INTERPOLATE);
+			A_RotatePSprite(OverlayID(), frandom[wrot](0,15), WOF_INTERPOLATE);
 		}
 		VKNF ADDEE 1
 		{
 			A_WeaponOffset(-32, -4, WOF_ADD);
-			//A_OverlayRotate(OverlayID(), 5, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
 		VKNF EEE 1
 		{
 			A_WeaponOffset(44, 4, WOF_ADD);
-			//A_OverlayRotate(OverlayID(), -5, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -5, WOF_ADD);
 		}		
 		TNT1 E 0 
 		{
@@ -201,12 +200,11 @@ class ToM_Knife : ToM_BaseWeapon
 		VKNS FFF 1
 		{
 			A_WeaponOffset(44, 4, WOF_ADD);
-			//A_OverlayRotate(OverlayID(), -3, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		VKNF FFFEEEDDAA 1
 		{
-			A_WeaponOffset(-10.4, -0.4, WOF_ADD);
-			//A_OverlayRotate(OverlayID(), 0.1, WOF_ADD);
+			A_ResetPSprite(OverlayID(), 10);
 			A_WeaponReady(WRF_NOBOB);
 		}
 		goto ready;
@@ -215,7 +213,7 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_ResetPSprite(OverlayID());
 			A_OverlayPivot(OverlayID(), 0.5, 1);
-			//A_OverlayRotate(OverlayID(), frandom[wrot](-10,10), WOF_INTERPOLATE);
+			A_RotatePSprite(OverlayID(), frandom[wrot](-5,15), WOF_INTERPOLATE);
 		}
 		VKNF GGGG 1
 		{
@@ -224,7 +222,7 @@ class ToM_Knife : ToM_BaseWeapon
 		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);		
 		VKNF GGH 1
 		{
-			A_WeaponOffset(-12, 18, WOF_ADD);
+			A_WeaponOffset(-12, 24, WOF_ADD);
 		}		
 		TNT1 H 0 
 		{
@@ -232,11 +230,11 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		VKNS HHHH 1
 		{
-			A_WeaponOffset(-18, 18, WOF_ADD);
+			A_WeaponOffset(-18, 24, WOF_ADD);
 		}
 		VKNF HHHHZZZZZ 1
 		{
-			A_WeaponOffset(8.75, -7.5, WOF_ADD);
+			A_ResetPSprite(OverlayID(), 9);
 			A_WeaponReady(WRF_NOBOB);
 		}
 		goto ready;
@@ -245,18 +243,18 @@ class ToM_Knife : ToM_BaseWeapon
 		VKNF HHH 1
 		{
 			A_WeaponOffset(4, -4, WOF_ADD);
-			A_OverlayRotate(OverlayID(), -2, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -2, WOF_ADD);
 		}
 		TNT1 A 0 A_StartSound("weapons/knife/throw", CHAN_WEAPON);
 		VKNF IIII 1
 		{
 			A_WeaponOffset(3, -2, WOF_ADD);
-			A_OverlayRotate(OverlayID(), -1, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -1, WOF_ADD);
 		}
 		VKNF JJJ 1 
 		{
 			A_WeaponOffset(-5, 15, WOF_ADD);
-			A_OverlayRotate(OverlayID(), 4, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 4, WOF_ADD);
 		}
 		TNT1 A 0 
 		{
@@ -267,7 +265,7 @@ class ToM_Knife : ToM_BaseWeapon
 		VKNF KKK 1 
 		{
 			A_WeaponOffset(-5, 8, WOF_ADD);
-			A_OverlayRotate(OverlayID(), 3, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		VKNF KKK 1 A_WeaponOffset(-1.6, 2, WOF_ADD);
 		VKNF KK 1 A_WeaponOffset(-0.5, 1, WOF_ADD);
@@ -275,7 +273,7 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_WeaponOffset(1.475, -8.125, WOF_ADD);
 			A_WeaponReady(WRF_NOBOB|WRF_NOFIRE);
-			A_OverlayRotate(OverlayID(), -1.375, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -1.375, WOF_ADD);
 		}
 		goto Ready;
 	RestoreKnife:

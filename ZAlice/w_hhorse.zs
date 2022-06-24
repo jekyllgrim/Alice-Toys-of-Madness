@@ -10,6 +10,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	Default
 	{
 		+WEAPON.MELEEWEAPON
+		+WEAPON.NOAUTOFIRE
 		Weapon.slotnumber 1;
 		Weapon.slotpriority 1;
 		Tag "Hobby Horse";

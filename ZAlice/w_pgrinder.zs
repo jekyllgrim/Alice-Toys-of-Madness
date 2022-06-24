@@ -21,6 +21,21 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		A_OverlayRenderstyle(APSP_TopFX, Style_Add);
 	}
 	
+	action void A_PepperRecoil()
+	{
+		A_OverlayPivot(PSP_Weapon,0, 0);
+		A_OverlayPivot(APSP_Righthand, 0, 0);
+		A_OverlayPivot(APSP_UnderLayer, 0, 0);
+		A_OverlayPivot(APSP_TopFX, 0, 0);
+		double sc = frandom[eye](0, 0.03);
+		A_OverlayScale(PSP_Weapon, 1 + sc, 1 + sc, WOF_INTERPOLATE);
+		A_OverlayScale(APSP_Righthand, 1 + sc, 1 + sc, WOF_INTERPOLATE);
+		A_OverlayScale(APSP_UnderLayer, 1 + sc, 1 + sc, WOF_INTERPOLATE);
+		A_OverlayScale(APSP_TopFX, 1 + sc, 1 + sc, WOF_INTERPOLATE);
+		//A_WeaponOffset(2 + frandom[ppgr](-1.4, 1.4), 34 + frandom[ppgr](0, 2), WOF_INTERPOLATE);
+		A_AttackZoom(0.002, 0.03, 0.0016);
+	}
+	
 	States
 	{
 	Select:
@@ -91,8 +106,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 				//console.printf("frame: %d", psp.frame);
 				invoker.spinframe = psp.frame;
 			}
-			A_WeaponOffset(2 + frandom[ppgr](-1.4, 1.4), 34 + frandom[ppgr](0, 2), WOF_INTERPOLATE);
-			A_AttackZoom(0.002, 0.03, 0.0016);
+			A_PepperRecoil();
 		}
 		loop;
 	Right.SpinEnd:
@@ -127,12 +141,12 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	Flash:
 		PPGF A 1 
 		{
-			A_OverlayPivot(OverlayID(), 0.75, 0.75);
+			//A_OverlayPivot(OverlayID(), 0.75, 0.75);
 			let psp = player.FindPSprite(OverlayID());
 			if (psp)
 			{
 				psp.frame = random[ppgr](0,2);
-				psp.rotation += frandom[ppgr](-8,8);
+				//psp.rotation += frandom[ppgr](-8,8);
 			}
 		}
 		#### # 1 bright A_overlayAlpha(OverlayID(),0.75);

@@ -1,3 +1,20 @@
+// KICK
+
+$random weapons/kick/whip { kickwhip1 kickwhip2 kickwhip3 kickwhip4 }
+$random weapons/kick/hitwall { kickwall1 kickwall2 kickwall3 kickwall4 }
+$random weapons/kick/hitflesh { kickflesh1 kickflesh2 kickflesh3 }
+kickwhip1 "sounds/kick/kick_whip01.ogg"
+kickwhip2 "sounds/kick/kick_whip02.ogg"
+kickwhip3 "sounds/kick/kick_whip03.ogg"
+kickwhip4 "sounds/kick/kick_whip04.ogg"
+kickwall1 "sounds/kick/on_blunt01.ogg"
+kickwall2 "sounds/kick/on_blunt02.ogg"
+kickwall3 "sounds/kick/on_blunt03.ogg"
+kickwall4 "sounds/kick/on_blunt04.ogg"
+kickflesh1 "sounds/kick/kick_imp_default01.ogg"
+kickflesh2 "sounds/kick/kick_imp_default02.ogg"
+kickflesh3 "sounds/kick/kick_imp_default03.ogg"
+
 
 // KNIFE
 

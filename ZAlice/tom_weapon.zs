@@ -24,18 +24,6 @@ class ToM_BaseWeapon : Weapon abstract
 	protected state s_althold;
 	protected state s_idle;
 	
-
-	enum ToM_PSprite_Layers
-	{
-		APSP_BottomParticle = -300,
-		APSP_UnderLayer = -10,
-		APSP_Overlayer = 5,
-		APSP_Card = 2,
-		APSP_Thumb = 3,
-		APSP_TopFX = 10,
-		APSP_TopParticle = 300,
-	}
-	
 	enum PABCheck
 	{
 		PAB_ANY,		//don't check if the button is held down
@@ -334,6 +322,90 @@ class ToM_BaseWeapon : Weapon abstract
 			owner.A_SetPitch(finalPitch, SPF_INTERPOLATE);
 			SwayTics--;
 		}
+		
+		if (!owner || !owner.player || owner.health <= 0)
+			return;
+		
+		if (!kickstate)
+			kickstate = ResolveState("KickDo");
+		
+		let plr = owner.player;
+		if (kickstate && plr && (plr.cmd.buttons & BT_USER4))
+		{
+			let psp = plr.FindPSprite(APSP_KickDo);
+			if (!psp || !InStateSequence(psp.curstate, kickstate))
+				plr.SetPSprite(APSP_Kick, ResolveState("Kick"));
+		}
+	}
+	
+	protected state kickstate;
+	protected double prekickspeed;
+	
+	action void A_AliceKick()
+	{
+		A_CustomPunch(30, true, CPF_NOTURN, pufftype: "ToM_Kickpuff", range: 80);
+	}
+	
+	States
+	{
+	Kick:
+		TNT1 A 1 
+		{		
+			A_Overlay(APSP_KickDo, "KickDo");
+			A_OverlayFlags(APSP_KickDo, PSPF_AddWeapon, false);
+			A_OverlayOffset(APSP_KickDo, -20, WEAPONTOP);
+		}
+		stop;
+	KickDo:
+		TNT1 A 0
+		{
+			invoker.prekickspeed = speed;
+			speed *= 0.1;
+		}
+		AKIK AB 1;
+		TNT1 A 0 A_StartSound("weapons/kick/whip", CHAN_AUTO);
+		AKIK CDEF 1;
+		AKIK G 2 A_AliceKick();
+		AKIK HIJKLM 2;
+		AKIK NO 2
+		{
+			speed = invoker.prekickspeed;
+		}
+		stop;
+	}
+}
+
+class ToM_Kickpuff : ToM_BasePuff
+{
+	Default
+	{
+		Attacksound "weapons/kick/hitwall";
+		Seesound "weapons/kick/hitflesh";
+		+HITTRACER
+		+PUFFONACTORS
+	}
+	States
+	{
+	Spawn:
+		TNT1 A 1 NoDelay 
+		{		
+			if (target && tracer && tracer.bISMONSTER && !tracer.bDONTTHRUST && !tracer.bBOSS && !tracer.bNOGRAVITY && !tracer.bFLOAT && tracer.mass <= 400) 
+			{
+				//initial push away speed is based on mosnter's mass:
+				double pushspeed = LinearMap(tracer.mass,100,400,10,5);
+				pushspeed = Clamp(pushspeed,5,20) * frandom[sfx](0.85,1.2);
+				//bonus Z velocity is based on the players view pitch (so that you can knock monsters further by looking up):
+				double pushz = Clamp(LinearMap(target.pitch,0,-90,0,10), 0, 10);
+				tracer.Vel3DFromAngle(
+					pushspeed,
+					target.angle,
+					Clamp(target.pitch - 5, -15, -45)
+				);
+				tracer.vel.z += pushz;
+			}
+			return ResolveState(null);
+		}
+		stop;
 	}
 }
 
@@ -349,6 +421,13 @@ class ToM_BasePuff : Actor
 		-ALLOWPARTICLES
 		+DONTSPLASH
 		-FLOORCLIP
+	}
+	
+	States
+	{
+	Spawn:
+		TNT1 A 1;
+		stop;
 	}
 }
 

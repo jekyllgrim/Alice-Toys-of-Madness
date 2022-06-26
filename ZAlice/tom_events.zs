@@ -1,5 +1,25 @@
 class ToM_Mainhandler : EventHandler
 {
+	
+	static bool IsVoodooDoll(PlayerPawn mo) 
+	{
+		return !mo.player || !mo.player.mo || mo.player.mo != mo;
+	}
+	
+	void GiveStartingItems(int playerNumber)
+	{
+		if (!PlayerInGame[playerNumber])
+			return;
+		let plr = players[playerNumber].mo;
+		if (!plr)
+			return;
+		if (IsVoodooDoll(plr))
+			return;
+		plr.GiveInventory("ToM_CrosshairSpawner", 1);
+		plr.GiveInventory("ToM_InvReplacementControl", 1);
+		//plr.GiveInventory("ToM_KickWeapon", 1);
+	}
+	
 	override void WorldThingDamaged(worldEvent e)
 	{
 		if (e.thing && e.Inflictor && e.Inflictor.GetClass() == 'ToM_TeaProjectile')
@@ -12,20 +32,11 @@ class ToM_Mainhandler : EventHandler
 	
 	override void PlayerSpawned(PlayerEvent e)
 	{
-		int pnumber = e.PlayerNumber;
-		if (!PlayerInGame[pnumber])
-			return;
-		let plr = players[pnumber].mo;
-		if (!plr)
-			return;
-		if (IsVoodooDoll(plr))
-			return;
-		plr.GiveInventory("ToM_CrosshairSpawner", 1);
-		plr.GiveInventory("ToM_InvReplacementControl", 1);
+		GiveStartingItems(e.PlayerNumber);
 	}
 	
-	static bool IsVoodooDoll(PlayerPawn mo) 
+	override void PlayerRespawned(PlayerEvent e)
 	{
-		return !mo.player || !mo.player.mo || mo.player.mo != mo;
+		GiveStartingItems(e.PlayerNumber);
 	}
 }

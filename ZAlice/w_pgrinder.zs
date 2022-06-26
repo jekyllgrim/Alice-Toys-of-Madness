@@ -27,7 +27,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		A_OverlayPivot(APSP_Righthand, 0, 0);
 		A_OverlayPivot(APSP_UnderLayer, 0, 0);
 		A_OverlayPivot(APSP_TopFX, 0, 0);
-		double sc = frandom[eye](0, 0.03);
+		double sc = frandom[eye](0, 0.028);
 		A_OverlayScale(PSP_Weapon, 1 + sc, 1 + sc);
 		A_OverlayScale(APSP_Righthand, 1 + sc, 1 + sc);
 		A_OverlayScale(APSP_UnderLayer, 1 + sc, 1 + sc);
@@ -36,11 +36,20 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		A_AttackZoom(0.002, 0.03, 0.0016);
 	}
 	
+	action void A_ResetPepperSprite()
+	{
+		A_ResetPSprite(PSP_Weapon);
+		A_ResetPSprite(APSP_Righthand);
+		A_ResetPSprite(APSP_UnderLayer);
+		A_ResetPSprite(APSP_TopFX);
+	}
+	
 	States
 	{
 	Select:
 		PPGR Y 0 
 		{
+			A_ClearOverlays(APSP_Righthand, APSP_Righthand);
 			A_WeaponOffset(-24, 90+WEAPONTOP);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
 			A_RotatePSPrite(OverlayID(), 30);
@@ -91,6 +100,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		TNT1 A 0 A_ReFire();
 		TNT1 A 0 
 		{
+			A_ResetPepperSprite();
 			A_Overlay(APSP_Righthand, "Right.SpinEnd");
 			A_StartSound("weapons/pgrinder/stop", CHAN_WEAPON);
 		}
@@ -113,6 +123,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		PPGR # 1
 		{
 			A_ResetZoom();
+			A_ResetPSprite(OverlayID());
 			let psp = player.FindPSprite(OverlayID());
 			if (psp)
 			{

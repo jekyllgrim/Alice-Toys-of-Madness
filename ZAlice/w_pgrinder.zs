@@ -28,10 +28,10 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		A_OverlayPivot(APSP_UnderLayer, 0, 0);
 		A_OverlayPivot(APSP_TopFX, 0, 0);
 		double sc = frandom[eye](0, 0.03);
-		A_OverlayScale(PSP_Weapon, 1 + sc, 1 + sc, WOF_INTERPOLATE);
-		A_OverlayScale(APSP_Righthand, 1 + sc, 1 + sc, WOF_INTERPOLATE);
-		A_OverlayScale(APSP_UnderLayer, 1 + sc, 1 + sc, WOF_INTERPOLATE);
-		A_OverlayScale(APSP_TopFX, 1 + sc, 1 + sc, WOF_INTERPOLATE);
+		A_OverlayScale(PSP_Weapon, 1 + sc, 1 + sc);
+		A_OverlayScale(APSP_Righthand, 1 + sc, 1 + sc);
+		A_OverlayScale(APSP_UnderLayer, 1 + sc, 1 + sc);
+		A_OverlayScale(APSP_TopFX, 1 + sc, 1 + sc);
 		//A_WeaponOffset(2 + frandom[ppgr](-1.4, 1.4), 34 + frandom[ppgr](0, 2), WOF_INTERPOLATE);
 		A_AttackZoom(0.002, 0.03, 0.0016);
 	}
@@ -43,12 +43,12 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		{
 			A_WeaponOffset(-24, 90+WEAPONTOP);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
-			A_OverlayRotate(OverlayID(), 30);
+			A_RotatePSPrite(OverlayID(), 30);
 		}
 		#### ###### 1
 		{
 			A_WeaponOffset(4, -15, WOF_ADD);
-			A_OverlayRotate(OverlayID(), -5, WOF_ADD);
+			A_RotatePSPrite(OverlayID(), -5, WOF_ADD);
 			A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
 		}
 		goto Ready;
@@ -56,13 +56,12 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		PPGR Y 0
 		{
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
-			player.SetPSprite(APSP_Righthand, ResolveState("Null"));
 		}
 		#### ###### 1
 		{
 			A_ResetZoom();
 			A_WeaponOffset(-4, 15, WOF_ADD);
-			A_OverlayRotate(OverlayID(), 5, WOF_ADD);
+			A_RotatePSPrite(OverlayID(), 5, WOF_ADD);
 		}
 		TNT1 A 0 A_Lower;
 		wait;
@@ -106,7 +105,8 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 				//console.printf("frame: %d", psp.frame);
 				invoker.spinframe = psp.frame;
 			}
-			A_PepperRecoil();
+			if (player.refire)
+				A_PepperRecoil();
 		}
 		loop;
 	Right.SpinEnd:

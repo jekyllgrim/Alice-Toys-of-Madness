@@ -2195,7 +2195,6 @@ Sprite "PPGRD0", 403, 215
 
 Sprite "PPGRE0", 403, 215
 {
-	NoTrim
 	YScale 1.200
 	Offset -94, 4
 	Patch "PPGRE", 0, 0
@@ -2489,6 +2488,113 @@ Sprite "BBUSP0", 128, 128
 	YScale 7.600
 	Offset -1798, -1002
 	Patch "SPRKE0", 0, 0
+}
+
+Sprite "AKIKA0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKA", 0, 0
+}
+
+Sprite "AKIKB0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKB", 0, 0
+}
+
+Sprite "AKIKC0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKC", 0, 0
+}
+
+Sprite "AKIKD0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKD", 0, 0
+}
+
+Sprite "AKIKE0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKE", 0, 0
+}
+
+Sprite "AKIKF0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKF", 0, 0
+}
+
+Sprite "AKIKG0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKG", 0, 0
+}
+
+Sprite "AKIKH0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKH", 0, 0
+}
+
+Sprite "AKIKI0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKI", 0, 0
+}
+
+Sprite "AKIKJ0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKJ", 0, 0
+}
+
+Sprite "AKIKK0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKK", 0, 0
+}
+
+Sprite "AKIKL0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKL", 0, 0
+}
+
+Sprite "AKIKM0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKM", 0, 0
+}
+
+Sprite "AKIKN0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKN", 0, 0
+}
+
+Sprite "AKIKO0", 257, 289
+{
+	YScale 1.200
+	Offset 1, 65
+	Patch "AKIKO", 0, 0
 }
 
 // End of texture definitions

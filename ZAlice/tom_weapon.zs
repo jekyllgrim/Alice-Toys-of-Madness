@@ -970,7 +970,27 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 		
 		FLineTracedata tr;
 		owner.LineTrace(owner.angle, 2048, owner.pitch, TRF_SOLIDACTORS, owner.height * 0.5 - owner.floorclip + ppawn.AttackZOffset*ppawn.player.crouchFactor, data: tr);
-		aimPos = tr.hitLocation;
+		
+		let hitnormal = -tr.HitDir;
+		if ( tr.HitType == TRACE_HitFloor ) {
+			if ( tr.Hit3DFloor ) 
+				hitnormal = -tr.Hit3DFloor.top.Normal;
+			else 
+				hitnormal = tr.HitSector.floorplane.Normal;
+		}
+		else if ( tr.HitType == TRACE_HitCeiling )    {
+			if ( tr.Hit3DFloor ) 
+				hitnormal = -tr.Hit3DFloor.bottom.Normal;
+			else 
+				hitnormal = tr.HitSector.ceilingplane.Normal;
+		}
+		else if ( tr.HitType == TRACE_HitWall ) {
+			hitnormal = (-tr.HitLine.delta.y,tr.HitLine.delta.x,0).unit();
+			if ( !tr.LineSide ) 
+				hitnormal *= -1;
+		}
+		
+		aimPos = tr.hitLocation + (hitnormal * 8);
 		SpawnCrosshair(weap.GetClass());
 	}
 	

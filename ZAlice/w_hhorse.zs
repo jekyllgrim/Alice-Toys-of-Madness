@@ -255,6 +255,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		{
 			A_WeaponOffset(24, 90+WEAPONTOP);
 			A_RotatePSprite(OverlayID(), -30);
+			A_WeaponReady(WRF_NOBOB);
 		}
 		HHRS AAAAAA 1
 		{

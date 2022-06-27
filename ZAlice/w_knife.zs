@@ -70,6 +70,9 @@ class ToM_Knife : ToM_BaseWeapon
 	
 	States
 	{
+	Spawn:
+		ALVB A -1;
+		stop;
 	Select:
 		TNT1 A 0 
 		{

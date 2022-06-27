@@ -27,6 +27,9 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 	
 	States
 	{
+	Spawn:
+		ALBB A -1;
+		stop;
 	Select:
 		BBUS A 0 
 		{

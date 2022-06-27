@@ -139,6 +139,9 @@ class ToM_Teapot : ToM_BaseWeapon
 	
 	States
 	{
+	Spawn:
+		ALTP A -1;
+		stop;
 	Select:
 		TPOT C 0 
 		{

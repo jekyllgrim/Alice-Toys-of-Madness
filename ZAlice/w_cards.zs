@@ -106,6 +106,9 @@ class ToM_Cards : ToM_BaseWeapon
 	
 	States
 	{
+	Spawn:
+		ALCA A -1;
+		stop;
 	Select:
 		TNT1 A 0 
 		{

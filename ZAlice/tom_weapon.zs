@@ -1,6 +1,7 @@
 class ToM_BaseWeapon : Weapon abstract
 {
 	mixin ToM_Math;
+	mixin ToM_PlayerSightCheck;
 	
 	double PSpriteStartX[200];
 	double PSpriteStartY[200];
@@ -9,6 +10,9 @@ class ToM_BaseWeapon : Weapon abstract
 	protected int idleCounter; //used by idle animations 
 	protected int particleLayer; //used by multi-layer particle effects
 	protected double atkzoom;
+	
+	color PickupParticleColor;
+	property PickupParticleColor : PickupParticleColor;
 	
 	protected int swayTics;
 	protected double maxSwayTics; // starting point for the timer
@@ -34,16 +38,89 @@ class ToM_BaseWeapon : Weapon abstract
 	
 	Default 
 	{
+		Inventory.Pickupmessage "";
+		Inventory.PickupSound "alice/pickups/weapon";
 		weapon.BobStyle "InverseSmooth";
 		weapon.BobRangeX 0.32;
 		weapon.BobRangeY 0.17;
 		weapon.BobSpeed 1.85;
+		scale 0.5;
+		FloatBobStrength 0.8;
+		ToM_BaseWeapon.PickupParticleColor "7fa832";
 	}
 	
 	override void BeginPlay()
 	{
 		super.BeginPlay();
 		swayTics = -1;
+	}
+	
+	override void DoEffect()
+	{
+		super.DoEffect();
+		if (SwayTics >= 0) 
+		{
+			double phase = (SwayTics / maxSwayTics) * 90.0;
+			double newAngleSway = (cos(phase) * SwayAngle);
+			double newPitchSway = (cos(phase) * SwayPitch);
+			double finalAngle = (owner.angle - currentAngleSway) + newAngleSway;
+			double finalPitch = (owner.pitch - currentPitchSway) + newPitchSway;
+			currentAngleSway = newAngleSway;
+			currentPitchSway = newPitchSway;
+			owner.A_SetAngle(finalAngle, SPF_INTERPOLATE);
+			owner.A_SetPitch(finalPitch, SPF_INTERPOLATE);
+			SwayTics--;
+		}
+		
+		if (!owner || !owner.player || owner.health <= 0)
+			return;
+		
+		if (!kickstate)
+			kickstate = ResolveState("KickDo");
+		
+		let plr = owner.player;
+		if (kickstate && plr && (plr.cmd.buttons & BT_USER4))
+		{
+			let psp = plr.FindPSprite(APSP_KickDo);
+			if (!psp || !InStateSequence(psp.curstate, kickstate))
+				plr.SetPSprite(APSP_Kick, ResolveState("Kick"));
+		}
+	}
+	
+	override void Tick()
+	{
+		super.Tick();
+		if (owner || isFrozen())
+			return;
+		
+		WorldOffset.z = BobSin(FloatBobPhase + 0.85 * level.maptime) * FloatBobStrength;
+		
+		if (GetAge() % 10 == 0)
+			canSeePlayer = CheckPlayerSights();		
+		if (!canSeePlayer)
+			return;
+			
+		/*for (int i = 0; i < 5; i++)
+		{		
+			A_SpawnItemEx(
+				"ToM_WeaponPickupParticle",
+				xofs: radius,
+				zofs: frandom[pickupPart](8, 16),
+				zvel: frandom[pickupPart](2, 4),
+				angle: frandom[pickupPart](0, 359),
+				flags:SXF_SETMASTER
+			);
+		}*/
+		for (int i = 0; i < 5; i++)
+		{		
+			A_SpawnItemEx(
+				"ToM_WeaponPickupParticle",
+				xofs: frandom[pickupPart](-radius, radius),
+				yofs: frandom[pickupPart](-radius, radius),
+				zofs: frandom[pickupPart](1, 4),
+				zvel: frandom[pickupPart](0.4, 4)
+			);
+		}
 	}
 	
 	action void A_AttackZoom(double step = 0.001, double limit = 0.03, double jitter = 0.002)
@@ -306,38 +383,6 @@ class ToM_BaseWeapon : Weapon abstract
 		s_idle = FindState("IdleAnim");
 	}
 	
-	override void DoEffect()
-	{
-		super.DoEffect();
-		if (SwayTics >= 0) 
-		{
-			double phase = (SwayTics / maxSwayTics) * 90.0;
-			double newAngleSway = (cos(phase) * SwayAngle);
-			double newPitchSway = (cos(phase) * SwayPitch);
-			double finalAngle = (owner.angle - currentAngleSway) + newAngleSway;
-			double finalPitch = (owner.pitch - currentPitchSway) + newPitchSway;
-			currentAngleSway = newAngleSway;
-			currentPitchSway = newPitchSway;
-			owner.A_SetAngle(finalAngle, SPF_INTERPOLATE);
-			owner.A_SetPitch(finalPitch, SPF_INTERPOLATE);
-			SwayTics--;
-		}
-		
-		if (!owner || !owner.player || owner.health <= 0)
-			return;
-		
-		if (!kickstate)
-			kickstate = ResolveState("KickDo");
-		
-		let plr = owner.player;
-		if (kickstate && plr && (plr.cmd.buttons & BT_USER4))
-		{
-			let psp = plr.FindPSprite(APSP_KickDo);
-			if (!psp || !InStateSequence(psp.curstate, kickstate))
-				plr.SetPSprite(APSP_Kick, ResolveState("Kick"));
-		}
-	}
-	
 	protected state kickstate;
 	protected double prekickspeed;
 	
@@ -372,6 +417,42 @@ class ToM_BaseWeapon : Weapon abstract
 			speed = invoker.prekickspeed;
 		}
 		stop;
+	}
+}
+
+class ToM_WeaponPickupParticle : ToM_SmallDebris
+{
+	Default
+	{
+		+NOINTERACTION
+		renderstyle 'Add';
+		alpha 2;
+		scale 0.25;
+	}
+	
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		//roll = frandom[pickupPart](0,360);
+		//scale *= frandom[pickupPart](0.8, 1.2);
+		if (master)
+		{
+			let weap = ToM_BaseWeapon(master);
+			A_SetRenderstyle(alpha, Style_Shaded);
+			SetShade(weap.PickupParticleColor);
+		}
+	}
+
+	States
+	{
+	Spawn:
+		ACWE Z 1 
+		{
+			A_FadeOut(0.1);
+			roll += 5;
+			scale *= 0.95;
+		}
+		loop;
 	}
 }
 

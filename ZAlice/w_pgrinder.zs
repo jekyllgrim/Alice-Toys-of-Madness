@@ -46,6 +46,9 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	
 	States
 	{
+	Spawn:
+		ALPG A -1;
+		stop;
 	Select:
 		PPGR Y 0 
 		{

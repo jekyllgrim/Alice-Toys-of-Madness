@@ -87,6 +87,9 @@ class ToM_Eyestaff : ToM_BaseWeapon
 
 	States
 	{
+	Spawn:
+		ALJE A -1;
+		stop;
 	Select:
 		JEYC A 0 
 		{

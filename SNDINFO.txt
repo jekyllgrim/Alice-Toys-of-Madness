@@ -1,3 +1,5 @@
+alice/pickups/weapon "sounds/weaponpickup.ogg"
+
 // KICK
 
 $random weapons/kick/whip { kickwhip1 kickwhip2 kickwhip3 kickwhip4 }

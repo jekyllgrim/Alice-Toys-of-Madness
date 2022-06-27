@@ -39,4 +39,19 @@ class ToM_Mainhandler : EventHandler
 	{
 		GiveStartingItems(e.PlayerNumber);
 	}
+	
+	override void CheckReplacement (replaceEvent e)
+	{
+		let clsname = e.Replacee.GetClassName();
+		switch (clsname)
+		{
+		case 'Chainsaw':			e.Replacement = "ToM_HobbyHorse"; break;
+		case 'Pistol':				e.Replacement = "ToM_Cards"; break;
+		case 'Shotgun':			e.Replacement = "ToM_Cards"; break;
+		case 'SuperShotgun':		e.Replacement = "ToM_Cards"; break;
+		case 'RocketLauncher':	e.Replacement = "ToM_Teapot"; break;
+		case 'PlasmaRifle':		e.Replacement = "ToM_Eyestaff"; break;
+		case 'BFG9000':			e.Replacement = "ToM_Blunderbuss"; break;
+		}
+	}
 }

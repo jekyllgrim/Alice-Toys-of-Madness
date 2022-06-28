@@ -40,6 +40,20 @@ class ToM_Mainhandler : EventHandler
 		GiveStartingItems(e.PlayerNumber);
 	}
 	
+	override void PlayerDied(playerEvent e)
+	{
+		if (!PlayerInGame[e.PlayerNumber])
+			return;
+		PlayerInfo player = players[e.PlayerNumber];				
+		if (player) 
+		{
+			for (int i = 1000; i > 0; i--)
+				player.SetPSprite(i,null);
+			for (int i = -1000; i < 0; i++)
+				player.SetPSprite(i,null);
+		}
+	}
+	
 	override void CheckReplacement (replaceEvent e)
 	{
 		let clsname = e.Replacee.GetClassName();
@@ -49,6 +63,7 @@ class ToM_Mainhandler : EventHandler
 		case 'Pistol':				e.Replacement = "ToM_Cards"; break;
 		case 'Shotgun':			e.Replacement = "ToM_Cards"; break;
 		case 'SuperShotgun':		e.Replacement = "ToM_Cards"; break;
+		case 'Chaingun':			e.Replacement = "ToM_PepperGrinder"; break;
 		case 'RocketLauncher':	e.Replacement = "ToM_Teapot"; break;
 		case 'PlasmaRifle':		e.Replacement = "ToM_Eyestaff"; break;
 		case 'BFG9000':			e.Replacement = "ToM_Blunderbuss"; break;

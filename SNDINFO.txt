@@ -1,5 +1,94 @@
 alice/pickups/weapon "sounds/weaponpickup.ogg"
 
+misc/teleport "sounds/player/respawn.ogg"
+
+// ALICE
+
+$playeralias		player	male	*death		alice/death
+$playeralias		player	male	*xdeath	alice/xdeath
+$playeralias		player	male	*gibbed	alice/xdeath
+$playeralias		player	male	*pain100	alice/lightpain
+$playeralias		player	male	*pain75	alice/pain
+$playeralias		player	male	*pain50	alice/pain
+$playeralias		player	male	*pain25	alice/pain
+$playeralias		player	male	*land		alice/land
+$playeralias		player	male	*jump		alice/jump
+$playeralias		player	male	*grunt		alice/usefail
+$playeralias		player	male	*usefail	alice/usefail
+$playeralias		player	male	*falling	alice/falldeath
+
+$playeralias		player	female	*death		alice/death
+$playeralias		player	female	*xdeath	alice/xdeath
+$playeralias		player	female	*gibbed	alice/xdeath
+$playeralias		player	female	*pain100	alice/lightpain
+$playeralias		player	female	*pain75	alice/pain
+$playeralias		player	female	*pain50	alice/pain
+$playeralias		player	female	*pain25	alice/pain
+$playeralias		player	female	*land		alice/land
+$playeralias		player	female	*jump		alice/jump
+$playeralias		player	female	*grunt		alice/usefail
+$playeralias		player	female	*usefail	alice/usefail
+$playeralias		player	female	*falling	alice/falldeath
+
+$playeralias		player	other	*death		alice/death
+$playeralias		player	other	*xdeath	alice/xdeath
+$playeralias		player	other	*gibbed	alice/xdeath
+$playeralias		player	other	*pain100	alice/lightpain
+$playeralias		player	other	*pain75	alice/pain
+$playeralias		player	other	*pain50	alice/pain
+$playeralias		player	other	*pain25	alice/pain
+$playeralias		player	other	*land		alice/land
+$playeralias		player	other	*jump		alice/jump
+$playeralias		player	other	*grunt		alice/usefail
+$playeralias		player	other	*usefail	alice/usefail
+$playeralias		player	other	*falling	alice/falldeath
+
+alice/falldeath "sounds/player/death_fall.ogg"
+$random alice/jump { alice/jump1 alice/jump2 alice/jump3 alice/jump4 alice/jump5 alice/jump6 alice/jump7 }
+alice/jump1 "sounds/player/jump01.ogg"
+alice/jump2 "sounds/player/jump02.ogg"
+alice/jump3 "sounds/player/jump03.ogg"
+alice/jump4 "sounds/player/jump04.ogg"
+alice/jump5 "sounds/player/jump05.ogg"
+alice/jump6 "sounds/player/jump06.ogg"
+alice/jump7 "sounds/player/jump07.ogg"
+$random alice/land { alice/land1 alice/land2 }
+alice/land1 "sounds/player/jumpland01.ogg"
+alice/land2 "sounds/player/jumpland02.ogg"
+alice/lowhealth "sounds/player/lowhealth.ogg"
+$random alice/pain { alice/pain01 alice/pain02 alice/pain03 alice/pain04 alice/pain05 alice/pain06 alice/pain07 alice/pain08 alice/pain09 alice/pain10 }
+alice/pain01 "sounds/player/damaged01.ogg"
+alice/pain02 "sounds/player/damaged02.ogg"
+alice/pain03 "sounds/player/damaged03.ogg"
+alice/pain04 "sounds/player/damaged04.ogg"
+alice/pain05 "sounds/player/damaged05.ogg"
+alice/pain06 "sounds/player/damaged06.ogg"
+alice/pain07 "sounds/player/damaged07.ogg"
+alice/pain08 "sounds/player/damaged08.ogg"
+alice/pain09 "sounds/player/damaged09.ogg"
+alice/pain10 "sounds/player/damaged10.ogg"
+$random alice/death { alice/death1 alice/death2 alice/death3 alice/death4 alice/death5 }
+alice/death1 "sounds/player/death_combat01.ogg"
+alice/death2 "sounds/player/death_combat02.ogg"
+alice/death3 "sounds/player/death_combat03.ogg"
+alice/death4 "sounds/player/death_combat04.ogg"
+alice/death5 "sounds/player/death_combat05.ogg"
+$random alice/lightpain { alice/lightpain1 alice/lightpain2 alice/lightpain3 alice/lightpain4 alice/lightpain5 }
+alice/lightpain1 "sounds/player/vox_hh_attack01.ogg"
+alice/lightpain2 "sounds/player/vox_hh_attack02.ogg"
+alice/lightpain3 "sounds/player/vox_hh_attack03.ogg"
+alice/lightpain4 "sounds/player/vox_hh_attack04.ogg"
+alice/lightpain5 "sounds/player/vox_hh_attack05.ogg"
+$random alice/usefail] { alice/usefail]1 alice/usefail]2 }
+alice/usefail1 "sounds/player/lever_vox01.ogg"
+alice/usefail2 "sounds/player/lever_vox02.ogg"
+$random alice/xdeath { alice/xdeath1 alice/xdeath2 alice/xdeath3 alice/xdeath4 }
+alice/xdeath1 "sounds/player/Guts_Spill_01.ogg"
+alice/xdeath2 "sounds/player/Guts_Spill_02.ogg"
+alice/xdeath3 "sounds/player/Guts_Spill_03.ogg"
+alice/xdeath4 "sounds/player/Guts_Spill_04.ogg"
+
+
 // KICK
 
 $random weapons/kick/whip { kickwhip1 kickwhip2 kickwhip3 kickwhip4 }
@@ -122,6 +211,7 @@ cardhitflesh2 "sounds/cards/cards_hit_flesh2.wav"
 
 weapons/pgrinder/windup		"sounds/pgrinder/pepperg_windup.ogg"
 $random weapons/pgrinder/fire { grinderfire1 grinderfire2 grinderfire3 grinderfire4 grinderfire5 grinderfire6 }
+$limit weapons/pgrinder/fire 0
 grinderfire1		"sounds/pgrinder/pepperg_fire01.ogg"
 grinderfire2		"sounds/pgrinder/pepperg_fire02.ogg"
 grinderfire3		"sounds/pgrinder/pepperg_fire03.ogg"

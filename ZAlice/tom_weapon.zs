@@ -105,21 +105,24 @@ class ToM_BaseWeapon : Weapon abstract
 			A_SpawnItemEx(
 				"ToM_WeaponPickupParticle",
 				xofs: radius,
-				zofs: frandom[pickupPart](8, 16),
-				zvel: frandom[pickupPart](2, 4),
-				angle: frandom[pickupPart](0, 359),
+				zofs: frandom[pickupPartvis](8, 16),
+				zvel: frandom[pickupPartvis](2, 4),
+				angle: frandom[pickupPartvis](0, 359),
 				flags:SXF_SETMASTER
 			);
 		}*/
-		for (int i = 0; i < 5; i++)
-		{		
-			A_SpawnItemEx(
-				"ToM_WeaponPickupParticle",
-				xofs: frandom[pickupPart](-radius, radius),
-				yofs: frandom[pickupPart](-radius, radius),
-				zofs: frandom[pickupPart](1, 4),
-				zvel: frandom[pickupPart](0.4, 4)
-			);
+		if (players[consoleplayer].mo && !players[consoleplayer].mo.CountInv(self.GetClass()))
+		{
+			for (int i = 0; i < 5; i++)
+			{		
+				A_SpawnItemEx(
+					"ToM_WeaponPickupParticle",
+					xofs: frandom[pickupPartvis](-radius, radius),
+					yofs: frandom[pickupPartvis](-radius, radius),
+					zofs: frandom[pickupPartvis](1, 4),
+					zvel: frandom[pickupPartvis](0.4, 4)
+				);
+			}
 		}
 	}
 	
@@ -420,11 +423,16 @@ class ToM_BaseWeapon : Weapon abstract
 	}
 }
 
-class ToM_WeaponPickupParticle : ToM_SmallDebris
+class ToM_WeaponPickupParticle : Actor
 {
 	Default
 	{
 		+NOINTERACTION
+		+NOBLOCKMAP
+		+NOSECTOR
+		+SYNCHRONIZED
+		+DONTBLAST
+		FloatBobPhase 0;
 		renderstyle 'Add';
 		alpha 2;
 		scale 0.25;
@@ -435,23 +443,26 @@ class ToM_WeaponPickupParticle : ToM_SmallDebris
 		super.PostBeginPlay();
 		//roll = frandom[pickupPart](0,360);
 		//scale *= frandom[pickupPart](0.8, 1.2);
-		if (master)
+		/*if (master)
 		{
 			let weap = ToM_BaseWeapon(master);
 			A_SetRenderstyle(alpha, Style_Shaded);
 			SetShade(weap.PickupParticleColor);
-		}
+		}*/
+	}
+	
+	override void Tick()
+	{
+		SetOrigin(pos + vel, true);
+		A_FadeOut(0.1);
+		roll += 5;
+		scale *= 0.95;
 	}
 
 	States
 	{
 	Spawn:
-		ACWE Z 1 
-		{
-			A_FadeOut(0.1);
-			roll += 5;
-			scale *= 0.95;
-		}
+		ACWE Z 1;
 		loop;
 	}
 }
@@ -515,6 +526,12 @@ class ToM_BasePuff : Actor
 //Base projectile class that can produce relatively solid trails:
 Class ToM_Projectile : ToM_BaseActor abstract 
 {
+	protected bool ShouldActivateLines;
+	property ShouldActivateLines : ShouldActivateLines;
+	protected bool dead;
+	protected state s_death;
+	protected state s_crash;
+	
 	//protected bool mod; //affteced by Weapon Modifier
 	mixin ToM_Math;
 	protected vector3 spawnpos;
@@ -591,9 +608,28 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		return (victim.bSHOOTABLE && !victim.bNONSHOOTABLE && !victim.bNOCLIP && !victim.bNOINTERACTION && !victim.bINVULNERABLE && !victim.bDORMANT && !victim.bNODAMAGE  && !victim.bSPECTRAL);
 	}
 	
+	bool FireLineActivator(bool debug = false)
+	{	
+		FLineTraceData lact;
+		LineTrace(angle, 4096, pitch, data: lact);
+		if (debug)
+		{
+			Spawn("ToM_DebugSpot", lact.HitLocation);
+		}
+		if (lact.HitLine)
+		{
+			let lineact = lact.HitLine;
+			lineact.Activate(target, lact.LineSide, SPAC_Impact|SPAC_MCross);
+			return true;
+		}
+		return false;
+	}
+	
 	override void PostBeginPlay() 
 	{
 		super.PostBeginPlay();		
+		s_death = FindState("Death");
+		s_crash = FindState("crash");
 		//tom_main = target && PKWeapon.CheckWmod(target);
 		if (trailcolor)
 			spawnpos = pos;
@@ -614,6 +650,13 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	{
 		Vector3 oldPos = self.pos;		
 		Super.Tick();
+		
+		if (ShouldActivateLines && !dead && ( InStateSequence(curstate, s_death) || InStateSequence(curstate, s_crash)))
+		{
+			dead = true;
+			FireLineActivator();
+		}
+		
 		// Continue only if either a color is specified
 		// ir the trailactor is a custom actor:
 		if ( !(trailactor && (trailcolor || trailactor != "ToM_BaseFlare")) )

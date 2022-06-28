@@ -360,8 +360,8 @@ class ToM_TeaProjectile : ToM_Projectile
 		+BRIGHT
 		gravity 0.4;
 		deathsound "weapons/teapot/explode";
-		height 8;
-		radius 12;
+		height 16;
+		radius 8;
 		speed 22;		
 		damage (25);
 		Renderstyle 'Translucent';

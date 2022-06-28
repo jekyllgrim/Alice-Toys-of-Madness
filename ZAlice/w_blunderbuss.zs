@@ -169,7 +169,7 @@ class ToM_Cannonball : ToM_Projectile
 	Default
 	{
 		radius 16;
-		height 10;
+		height 24;
 		damage (50);
 		xscale 0.25;
 		yscale 0.208;

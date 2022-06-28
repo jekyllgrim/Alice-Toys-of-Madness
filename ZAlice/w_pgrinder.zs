@@ -181,6 +181,7 @@ class ToM_PepperProjectile : ToM_Projectile
 	{
 		seesound "weapons/pgrinder/fire";
 		deathsound "";
+		ToM_Projectile.ShouldActivateLines true;
 		ToM_Projectile.flarecolor "fb4834";
 		ToM_Projectile.trailcolor "fb4834";
 		damage 3;

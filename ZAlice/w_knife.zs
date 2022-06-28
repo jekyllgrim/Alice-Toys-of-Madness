@@ -339,6 +339,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		gravity 0.2;
 		radius 10;
 		height 6;
+		ToM_Projectile.ShouldActivateLines true;
 	}
 	
 	override void PostBeginPlay()

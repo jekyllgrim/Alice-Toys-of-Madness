@@ -1,17 +1,19 @@
 class ToM_Cards : ToM_BaseWeapon
 {
 	int cardDamage;
-	int cardSuit;
-	name cardName;
+	//int cardSuit;
+	//name cardName;
 	double cardXpos;
 	protected double fanangle;
 	
 	protected int cardVertStep[3];
+	protected int handVertStep;
 	protected int curCardLayer;
 	protected int prevCardLayer;
 	const CARDSTEPS = 32;
+	const HANDSTEPS = CARDSTEPS;
 	const ANGLESTEP = 360. / CARDSTEPS;
-	const ANGLEDIFF = ANGLESTEP * 1.5;
+	const CARDANGLEDIFF = ANGLESTEP * 1.5;
 	const CARDRAD = 4.;
 	
 	Default
@@ -55,11 +57,21 @@ class ToM_Cards : ToM_BaseWeapon
 			invoker.cardVertStep[layer] = 1;
 		for (int i = 0; i < 4; i++)
 		{
-			double ang = ANGLESTEP * Clamp(invoker.cardVertStep[layer], 1, CARDSTEPS) + (ANGLEDIFF * 10 * layer);
-			ang += (ANGLEDIFF * i);
+			double ang = ANGLESTEP * Clamp(invoker.cardVertStep[layer], 1, CARDSTEPS) + (CARDANGLEDIFF * 10 * layer);
+			ang += (CARDANGLEDIFF * i);
 			vector2 coords = (cos(ang) * CARDRAD, sin(ang) * CARDRAD);
 			A_OverlayVertexOffset(OverlayID(), i, coords.x, coords.y);
 		}
+	}
+	
+	action void A_RotateHand()
+	{
+		invoker.handVertStep--;
+		if (invoker.handVertStep < 0)
+			invoker.handVertStep = HANDSTEPS;
+		double ang = ANGLESTEP * Clamp(invoker.handVertStep, 1, CARDSTEPS);
+		vector2 coords = (cos(ang) * CARDRAD, sin(ang) * CARDRAD);
+		A_WeaponOffset(coords.x, WEAPONTOP + coords.y);
 	}
 	
 	action void A_OffsetCardLayer(int layer)
@@ -68,13 +80,13 @@ class ToM_Cards : ToM_BaseWeapon
 		switch (layer)
 		{
 		case APSP_Card1: 
-			ofs = (-4, 0); 
+			ofs = (-2.5, 2); 
 			break;
 		case APSP_Card2: 
-			ofs = (0, -1.5); 
+			ofs = (1.4, 1.5); 
 			break;
 		case APSP_Card3: 
-			ofs = (5, -0.4); 
+			ofs = (7, -1); 
 			break;
 		}
 		A_OverlayOffset(layer, ofs.x, ofs.y, WOF_ADD);
@@ -82,9 +94,9 @@ class ToM_Cards : ToM_BaseWeapon
 	
 	action void A_RemoveCardLayers()
 	{
-		A_Overlay(APSP_Card1, "RemoveCard");
-		A_Overlay(APSP_Card2, "RemoveCard");
-		A_Overlay(APSP_Card3, "RemoveCard");
+		player.SetPSPrite(APSP_Card1, ResolveState("RemoveCard"));
+		player.SetPSPrite(APSP_Card2, ResolveState("RemoveCard"));
+		player.SetPSPrite(APSP_Card3, ResolveState("RemoveCard"));
 	}
 		
 	action void PickFrame()
@@ -121,48 +133,47 @@ class ToM_Cards : ToM_BaseWeapon
 		return null;
 	}
 	
+	protected array <string> CardSprites;
 	static const name CardSuits[] = { "C", "S", "H", "D" };
 	static const name CardValues[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K" };
 	
 	// Picks the next card:
-	/*action void PickACard()
+	action void A_PickCard()
 	{
 		if (!player || health <= 0)
 			return;
 		if (tom_debugmessages)
 			console.printf("Attemping to pick a card");
-		let psp = player.FindPSprite(APSP_Card);
+		let psp = player.FindPSprite(OverlayID());
 		if (!psp)
 			return;
-		// pick a suit that isn't the same as previous:
-		int cs = invoker.cardSuit;
-		while (cs == invoker.cardSuit)
+		if (invoker.CardSprites.Size() >= 52)
+			invoker.CardSprites.Clear();
+		string csprite = "ACC1";
+		int valnum;
+		int suitnum;
+		name suit;
+		name val;
+		while (invoker.CardSprites.Find(csprite) != invoker.CardSprites.Size())
 		{
-			cs = random[pickcard](0, invoker.CardSuits.Size() - 1);
+			suitnum = random[pickcard](0, invoker.CardSuits.Size() - 1);
+			valnum = random[pickcard](0, invoker.CardValues.Size() - 1);
+			suit = invoker.CardSuits[suitnum];
+			val = invoker.CardValues[valnum];
+			csprite = String.Format("AC%s%s", suit, val);
 		}
-		// pick a value that isn't the same as previous:
-		int cv = invoker.cardDamage;
-		while (cv == invoker.cardDamage)
-		{
-			cv = random[pickcard](0, invoker.CardValues.Size() - 1);
-		}
-		// construct card sprite name:
-		name csuit = invoker.CardSuits[cs];
-		name cval = invoker.CardValues[cv];
-		invoker.cardName = String.Format("AC%s%s", csuit, cval);
+		invoker.CardSprites.Push(csprite);
 		if (tom_debugmessages)
-			console.printf("picked sprite %s", invoker.cardName);
-		// set damage, value and sprite:
-		invoker.cardSuit = cs;
-		invoker.cardDamage = cv;
-		psp.sprite = GetSpriteIndex(invoker.cardName);
-	}*/
+			console.printf("picked sprite %s", csprite);
+		invoker.cardDamage = valnum;
+		psp.sprite = GetSpriteIndex(name(csprite));
+	}
 	
 	override void BeginPlay()
 	{
 		super.BeginPlay();
 		cardDamage = -1;
-		cardSuit = -1;
+		//cardSuit = -1;
 	}
 	
 	States
@@ -171,91 +182,103 @@ class ToM_Cards : ToM_BaseWeapon
 		ALCA A -1;
 		stop;
 	Select:
-		TNT1 A 0 
+		APCR A 0 
 		{
-			A_WeaponOffset(-24, 86);
-			A_OverlayPivot(OverlayID(), 0.6, 0.8);
-			A_OverlayRotate(OverlayID(), 18);
+			A_WeaponOffset(24, WEAPONTOP + 54);
 			A_CreateCardLayers();
 			//PickACard();
 		}
-		APCR AABBCC 1
+		#### ###### 1
 		{
-			A_WeaponOffset(4, -9, WOF_ADD);
-			A_RotatePSPrite(OverlayID(), -3, WOF_ADD);
+			A_WeaponOffset(-4, -9, WOF_ADD);
 			A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
 		}
 		goto Ready;
 	Deselect:
-		TNT1 A 0 
+		APCR A 0 
 		{
-			A_OverlayPivot(OverlayID(), 1, 1);
 			A_RemoveCardLayers();
 		}
-		APCR CCBBAA 1
+		#### ###### 1
 		{
-			A_WeaponOffset(-4, 9, WOF_ADD);
-			A_OverlayRotate(OverlayID(), 3, WOF_ADD);
+			A_WeaponOffset(4, 9, WOF_ADD);
 		}
 		TNT1 A 0 A_Lower;
 		wait;
 	PrepareCard:
-		TNT1 A 0 
+		TNT1 A 0
 		{
+			let p = player.FindPSprite(OverlayID());
+			p.bInterpolate = false;
 			A_OverlayFlags(OverlayID(), PSPF_ADDBOB|PSPF_ADDWEAPON, false);
 			A_OverlayOffset(OverlayID(), 0, WEAPONTOP);
 			A_OverlayPivot(OverlayID(), 0, 0.5);
+			let psp = player.FindPSprite(OverlayID());
 			switch (OverlayID())
 			{
 			case APSP_Card1: 
-				A_OverlayScale(OverlayID(), 0.88, 0.88);
+				psp.scale = (0.84, 0.84);
 				break;
 			case APSP_Card2: 
-				A_OverlayScale(OverlayID(), 1, 1);
+				psp.scale = (1.15, 1.15);
 				break;
 			case APSP_Card3: 
-				A_OverlayScale(OverlayID(), 0.8, 0.8);
+				psp.scale = (0.8, 0.8);
 				break;
 			}
 		}
-		APCR HHGGFFEE 1 
+		TNT1 A 1;
+		APCR BCD 1 
 		{
 			A_OffsetCardLayer(OverlayID());
-			if (OverlayID() == APSP_Card2)
-				A_OverlayScale(OverlayID(), 0.07, 0.07, WOF_ADD);
+			//if (OverlayID() == APSP_Card2)
+				//A_OverlayScale(OverlayID(), 0.035, 0.035, WOF_ADD);
 		}
-		APCR D 1 A_RotateIdleCard();		
+		APCR EFG 2 
+		{
+			A_OffsetCardLayer(OverlayID());
+			//if (OverlayID() == APSP_Card2)
+				//A_OverlayScale(OverlayID(), 0.08, 0.08, WOF_ADD);
+		}
+	ReadyCardIdle:
+		TNT1 A 0 A_PickCard();
+		#### A 1 A_RotateIdleCard();		
 		wait;
 	FireCard:
-		APCR DDD 1 
+		#### ### 1 
 		{
 			A_OverlayScale(OverlayID(), -0.3, -0.3, WOF_ADD);
 			A_OverlayOffset(OverlayID(), -8, 3.2, WOF_ADD);
 		}
+		TNT1 A 0
+		{
+			A_OverlayOffset(OverlayID(), 0, WEAPONTOP);
+			A_OverlayScale(OverlayID(), 1, 1);
+		}
+		TNT1 A 1;
 		goto PrepareCard;
 	RemoveCard:
 		TNT1 A 0 A_OverlayFlags(OverlayID(), PSPF_ADDBOB, false);
-		APCR DEFGH 1
+		APCR GFEDCB 1
 		{
 			let psp = player.FindPSprite(OverlayID());
 			if (psp)
 			{
 				psp.x *= 0.8;
 				psp.y *= 0.8;
+				psp.scale.x = Clamp(psp.scale.x * 0.8, 1, 10);
+				psp.scale.y = Clamp(psp.scale.y * 0.8, 1, 10);
 			}
 		}
 		stop;
 	Ready:
-		APCR C 1 A_WeaponReady;
+		APCR A 1 A_WeaponReady;
 		loop;
 	Fire:
-		APCR C 1
+		TNT1 A 0 
 		{
 			A_FireCardLayer();
 			A_OverlayPivot(OverlayID(), 0, 0);
-		}
-		TNT1 A 0 
-		{
 			vector2 ofs;
 			switch (invoker.curCardLayer)
 			{
@@ -263,37 +286,30 @@ class ToM_Cards : ToM_BaseWeapon
 			case APSP_Card2: ofs = (12, 8); break;
 			case APSP_Card3: ofs = (15, 6); break;
 			}
-			console.printf("ofs: %1.f, %1.f", ofs.x, ofs.y);
+			//console.printf("ofs: %1.f, %1.f", ofs.x, ofs.y);
 			A_FireCard(1, 1, xofs: ofs.x, yofs: ofs.y);
 		}
-		APCR CCC 1 A_OverlayScale(OverlayID(), 0.03, 0.03, WOF_ADD);
-		APCR CCCCCC 1 A_OverlayScale(OverlayID(), -0.015, -0.015, WOF_ADD);
+		APCR AAAAAAAAA 1 A_RotateHand();	
 		goto Ready;
 	AltFire:
-		TNT1 A 0 A_RemoveCardLayers();
-		APCR CB 2;
+		APCR A 4 A_RemoveCardLayers();
 	AltHold:
-		APCR AJKL 2;
-		APCR M 6
+		APCR AIJK 2;
+		APCR L 5
 		{
-			invoker.cardXpos = -15; 
-			//invoker.fanangle = - 
+			invoker.cardXpos = 15;
 		}
-		APCR NNOOPP 1 
+		APCR MMNNOO 1 
 		{
 			A_FireCard(invoker.cardXpos, frandom[firecard](-1.5, 1.5), xofs: invoker.cardXpos, explicitangle: true);
-			invoker.cardXpos += 5;
+			invoker.cardXpos -= 5;
 		}
-		APCR PPPP 1 A_OverlayOffset(OverlayID(), 1, 0, WOF_ADD);
-		APCR PPQ 1 A_ResetPSprite(OverlayID(), 5);
+		APCR OOOO 1 A_OverlayOffset(OverlayID(), 1, 0, WOF_ADD);
+		APCR PPPA 1 A_ResetPSprite(OverlayID(), 4);
 		TNT1 A 0 A_ReFire();
-	AltFireEnd:
-		TNT1 A 0 A_CreateCardLayers();
-		APCR ABC 3;
+		APCR A 6 A_CreateCardLayers();
 		goto ready;
 	Cache:
-		PDEK A 0;
-		PDET A 0;
 		ACH1 A 0;
 		ACH2 A 0;
 		ACH3 A 0;

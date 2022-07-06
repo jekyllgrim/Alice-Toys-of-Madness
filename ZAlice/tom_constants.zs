@@ -11,9 +11,9 @@ enum ToM_PSprite_Layers
 	APSP_BottomParticle = -300,
 	APSP_UnderLayer = -10,
 	APSP_Overlayer = 5,
-	APSP_CARD1 = 11,
-	APSP_CARD2 = 12,
-	APSP_CARD3 = 10,
+	APSP_CARD1 = 21,
+	APSP_CARD2 = 22,
+	APSP_CARD3 = 20,
 	APSP_TopFX = 50,
 	APSP_TopParticle = 300,
 }

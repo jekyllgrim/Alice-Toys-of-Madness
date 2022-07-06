@@ -334,6 +334,34 @@ class ToM_BaseWeapon : Weapon abstract
 		A_OverlayScale(OverlayID(), targetScale.x, targetScale.y);
 	}
 	
+	action void A_CopyPSprite(int layer)
+	{
+		if (!player) return;
+		let ps1 = player.FindPSprite(OverlayID());
+		if (!ps1) return;
+		let psp = player.GetPSprite(layer);
+		psp.translation = ps1.translation;
+		psp.x = ps1.x;
+		psp.y = ps1.y;
+		psp.Coord0 = ps1.Coord0;
+		psp.Coord1 = ps1.Coord1;
+		psp.Coord2 = ps1.Coord2;
+		psp.Coord3 = ps1.Coord3;
+		psp.pivot = ps1.pivot;
+		psp.bPivotPercent = ps1.bPivotPercent;
+		psp.bInterpolate = ps1.bInterpolate;
+		psp.scale = ps1.scale;
+		psp.rotation = ps1.rotation;
+		//A_OverlayRenderstyle(layer, ps1.GetRenderstyle());
+		psp.alpha = ps1.alpha;
+		psp.bAddWeapon = ps1.bAddWeapon;
+		psp.bMirror = ps1.bMirror;
+		psp.bFlip = ps1.bFlip;
+		psp.bAddBob = ps1.bAddBob;
+		psp.sprite = ps1.sprite;
+		psp.frame = ps1.frame;
+	}
+	
 	action void A_SpawnPSParticle(stateLabel statename, bool bottom = false, int density = 1, double xofs = 0, double yofs = 0, int chance = 100)
 	{
 		if (random[pspart](0, 100) > chance)

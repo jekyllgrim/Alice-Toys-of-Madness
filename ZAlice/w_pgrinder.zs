@@ -44,6 +44,35 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		A_ResetPSprite(APSP_TopFX);
 	}
 	
+	action void A_FirePepperGun(double spread = 2, double spawnheight = 5.5, double spawnofs_xy = 5.7, bool hitscan = true)
+	{
+		double angleofs = frandom[ppgr](-spread,spread);
+		double pitchofs = frandom[ppgr](-spread,spread);
+		A_StartSound("weapons/pgrinder/fire", flags: CHANF_OVERLAP);
+		let proj = A_FireProjectile(
+			"ToM_PepperProjectile", 
+			angle: angleofs, 
+			useammo: !hitscan, 
+			spawnofs_xy: spawnofs_xy + frandom[ppgr](-0.5,0.5),
+			spawnheight: spawnheight + frandom[ppgr](-1,1),
+			pitch: pitchofs
+		);		
+		if (hitscan)
+		{
+			A_FireBullets(angleofs, pitchofs, -1, 3 * frandom(1, 8), "", FBF_NORANDOM|FBF_EXPLICITANGLE);
+			FLineTraceData pp;
+			double atkheight = ToM_BaseActor.GetPlayerAtkHeight(PlayerPawn(self));
+			LineTrace(angle + angleofs, 4096, pitch + pitchofs, TRF_SOLIDACTORS, atkheight, data: pp);
+			double pvel = Clamp(pp.Distance / 12.0, 160, 300);
+			if (proj)
+			{
+				proj.SetDamage(0);
+				proj.vel = proj.vel.unit() * pvel;
+				proj.A_SetSize(1, 1);
+			}
+		}
+	}
+	
 	States
 	{
 	Spawn:
@@ -98,7 +127,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		PPGR Z 5 
 		{
 			A_PepperFlash();
-			A_FireProjectile("ToM_PepperProjectile", angle: frandom[ppgr](-2,2), spawnofs_xy: frandom[ppgr](5.5,7), frandom[ppgr](4.5,6.5), pitch: frandom[ppgr](-2,2));
+			A_FirePepperGun();
 		}
 		TNT1 A 0 A_ReFire();
 		TNT1 A 0 
@@ -179,7 +208,7 @@ class ToM_PepperProjectile : ToM_Projectile
 	
 	Default
 	{
-		seesound "weapons/pgrinder/fire";
+		seesound "";
 		deathsound "";
 		ToM_Projectile.ShouldActivateLines true;
 		ToM_Projectile.flarecolor "fb4834";
@@ -221,5 +250,14 @@ class ToM_PepperProjectile : ToM_Projectile
 		}
 		BAl7 CDE 3;
 		stop;
+	}
+}
+
+class ToM_PepperProjectileVisual : ToM_PepperProjectile
+{	
+	Default
+	{
+		speed 180;
+		damage 0;
 	}
 }

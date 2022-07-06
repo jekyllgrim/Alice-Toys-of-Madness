@@ -111,7 +111,7 @@ class ToM_BaseWeapon : Weapon abstract
 				flags:SXF_SETMASTER
 			);
 		}*/
-		if (players[consoleplayer].mo && !players[consoleplayer].mo.CountInv(self.GetClass()))
+		if (players[consoleplayer].mo && players[consoleplayer].mo.CountInv(self.GetClass()) <= 0 )
 		{
 			for (int i = 0; i < 5; i++)
 			{		
@@ -429,7 +429,6 @@ class ToM_WeaponPickupParticle : Actor
 	{
 		+NOINTERACTION
 		+NOBLOCKMAP
-		+NOSECTOR
 		+SYNCHRONIZED
 		+DONTBLAST
 		FloatBobPhase 0;
@@ -462,8 +461,8 @@ class ToM_WeaponPickupParticle : Actor
 	States
 	{
 	Spawn:
-		ACWE Z 1;
-		loop;
+		ACWE Z -1;
+		stop;
 	}
 }
 
@@ -1093,7 +1092,8 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 			return;
 		
 		FLineTracedata tr;
-		owner.LineTrace(owner.angle, 2048, owner.pitch, TRF_SOLIDACTORS, owner.height * 0.5 - owner.floorclip + ppawn.AttackZOffset*ppawn.player.crouchFactor, data: tr);
+		double atkheight = ToM_BaseActor.GetPlayerAtkHeight(ppawn);
+		owner.LineTrace(owner.angle, 2048, owner.pitch, TRF_SOLIDACTORS, atkheight, data: tr);
 		
 		let hitnormal = -tr.HitDir;
 		if ( tr.HitType == TRACE_HitFloor ) {

@@ -7,7 +7,7 @@ class ToM_Knife : ToM_BaseWeapon
 	const KNIFE_RELOAD_TIME = 88;
 	const KNIFE_PARTIAL_RELOAD_TIME = 20;
 	const KNIFE_RELOAD_FRAME = 11;
-	const KNIFE_READY_FRAME = 25;
+	const KNIFE_READY_FRAME = 0;
 	
 	action void A_KnifeReady(int flags = 0)
 	{
@@ -115,7 +115,7 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		wait;
 	IdleAnim:
-		VKNI ZABC 2 A_WeaponReady(WRF_NOBOB);
+		VKNI AABC 2 A_WeaponReady(WRF_NOBOB);
 		VKNI DDEEFFGGHHIIJJKK 1 
 		{
 			A_RotatePSprite(OverlayID(), 2);
@@ -126,7 +126,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), -4);
 			A_WeaponReady(WRF_NOBOB);
 		}
-		VKNI BAZ 2 A_WeaponReady(WRF_NOBOB);
+		VKNI BAA 2 A_WeaponReady(WRF_NOBOB);
 		goto Ready;
 	KnifeFadeIn:
 		VKNF M -1;
@@ -172,7 +172,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_WeaponOffset(-55, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
-		VKNF CCCHHHHZZZ 1
+		VKNF CCCHHHHAAA 1
 		{
 			A_ResetPSprite(OverlayID(), 10);
 			A_WeaponReady(WRF_NOBOB);
@@ -382,6 +382,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 	Death:
 		TNT1 A 50
 		{
+			FireLineActivator();
 			A_StopSound(CHAN_BODY);
 			A_StartSound("weapons/knife/throwwall");
 			if (knifemodel)

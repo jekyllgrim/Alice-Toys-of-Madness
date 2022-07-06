@@ -3,6 +3,16 @@ class ToM_Cards : ToM_BaseWeapon
 	int cardDamage;
 	int cardSuit;
 	name cardName;
+	double cardXpos;
+	protected double fanangle;
+	
+	protected int cardVertStep[3];
+	protected int curCardLayer;
+	protected int prevCardLayer;
+	const CARDSTEPS = 32;
+	const ANGLESTEP = 360. / CARDSTEPS;
+	const ANGLEDIFF = ANGLESTEP * 1.5;
+	const CARDRAD = 4.;
 	
 	Default
 	{
@@ -10,14 +20,73 @@ class ToM_Cards : ToM_BaseWeapon
 		Tag "Playing cards";
 	}
 	
-	action void CreateCardLayers()
+	action void A_CreateCardLayers()
 	{
 		if (!player || health <= 0)
 			return;
-		A_Overlay(APSP_Card, "Card", true);
-		A_Overlay(APSP_Thumb, "Thumb", true);
+		A_Overlay(APSP_Card1, "PrepareCard");
+		A_Overlay(APSP_Card2, "PrepareCard");
+		A_Overlay(APSP_Card3, "PrepareCard");
+		invoker.curCardLayer = randompick[acard](APSP_Card1, APSP_Card2, APSP_Card3);
 	}
 	
+	action void A_FireCardLayer()
+	{
+		int layer = invoker.curCardLayer;
+		player.SetPSPrite(layer, ResolveState("FireCard"));
+		invoker.prevCardLayer = invoker.curCardLayer;
+		while (invoker.curCardLayer == invoker.prevCardLayer)
+		{
+			invoker.curCardLayer = randompick[acard](APSP_Card1, APSP_Card2, APSP_Card3);
+		}
+	}
+
+	action 	void A_RotateIdleCard()
+	{
+		int layer;
+		switch (OverlayID())
+		{
+		case APSP_Card1: layer = 0; break;
+		case APSP_Card2: layer = 1; break;
+		case APSP_Card3: layer = 2; break;
+		}
+		invoker.cardVertStep[layer]++;
+		if (invoker.cardVertStep[layer] > CARDSTEPS)
+			invoker.cardVertStep[layer] = 1;
+		for (int i = 0; i < 4; i++)
+		{
+			double ang = ANGLESTEP * Clamp(invoker.cardVertStep[layer], 1, CARDSTEPS) + (ANGLEDIFF * 10 * layer);
+			ang += (ANGLEDIFF * i);
+			vector2 coords = (cos(ang) * CARDRAD, sin(ang) * CARDRAD);
+			A_OverlayVertexOffset(OverlayID(), i, coords.x, coords.y);
+		}
+	}
+	
+	action void A_OffsetCardLayer(int layer)
+	{
+		vector2 ofs;
+		switch (layer)
+		{
+		case APSP_Card1: 
+			ofs = (-4, 0); 
+			break;
+		case APSP_Card2: 
+			ofs = (0, -1.5); 
+			break;
+		case APSP_Card3: 
+			ofs = (5, -0.4); 
+			break;
+		}
+		A_OverlayOffset(layer, ofs.x, ofs.y, WOF_ADD);
+	}
+	
+	action void A_RemoveCardLayers()
+	{
+		A_Overlay(APSP_Card1, "RemoveCard");
+		A_Overlay(APSP_Card2, "RemoveCard");
+		A_Overlay(APSP_Card3, "RemoveCard");
+	}
+		
 	action void PickFrame()
 	{
 		let pspw = player.FindPSprite(PSP_Weapon);
@@ -28,43 +97,35 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 	}
 	
-	action Actor A_FireCard(double xspread = 0, double yspread = 0)
+	action Actor A_FireCard(double xspread = 0, double yspread = 0, double xofs = 0, double yofs = 0, bool explicitangle = false)
 	{
-		let proj = ToM_CardProjectile(A_FireProjectile("ToM_CardProjectile", angle: frandom[firecard](-xspread, xspread), pitch:frandom[firecard](-yspread, yspread)));
+		double horspread = explicitangle ? xspread : frandom[firecard](-xspread, xspread);
+		double vertspread = explicitangle ? yspread : frandom[firecard](-yspread, yspread);
+		//console.printf("firing a card at an angle of %1.f", horspread);
+		let proj = ToM_CardProjectile(A_FireProjectile(
+			"ToM_CardProjectile", 
+			angle: horspread, 
+			spawnofs_xy: xofs,
+			spawnheight: yofs,
+			flags: FPF_AIMATANGLE,
+			pitch: vertspread
+		));
 		if (proj)
 		{
 			proj.A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
-			proj.sprite = GetSpriteIndex(invoker.cardName);
+			//proj.sprite = GetSpriteIndex(invoker.cardName);
 			proj.SetDamage(invoker.cardDamage);
-			proj.broll = frandom[card](4,6);
+			proj.broll = frandom[card](-2,2);
 			return proj;
 		}
 		return null;
-	}
-	
-	action void A_FireCardsMultiple(int amount = 7, double xspread = 12, double yspread = 6, double curve = 0)
-	{
-		A_StartSound("weapons/cards/altfire", CHAN_AUTO);
-		for (int i = amount; i > 0; i--)
-		{
-			let proj = ToM_CardProjectile(A_FireProjectile("ToM_CardProjectile", angle: frandom[firecard](-xspread, xspread), pitch:frandom[firecard](-yspread, yspread)));
-			if (proj)
-			{
-				proj.sprite = GetSpriteIndex(invoker.cardName);
-				proj.SetDamage(invoker.cardDamage);
-				proj.angleCurve = frandom[firecard](-curve, curve);
-				proj.pitchCurve = frandom[firecard](-curve, curve);
-				proj.broll = frandom[card](-5,5);
-			}
-			PickACard();
-		}
 	}
 	
 	static const name CardSuits[] = { "C", "S", "H", "D" };
 	static const name CardValues[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K" };
 	
 	// Picks the next card:
-	action void PickACard()
+	/*action void PickACard()
 	{
 		if (!player || health <= 0)
 			return;
@@ -95,7 +156,7 @@ class ToM_Cards : ToM_BaseWeapon
 		invoker.cardSuit = cs;
 		invoker.cardDamage = cv;
 		psp.sprite = GetSpriteIndex(invoker.cardName);
-	}
+	}*/
 	
 	override void BeginPlay()
 	{
@@ -114,102 +175,122 @@ class ToM_Cards : ToM_BaseWeapon
 		{
 			A_WeaponOffset(-24, 86);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
-			A_OverlayRotate(OverlayID(), 30);		
-			CreateCardLayers();
-			PickACard();
+			A_OverlayRotate(OverlayID(), 18);
+			A_CreateCardLayers();
+			//PickACard();
 		}
-		PDEK AAAAAA 1
+		APCR AABBCC 1
 		{
 			A_WeaponOffset(4, -9, WOF_ADD);
-			A_OverlayRotate(OverlayID(), -5, WOF_ADD);
+			A_RotatePSPrite(OverlayID(), -3, WOF_ADD);
 			A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
 		}
 		goto Ready;
 	Deselect:
-		TNT1 A 0 A_OverlayPivot(OverlayID(), 1, 1);
-		PDEK AAAAAA 1
+		TNT1 A 0 
+		{
+			A_OverlayPivot(OverlayID(), 1, 1);
+			A_RemoveCardLayers();
+		}
+		APCR CCBBAA 1
 		{
 			A_WeaponOffset(-4, 9, WOF_ADD);
-			A_OverlayRotate(OverlayID(), 5, WOF_ADD);
+			A_OverlayRotate(OverlayID(), 3, WOF_ADD);
 		}
 		TNT1 A 0 A_Lower;
 		wait;
-	Ready:
-		TNT1 A 0
+	PrepareCard:
+		TNT1 A 0 
 		{
-			A_ResetPSprite(OverlayID());
-			CreateCardLayers();
-			if (invoker.cardDamage < 0 || invoker.cardSuit < 0)
-				PickACard();
+			A_OverlayFlags(OverlayID(), PSPF_ADDBOB|PSPF_ADDWEAPON, false);
+			A_OverlayOffset(OverlayID(), 0, WEAPONTOP);
+			A_OverlayPivot(OverlayID(), 0, 0.5);
+			switch (OverlayID())
+			{
+			case APSP_Card1: 
+				A_OverlayScale(OverlayID(), 0.88, 0.88);
+				break;
+			case APSP_Card2: 
+				A_OverlayScale(OverlayID(), 1, 1);
+				break;
+			case APSP_Card3: 
+				A_OverlayScale(OverlayID(), 0.8, 0.8);
+				break;
+			}
 		}
-		PDEK A 1 A_WeaponReady();
+		APCR HHGGFFEE 1 
+		{
+			A_OffsetCardLayer(OverlayID());
+			if (OverlayID() == APSP_Card2)
+				A_OverlayScale(OverlayID(), 0.07, 0.07, WOF_ADD);
+		}
+		APCR D 1 A_RotateIdleCard();		
 		wait;
-	Thumb:
-		PDET A 1 PickFrame();
-		loop;
-	Card:
-		#### # 1 PickFrame();
+	FireCard:
+		APCR DDD 1 
+		{
+			A_OverlayScale(OverlayID(), -0.3, -0.3, WOF_ADD);
+			A_OverlayOffset(OverlayID(), -8, 3.2, WOF_ADD);
+		}
+		goto PrepareCard;
+	RemoveCard:
+		TNT1 A 0 A_OverlayFlags(OverlayID(), PSPF_ADDBOB, false);
+		APCR DEFGH 1
+		{
+			let psp = player.FindPSprite(OverlayID());
+			if (psp)
+			{
+				psp.x *= 0.8;
+				psp.y *= 0.8;
+			}
+		}
+		stop;
+	Ready:
+		APCR C 1 A_WeaponReady;
 		loop;
 	Fire:
-		TNT1 A 0 A_ResetPSprite(OverlayID());
-		PDEK ABC 1 A_WeaponOffset(6, -2, WOF_ADD);
-		TNT1 A 0 A_FireCard(4, 3.2);
-		PDEK EEE 1 A_WeaponOffset(3, -1, WOF_ADD);
-		TNT1 A 0 PickACard();
-		PDEK FFGGDB 1 A_WeaponOffset(-3.83, 1, WOF_ADD);
-		PDEK BBAAA 1 
+		APCR C 1
 		{
-			A_ReFire();
-			A_ResetPSprite(staggertics: 5);
+			A_FireCardLayer();
+			A_OverlayPivot(OverlayID(), 0, 0);
 		}
-		goto ready;
+		TNT1 A 0 
+		{
+			vector2 ofs;
+			switch (invoker.curCardLayer)
+			{
+			case APSP_Card1: ofs = (9, 6); break;
+			case APSP_Card2: ofs = (12, 8); break;
+			case APSP_Card3: ofs = (15, 6); break;
+			}
+			console.printf("ofs: %1.f, %1.f", ofs.x, ofs.y);
+			A_FireCard(1, 1, xofs: ofs.x, yofs: ofs.y);
+		}
+		APCR CCC 1 A_OverlayScale(OverlayID(), 0.03, 0.03, WOF_ADD);
+		APCR CCCCCC 1 A_OverlayScale(OverlayID(), -0.015, -0.015, WOF_ADD);
+		goto Ready;
 	AltFire:
-		TNT1 A 0 
-		{
-			A_ResetPSprite(OverlayID());
-			A_Overlay(APSP_Overlayer, "LeftArm");
-		}
-		PDEK AABBC 1 A_WeaponOffset(2, -1.4, WOF_ADD);
-	AltFireEnd:
-		TNT1 A 0 A_FireCardsMultiple(curve: 1.8);
-		PDEK EEEEE 1 
-		{
-			A_WeaponOffset(1, 2, WOF_ADD);
-			A_OverlayRotate(OverlayID(), -2, WOF_ADD);
-		}
-		PDEK EEEEEEEEEEEEEEEEEE 1 
-		{
-			A_WeaponOffset(-1, -0.5, WOF_ADD);
-			A_OverlayRotate(OverlayID(), 0.714, WOF_ADD);
-		}
-		PDEK FFGGDDBBAAA 1 
-		{
-			A_ReFire();
-			A_overlayRotate(OverlayID(), 0);
-			A_ResetPSprite(OverlayID(), 5);
-		}
-		goto ready;
+		TNT1 A 0 A_RemoveCardLayers();
+		APCR CB 2;
 	AltHold:
-		TNT1 A 0 
+		APCR AJKL 2;
+		APCR M 6
 		{
-			A_WeaponOffset(5, WEAPONTOP + 7, WOF_INTERPOLATE);
-			A_Overlay(APSP_Overlayer, "LeftArm");
+			invoker.cardXpos = -15; 
+			//invoker.fanangle = - 
 		}
-		PDEK EEEEE 1 A_WeaponOffset(1, -2, WOF_ADD);
-		goto AltFireEnd;
-	LeftArm:
-		TNT1 A 0 
+		APCR NNOOPP 1 
 		{
-			A_ResetPSprite(OverlayID());
-			A_OverlayFlags(OverlayID(), PSPF_AddWeapon|PSPF_AddBob, false);
+			A_FireCard(invoker.cardXpos, frandom[firecard](-1.5, 1.5), xofs: invoker.cardXpos, explicitangle: true);
+			invoker.cardXpos += 5;
 		}
-		PDEK HIIJJ 1 A_OverlayOffset(OverlayID(), 2, -2, WOF_ADD);
-		PDEK KKK 1 A_OverlayOffset(OverlayID(), -3, -1, WOF_ADD);
-		PDEK LLL 1 A_OverlayOffset(OverlayID(), -5, 0, WOF_ADD);
-		PDEK LLL 1 A_OverlayOffset(OverlayID(), 1, 2, WOF_ADD);
-		PDEK MMMM 1 A_OverlayOffset(OverlayID(), 2, 3, WOF_ADD);
-		PDEK NNNIIIIIIIIHHH 1 A_OverlayOffset(OverlayID(), 2, 5, WOF_ADD);
-		stop;
+		APCR PPPP 1 A_OverlayOffset(OverlayID(), 1, 0, WOF_ADD);
+		APCR PPQ 1 A_ResetPSprite(OverlayID(), 5);
+		TNT1 A 0 A_ReFire();
+	AltFireEnd:
+		TNT1 A 0 A_CreateCardLayers();
+		APCR ABC 3;
+		goto ready;
 	Cache:
 		PDEK A 0;
 		PDET A 0;
@@ -295,9 +376,9 @@ class ToM_CardProjectile : ToM_StakeProjectile
 		super.PostBeginPlay();
 		//A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
 		//console.printf("card damage: %d", damage);
-		if (target)
+		if (target && (angleCurve > 0 || pitchCurve > 0))
 		{
-			angle = target.angle + angleCurve;
+			angle = target.angle + angleCurve;			
 			pitch = target.pitch + pitchCurve;
 			Vel3DFromAngle(speed, angle, pitch);
 		}
@@ -310,9 +391,12 @@ class ToM_CardProjectile : ToM_StakeProjectile
 		{			
 			if (GetAge() > 5)
 				roll += broll;
-			A_SetAngle(angle + angleCurve);
-			A_SetPitch(pitch + pitchCurve);
-			Vel3DFromAngle(speed, angle, pitch);
+			if (angleCurve > 0 || pitchCurve > 0)
+			{
+				A_SetAngle(angle + angleCurve);
+				A_SetPitch(pitch + pitchCurve);
+				Vel3DFromAngle(speed, angle, pitch);
+			}
 		}
 		loop;
 	XDeath:

@@ -79,7 +79,7 @@ alice/lightpain2 "sounds/player/vox_hh_attack02.ogg"
 alice/lightpain3 "sounds/player/vox_hh_attack03.ogg"
 alice/lightpain4 "sounds/player/vox_hh_attack04.ogg"
 alice/lightpain5 "sounds/player/vox_hh_attack05.ogg"
-$random alice/usefail] { alice/usefail]1 alice/usefail]2 }
+$random alice/usefail { alice/usefail1 alice/usefail2 }
 alice/usefail1 "sounds/player/lever_vox01.ogg"
 alice/usefail2 "sounds/player/lever_vox02.ogg"
 $random alice/xdeath { alice/xdeath1 alice/xdeath2 alice/xdeath3 alice/xdeath4 }

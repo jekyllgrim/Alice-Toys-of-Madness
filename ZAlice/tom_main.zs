@@ -171,6 +171,7 @@ class ToM_NullActor : Actor
 	Default 
 	{
 		+NOINTERACTION
+		+NOBLOCKMAP
 		+SYNCHRONIZED
 		+DONTBLAST
 		radius 1;

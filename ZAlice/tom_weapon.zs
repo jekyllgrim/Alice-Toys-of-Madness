@@ -126,6 +126,66 @@ class ToM_BaseWeapon : Weapon abstract
 		}
 	}
 	
+	/*	Function by Lewisk3 using Gutamatics to fire stake projectiles.
+		Used in most cases instead of PK_FireArchingProjectile above
+		since it produces a more accurate movement.
+	*/
+	action Actor A_Fire3DProjectile(class<Actor> proj, bool useammo = true, double forward = 0, double leftright = 0, double updown = 0, bool crosshairConverge = false, double angleoffs = 0, double pitchoffs = 0)
+	{
+		let weapon = player.ReadyWeapon;
+		if (useammo && weapon && stateinfo && stateinfo.mStateType == STATE_Psprite)
+		{
+			if (!weapon.DepleteAmmo(weapon.bAltFire, true))
+				return null;
+		}		
+		double a = angle + angleoffs;
+		double p = Clamp(pitch + pitchoffs, -90, 90);
+		double r = roll;
+		let mat = ToM_GM_Matrix.fromEulerAngles(a, p, r);
+		mat = mat.multiplyVector3((forward, -leftright, updown));
+		vector3 offsetPos = mat.asVector3(false);
+		
+		vector3 shooterPos = (pos.xy, pos.z + height * 0.5);
+		if(player) shooterPos.z = player.viewz;
+		offsetPos = level.vec3offset(offsetPos, shooterPos);
+		
+		// Get velocity
+		vector3 aimpos;
+		if(player && crosshairConverge)
+		{
+			FLineTraceData lt;
+			LineTrace(a, 1024*1024, p, 0, ToM_BaseActor.GetPlayerAtkHeight(player.mo), 0, data:lt);
+			double projrad = GetDefaultByType(proj).radius;			
+			aimPos = (lt.HitLocation.xy - lt.HitDir.xy*projrad, lt.HitLocation.z);
+			
+			//Spawn("ToM_DebugSpot", aimPos);
+		
+			vector3 aimAngles = level.SphericalCoords(offsetPos, aimPos, (a, p));
+			
+			a -= aimAngles.x;
+			p -= aimAngles.y;
+		}
+		
+		mat = ToM_GM_Matrix.fromEulerAngles(a, p, r);
+		mat = mat.multiplyVector3((1.0,0,0));
+		
+		vector3 projVel = mat.asVector3(false) * GetDefaultByType(proj).Speed;
+		
+		// Spawn projectile
+		let proj = Spawn(proj, offsetPos);
+		if(proj)
+		{
+			proj.angle = a;
+			proj.pitch = p;
+			proj.roll = r;
+			proj.vel = projVel;
+			proj.target = self;
+			if (proj.seesound)
+				proj.A_StartSound(proj.seesound);
+		}
+		return proj;
+	}
+	
 	action void A_AttackZoom(double step = 0.001, double limit = 0.03, double jitter = 0.002)
 	{
 		if (invoker.atkzoom < limit)

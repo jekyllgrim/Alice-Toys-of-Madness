@@ -615,6 +615,8 @@ Class ToM_Projectile : ToM_BaseActor abstract
 {
 	protected bool ShouldActivateLines;
 	property ShouldActivateLines : ShouldActivateLines;
+	protected double DelayTraceDist;
+	property DelayTraceDist : DelayTraceDist;
 	protected bool dead;
 	protected state s_death;
 	protected state s_crash;
@@ -661,6 +663,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		ToM_Projectile.trailfade 0.1;
 		ToM_Projectile.flareactor "ToM_ProjFlare";
 		ToM_Projectile.trailactor "ToM_BaseFlare";
+		ToM_Projectile.DelayTraceDist 80;
 	}
 	
 	/*
@@ -754,7 +757,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 			return;	
 		if (!farenough) 
 		{
-			if (level.Vec3Diff(pos,spawnpos).length() < 80)
+			if (level.Vec3Diff(pos,spawnpos).length() < DelayTraceDist)
 				return;
 			farenough = true;
 		}
@@ -1049,7 +1052,7 @@ Class ToM_GenericExplosion : ToM_SmallDebris
 		double explosiveDebrisScale = 1, 
 		int quakeintensity = 3, 
 		int quakeduration = 12, 
-		double quakeradius = 220
+		int quakeradius = 220
 	)
 	{
 		let exp = ToM_GenericExplosion(Spawn("ToM_GenericExplosion", pos));
@@ -1109,7 +1112,7 @@ Class ToM_GenericExplosion : ToM_SmallDebris
 			return;
 		if (randomdebris > 0) 
 		{
-			for (int i = randomdebris*frandom[sfx](0.7,1.3); i > 0; i--) 
+			for (int i = int(randomdebris*frandom[sfx](0.7,1.3)); i > 0; i--) 
 			{
 				let debris = Spawn("ToM_RandomDebris",pos + (frandom[sfx](-8,8),frandom[sfx](-8,8),frandom[sfx](-8,8)));
 				if (debris) 
@@ -1124,7 +1127,7 @@ Class ToM_GenericExplosion : ToM_SmallDebris
 			return;
 		if (smokingdebris > 0) 
 		{
-			for (int i = smokingdebris*frandom[sfx](0.7,1.3); i > 0; i--) 
+			for (int i = int(smokingdebris*frandom[sfx](0.7,1.3)); i > 0; i--) 
 			{
 				let debris = Spawn("ToM_SmokingDebris",pos + (frandom[sfx](-12,12),frandom[sfx](-12,12),frandom[sfx](-12,12)));
 				if (debris) 
@@ -1137,7 +1140,7 @@ Class ToM_GenericExplosion : ToM_SmallDebris
 		}
 		if (explosivedebris > 0) 
 		{
-			for (int i = explosivedebris*frandom[sfx](0.7,1.3); i > 0; i--) 
+			for (int i = int(explosivedebris*frandom[sfx](0.7,1.3)); i > 0; i--) 
 			{
 				let debris = Spawn("ToM_ExplosiveDebris",pos + (frandom[sfx](-12,12),frandom[sfx](-12,12),frandom[sfx](-12,12)));
 				if (debris) 

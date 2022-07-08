@@ -93,7 +93,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		if (!player)
 			return ResolveState(null);
 			
-		int heat = invoker.heat;
+		let heat = invoker.heat;
 		if (heat >= HEAT_MAX)
 			A_StartSound("weapons/teapot/heatloop", CH_TPOTHEAT, CHANF_LOOPING);
 		if (heat >= HEAT_MED)
@@ -181,7 +181,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		TPOT C 1
 		{
 			A_TeapotReady();
-			A_SetTics(invoker.LinearMap(invoker.heat, HEAT_MED, HEAT_MAX, 4, 2));
+			A_SetTics(int(invoker.LinearMap(invoker.heat, HEAT_MED, HEAT_MAX, 4, 2)));
 			A_PickLidFrame();
 			let psp = player.FindPSprite(OverlayID());
 			if (psp && psp.frame == 11)

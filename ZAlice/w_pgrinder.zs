@@ -59,7 +59,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		);		
 		if (hitscan)
 		{
-			A_FireBullets(angleofs, pitchofs, -1, 3 * frandom(1, 8), "", FBF_NORANDOM|FBF_EXPLICITANGLE);
+			A_FireBullets(angleofs, pitchofs, -1, int(3 * frandom(1., 8.)), "", FBF_NORANDOM|FBF_EXPLICITANGLE);
 			FLineTraceData pp;
 			double atkheight = ToM_BaseActor.GetPlayerAtkHeight(PlayerPawn(self));
 			LineTrace(angle + angleofs, 4096, pitch + pitchofs, TRF_SOLIDACTORS, atkheight, data: pp);

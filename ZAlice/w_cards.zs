@@ -19,7 +19,7 @@ class ToM_Cards : ToM_BaseWeapon
 	
 	Default
 	{
-		weapon.slotnumber 3;
+		weapon.slotnumber 2;
 		Tag "Playing cards";
 	}
 	

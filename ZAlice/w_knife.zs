@@ -9,6 +9,17 @@ class ToM_Knife : ToM_BaseWeapon
 	const KNIFE_RELOAD_FRAME = 11;
 	const KNIFE_READY_FRAME = 0;
 	
+	Default 
+	{
+		+WEAPON.MELEEWEAPON;
+		+WEAPON.NOAUTOFIRE;
+		//Obituary "";
+		Tag "Vorpal Knife";
+		weapon.slotnumber 1;
+		//inventory.icon "";
+		//weapon.upsound "weapons/knife/draw";
+	}
+	
 	action void A_KnifeReady(int flags = 0)
 	{
 		SetKnifeFrame();
@@ -30,18 +41,6 @@ class ToM_Knife : ToM_BaseWeapon
 		let psp = player.FindPSprite(PSP_Weapon);
 		if (!psp) return;
 		psp.frame = (invoker.knifeReload > 0) ? KNIFE_RELOAD_FRAME :  KNIFE_READY_FRAME;
-	}
-		
-	
-	Default 
-	{
-		+WEAPON.MELEEWEAPON;
-		+WEAPON.NOAUTOFIRE;
-		//Obituary "";
-		Tag "Vorpal Knife";
-		weapon.slotnumber 2;
-		//inventory.icon "";
-		//weapon.upsound "weapons/knife/draw";
 	}
 	
 	override void DoEffect()

@@ -197,7 +197,6 @@ cardf2 "sounds/cards/card_fire2.ogg"
 cardf3 "sounds/cards/card_fire3.ogg"
 cardf4 "sounds/cards/card_fire4.ogg"
 cardf5 "sounds/cards/card_fire5.ogg"
-weapons/cards/altfire "sounds/jacks_bounce.wav"
 
 $random weapons/cards/hitwall { cardhitwall1 cardhitwall2 }
 cardhitwall1 "sounds/cards/cards_hit_world1.wav"
@@ -206,6 +205,24 @@ cardhitwall2 "sounds/cards/cards_hit_world2.wav"
 $random weapons/cards/hitflesh { cardhitflesh1 cardhitflesh2 }
 cardhitflesh1 "sounds/cards/cards_hit_flesh1.wav"
 cardhitflesh2 "sounds/cards/cards_hit_flesh2.wav"
+
+
+// JACKS
+
+weapons/jacks/toss "sounds/weapons/jacks_toss.wav"
+weapons/jacks/bounce "sounds/weapons/jacks_bounce.wav"
+weapons/jacks/ballbounce "sounds/weapons/jacks_ball_bounce.wav"
+weapons/jacks/loop "sounds/weapons/jacks_loop.wav"
+
+$random weapons/jacks/flesh { jacksflesh1 jacksflesh2 jacksflesh3 }
+jacksflesh1 "sounds/weapons/jacks_flesh1.wav"
+jacksflesh2 "sounds/weapons/jacks_flesh2.wav"
+jacksflesh3 "sounds/weapons/jacks_flesh3.wav"
+
+$random weapons/jacks/ricochet { jacksrico1 jacksrico2 jacksrico3 }
+jacksrico1 "sounds/weapons/jacks_ricochet1.wav"
+jacksrico2 "sounds/weapons/jacks_ricochet2.wav"
+jacksrico3 "sounds/weapons/jacks_ricochet3.wav"
 
 // PEPPER GRINDER
 

@@ -103,7 +103,29 @@ Model ToM_CardProjectile
 	Skin 0 "txACDK.png" FrameIndex ACDK A 0 0
 }
 
-Model ToM_TeaPOol
+Model ToM_JackProjectile
+{
+	UseActorRoll
+	UseActorPitch
+	Path "models/Jacks"
+	Model 0 "jack_single.obj"
+	Scale 3 3 3
+	
+	FrameIndex AMRK A 0 0	
+}
+
+Model ToM_VisualSeeker
+{
+	UseActorRoll
+	UseActorPitch
+	Path "models/Jacks"
+	Model 0 "jack_single.obj"
+	Scale 3 3 3
+	
+	FrameIndex AMRK A 0 0	
+}
+
+Model ToM_TeaPool
 {
 	UseActorRoll
 	UseActorPitch

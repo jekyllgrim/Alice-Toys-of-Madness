@@ -209,20 +209,22 @@ cardhitflesh2 "sounds/cards/cards_hit_flesh2.wav"
 
 // JACKS
 
-weapons/jacks/toss "sounds/weapons/jacks_toss.wav"
-weapons/jacks/bounce "sounds/weapons/jacks_bounce.wav"
-weapons/jacks/ballbounce "sounds/weapons/jacks_ball_bounce.wav"
-weapons/jacks/loop "sounds/weapons/jacks_loop.wav"
+weapons/jacks/toss "sounds/jacks/jacks_toss.wav"
+weapons/jacks/bounce "sounds/jacks/jacks_bounce.wav"
+weapons/jacks/ballbounce "sounds/jacks/jacks_ball_bounce.wav"
+weapons/jacks/loop "sounds/jacks/jacks_loop.wav"
 
 $random weapons/jacks/flesh { jacksflesh1 jacksflesh2 jacksflesh3 }
-jacksflesh1 "sounds/weapons/jacks_flesh1.wav"
-jacksflesh2 "sounds/weapons/jacks_flesh2.wav"
-jacksflesh3 "sounds/weapons/jacks_flesh3.wav"
+jacksflesh1 "sounds/jacks/jacks_flesh1.wav"
+jacksflesh2 "sounds/jacks/jacks_flesh2.wav"
+jacksflesh3 "sounds/jacks/jacks_flesh3.wav"
+$limit weapons/jacks/flesh 0
 
 $random weapons/jacks/ricochet { jacksrico1 jacksrico2 jacksrico3 }
-jacksrico1 "sounds/weapons/jacks_ricochet1.wav"
-jacksrico2 "sounds/weapons/jacks_ricochet2.wav"
-jacksrico3 "sounds/weapons/jacks_ricochet3.wav"
+jacksrico1 "sounds/jacks/jacks_ricochet1.wav"
+jacksrico2 "sounds/jacks/jacks_ricochet2.wav"
+jacksrico3 "sounds/jacks/jacks_ricochet3.wav"
+$limit weapons/jacks/ricochet 0
 
 // PEPPER GRINDER
 

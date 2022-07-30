@@ -48,7 +48,7 @@ Class ToM_InvReplacementControl : ToM_InventoryToken {
 		"ToM_HobbyHorse",
 		"ToM_Cards",
 		"ToM_Cards",
-		"ToM_Cards",
+		"ToM_Jacks",
 		"ToM_PepperGrinder",
 		"ToM_Teapot",
 		"ToM_Eyestaff",
@@ -125,12 +125,6 @@ Class ToM_InvReplacementControl : ToM_InventoryToken {
 				break;
 			}
 		}
-		/*for (int i = 0; i < vanillaItems.Size(); i++) {
-			if (pkItems[i] && oldItemClass == vanillaItems[i]) {
-				replacement = pkItems[i];
-				break;
-			}
-		}*/
         if (!replacement) {
 			if (tom_debugmessages > 1)
 				console.printf("%s doesn't need replacing, giving as is",oldItemClass);

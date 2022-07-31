@@ -1,11 +1,13 @@
 class ToM_Jacks : ToM_BaseWeapon
 {
-	const JREADYFRAME = 0;
-	const JWAITFRAME = 14;
+	const JREADYFRAME = 0; //frame when ready for firing
+	const JWAITFRAME = 14; //frame when waiting for jacks to return 
+	const JPROJNUMBER = 6; //number of jacks used by altfire
+	// In case jacks don't return for some reason, restore
+	// then automatically after x2 the regular DOT duration:
 	const JSAFERELOAD = int(ToM_JackDOTControl.DOTTIME * 2);
-	const JPROJNUMBER = 6;
-	int jackswait;
-	bool jacksTossed;
+	bool jacksTossed; //true after using altfire until jacks return
+	int jackswait; //wait time for safe reload
 
 	Default
 	{
@@ -13,6 +15,7 @@ class ToM_Jacks : ToM_BaseWeapon
 		Tag "Jacks";
 	}
 	
+	// Set frame based on jacksTossed value:
 	action void A_SetJacksFrame()
 	{
 		let psp = player.FindPSprite(OverlayID());
@@ -20,6 +23,7 @@ class ToM_Jacks : ToM_BaseWeapon
 			return;
 		
 		psp.frame = invoker.jacksTossed ? JWAITFRAME : JREADYFRAME;
+		//console.printf("tossed: %d", invoker.jacksTossed);
 	}
 	
 	action state A_JacksReady()
@@ -31,6 +35,7 @@ class ToM_Jacks : ToM_BaseWeapon
 		return ResolveState(null);
 	}
 	
+	// Primary fire:
 	action void A_TossJacks()
 	{
 		A_StartSound("weapons/jacks/toss", CHAN_WEAPON);
@@ -47,6 +52,7 @@ class ToM_Jacks : ToM_BaseWeapon
 					pitchoffs: -3.5 + frandom[jf](-3, 3)
 				)
 			);
+			// Set randomized rotation and vel:
 			if (proj)
 			{
 				proj.rollstep = frandom[jp](4, 5.5) * randompick[jp](-1, 1);
@@ -56,12 +62,19 @@ class ToM_Jacks : ToM_BaseWeapon
 		}
 	}
 	
+	// Alt fire:
 	action void A_FireJackSeekers()
 	{
 		A_StartSound("weaopons/jacks/toss", CHAN_WEAPON);
+		// Spawn the invisible seeker:
 		let seeker = ToM_JackSeeker(A_Fire3DProjectile("ToM_JackSeeker"));
 		if (!seeker)
+		{
+			if (tom_debugmessages)
+				console.printf("Couldn't spawn jack seeker");
 			return;
+		}
+		// Spawn visual dummy projectiles:
 		for (int i = 0; i < JPROJNUMBER; i++)
 		{
 			let j = ToM_VisualSeeker(
@@ -73,6 +86,7 @@ class ToM_Jacks : ToM_BaseWeapon
 					updown: frandom[fakejacks](-4, 16)
 				)
 			);
+			// Attach dummy projs to seeker and put them in its array:
 			if (j)
 			{
 				j.rollstep = frandom[fakejacks](4, 5.5) * randompick[fakejacks](-1, 1);
@@ -82,10 +96,12 @@ class ToM_Jacks : ToM_BaseWeapon
 				seeker.followjacks.Push(j);
 			}
 		}
+		// The weapon is no longer ready for firing:
 		invoker.jackswait = JSAFERELOAD;
 		invoker.jacksTossed = true;
 	}
 	
+	// Safe reload for edge cases when jacks can't return:
 	override void DoEffect()
 	{
 		super.DoEffect();
@@ -131,6 +147,7 @@ class ToM_Jacks : ToM_BaseWeapon
 		AJC1 DDEEFF 1 A_WeaponOffset(2.5, 1, WOF_ADD);
 		AJC1 GGG 1 A_WeaponOffset(-20, 0, WOF_ADD);
 		TNT1 A 0 A_TossJacks;
+		// Scale the hand down a bit to make it move away:
 		AJC1 HHHH 1 
 		{
 			A_WeaponOffset(-10, 10, WOF_ADD);
@@ -260,6 +277,7 @@ class ToM_JackProjectile : ToM_Projectile
 		AMRK A 60;
 		AMRK A 1 
 		{
+			// Scale out of existence:
 			scale *= 0.92;
 			if (scale.x <= default.scale.x * 0.08)
 				Destroy();
@@ -270,7 +288,7 @@ class ToM_JackProjectile : ToM_Projectile
 
 class ToM_JackSeeker : ToM_Projectile
 {
-	array <ToM_VisualSeeker> followjacks;
+	array <ToM_VisualSeeker> followjacks; //array of visual dummy projs
 
 	Default
 	{
@@ -303,18 +321,20 @@ class ToM_JackSeeker : ToM_Projectile
 	
 	override int SpecialMissileHit(Actor victim)
 	{
+		// When a valid target is hit, give it a DOT effect:
 		if (victim && victim.bSHOOTABLE && target && target != victim)
 		{
 			victim.GiveInventory("ToM_JackDOTControl", 1);
 			let inv = victim.FindInventory("ToM_JackDOTControl");
 			if (inv)
 				inv.target = target;
+			// Attach visual projs to the victim:
 			for (int i = 0; i < followjacks.Size(); i++)
 			{
 				if (followjacks[i])
 				{
 					followjacks[i].tracer = victim;
-					followjacks[i].target = target;
+					followjacks[i].target = target; //record target (player) to return to
 					followjacks[i].master = null;
 				}
 			}
@@ -333,30 +353,26 @@ class ToM_JackSeeker : ToM_Projectile
 		TNT1 A 1 
 		{
 			A_SeekerMissile(0, 5, SMF_LOOK | SMF_PRECISE | SMF_CURSPEED, 256);
+			// Make visible for debug purposes:
 			if (tom_debugmessages)
 				sprite = GetSpriteIndex("AMRK");
 		}
 		loop;
 	Death:
-		TNT1 A 1
-		{
-			if (target)
-			{
-				let weap = ToM_Jacks(target.FindInventory("ToM_Jacks"));
-				if (weap)
-					weap.jacksTossed = false;
-			}
-		}
+		TNT1 A 1;
 		stop;
 	}
 }
 
+// Visual projectile used by alt fire
+// Doesn't do any collision or damage
+
 class ToM_VisualSeeker : ToM_JackProjectile
 {
-	vector3 masterofs;
-	vector3 tracerofs;
-	int targetdelay;
-	int delay;
+	vector3 masterofs; //offset from the seeker position
+	vector3 tracerofs; //offset from the victim position
+	int targetdelay; //how long to wait until next movement
+	int delay; //counter for the movement delay
 
 	Default
 	{
@@ -369,7 +385,8 @@ class ToM_VisualSeeker : ToM_JackProjectile
 	{
 		super.Tick();
 		if (isFrozen())
-			return;		
+			return;	
+		// Follow the invisible seeker while flying:
 		if (master)
 		{
 			SetOrigin(master.pos + masterofs, true);
@@ -382,30 +399,44 @@ class ToM_VisualSeeker : ToM_JackProjectile
 	Spawn:
 		AMRK A 1
 		{
+			// After attaching to a monster, move around it randomly
+			// to imitate the victim being struck by the jacks:
 			if (tracer)
 			{
 				//A_Stop();
+				// Decide how long the next movement will be:
 				targetdelay = random[fakejacks](7, 11);
+				// Set the target point of the next movement
+				// to some point around the victim:
 				tracerofs.x = (tracer.radius + frandom[jt](0, 10)) * randompick[jt](-1, 1);
 				tracerofs.y = (tracer.radius + frandom[jt](0, 10)) * randompick[jt](-1, 1);
 				tracerofs.z = tracer.height * 0.5 + tracer.height * 0.5 * randompick[jt](-1, 1);
+				// Get the vector from current to target position:
 				vector3 vec = level.Vec3Diff(pos, tracer.pos + tracerofs);
+				// Calculate velocity based on vector length and 
+				// movement delay:
 				double flyspeed = vec.length() / targetdelay;
+				// Set the velocity:
 				vel = vec / flyspeed;
+				// Play the sound (without overlapping/cutoff):
 				A_StartSound("weapons/jacks/ricochet", CHAN_BODY, CHANF_NOSTOP);
 			}
 		}
 		AMRK A 1
 		{
+			// If no master, or victim, or the DOT effect ended,
+			// return to the shooter:
 			if (!master && (!tracer || !tracer.CountInv("ToM_JackDOTControl")))
 			{
 				return ResolveState("ReturnToShooter");
 			}
+			// If the movement delay is up, back to Spawn:
 			if (delay >= targetdelay)
 			{
 				delay = 0;
 				return ResolveState("Spawn");
 			}
+			// otherwise continue moving:
 			delay++;
 			return ResolveState(null);
 		}
@@ -415,10 +446,12 @@ class ToM_VisualSeeker : ToM_JackProjectile
 		{
 			if (!target)
 				A_FadeOut(0.05);
+			// Return to the player:
 			else
 			{
-				//A_FaceTarget(flags:FAF_MIDDLE);
+				// fly back to the player with a fixed speed:
 				vel = Vec3to(target).Unit() * 35;
+				// If close enough, reload the jacks and disappear:
 				if (Distance3D(target) < 64)
 				{
 					let weap = ToM_Jacks(target.FindInventory("ToM_Jacks"));
@@ -432,10 +465,12 @@ class ToM_VisualSeeker : ToM_JackProjectile
 	}
 }
 
+// This deals the actual damage over time
+// from the secondary attack:
 class ToM_JackDOTControl : ToM_InventoryToken
 {
-	const SEEKERTICDAMAGE = 20;
-	const DOTTIME = 35 * 4;
+	const SEEKERTICDAMAGE = 25; // damage per one effect tick
+	const DOTTIME = 35 * 4; // duration of the DOT effect
 	int dotcounter;
 	int dmgdelay;
 	
@@ -450,9 +485,11 @@ class ToM_JackDOTControl : ToM_InventoryToken
 		super.DoEffect();
 		if (owner && owner.isFrozen())
 			return;
+		// Do the counter:
 		if (dotcounter < DOTTIME)
 		{
 			dotcounter++;
+			// Destroy the token if time is up:
 			if (dotcounter >= DOTTIME)
 			{
 				/*if (target && target.player)
@@ -472,6 +509,7 @@ class ToM_JackDOTControl : ToM_InventoryToken
 			Destroy();
 			return;
 		}
+		// Deal the damage with randomized delay (make sure the delay isn't 0):
 		if (GetAge() % Clamp(dmgdelay, 1, 100) == 0)
 		{
 			dmgdelay = random[jackdamage](10, 15);

@@ -1,11 +1,14 @@
 class ToM_Jacks : ToM_BaseWeapon
 {
-	const JREADYFRAME = 0; //frame when ready for firing
-	const JWAITFRAME = 14; //frame when waiting for jacks to return 
-	const JPROJNUMBER = 6; //number of jacks used by altfire
-	// In case jacks don't return for some reason, restore
-	// then automatically after x2 the regular DOT duration:
-	const JSAFERELOAD = int(ToM_JackDOTControl.DOTTIME * 2);
+	enum JacksWeapFlags
+	{
+		JREADYFRAME = 0, //frame when ready for firing
+		JWAITFRAME = 14, //frame when waiting for jacks to return 
+		JPROJNUMBER = 6, //number of jacks used by altfire
+		// In case jacks don't return for some reason, restore
+		// then automatically after x2 the regular DOT duration:
+		JSAFERELOAD = int(ToM_JackDOTControl.DOTTIME * 2),
+	}
 	bool jacksTossed; //true after using altfire until jacks return
 	int jackswait; //wait time for safe reload
 
@@ -64,8 +67,31 @@ class ToM_Jacks : ToM_BaseWeapon
 	
 	// Alt fire:
 	action void A_FireJackSeekers()
-	{
+	{	
 		A_StartSound("weaopons/jacks/toss", CHAN_WEAPON);
+		for (int i = JPROJNUMBER; i > 0; i--)
+		{
+			let proj = ToM_JackProjectile(
+				A_Fire3DProjectile(
+					"ToM_RealSeeker", 
+					forward: 1, 
+					leftright: 3.2 + frandom[jp](-4, 4), 
+					updown: frandom[jp](-2.5, 2.5),
+					crosshairConverge: false,
+					angleoffs: frandom[jf](-10, 10),
+					pitchoffs: -3.5 + frandom[jf](-6, 6)
+				)
+			);
+			// Set randomized rotation and vel:
+			if (proj)
+			{
+				proj.rollstep = frandom[jp](4, 5.5) * randompick[jp](-1, 1);
+				proj.angstep = frandom[jp](4, 5.5) * randompick[jp](-1, 1);
+				proj.vel *= frandom(0.9, 1);
+			}
+		}		
+		
+		/*
 		// Spawn the invisible seeker:
 		let seeker = ToM_JackSeeker(A_Fire3DProjectile("ToM_JackSeeker"));
 		if (!seeker)
@@ -95,7 +121,8 @@ class ToM_Jacks : ToM_BaseWeapon
 				j.masterofs = j.pos - seeker.pos;
 				seeker.followjacks.Push(j);
 			}
-		}
+		}*/
+		
 		// The weapon is no longer ready for firing:
 		invoker.jackswait = JSAFERELOAD;
 		invoker.jacksTossed = true;
@@ -189,12 +216,17 @@ class ToM_Jacks : ToM_BaseWeapon
 
 class ToM_JackProjectile : ToM_Projectile
 {
-	const JACKDAMAGE = 10; // the damage to deal (see SpecialMissileHit)
-	const RIPDELAY = 8; // can't deal damage to same actor more than this many tics
+	enum JACKPFLAGS
+	{
+		//JACKDAMAGE = 30, // the damage to deal (see SpecialMissileHit)
+		RIPDELAY = 8, // can't damage the same actor more than once this many tics
+	}
 	double rollstep; // roll change per tic (visual)
 	double angstep; // angle change per tic (visual)
 	protected Actor ripvictim;
 	protected int ripwait;
+	protected int JackDamage;
+	property JackDamage : JackDamage;
 
 	Default
 	{
@@ -203,34 +235,45 @@ class ToM_JackProjectile : ToM_Projectile
 		ToM_Projectile.trailfade 0.01;
 		ToM_Projectile.trailalpha 0.14;
 		ToM_Projectile.DelayTraceDist 80;
+		ToM_JackProjectile.JackDamage 32;
+		ProjectileKickback 40;
 		-NOGRAVITY
 		+NODECAL
 		+CANBOUNCEWATER
+		+BOUNCEONWALLS
+		+BOUNCEONFLOORS
+		+BOUNCEONCEILINGS
 		speed 24;
 		gravity 0.3;
-		bouncetype 'Hexen';
 		bouncesound "weapons/jacks/bounce";
 		bouncefactor 0.6;
 	}
 	
 	override int SpecialMissileHit(Actor victim)
 	{
-		// Do this if victim is valid, not equal to ripvictim,
-		// not equal to target:
-		if (victim && victim.bSHOOTABLE && target)
+		if (!victim)
+			return -1;
+
+		if (victim.bSHOOTABLE || victim.bVULNERABLE)
 		{
-			if (victim != ripvictim && target != victim)
+			// Check that victim isn't the shooter,
+			// and that it's either a new victim,
+			// or the ripping delay has passed and we 
+			// can damage the victim again:
+			if (target && victim != target && (victim != ripvictim || ripwait <= 0))
 			{
 				ripvictim = victim; //record victim 
-				ripwait = RIPDELAY; //start the targetdelay counter
+				ripwait = RIPDELAY; //start the rip delay counter
 				// deal damage:
-				victim.DamageMobj(self, target, JACKDAMAGE, "Normal");
+				victim.DamageMobj(self, target, JackDamage, "Normal");
+				//console.printf("Damaging %s for %d HP | %d HP remaining", victim.GetClassName(), JackDamage, victim.health);
 				A_StartSound("weapons/jacks/flesh", CHAN_AUTO);
-				// spawn blood decal/sprite (DamageMobj doesn't do it automatically):
+				// spawn blood decal and actor
+				// because DamageMobj doesn't do it automatically:
 				if (!victim.bNOBLOOD)
 				{
-					victim.TraceBleed(JACKDAMAGE, self);
-					victim.SpawnBlood(pos, AngleTo(victim), JACKDAMAGE);
+					victim.TraceBleed(JackDamage, self);
+					victim.SpawnBlood(pos, AngleTo(victim), JackDamage);
 				}
 			}
 			if (!victim.bBOSS)
@@ -251,12 +294,10 @@ class ToM_JackProjectile : ToM_Projectile
 			double v = Clamp(vel.length(), 0, 5);
 			roll += rollstep * v;
 			angle += angstep * v;		
-			// Clear rip victim after a targetdelay,
-			// so that the same actor can be damaged again:
+			// Count down ripwait so that 
+			// the same actor can be damaged again:
 			if (ripwait > 0)
 				ripwait--;
-			else if (ripvictim)
-				ripvictim = null;
 		}
 	}
 	
@@ -285,6 +326,205 @@ class ToM_JackProjectile : ToM_Projectile
 		wait;
 	}
 }
+
+class ToM_RealSeeker : ToM_JackProjectile
+{
+	enum JACKSFLAGS
+	{
+		JLIFETIME = 35 * 6,
+		JRETURNSPEED = 35,
+		JRETURNTIME = 20,
+		JMAXSEEKDIST = 800,
+		JMINFLYTIME = 5,
+		JMAXFLYTIME = 30,
+	}
+	
+	protected double returnspeed;
+
+	Default
+	{
+		ToM_JackProjectile.JackDamage 17;
+		ProjectileKickback 20;
+		speed 20;
+		bouncefactor 0.75;
+		+USEBOUNCESTATE
+		gravity 0.6;
+		bouncesound "weapons/jacks/ricochet";
+	}
+	
+	override void Tick()
+	{
+		super.Tick();
+		if (tracer)
+		{
+			bouncefactor = 0;
+		}
+		else
+			bouncefactor = default.bouncefactor;
+		if (vel.length () < 3 && !tracer)
+		{
+			bMISSILE = false;
+		}
+		console.printf("jack vel: %.2f", vel.length());
+	}
+	
+	// Reuse collision rules from the regular jack (ToM_JackProjectile),
+	// but with a new rule: when successfully hitting a valid victim,
+	// seeker jacks bounce off it upwards, with a little horizontal
+	// momentum.
+	// (Imitates the fact that in AMA jacks aim at victims not only 
+	// after bouncing off a surface, but also after bouncing off
+	// a victim and losing velocity in the air):
+	override int SpecialMissileHit(Actor victim)
+	{
+		int ret = super.SpecialMissileHit(victim);
+		if (ret == 1 && victim && ripvictim && victim == ripvictim)
+		{
+			vel.xy = ( frandom[vicbounce](-4, 4), frandom[vicbounce](-4, 4) );
+			vel.z = frandom[vicbounce](5, 10);
+		}
+		return ret;
+	}
+	
+	void GetTracer(double atkdist = 400)
+	{
+		if (!target)
+		{
+			tracer = null;
+			return;
+		}
+		
+		if (tracer && (tracer.health <= 0 || Distance3D(tracer) > JMAXSEEKDIST) )
+		{
+			tracer = null;
+		}
+		
+		if (!tracer)
+		{		
+			double closestDist = double.infinity;
+			BlockThingsIterator itr = BlockThingsIterator.Create(self,atkdist);
+			while (itr.next()) 
+			{
+				let next = itr.thing;
+				if (!next || next == self || next == target)
+					continue;
+				bool isValid = (next.bSHOOTABLE && (next.bIsMonster || next.player) && next.health > 0);
+				if (!isValid)
+					continue;
+				double dist = Distance3D(next);
+				if (dist > atkdist)
+					continue;
+				if (dist < closestDist)
+					closestDist = dist;
+				if (!CheckSight(next,SF_IGNOREWATERBOUNDARY))
+					continue;
+				// set the victim:
+				tracer = next;
+			}
+		}
+	}
+	
+	// Every time the jack bounces of a surface,
+	// it'll aim at its victim (tracer) and
+	// jump at them:
+	void AimAtTracer()
+	{
+		if (tracer)
+		{			
+			// 2D vector to victim:
+			vector2 diff = LevelLocals.Vec2Diff(pos.xy, tracer.pos.xy);
+			vector2 dir = diff.unit(); //normalized (direction)
+			double dist = diff.length(); //distance
+			// vertical pos difference:
+			double vdiff = tracer.pos.z - pos.z + (tracer.height * 0.8);
+			
+			// Calculate how long it'll take the jack to reach
+			// its victim (between JMINFLYTIME-JMAXFLYTIME,
+			// depending on the distance):
+			double flytime = LinearMap(dist, 32, JMAXSEEKDIST, JMINFLYTIME, JMAXFLYTIME);
+			flytime = Clamp(flytime, JMINFLYTIME, JMAXFLYTIME);
+			
+			// fly, baby!
+			vel.xy = dir * dist / flytime;
+			vel.z = (vdiff + 0.5 * flytime*flytime) / flytime;
+			vel *= GetGravity();
+			
+			if (tom_debugmessages)
+				console.printf("victim: %s | Distance: %.1f | Vel: %.1f", tracer.GetClassName(), dist, vel.length());
+		}
+	}
+	
+	/*bool CheckProjMove()
+	{
+		double cdist = vel.Length();
+		A_FaceMovementDirection();
+		FLineTraceData check;
+		LineTrace(angle, cdist, pitch, offsetz: height * 0.5, data: check);
+		return (check.HitType == TRACE_HitFloor || check.HitType == TRACE_HitCeiling || check.HitType == TRACE_HitWall);
+	}*/
+	
+	States
+	{
+	Spawn:
+		AMRK A 1
+		{
+			// If time's up, return to the shooter:
+			if (age >= JLIFETIME /*|| (!bMISSILE && !tracer)*/)
+			{
+				return ResolveState("ReturnToShooter");
+			}
+			GetTracer();
+			return ResolveState(null);
+		}
+		wait;
+	Bounce:
+		AMRK A 1 
+		{
+			// Reset ripping timer upon bouncing:
+			// if an enemy is close to a surface, jacks
+			// can damage it more often upon bouncing;
+			ripwait = 0;
+			AimAtTracer();
+		}
+		goto Spawn;			
+	ReturnToShooter:
+		TNT1 A 0
+		{
+			// Calculate return velocity for a fixed time:
+			if (target)
+			{
+				returnspeed = Distance3D(target) / JRETURNTIME;
+			}
+			bNOINTERACTION = true;
+		}
+		AMRK A 1
+		{
+			if (!target)
+				A_FadeOut(0.05);
+			// Return to the player:
+			else
+			{
+				// fly back to the player at the previously
+				// calculated speed:
+				vel = Vec3to(target).Unit() * returnspeed;
+				// If close enough, reload the jacks and disappear:
+				if (Distance3D(target) < 64)
+				{
+					let weap = ToM_Jacks(target.FindInventory("ToM_Jacks"));
+					if (weap)
+						weap.jacksTossed = false;
+					Destroy();
+				}
+			}
+		}
+		wait;
+	}
+}
+
+
+////////////////
+/// FAKE DOT ///
+////////////////
 
 class ToM_JackSeeker : ToM_Projectile
 {
@@ -338,8 +578,6 @@ class ToM_JackSeeker : ToM_Projectile
 					followjacks[i].master = null;
 				}
 			}
-			if (tom_debugmessages)
-				console.printf("Jacks hit a victim (%s)", victim.GetClassName());
 			return 0; //instantly destroy
 		}
 		if (tom_debugmessages)
@@ -363,6 +601,7 @@ class ToM_JackSeeker : ToM_Projectile
 		stop;
 	}
 }
+
 
 // Visual projectile used by alt fire
 // Doesn't do any collision or damage

@@ -618,6 +618,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	protected double DelayTraceDist;
 	property DelayTraceDist : DelayTraceDist;
 	protected bool dead;
+	protected state s_spawn; //pointer to Spawn label
 	protected state s_death;
 	protected state s_crash;
 	
@@ -718,8 +719,9 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	override void PostBeginPlay() 
 	{
 		super.PostBeginPlay();		
+		s_spawn = FindState("Spawn");
 		s_death = FindState("Death");
-		s_crash = FindState("crash");
+		s_crash = FindState("Crash");
 		//tom_main = target && PKWeapon.CheckWmod(target);
 		if (trailcolor)
 			spawnpos = pos;
@@ -812,7 +814,6 @@ Class ToM_StakeProjectile : ToM_Projectile
 	protected double botz; //ZAtPoint above stake
 	actor pinvictim; //The fake corpse that will be pinned to a wall
 	protected double victimofz; //the offset from the center of the stake to the victim's corpse center
-	protected state sspawn; //pointer to Spawn label
 	bool stuckToSecPlane; //a non-transient way to record whether it stuck to a wall. Used by ToM_StakeStickHandler
 	
 	Default 
@@ -951,17 +952,11 @@ Class ToM_StakeProjectile : ToM_Projectile
 			Destroy();
 	}
 	
-	override void PostBeginPlay() 
-	{
-		super.PostBeginPlay();
-		sspawn = FindState("Spawn");
-	}
-	
 	override void Tick () 
 	{
 		super.Tick();
 		//all stake-like projectiles need to face their movement direction while in Spawn sequence:
-		if (!isFrozen() && sspawn && InStateSequence(curstate,sspawn)) 
+		if (!isFrozen() && s_spawn && InStateSequence(curstate,s_spawn)) 
 		{
 			A_FaceMovementDirection(flags:FMDF_INTERPOLATE );
 			/*FLineTraceData hit;

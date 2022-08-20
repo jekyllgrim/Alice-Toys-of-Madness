@@ -114,6 +114,17 @@ Model ToM_JackProjectile
 	FrameIndex AMRK A 0 0	
 }
 
+Model ToM_RealSeeker
+{
+	UseActorRoll
+	UseActorPitch
+	Path "models/Jacks"
+	Model 0 "jack_single.obj"
+	Scale 3 3 3
+	
+	FrameIndex AMRK A 0 0	
+}
+
 Model ToM_VisualSeeker
 {
 	UseActorRoll

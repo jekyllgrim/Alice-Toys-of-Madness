@@ -13,14 +13,6 @@ Sprite "AMCRX0", 64, 64
 	Patch "PATCHES/AMACROSSH.PNG", 0, 0
 }
 
-Sprite "VKNIZ0", 445, 288
-{
-	YScale 1.200
-	Offset 60, 66
-	Patch "KNIDLEA", 87, 1
-	Patch "KNIFINGA", -93, 163
-}
-
 Sprite "VKNIA0", 445, 288
 {
 	YScale 1.200
@@ -149,18 +141,60 @@ Sprite "VKNIO0", 445, 288
 	Patch "KNIFINGA", -52, 98
 }
 
-Sprite "VKNFZ0", 360, 288
-{
-	YScale 1.200
-	Offset -17, 61
-	Patch "KNIFEZ", 0, 0
-}
-
 Sprite "VKNFA0", 360, 288
 {
 	YScale 1.200
 	Offset -17, 61
-	Patch "KNIFEA", 0, 0
+	Patch "KNIFEB", 0, 0
+}
+
+Sprite "VKNRA0", 360, 288
+{
+	YScale 1.200
+	Offset -17, 61
+	Patch "PATCHES/KNIFE/KNIFERETA.PNG", 0, 0
+}
+
+Sprite "VKNRB0", 360, 288
+{
+	YScale 1.200
+	Offset -17, 61
+	Patch "PATCHES/KNIFE/KNIFERETB.PNG", 0, 0
+}
+
+Sprite "VKNRC0", 360, 288
+{
+	YScale 1.200
+	Offset -17, 61
+	Patch "PATCHES/KNIFE/KNIFERETC.PNG", 0, 0
+}
+
+Sprite "VKNRD0", 360, 288
+{
+	YScale 1.200
+	Offset -17, 61
+	Patch "PATCHES/KNIFE/KNIFERETD.PNG", 0, 0
+}
+
+Sprite "VKNRE0", 360, 288
+{
+	YScale 1.200
+	Offset -17, 61
+	Patch "PATCHES/KNIFE/KNIFERETE.PNG", 0, 0
+}
+
+Sprite "VKNRF0", 360, 288
+{
+	YScale 1.200
+	Offset -17, 61
+	Patch "PATCHES/KNIFE/KNIFERETF.PNG", 0, 0
+}
+
+Sprite "VKNRG0", 360, 288
+{
+	YScale 1.200
+	Offset -17, 61
+	Patch "PATCHES/KNIFE/KNIFERETG.PNG", 0, 0
 }
 
 Sprite "VKNFB0", 360, 288
@@ -210,6 +244,13 @@ Sprite "VKNFH0", 360, 288
 	YScale 1.200
 	Offset -17, 61
 	Patch "KNIFEH", 0, 0
+}
+
+Sprite "VKNFZ0", 360, 288
+{
+	YScale 1.200
+	Offset -17, 61
+	Patch "KNIFEZ", 0, 0
 }
 
 Sprite "VKNFI0", 360, 288
@@ -275,7 +316,7 @@ Sprite "VKNPA0", 128, 128
 {
 	XScale 6.000
 	YScale 7.300
-	Offset -1072, -912
+	Offset -1105, -809
 	Patch "SPRKC0", 0, 0
 }
 

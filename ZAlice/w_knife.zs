@@ -4,10 +4,14 @@ class ToM_Knife : ToM_BaseWeapon
 	int combo;
 	int trailFrame;
 	int knifeReload;
-	const KNIFE_RELOAD_TIME = 88;
-	const KNIFE_PARTIAL_RELOAD_TIME = 20;
-	const KNIFE_RELOAD_FRAME = 11;
-	const KNIFE_READY_FRAME = 0;
+	
+	enum knifeconsts
+	{
+		KNIFE_RELOAD_TIME = 88,
+		KNIFE_PARTIAL_RELOAD_TIME = 6,
+		KNIFE_RELOAD_FRAME = 11,
+		KNIFE_READY_FRAME = 0,
+	}
 	
 	Default 
 	{
@@ -27,20 +31,31 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			flags |= WRF_NOFIRE;
 		}
-		else
+		/*else
 		{
 			player.SetPSprite(APSP_TopFX, ResolveState("Null"));
 			player.SetPSprite(APSP_Overlayer, ResolveState("Null"));
-			A_DoIdleAnimation(4, 60);
-		}
+			//A_DoIdleAnimation(4, 60);
+		}*/
 		A_WeaponReady(flags);
 	}
 	
 	action void SetKnifeFrame()
 	{
-		let psp = player.FindPSprite(PSP_Weapon);
-		if (!psp) return;
-		psp.frame = (invoker.knifeReload > 0) ? KNIFE_RELOAD_FRAME :  KNIFE_READY_FRAME;
+		//let psp = player.FindPSprite(PSP_Weapon);
+		//if (!psp) return;
+		//psp.frame = (invoker.knifeReload > 0) ? KNIFE_RELOAD_FRAME :  KNIFE_READY_FRAME;
+		//psp.sprite = GetSpriteIndex( (invoker.knifeReload > 0) ? KNIFE_RELOAD_SPRITE : KNIFE_READY_SPRITE );
+		if (invoker.knifeReload > 0)
+		{
+			A_OverlayFlags(OverlayID(), PSPF_FORCEALPHA, true);
+			A_OverlayAlpha(OverlayID(), 0);
+		}
+		else 
+		{
+			A_OverlayFlags(OverlayID(), PSPF_FORCEALPHA, false);
+			A_OverlayAlpha(OverlayID(), 1.0);
+		}
 	}
 	
 	override void DoEffect()
@@ -51,18 +66,18 @@ class ToM_Knife : ToM_BaseWeapon
 		if (knifeReload > 0)
 		{
 			knifeReload--;
-			if (knifeReload == 0)
+			if (knifeReload <= 0)
 				owner.A_StartSound("weapons/knife/restore", CHAN_AUTO);
-		}
-		let weap = owner.player.readyweapon;
-		let plr = owner.player;
-		if (plr && weap && weap == self)
-		{
-			if (knifeReload > 0)
+			else
 			{
-				let psp = plr.FindPSprite(APSP_TopFX);
-				if (!psp)
-					plr.SetPSprite(APSP_TopFX, ResolveState("RestoreKnife"));
+				let weap = owner.player.readyweapon;
+				let plr = owner.player;
+				if (plr && weap && weap == self)
+				{
+					let psp = plr.FindPSprite(APSP_Overlayer);
+					if (!psp)
+						plr.SetPSprite(APSP_Overlayer, ResolveState("RestoreKnife"));
+				}
 			}
 		}
 	}
@@ -127,11 +142,8 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		VKNI BAA 2 A_WeaponReady(WRF_NOBOB);
 		goto Ready;
-	KnifeFadeIn:
-		VKNF M -1;
-		stop;
 	Fire:
-		VKNF A 0 
+		TNT1 A 0 
 		{
 			invoker.trailFrame = 0;
 			invoker.combo++;
@@ -154,7 +166,7 @@ class ToM_Knife : ToM_BaseWeapon
 		VKNF AAABB 1
 		{
 			A_WeaponOffset(16, 0, WOF_ADD);
-			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -5.5, WOF_ADD);
 		}
 		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
 		VKNF BBB 1
@@ -262,7 +274,6 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_StopSound(CHAN_WEAPON);
 			A_FireProjectile("ToM_KnifeProjectile");
-			invoker.knifeReload = KNIFE_RELOAD_TIME;
 		}
 		VKNF KKK 1 
 		{
@@ -271,26 +282,33 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		VKNF KKK 1 A_WeaponOffset(-1.6, 2, WOF_ADD);
 		VKNF KK 1 A_WeaponOffset(-0.5, 1, WOF_ADD);
-		VKNF LLLLLLLL 1 
+		TNT1 A 0
 		{
-			A_WeaponOffset(1.475, -8.125, WOF_ADD);
+			invoker.knifeReload = KNIFE_RELOAD_TIME;
+		}
+		//VKNR AAAAAAAA 1 
+		TNT1 AAAAAAAA 1 
+		{
+			A_WeaponOffset(1.475, -7, WOF_ADD);
 			A_WeaponReady(WRF_NOBOB|WRF_NOFIRE);
 			A_RotatePSprite(OverlayID(), -1.375, WOF_ADD);
 		}
 		goto Ready;
 	RestoreKnife:
-		TNT1 A 1 
+		VKNR A 1
 		{
 			A_SpawnPSParticle("RestoreKnifeParticle", density: 4, xofs: 80, yofs: 80);
 			
 			if (invoker.knifeReload <= KNIFE_PARTIAL_RELOAD_TIME)
 			{
-				A_Overlay(APSP_Overlayer, "KnifeFadeIn", true);
-				A_OverlayFlags(APSP_Overlayer, PSPF_ForceAlpha, true);
-				A_OverlayAlpha(APSP_Overlayer, invoker.LinearMap(invoker.knifeReload, KNIFE_PARTIAL_RELOAD_TIME, 0, 0.0, 0.8));
+				return ResolveState("RestoreKnifeEnd");
 			}
+			return ResolveState(null);
 		}
 		loop;
+	RestoreKnifeEnd:
+		VKNR BCDEFG 1;
+		stop;
 	RestoreKnifeParticle:
 		TNT1 A 0 {
 			A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);

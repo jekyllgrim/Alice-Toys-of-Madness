@@ -1469,97 +1469,97 @@ Sprite "HHRSA0", 698, 683
 	Patch "HHRS_A", 0, 0
 }
 
-Sprite "BBUSA0", 374, 400
+Sprite "BBUSA0", 392, 327
 {
 	YScale 1.200
-	Offset -153, 121
+	Offset -125, 116
 	Patch "BBUSA", 0, 0
 }
 
-Sprite "BBUSB0", 374, 400
+Sprite "BBUSB0", 392, 327
 {
 	YScale 1.200
-	Offset -153, 121
+	Offset -125, 116
 	Patch "BBUSB", 0, 0
 }
 
-Sprite "BBUSX0", 374, 400
-{
-	YScale 1.200
-	Offset -153, 121
-	Patch "BBUSX", 0, 0
-}
-
-Sprite "BBUSC0", 374, 400
+Sprite "BBUSC0", 392, 327
 {
 	XScale 1.200
 	YScale 1.500
-	Offset -130, 92
+	Offset -167, 65
 	Patch "BBUSC", 0, 0
 }
 
-Sprite "BBUSD0", 374, 400
+Sprite "BBUSD0", 392, 327
 {
 	YScale 1.200
-	Offset -153, 121
+	Offset -125, 116
 	Patch "BBUSC", 0, 0
 }
 
-Sprite "BBUSE0", 374, 400
+Sprite "BBUSF0", 392, 327
 {
 	XScale 1.200
-	YScale 1.500
-	Offset -119, 99
+	YScale 1.400
+	Offset -155, 87
 	Patch "BBUSD", 0, 0
 }
 
-Sprite "BBUSF0", 374, 400
+Sprite "BBUSF0", 392, 327
 {
 	YScale 1.200
-	Offset -153, 121
+	Offset -125, 116
 	Patch "BBUSD", 0, 0
 }
 
-Sprite "BBURA0", 374, 400
+Sprite "BBURA0", 392, 327
 {
 	YScale 1.200
-	Offset -153, 121
+	Offset -125, 116
 	Patch "BBUSE", 0, 0
 }
 
-Sprite "BBURB0", 374, 400
+Sprite "BBURB0", 392, 327
 {
 	YScale 1.200
-	Offset -153, 121
+	Offset -125, 116
 	Patch "BBUSF", 0, 0
 }
 
-Sprite "BBURC0", 374, 400
+Sprite "BBURC0", 392, 327
 {
 	YScale 1.200
-	Offset -153, 121
+	Offset -125, 116
 	Patch "BBUSG", 0, 0
 }
 
-Sprite "BBURD0", 374, 400
+Sprite "BBURD0", 392, 327
 {
 	YScale 1.200
-	Offset -153, 121
+	Offset -125, 116
 	Patch "BBUSH", 0, 0
 }
 
-Sprite "BBURE0", 374, 400
+Sprite "BBURE0", 392, 327
 {
 	YScale 1.200
-	Offset -153, 121
+	Offset -125, 116
 	Patch "BBUSI", 0, 0
+}
+
+Sprite "BBUSX0", 392, 327
+{
+	YScale 1.200
+	Offset -125, 116
+	Patch "BBUSX", 0, 0
 }
 
 Sprite "BBUSS0", 256, 256
 {
 	XScale 3.000
 	YScale 3.600
-	Offset -506, -127
+	Offset -478, -132
 	Patch "SMO2A0", 0, 0
 	{
 		Blend "#FD4181", 0.3
@@ -1570,7 +1570,7 @@ Sprite "BBUSP0", 128, 128
 {
 	XScale 6.300
 	YScale 7.600
-	Offset -1898, -977
+	Offset -1802, -804
 	Patch "SPRKE0", 0, 0
 }
 

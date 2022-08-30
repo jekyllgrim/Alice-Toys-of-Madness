@@ -101,10 +101,10 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 			A_OverlayRotate(OverlayID(), -4.5, WOF_ADD);
 			A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
 		}
-		BBUS B 5;
-		BBUR AB 2;
+		BBUS B 5 A_WeaponReady(WRF_NOFIRE);
+		BBUR AB 2 A_WeaponReady(WRF_NOFIRE);
 		TNT1 A 0 A_StartSound("weapons/blunderbuss/cock");
-		BBUR CDE 4;
+		BBUR CDE 4 A_WeaponReady(WRF_NOFIRE);
 		goto Ready;
 	Flint:
 		BBUS X 2 bright

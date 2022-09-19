@@ -72,6 +72,7 @@ class ToM_BaseWeapon : Weapon abstract
 			SwayTics--;
 		}
 		
+		/*
 		if (!owner || !owner.player || owner.health <= 0)
 			return;
 		
@@ -85,6 +86,7 @@ class ToM_BaseWeapon : Weapon abstract
 			if (!psp || !InStateSequence(psp.curstate, kickstate))
 				plr.SetPSprite(APSP_Kick, ResolveState("Kick"));
 		}
+		*/
 	}
 	
 	override void Tick()
@@ -368,8 +370,7 @@ class ToM_BaseWeapon : Weapon abstract
 	/*
 		A version of A_OverlayRotate that allows additive rotation
 		without intepolation. Necessary because interpolation breaks 
-		when combined with animation. 
-		See stakegun primary fire for an example of use.
+		when combined with animation.
 	*/
 	action void A_RotatePSprite(int layer = 0, double degrees = 0, int flags = 0) 
 	{
@@ -507,6 +508,81 @@ class ToM_BaseWeapon : Weapon abstract
 		{
 			speed = invoker.prekickspeed;
 		}
+		stop;
+	}
+}
+
+class ToM_KickWeapon : CustomInventory
+{
+	state s_kicking;
+	protected double prekickspeed;
+
+	Default
+	{
+		+INVENTORY.UNDROPPABLE
+		+INVENTORY.UNTOSSABLE
+		Inventory.Maxamount 1;
+	}
+	
+	action void A_AliceKick()
+	{
+		A_CustomPunch(30, true, CPF_NOTURN, pufftype: "ToM_Kickpuff", range: 80);
+	}
+	
+	override void Tick() {}
+	
+	override void DoEffect()
+	{
+		super.DoEffect();
+		
+		if (!owner || !owner.player)
+		{
+			Destroy();
+			return;
+		}
+		
+		if (owner.health <= 0)
+			return;
+		
+		let player = owner.player;
+		if (player.cmd.buttons & BT_USER4)
+		{
+			if (!s_kicking)
+				s_kicking = FindState("Kick");
+				
+			let psp = player.FindPSprite(APSP_Kick);
+			if (psp)
+				return;
+			
+			psp = player.GetPSprite(APSP_Kick);
+			psp.caller = self;
+			psp.SetState(FindState("Kick"));
+		}
+	}
+	
+	States
+	{
+	Use:
+		TNT1 A 0;
+		fail;
+	Kick:
+		TNT1 A 0
+		{
+			A_OverlayFlags(OverlayID(), PSPF_AddWeapon, false);
+			A_OverlayOffset(OverlayID(), -20, WEAPONTOP);
+			invoker.prekickspeed = speed;
+			speed *= 0.1;
+		}
+		AKIK AB 1;
+		TNT1 A 0 A_StartSound("weapons/kick/whip", CHAN_AUTO);
+		AKIK CDEF 1;
+		AKIK G 2 A_AliceKick();
+		AKIK HIJKLM 2;
+		TNT1 A 0 
+		{
+			speed = invoker.prekickspeed;
+		}
+		AKIK NO 2;
 		stop;
 	}
 }

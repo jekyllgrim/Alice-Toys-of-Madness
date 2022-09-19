@@ -17,7 +17,7 @@ class ToM_Mainhandler : EventHandler
 			return;
 		plr.GiveInventory("ToM_CrosshairSpawner", 1);
 		plr.GiveInventory("ToM_InvReplacementControl", 1);
-		//plr.GiveInventory("ToM_KickWeapon", 1);
+		plr.GiveInventory("ToM_KickWeapon", 1);
 	}
 	
 	override void WorldThingDamaged(worldEvent e)

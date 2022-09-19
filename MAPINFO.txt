@@ -2,4 +2,5 @@ Gameinfo
 {
 	PlayerClasses = "ToM_AlicePlayer"
 	AddEventhandlers = "ToM_Mainhandler"
+	StatusBarClass = "ToM_AliceHUD"
 }

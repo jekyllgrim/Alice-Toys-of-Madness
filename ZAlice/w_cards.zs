@@ -203,6 +203,24 @@ class ToM_Cards : ToM_BaseWeapon
 		return s;
 	}
 	
+	override bool TryPickup(in out Actor toucher)
+	{
+		bool ret = super.TryPickup(toucher);
+		if (ret)
+		{
+			vector3 catpos = FindRandomPosAround(toucher.pos, gridrad: 512, mindist: 80, fovlimit: 45, viewangle: toucher.angle);
+			if (Level.IsPointInLevel(catpos))
+			{
+				let cat = Spawn("ToM_CheshireCat_Talk", catpos);
+				if (cat)
+				{
+					cat.target = toucher;
+				}
+			}
+		}
+		return ret;
+	}
+	
 	States
 	{
 	Spawn:

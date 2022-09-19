@@ -84,52 +84,36 @@ Mixin class ToM_Math
 		return false;
     }
 	
-	//Find a random position within the specified spot in a grid of the specified size:
-	vector3 FindRandomPosAround(vector3 actorpos, double gridrad = 128, double step = 16) 
+	vector3 FindRandomPosAround(vector3 actorpos, double gridrad = 512, double mindist = 16, double fovlimit = 0, double viewangle = 0)
 	{
 		if (!level.IsPointInLevel(actorpos))
 			return actorpos;
-		//because zscript doesn't support vector3 arrays I have to do this
-		//UGH
-		array <double> tposX;
-		array <double> tposY;
-		array <double> tposZ;
-		//establish grid corners (top left and bottom right)
-		vector3 startpos = actorpos - (gridrad, gridrad, 0);
-		vector3 endpos = actorpos + (gridrad, gridrad, 0);
-		//get sector of the actorpos:
-		Sector actorsector = Level.PointInSector(actorpos.xy);
-		//start at top left:
-		vector3 curpos = startpos;
-		while (true) 
+		
+		vector3 finalpos = actorpos;
+		double ofs = gridrad * 0.5;
+		for (int i = 64; i > 0; i--)
 		{
-			//save the coordinates if they're not in void and within this sector:
-			if (Level.IsPointInLevel(curpos) && Level.PointInSector(curpos.xy) == actorsector) 
+			vector3 ppos = actorpos + (frandom[frpa](-ofs, ofs), frandom[frpa](-ofs, ofs), 0);
+			let sec = Level.PointinSector(ppos.xy);
+			double secfz = sec.NextLowestFloorAt(ppos.x, ppos.y, ppos.z);
+			let diff = LevelLocals.Vec2Diff(actorpos.xy, ppos.xy);
+			
+			bool inFOV = true;
+			if (fovlimit > 0)
 			{
-				//let itr = BlockLinesIterator.Create(self,
-				tposX.Push(curpos.x);
-				tposY.Push(curpos.y);
-				tposZ.Push(curpos.z);
-			}
-			//move one step horizontally:
-			curpos.x += step;
-			//if we're too far, reset horizontal and move one step down:
-			if (curpos.x > endpos.x) 
+				double ang = atan2(diff.y, diff.x);
+				if (AbsAngle(viewangle, ang) > fovlimit)
+					inFOV = false;
+			}			
+			
+			if (inFOV && Level.IsPointInLevel(ppos) && secfz == actorpos.z && (mindist <= 0 || diff.Length() >= mindist))
 			{
-				curpos.x = startpos.x;
-				curpos.y += step;
-			}
-			//if we're too far down too, stop iterating:
-			if (curpos.y > endpos.y)
+				finalpos = ppos;
 				break;
+			}
 		}
-		//in case array sizes are not equal for some reason:
-		int foo = min(tposX.Size(), tposY.Size(), tposZ.Size()) - 1;
-		//return a random position:
-		int i = random[findpos](0,foo);
-		vector3 finalpos = (tposX[i], tposY[i], tposZ[i]);
 		return finalpos;
-	}	
+	}
 	
 	void CopyAppearance(Actor to, Actor from, bool style = true, bool size = false) 
 	{

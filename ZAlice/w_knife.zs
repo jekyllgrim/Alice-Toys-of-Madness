@@ -186,7 +186,7 @@ class ToM_Knife : ToM_BaseWeapon
 		VKNF CCCHHHHAAA 1
 		{
 			A_ResetPSprite(OverlayID(), 10);
-			A_WeaponReady(WRF_NOBOB);
+			//A_WeaponReady(WRF_NOBOB);
 		}
 		goto ready;
 	LeftSlash:

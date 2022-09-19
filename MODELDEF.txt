@@ -148,7 +148,7 @@ Model ToM_TeaPool
 	FrameIndex AMRK A 0 0	
 }
 
-Model ToM_CheshireCat_Idle
+Model ToM_CheshireCat_Talk
 {
 	Path "Models/Cheshire"	
 	Model 0 "cheshire_idle_body.md3"

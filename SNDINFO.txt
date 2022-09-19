@@ -284,3 +284,11 @@ weapons/blunderbuss/fire		"Sounds/blunderbuss/bb_fire.ogg"
 weapons/blunderbuss/pull		"Sounds/blunderbuss/bb_pull.ogg"
 weapons/blunderbuss/cock		"Sounds/blunderbuss/bb_cock.ogg"
 weapons/blunderbuss/flyloop	"Sounds/blunderbuss/bb_loop.wav"
+
+
+//// CHARACTERS
+
+// Cheshire Cat
+characters/cheshire/spawn "Sounds/CheshireCat/cat_appear.wav"
+characters/cheshire/despawn "Sounds/CheshireCat/cat_disappear.wav"
+characters/cheshire/pickup_cards "Sounds/CheshireCat/cat_54pickup.wav"

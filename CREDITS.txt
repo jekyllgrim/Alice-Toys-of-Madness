@@ -1,11 +1,25 @@
 Agent_Ash (aka Jekyll Grim Payne): concept, code, sprites
-Rogue Entertainment: American McGee's Alice assets
-Spicy Horse: Alice: Madness Returns assets
+
+Rogue Entertainment: American McGee's Alice
+
+Spicy Horse: Alice: Madness Returns
+
 Lewisk3: GZBeamz API (https://github.com/Lewisk3/GZBeamz)
+
 Gutawer: Gutamatics API (https://gitlab.com/Gutawer/gzdoom-gutamatics/)
+
+Cherno: model rips from American McGee's Alice, coding help
+
 Umair Ahmad Khan: Aphrodite 3D model (https://www.cgtrader.com/free-3d-models/character/woman/aphrodite-rigged-3d-model) - the arms were used
+
 ccotwist: base blunderbuss model (https://sketchfab.com/3d-models/blunderbuss-low-poly-46842aaad9a84b76b92316a47028a3cd) - edited by Agent_Ash
+
 jfaithart: Jabberwock's Eye Staff base model (https://skfb.ly/o9BQT) - textured and edited by Agent_Ash
+
 a sandwich: jacks 3D model (https://www.turbosquid.com/3d-models/free-lwo-mode-jacks/626220)
+
 Parachute?: PF Wonderland Pro font
+
 Marco T.L.: Alice in Wonderland ver. 3 font
+
+Barry Burton: support

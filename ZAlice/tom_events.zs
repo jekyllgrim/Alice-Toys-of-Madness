@@ -1,5 +1,6 @@
 class ToM_Mainhandler : EventHandler
 {
+	ToM_HUDFaceController HUDfaces[MAXPLAYERS];
 	
 	static bool IsVoodooDoll(PlayerPawn mo) 
 	{
@@ -33,6 +34,21 @@ class ToM_Mainhandler : EventHandler
 	override void PlayerSpawned(PlayerEvent e)
 	{
 		GiveStartingItems(e.PlayerNumber);
+		
+		// Spawn HUD face controller for every player:
+		int pn = e.PlayerNumber;
+		if (!PlayerInGame[pn])
+			return;
+		let pmo = players[pn].mo;
+		if (!pmo)
+			return;
+		let fc = ToM_HUDFaceController(Actor.Spawn("ToM_HUDFaceController", (0,0,0)));
+		if (fc)
+		{
+			HUDfaces[e.PlayerNumber] = fc;
+			fc.HPlayer = players[pn];
+			fc.HPlayerPawn = pmo;
+		}
 	}
 	
 	override void PlayerRespawned(PlayerEvent e)

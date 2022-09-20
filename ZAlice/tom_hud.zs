@@ -4,6 +4,8 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	protected transient CVar aspectScale;
 	HUDFont mIndexFont;
+	ToM_HUDFaceController FaceController;
+	TextureID HUDFace;
 
 	// Versions of the draw functions that respect
 	// UI scaling but ignore UI stretching:
@@ -16,6 +18,16 @@ class ToM_AliceHUD : BaseStatusBar
 			pos.y *= noYStretch;
 		}
 		DrawImage(texture, pos, flags, Alpha, box, scale);
+	}
+	
+	void ToM_DrawTexture(TextureID texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1))
+	{
+		if (aspectScale.GetBool() == true) 
+		{
+			scale.y *= noYStretch;
+			pos.y *= noYStretch;
+		}
+		DrawTexture(texture, pos, flags, Alpha, box, scale);
 	}
 	
 	void ToM_DrawString(HUDFont font, String string, Vector2 pos, int flags = 0, int translation = Font.CR_UNTRANSLATED, double Alpha = 1., int wrapwidth = -1, int linespacing = 4, Vector2 scale = (1, 1)) 
@@ -42,13 +54,20 @@ class ToM_AliceHUD : BaseStatusBar
 		super.Init();
 		Font fnt = "INDEXFONT_DOOM";
 		mIndexFont = HUDFont.Create(fnt, fnt.GetCharWidth("0"), Mono_CellLeft, 1, 1);
-		
-		FaceAnimationsInit();
 	}
 	
 	override void Tick()
 	{
-		UpdateFaceAnimation();
+		if (!FaceController)
+		{
+			let handler = ToM_Mainhandler(Eventhandler.Find("ToM_Mainhandler"));
+			if (handler)
+			{
+				FaceController = handler.HUDFaces[CPlayer.mo.PlayerNumber()];
+			}
+		}
+		
+		HUDFace = FaceController.GetFaceTexture();
 	}
 	
 	override void Draw (int state, double TicFrac) 
@@ -113,331 +132,160 @@ class ToM_AliceHUD : BaseStatusBar
 		// highlights go on top:
 		ToM_DrawImage("graphics/HUD/vessel_highlights.png", (0, 0), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
 	}
-		
-	
-	const BLINK_MIN = 35;
-	const BLINK_MAX = 35 * 5;
-	int face_duration;
-	int face_curframe;
-	ToM_FaceSprite face_curSprite;
-	array <ToM_FaceSprite> FSprites_curSeq;
-	
-	/*enum FSprites_states
-	{
-		FS_front_calm,
-		FS_front_angry,
-		FS_front_demon,
-		FS_front_ouch,
-		FS_front_smile,
-		FS_angry_left,
-		FS_angry_right,
-		FS_return_angry_left,
-		FS_return_angry_right,
-		FS_return_calm_left,
-		FS_return_calm_right,
-	}*/
-	
-	array <ToM_FaceSprite> FSprites_front_calm;
-	array <ToM_FaceSprite> FSprites_front_angry;
-	array <ToM_FaceSprite> FSprites_front_demon;
-	array <ToM_FaceSprite> FSprites_front_ouch;
-	array <ToM_FaceSprite> FSprites_front_smile;
-	array <ToM_FaceSprite> FSprites_angry_left;
-	array <ToM_FaceSprite> FSprites_angry_right;
-	array <ToM_FaceSprite> FSprites_return_angry_left;
-	array <ToM_FaceSprite> FSprites_return_angry_right;
-	array <ToM_FaceSprite> FSprites_return_calm_left;
-	array <ToM_FaceSprite> FSprites_return_calm_right;
 	
 	void DrawAliceFace()
 	{
-		if (!face_curSprite)
+		if (!HUDFace)
 			return;
 		
-		let tex = face_curSprite.GetGraphic();
-		ToM_DrawImage(tex, (80, -85), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
+		ToM_DrawTexture(HUDFace, (80, -85), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
 	}
-
-	void FaceAnimationsInit()
-	{
-		FSprites_front_calm.Clear();
-		FSprites_front_angry.Clear();
-		FSprites_front_demon.Clear();
-		FSprites_front_ouch.Clear();
-		FSprites_front_smile.Clear();
-		FSprites_angry_left.Clear();
-		FSprites_angry_right.Clear();
-		FSprites_return_angry_left.Clear();
-		FSprites_return_angry_right.Clear();
-		FSprites_return_calm_left.Clear();
-		FSprites_return_calm_right.Clear();
-	
-		for (int i = 0; i < FSprites.Size(); i++)
-		{
-			array <string> st;
-			FSprites[i].Split(st, ":");
-			if (st.Size() < 1)
-				return;
-			
-			if (st[0] ~== "acf_front_calm")
-			{
-				ToM_FaceSprite fsprt = ToM_FaceSprite.Create(FSprites[i]);
-				FSprites_front_calm.Push(fsprt);
-			}
-			if (st[0] ~== "acf_front_ouch")
-			{
-				ToM_FaceSprite fsprt = ToM_FaceSprite.Create(FSprites[i]);
-				FSprites_front_ouch.Push(fsprt);
-			}
-			if (st[0] ~== "acf_front_smile")
-			{
-				ToM_FaceSprite fsprt = ToM_FaceSprite.Create(FSprites[i]);
-				FSprites_front_smile.Push(fsprt);
-			}
-			if (st[0] ~== "acf_front_angry")
-			{
-				ToM_FaceSprite fsprt = ToM_FaceSprite.Create(FSprites[i]);
-				FSprites_front_angry.Push(fsprt);
-			}
-			if (st[0] ~== "acf_front_demon")
-			{
-				ToM_FaceSprite fsprt = ToM_FaceSprite.Create(FSprites[i]);
-				FSprites_front_demon.Push(fsprt);
-			}
-			if (st[0] ~== "acf_angry_left")
-			{
-				ToM_FaceSprite fsprt = ToM_FaceSprite.Create(FSprites[i]);
-				FSprites_angry_left.Push(fsprt);
-			}
-			if (st[0] ~== "acf_angry_right")
-			{
-				ToM_FaceSprite fsprt = ToM_FaceSprite.Create(FSprites[i]);
-				FSprites_angry_right.Push(fsprt);
-			}
-			if (st[0] ~== "acf_return_angry_left")
-			{
-				ToM_FaceSprite fsprt = ToM_FaceSprite.Create(FSprites[i]);
-				FSprites_return_angry_left.Push(fsprt);
-			}
-			if (st[0] ~== "acf_return_angry_right")
-			{
-				ToM_FaceSprite fsprt = ToM_FaceSprite.Create(FSprites[i]);
-				FSprites_return_angry_right.Push(fsprt);
-			}
-			if (st[0] ~== "acf_return_calm_left")
-			{
-				ToM_FaceSprite fsprt = ToM_FaceSprite.Create(FSprites[i]);
-				FSprites_return_calm_left.Push(fsprt);
-			}
-			if (st[0] ~== "acf_return_calm_right")
-			{
-				ToM_FaceSprite fsprt = ToM_FaceSprite.Create(FSprites[i]);
-				FSprites_return_calm_right.Push(fsprt);
-			}
-		}
-		UpdateFaceSequence(FSprites_front_calm);
-	}
-	
-	void UpdateFaceSequence(array<ToM_FaceSprite> newSequence)
-	{
-		//FSprites_curSeq.Clear();
-		FSprites_curSeq.Copy(newSequence);
-		
-		/*
-		switch (newstate)
-		{
-		case FS_front_calm:
-			FSprites_curSeq = FSprites_front_calm;
-			break;
-		case FS_front_angry:
-			FSprites_curSeq = FSprites_front_angry;
-			break;
-		case FS_front_demon:
-			FSprites_curSeq = FSprites_front_demon;
-			break;
-		case FS_front_ouch:
-			FSprites_curSeq = FSprites_front_ouch;
-			break;
-		case FS_front_smile:
-			FSprites_curSeq = FSprites_front_smile;
-			break;
-		case FS_angry_left:
-			FSprites_curSeq = FSprites_angry_left;
-			break;
-		case FS_angry_right:
-			FSprites_curSeq = FSprites_angry_right;
-			break;
-		case FS_return_angry_left:
-			FSprites_curSeq = FSprites_return_angry_left;
-			break;
-		case FS_return_angry_right:
-			FSprites_curSeq = FSprites_return_angry_right;
-			break;
-		case FS_return_calm_left:
-			FSprites_curSeq = FSprites_return_calm_left;
-			break;
-		case FS_return_calm_right:
-			FSprites_curSeq = FSprites_return_calm_right;
-			break;
-		}*/
-	}
-	
-	void UpdateFaceAnimation()
-	{
-		// Check if the the current sequence is empty.
-		// If so, reinit:
-		if (FSprites_curSeq.Size() < 1)
-		{
-			FaceAnimationsInit();
-			return;
-		}
-		
-		// Check if current face sprite is valid.
-		// If not, set it to the default one:
-		if (!face_curSprite)
-		{
-			face_curSprite = FSprites_front_calm[0];
-		}
-		
-		// Decrement the duration if above 0:
-		if (face_duration > 0)
-		{
-			face_duration--;
-		}
-		
-		// Otherwise set next frame:
-		else
-		{
-			int i = face_curframe;
-			face_curframe++;
-			if (face_curframe >= FSprites_curSeq.Size())
-			{
-				let sprt = FSprites_curSeq[i];
-				name where = sprt.GetNextState();
-				switch (where)
-				{
-				case '':
-					UpdateFaceSequence(FSprites_front_calm);
-					break;
-				case 'acf_return_calm_right':
-					UpdateFaceSequence(FSprites_return_calm_right);
-					break;
-				case 'acf_return_calm_left':
-					UpdateFaceSequence(FSprites_return_calm_left);
-					break;
-				}
-				face_curframe = 0;
-			}
-			face_curSprite = FSprites_curSeq[face_curframe];
-			if (face_curSprite == FSprites_front_calm[0])
-				face_duration = random[acf](BLINK_MIN, BLINK_MAX);
-			else
-				face_duration = face_curSprite.GetDuration();
-		}
-	}
-	
-	static const string FSprites[] =
-	{	
-		"acf_front_calm:0:0",
-		"acf_front_calm:1:3",
-		"acf_front_calm:2:3",
-		
-		"acf_front_ouch:1:3",
-		"acf_front_ouch:2:3",
-		"acf_front_ouch:3:24",
-		
-		"acf_front_smile:0:30",
-		"acf_front_angry:0:30",
-
-		"acf_front_demon:1:3",
-		"acf_front_demon:2:3",
-		"acf_front_demon:3:3",
-		"acf_front_demon:4:3",
-		"acf_front_demon:3:4",
-		"acf_front_demon:2:4:loop",
-
-		"acf_angry_left:1:3",
-		"acf_angry_left:2:3",
-		"acf_angry_left:3:3",
-		"acf_angry_left:4:15",
-
-		"acf_angry_right:1:3",
-		"acf_angry_right:2:3",
-		"acf_angry_right:3:3",
-		"acf_angry_right:4:15:acf_return_calm_right"
-
-		"acf_return_angry_left:1:3",
-		"acf_return_angry_left:2:3",
-		"acf_return_angry_left:3:3",
-		"acf_return_angry_left:4:3:acf_return_calm_left",
-
-		"acf_return_angry_right:1:3",
-		"acf_return_angry_right:2:3",
-		"acf_return_angry_right:3:3",
-		"acf_return_angry_right:4:3",
-	
-		"acf_return_calm_left:1:3",
-		"acf_return_calm_left:2:3",
-		"acf_return_calm_left:3:3",
-		"acf_return_calm_left:4:3",
-
-		"acf_return_calm_right:1:3",
-		"acf_return_calm_right:2:3",
-		"acf_return_calm_right:3:3",
-		"acf_return_calm_right:4:3"
-	};
 }
 
-
-
-class ToM_FaceSprite : Object ui
-{	
-	private string graphicName;
-	private int frame;
-	private int duration;
-	private string nextState;
+class ToM_HUDFaceController : Actor
+{
+	const BLINK_MIN = 35;
+	const BLINK_MAX = 35 * 5;
 	
-	static ToM_FaceSprite Create(string graphic, string path = "graphics/hud/face/", string extension = ".png")
+	const DMGDELAY = 20;
+	int dmgwait;
+	
+	state s_front_calm;
+	state s_front_angry;
+	state s_front_smile;
+	state s_front_demon;
+	state s_front_ouch;
+	state s_return_left_calm;
+	state s_return_right_calm;
+	state s_return_left_angry;
+	state s_return_right_angry;
+	state s_right_angry;
+	state s_left_angry;
+	
+	PlayerInfo HPlayer;
+	PlayerPawn HPlayerPawn;
+	
+	Default
 	{
-		array<String> graphicData;
-		graphic.Split(graphicData, ":");
-		if (graphicData.Size() < 3)
+		+NOINTERACTION
+		+NOBLOCKMAP
+		+NOSECTOR
+		+SYNCHRONIZED
+		Renderstyle 'None';
+		FloatBobPhase 0;
+	}
+	
+	clearscope TextureID GetFaceTexture()
+	{
+		return curstate.GetSpriteTexture(0);
+	}
+	
+	bool CheckFaceSequence(state checkstate)
+	{
+		return ( checkstate && InStateSequence(curstate, checkstate) );
+	}
+	
+	override void BeginPlay()
+	{
+		super.BeginPlay();
+		s_front_calm = FindState("FrontCalm");
+		s_front_angry = FindState("FrontAngry");
+		s_front_smile = FindState("FrontSmile");
+		s_front_demon = FindState("FrontDemon");
+		s_front_ouch = FindState("FrontOuch");
+		s_return_left_calm = FindState("ReturnLeftCalm");
+		s_return_right_calm = FindState("ReturnRightCalm");
+		s_return_left_angry = FindState("ReturnLeftAngry");
+		s_return_right_angry = FindState("ReturnRightAngry");
+		s_right_angry = FindState("RightAngry");
+		s_left_angry = FindState("LeftAngry");
+	}
+	
+	override void Tick()
+	{
+		if (!HPlayer)
+			return;
+		super.Tick();
+		
+		if (HPlayerPawn.FindInventory("PowerStrength", true) && !CheckFaceSequence(s_front_demon))
 		{
-			console.printf("ToM_FaceSprite.Create() couldn't parse \"%s\": improper format", graphic);
-			return null;
+			SetState(s_front_demon);
 		}
 		
-		ToM_FaceSprite fs = New("ToM_FaceSprite");
-		
-		if (fs)
+		else if (HPlayer.damagecount > 0 && dmgwait <= 0)
 		{
-			fs.graphicName = String.Format("%s%s%s%s", path, graphicData[0], graphicData[1], extension);		
-			//fs.frame = graphicData[1].ToInt();
-			fs.duration = graphicData[2].toInt();
-			console.printf("ToM_FaceSprite.Create() resolved graphic as \"%s\"", fs.graphicName);
-			
-			if (graphicData.Size() > 3)
+			dmgwait = DMGDELAY;
+			double atkangle = 0;
+			// angle to attacker:
+			if (HPlayer.attacker)
 			{
-				fs.nextState = String.Format("%s%s%s", path, graphicData[3], extension);
-				console.printf("ToM_FaceSprite.Create() resolved NEXT graphic as \"%s\"", fs.nextState);
+				atkangle = HPlayerPawn.DeltaAngle(HPlayerPawn.angle, HPlayerPawn.AngleTo(HPlayer.attacker));
 			}
+			// Attacked from the front:
+			if (abs(atkangle) < 40)
+			{
+				// If already looking left, return from left:
+				if (CheckFaceSequence(s_left_angry))
+					SetState(s_return_left_angry);
+				// If looking right, return from right:
+				else if (CheckFaceSequence(s_right_angry))
+					SetState(s_return_right_angry);
+				// Otherwise just show front damage face:
+				else
+					SetState(s_front_angry);
+			}
+			// Attacked from the right:
+			else if (atkangle < 0)
+				SetState(s_right_angry);
+			// Attacked from the left:
+			else
+				SetState(s_left_angry);
 		}
 		
-		return fs;
+		if (dmgwait > 0)
+			dmgwait--;
 	}
 	
-	string GetGraphic()
+	States
 	{
-		return graphicName;
-	}
-	
-	string GetNextState()
-	{
-		return nextState;
-	}
-	
-	int GetDuration()
-	{
-		return duration;
+	Spawn:
+	FrontCalm:
+		AHF1 A 1 NoDelay A_SetTics(random[ahf](BLINK_MIN, BLINK_MAX));
+		AHF1 BC 3;
+		loop;
+	FrontAngry:
+		AHF1 D 25;
+		goto FrontCalm;
+	FrontSmile:
+		AHF1 E 35;
+		goto FrontCalm;
+	FrontOuch:
+		AHF1 FG 3;
+		AHF1 H 30;
+		goto FrontCalm;
+	FrontDemon:
+		AHF5 ABCD 4;
+		AHF5 CB 5;
+		loop;
+	LeftAngry:
+		AHF2 ABC 3;
+		AHF2 D 21;
+		goto ReturnLeftCalm;
+	RightAngry:
+		AHF2 EFG 3;
+		AHF2 H 21;
+		goto ReturnRightCalm;
+	ReturnLeftAngry:
+		AHF3 ABCD 3;
+		goto FrontAngry;
+	ReturnRightAngry:
+		AHF3 EFGH 3;
+		goto FrontAngry;
+	ReturnLeftCalm:
+		AHF4 BCD 4;
+		goto FrontCalm;
+	ReturnRightCalm:
+		AHF4 FGH 4;
+		goto FrontCalm;
 	}
 }

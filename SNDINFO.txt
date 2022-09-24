@@ -67,12 +67,16 @@ alice/pain07 "sounds/player/damaged07.ogg"
 alice/pain08 "sounds/player/damaged08.ogg"
 alice/pain09 "sounds/player/damaged09.ogg"
 alice/pain10 "sounds/player/damaged10.ogg"
-$random alice/death { alice/death1 alice/death2 alice/death3 alice/death4 alice/death5 }
+//$random alice/death { alice/death1 alice/death2 alice/death3 alice/death4 alice/death5 }
+$random alice/death { alice1/death1 alice1/death2 alice1/death3 }
 alice/death1 "sounds/player/death_combat01.ogg"
 alice/death2 "sounds/player/death_combat02.ogg"
 alice/death3 "sounds/player/death_combat03.ogg"
 alice/death4 "sounds/player/death_combat04.ogg"
 alice/death5 "sounds/player/death_combat05.ogg"
+alice1/death1 "sounds/player/death_hard.wav"
+alice1/death2 "sounds/player/death_knockback.wav"
+alice1/death3 "sounds/player/death_knockforward.wav"
 $random alice/lightpain { alice/lightpain1 alice/lightpain2 alice/lightpain3 alice/lightpain4 alice/lightpain5 }
 alice/lightpain1 "sounds/player/vox_hh_attack01.ogg"
 alice/lightpain2 "sounds/player/vox_hh_attack02.ogg"

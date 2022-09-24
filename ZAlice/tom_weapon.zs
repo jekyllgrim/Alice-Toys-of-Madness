@@ -1314,3 +1314,36 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 		loop;
 	}
 }
+
+class ToM_YellowMana : Ammo
+{
+	Default
+	{
+		inventory.amount 10;
+		inventory.maxamount 300;
+		ammo.backpackamount 100;
+		ammo.backpackmaxamount 300;
+	}
+}
+
+class ToM_RedMana : Ammo
+{
+	Default
+	{
+		inventory.amount 10;
+		inventory.maxamount 300;
+		ammo.backpackamount 100;
+		ammo.backpackmaxamount 300;
+	}
+}
+
+class ToM_PurpleMana : Ammo
+{
+	Default
+	{
+		inventory.amount 10;
+		inventory.maxamount 300;
+		ammo.backpackamount 100;
+		ammo.backpackmaxamount 300;
+	}
+}

@@ -4,14 +4,39 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	protected transient CVar aspectScale;
 	HUDFont mIndexFont;
-	ToM_HUDFaceController FaceController;
-	TextureID HUDFace;
+	protected ToM_HUDFaceController FaceController;
+	protected TextureID HUDFace;
+	protected int hudstate;
+	const eShiftX = 32;	
+	const eShiftY = 24;
+	
+	vector2 GetElementOffset(int flags = 0)
+	{
+		vector2 ofs = (0, 0);
+	
+		if (hudstate == HUD_StatusBar)
+		{
+			ofs = (-eShiftX, eShiftY);
+			if (flags & DI_SCREEN_RIGHT)
+			{
+				ofs.x *= -1;
+			}
+		}
+		
+		return ofs;
+	}
 
 	// Versions of the draw functions that respect
-	// UI scaling but ignore UI stretching:
+	// UI scaling but ignore UI stretching.
+	// These also incorporate automatic offsets
+	// to account for minimal and full versions of the HUD.
 
-	void ToM_DrawImage(String texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1)) 
+	void ToM_DrawImage(String texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1), bool sbarofs = true)
 	{
+		if (sbarofs)
+		{
+			pos += GetElementOffset(flags);
+		}
 		if (aspectScale.GetBool() == true) 
 		{
 			scale.y *= noYStretch;
@@ -20,8 +45,12 @@ class ToM_AliceHUD : BaseStatusBar
 		DrawImage(texture, pos, flags, Alpha, box, scale);
 	}
 	
-	void ToM_DrawTexture(TextureID texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1))
+	void ToM_DrawTexture(TextureID texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1), bool sbarofs = true)
 	{
+		if (sbarofs)
+		{
+			pos += GetElementOffset(flags);
+		}
 		if (aspectScale.GetBool() == true) 
 		{
 			scale.y *= noYStretch;
@@ -30,8 +59,12 @@ class ToM_AliceHUD : BaseStatusBar
 		DrawTexture(texture, pos, flags, Alpha, box, scale);
 	}
 	
-	void ToM_DrawString(HUDFont font, String string, Vector2 pos, int flags = 0, int translation = Font.CR_UNTRANSLATED, double Alpha = 1., int wrapwidth = -1, int linespacing = 4, Vector2 scale = (1, 1)) 
+	void ToM_DrawString(HUDFont font, String string, Vector2 pos, int flags = 0, int translation = Font.CR_UNTRANSLATED, double Alpha = 1., int wrapwidth = -1, int linespacing = 4, Vector2 scale = (1, 1), bool sbarofs = true) 
 	{
+		if (sbarofs)
+		{
+			pos += GetElementOffset(flags);
+		}
 		if (aspectScale.GetBool() == true) 
 		{
 			scale.y *= noYStretch;
@@ -40,7 +73,12 @@ class ToM_AliceHUD : BaseStatusBar
 		DrawString(font, string, pos, flags, translation, Alpha, wrapwidth, linespacing, scale);
 	}
 
-	void ToM_DrawInventoryIcon(Inventory item, Vector2 pos, int flags = 0, double alpha = 1.0, Vector2 boxsize = (-1, -1), Vector2 scale = (1.,1.)) {
+	void ToM_DrawInventoryIcon(Inventory item, Vector2 pos, int flags = 0, double alpha = 1.0, Vector2 boxsize = (-1, -1), Vector2 scale = (1.,1.), bool sbarofs = true) 
+	{
+		if (sbarofs)
+		{
+			pos += GetElementOffset(flags);
+		}
 		if (aspectScale.GetBool() == true) 
 		{
 			scale.y *= noYStretch;
@@ -80,7 +118,9 @@ class ToM_AliceHUD : BaseStatusBar
 		if (state == HUD_AltHUD || state == HUD_None)
 			return;
 		
-		BeginHUD(1., false, 640, 480);
+		hudstate = state;
+		
+		BeginHUD(1., false, 320, 200);
 		
 		DrawBackgroundStuff();
 		DrawLeftCorner();
@@ -89,10 +129,13 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	void DrawBackgroundStuff()
 	{
-		// left: decoration
+		if (hudstate == HUD_StatusBar)
+			return;
+	
+		// left decoration
 		ToM_DrawImage("graphics/HUD/base_left.png", (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		
-		// right: vessels and decoration
+		// right decoration
 		ToM_DrawImage("graphics/HUD/base_right.png", (0, 0), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
 	}
 	
@@ -104,10 +147,11 @@ class ToM_AliceHUD : BaseStatusBar
 		if (health <= (hmax * 0.25))
 			return Font.CR_Red;
 		return Font.CR_White;
-	}	
+	}
 	
 	void DrawLeftCorner()
-	{		
+	{
+	
 		// armor frame goes first
 		let armor = BasicArmor(CPlayer.mo.FindInventory("BasicArmor"));
 		if (armor && armor.amount > 0)
@@ -115,9 +159,10 @@ class ToM_AliceHUD : BaseStatusBar
 			ToM_DrawInventoryIcon(armor, (0, 0),DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
 		}
 		
-		// mirror's background in the middle:
+		// mirror's background:
 		ToM_DrawImage("graphics/HUD/mirror_back.png", (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		
+		// Alice's face:
 		DrawAliceFace();
 		
 		// mirror's glass:
@@ -129,19 +174,25 @@ class ToM_AliceHUD : BaseStatusBar
 		// mirror's frame goes on top:
 		ToM_DrawImage("graphics/HUD/mirror_frame.png", (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		
-		// And finally, numbers:
+		// finally, health numbers:
 		ToM_DrawString(mIndexFont, String.Format("%d",CPlayer.health), (81, -44), DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetHealthColor());
 	}
 	
 	void DrawRightcorner()
 	{
+		// vessels:
+		ToM_DrawImage("graphics/HUD/vessels.png", (0, 0), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
+		
+		// runes on the vessels:
+		ToM_DrawImage("graphics/HUD/vessel_runes.png", (0, 0), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
+		
 		// highlights go on top:
 		ToM_DrawImage("graphics/HUD/vessel_highlights.png", (0, 0), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
 	}
 	
 	void DrawAliceFace()
 	{
-		if (!HUDFace)
+		if (!HUDFace || CPlayer.health <= 0)
 			return;
 		
 		ToM_DrawTexture(HUDFace, (80, -85), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
@@ -150,46 +201,47 @@ class ToM_AliceHUD : BaseStatusBar
 	void DrawMirrorCracks()
 	{
 		int health = CPlayer.health;
-		if (health >= 75)
+		if (health > 70)
 			return;
 		
 		name path = "graphics/HUD/";
 		name tex;
-		switch (health)
-		{
-		case 70: case 69: case 68: case 67: case 66: 
-			tex = "mirror_cracks01.png"; break;
-		case 65: case 64: case 63: case 62: case 61: 
-			tex = "mirror_cracks02.png"; break;
-		case 60: case 59: case 58: case 57: case 56: 
-			tex = "mirror_cracks03.png"; break;
-		case 55: case 54: case 53: case 52: case 51: 
-			tex = "mirror_cracks04.png"; break;
-		case 50: case 49: case 48: case 47: case 46: 
-			tex = "mirror_cracks05.png"; break;
-		case 45: case 44: case 43: case 42: case 41: 
-			tex = "mirror_cracks06.png"; break;
-		case 40: case 39: case 38: case 37: case 36: 
-			tex = "mirror_cracks07.png"; break;
-		case 35: case 34: case 33: case 32: case 31: 
-			tex = "mirror_cracks08.png"; break;
-		case 30: case 29: case 28: case 27: case 26: 
-			tex = "mirror_cracks09.png"; break;
-		case 25: case 24: case 23: case 22: case 21: 
-			tex = "mirror_cracks10.png"; break;
-		case 20: case 19: case 18: case 17: case 16: 
-			tex = "mirror_cracks11.png"; break;
-		case 15: case 14: case 13: case 12: case 11: 
-			tex = "mirror_cracks12.png"; break;
-		case 10: case 9: case 8: case 7: case 6:
-			tex = "mirror_cracks13.png"; break;
-		case 5: case 4: case 3: case 2: case 1:
-			tex = "mirror_cracks14.png"; break;
-		case 0:
-			tex = "mirror_cracks15.png"; break;
-		}
+		
+		if (health > 65)
+			tex = "mirror_cracks01.png";
+		else if (health > 60)
+			tex = "mirror_cracks02.png";
+		else if (health > 55)
+			tex = "mirror_cracks03.png";
+		else if (health > 50)
+			tex = "mirror_cracks04.png";
+		else if (health > 45)
+			tex = "mirror_cracks05.png";
+		else if (health > 40)
+			tex = "mirror_cracks06.png";
+		else if (health > 35)
+			tex = "mirror_cracks07.png";
+		else if (health > 30)
+			tex = "mirror_cracks08.png";
+		else if (health > 25)
+			tex = "mirror_cracks09.png";
+		else if (health > 20)
+			tex = "mirror_cracks10.png";
+		else if (health > 15)
+			tex = "mirror_cracks11.png";
+		else if (health > 10)
+			tex = "mirror_cracks12.png";
+		else if (health > 5)
+			tex = "mirror_cracks13.png";
+		else if (health > 0)
+			tex = "mirror_cracks14.png";
+		else
+			tex = "mirror_cracks15.png";
+
 		if (tex)
+		{
 			ToM_DrawImage(path..tex, (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
+		}
 	}
 }
 

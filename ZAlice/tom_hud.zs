@@ -120,6 +120,12 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		DrawAliceFace();
 		
+		// mirror's glass:
+		ToM_DrawImage("graphics/HUD/mirror_glass.png", (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
+		
+		// cracks in glass (health indication):
+		DrawMirrorCracks();
+		
 		// mirror's frame goes on top:
 		ToM_DrawImage("graphics/HUD/mirror_frame.png", (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		
@@ -139,6 +145,51 @@ class ToM_AliceHUD : BaseStatusBar
 			return;
 		
 		ToM_DrawTexture(HUDFace, (80, -85), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
+	}
+	
+	void DrawMirrorCracks()
+	{
+		int health = CPlayer.health;
+		if (health >= 75)
+			return;
+		
+		name path = "graphics/HUD/";
+		name tex;
+		switch (health)
+		{
+		case 70: case 69: case 68: case 67: case 66: 
+			tex = "mirror_cracks01.png"; break;
+		case 65: case 64: case 63: case 62: case 61: 
+			tex = "mirror_cracks02.png"; break;
+		case 60: case 59: case 58: case 57: case 56: 
+			tex = "mirror_cracks03.png"; break;
+		case 55: case 54: case 53: case 52: case 51: 
+			tex = "mirror_cracks04.png"; break;
+		case 50: case 49: case 48: case 47: case 46: 
+			tex = "mirror_cracks05.png"; break;
+		case 45: case 44: case 43: case 42: case 41: 
+			tex = "mirror_cracks06.png"; break;
+		case 40: case 39: case 38: case 37: case 36: 
+			tex = "mirror_cracks07.png"; break;
+		case 35: case 34: case 33: case 32: case 31: 
+			tex = "mirror_cracks08.png"; break;
+		case 30: case 29: case 28: case 27: case 26: 
+			tex = "mirror_cracks09.png"; break;
+		case 25: case 24: case 23: case 22: case 21: 
+			tex = "mirror_cracks10.png"; break;
+		case 20: case 19: case 18: case 17: case 16: 
+			tex = "mirror_cracks11.png"; break;
+		case 15: case 14: case 13: case 12: case 11: 
+			tex = "mirror_cracks12.png"; break;
+		case 10: case 9: case 8: case 7: case 6:
+			tex = "mirror_cracks13.png"; break;
+		case 5: case 4: case 3: case 2: case 1:
+			tex = "mirror_cracks14.png"; break;
+		case 0:
+			tex = "mirror_cracks15.png"; break;
+		}
+		if (tex)
+			ToM_DrawImage(path..tex, (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 	}
 }
 
@@ -185,6 +236,12 @@ class ToM_HUDFaceController : Actor
 		return ( checkstate && InStateSequence(curstate, checkstate) );
 	}
 	
+	void SetFaceState(state newstate, bool noOverride = false)
+	{
+		if (!noOverride || !CheckFaceSequence(newstate))
+			SetState(newstate);
+	}
+	
 	override void BeginPlay()
 	{
 		super.BeginPlay();
@@ -207,9 +264,9 @@ class ToM_HUDFaceController : Actor
 			return;
 		super.Tick();
 		
-		if (HPlayerPawn.FindInventory("PowerStrength", true) && !CheckFaceSequence(s_front_demon))
+		if (HPlayerPawn.FindInventory("PowerStrength", true))
 		{
-			SetState(s_front_demon);
+			SetFaceState(s_front_demon, true);
 		}
 		
 		else if (HPlayer.damagecount > 0 && dmgwait <= 0)
@@ -226,20 +283,20 @@ class ToM_HUDFaceController : Actor
 			{
 				// If already looking left, return from left:
 				if (CheckFaceSequence(s_left_angry))
-					SetState(s_return_left_angry);
+					SetFaceState(s_return_left_angry);
 				// If looking right, return from right:
 				else if (CheckFaceSequence(s_right_angry))
-					SetState(s_return_right_angry);
+					SetFaceState(s_return_right_angry);
 				// Otherwise just show front damage face:
 				else
-					SetState(s_front_angry);
+					SetFaceState(s_front_angry);
 			}
 			// Attacked from the right:
 			else if (atkangle < 0)
-				SetState(s_right_angry);
+				SetFaceState(s_right_angry);
 			// Attacked from the left:
 			else
-				SetState(s_left_angry);
+				SetFaceState(s_left_angry);
 		}
 		
 		if (dmgwait > 0)

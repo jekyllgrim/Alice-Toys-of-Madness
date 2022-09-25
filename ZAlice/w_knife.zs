@@ -256,13 +256,13 @@ class ToM_Knife : ToM_BaseWeapon
 		TNT1 A 0 A_ResetPSprite(OverlayID());
 		VKNF HHH 1
 		{
-			A_WeaponOffset(4, -4, WOF_ADD);
-			A_RotatePSprite(OverlayID(), -2, WOF_ADD);
+			A_WeaponOffset(4, -3, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -1.5, WOF_ADD);
 		}
 		TNT1 A 0 A_StartSound("weapons/knife/throw", CHAN_WEAPON);
 		VKNF IIII 1
 		{
-			A_WeaponOffset(3, -2, WOF_ADD);
+			A_WeaponOffset(3, -1.5, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -1, WOF_ADD);
 		}
 		VKNF JJJ 1 
@@ -286,12 +286,10 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			invoker.knifeReload = KNIFE_RELOAD_TIME;
 		}
-		//VKNR AAAAAAAA 1 
 		TNT1 AAAAAAAA 1 
 		{
-			A_WeaponOffset(1.475, -7, WOF_ADD);
+			A_ResetPSprite(OverlayID(), 8);
 			A_WeaponReady(WRF_NOBOB|WRF_NOFIRE);
-			A_RotatePSprite(OverlayID(), -1.375, WOF_ADD);
 		}
 		goto Ready;
 	RestoreKnife:

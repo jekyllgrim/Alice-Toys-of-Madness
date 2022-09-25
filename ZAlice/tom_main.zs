@@ -5,7 +5,7 @@ Mixin class ToM_Math
 		return (i >= 0) ? 1 : -1;
 	}
 	
-	clearscope double LinearMap(double val, double source_min, double source_max, double out_min, double out_max) 
+	static clearscope double LinearMap(double val, double source_min, double source_max, double out_min, double out_max) 
 	{
 		return (val - source_min) * (out_max - out_min) / (source_max - source_min) + out_min;
 	}

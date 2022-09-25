@@ -19,8 +19,13 @@ class ToM_Cards : ToM_BaseWeapon
 	
 	Default
 	{
-		weapon.slotnumber 2;
 		Tag "Playing cards";
+		weapon.slotnumber 2;
+		weapon.ammotype1 "ToM_RedMana";
+		weapon.ammouse1 2;
+		weapon.ammogive1 150;
+		weapon.ammotype2 "ToM_RedMana";
+		weapon.ammouse2 2;
 	}
 	
 	action void A_CreateCardLayers()
@@ -105,7 +110,7 @@ class ToM_Cards : ToM_BaseWeapon
 		double vertspread = explicitangle ? yspread : frandom[firecard](-yspread, yspread);
 		//console.printf("firing a card at an angle of %1.f", horspread);
 		let proj = ToM_CardProjectile(A_Fire3DProjectile(
-			"ToM_CardProjectile", 
+			"ToM_CardProjectile",
 			leftright: xofs,
 			updown: yofs,
 			crosshairConverge: true,
@@ -203,7 +208,7 @@ class ToM_Cards : ToM_BaseWeapon
 		return s;
 	}
 	
-	override bool TryPickup(in out Actor toucher)
+	/*override bool TryPickup(in out Actor toucher)
 	{
 		bool ret = super.TryPickup(toucher);
 		if (ret)
@@ -219,7 +224,7 @@ class ToM_Cards : ToM_BaseWeapon
 			}
 		}
 		return ret;
-	}
+	}*/
 	
 	States
 	{

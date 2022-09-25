@@ -14,8 +14,13 @@ class ToM_Jacks : ToM_BaseWeapon
 
 	Default
 	{
-		weapon.slotnumber 3;
 		Tag "Jacks";
+		weapon.slotnumber 3;
+		weapon.ammotype1 "ToM_RedMana";
+		weapon.ammouse1 12;
+		weapon.ammogive1 150;
+		weapon.ammotype2 "ToM_RedMana";
+		weapon.ammouse2 15;
 	}
 	
 	// Set frame based on jacksTossed value:
@@ -41,12 +46,15 @@ class ToM_Jacks : ToM_BaseWeapon
 	// Primary fire:
 	action void A_TossJacks()
 	{
+		if (!invoker.DepleteAmmo(invoker.bAltFire, true))
+			return;
 		A_StartSound("weapons/jacks/toss", CHAN_WEAPON);
 		for (int i = JPROJNUMBER; i > 0; i--)
 		{
 			let proj = ToM_JackProjectile(
 				A_Fire3DProjectile(
 					"ToM_JackProjectile", 
+					useammo: false,
 					forward: 1, 
 					leftright: 3.2 + frandom[jp](-3, 3), 
 					updown: frandom[jp](-1, 1),
@@ -68,12 +76,15 @@ class ToM_Jacks : ToM_BaseWeapon
 	// Alt fire:
 	action void A_FireJackSeekers()
 	{	
+		if (!invoker.DepleteAmmo(invoker.bAltFire, true))
+			return;
 		A_StartSound("weaopons/jacks/toss", CHAN_WEAPON);
 		for (int i = JPROJNUMBER; i > 0; i--)
 		{
 			let proj = ToM_JackProjectile(
 				A_Fire3DProjectile(
 					"ToM_RealSeeker", 
+					useammo: false,
 					forward: 1, 
 					leftright: 3.2 + frandom[jp](-4, 4), 
 					updown: frandom[jp](-2.5, 2.5),

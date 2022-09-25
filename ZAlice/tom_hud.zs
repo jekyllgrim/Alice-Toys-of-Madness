@@ -178,8 +178,71 @@ class ToM_AliceHUD : BaseStatusBar
 		ToM_DrawString(mIndexFont, String.Format("%d",CPlayer.health), (81, -44), DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetHealthColor());
 	}
 	
+	void DrawManaVessel(name ammotype, string texture, vector2 pos, double diameter, int flags = 0, string toptexture = "")
+	{
+		Class<Ammo> ammocls = ammotype;
+		if (!ammotype)
+			return;
+		let am = Ammo(CPlayer.mo.FindInventory(ammocls));
+		if (!am)
+			return;
+		
+		double amount = am.amount;
+		double maxamount = am.maxamount;
+		if (maxamount <= 0)
+			return;
+		
+		//console.printf("%s: %d / %d", ammotype, amount, maxamount);
+		
+		double amtFac = amount / double(maxamount);
+		double gclip = diameter - diameter * amtFac;
+		//gclip = int(gclip);
+		
+		SetClipRect(
+			pos.x,
+			pos.y + gclip,
+			diameter,
+			diameter - gclip,
+			DI_SCREEN_RIGHT_BOTTOM
+		);
+		//Fill(color(255,255,0,0), 0, 0, Screen.GetWidth(), Screen.GetHeight());
+		ToM_DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP);
+		ClearClipRect();
+		
+		if (toptexture && amtFac < 0.99 && amtFac > 0.01)
+		{
+			double rad = diameter / 2;
+			double width;
+			
+			if (amtFac == 0.5)
+				width = diameter;
+			else
+			{
+				double triHeight;
+				if (amtFac > 0.5)
+					triHeight = ToM_BaseActor.LinearMap(amtFac, 0.5, 1.0, 0, rad);
+				else
+					triHeight = ToM_BaseActor.LinearMap(amtFac, 0.5, 0.0, 0, rad);
+				double halfChordSquared = ((rad * rad) - (triHeight * triHeight));
+				double chord = sqrt(halfChordSquared) * 2;
+				width = chord;
+			}
+			
+			ToM_DrawImage(
+				toptexture, 
+				( pos.x + rad,
+				pos.y + gclip ),
+				flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER,
+				box: (width, -1)
+			);
+		}
+	}
+	
 	void DrawRightcorner()
 	{
+		// red mana:
+		DrawManaVessel("ToM_RedMana", "graphics/HUD/vessel_red_liquid.png", (-134, -75), 43, toptexture: "graphics/HUD/vessel_red_liquidtop.png");
+	
 		// vessels:
 		ToM_DrawImage("graphics/HUD/vessels.png", (0, 0), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
 		

@@ -16,6 +16,11 @@ class ToM_Teapot : ToM_BaseWeapon
 	{
 		weapon.slotnumber 5;
 		Tag "Teapot Cannon";
+		weapon.ammotype1 "ToM_YellowMana";
+		weapon.ammouse1 20;
+		weapon.ammogive1 100;
+		weapon.ammotype2 "ToM_YellowMana";
+		weapon.ammouse2 1;
 	}
 	
 	

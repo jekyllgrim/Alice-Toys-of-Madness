@@ -23,7 +23,7 @@ class ToM_Cards : ToM_BaseWeapon
 		weapon.slotnumber 2;
 		weapon.ammotype1 "ToM_RedMana";
 		weapon.ammouse1 2;
-		weapon.ammogive1 150;
+		weapon.ammogive1 100;
 		weapon.ammotype2 "ToM_RedMana";
 		weapon.ammouse2 2;
 	}
@@ -332,7 +332,11 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 		stop;
 	Ready:
-		APCR A 1 A_WeaponReady;
+		APCR A 1 
+		{
+			A_CheckReload();
+			A_WeaponReady();
+		}
 		loop;
 	Fire:
 		TNT1 A 0 

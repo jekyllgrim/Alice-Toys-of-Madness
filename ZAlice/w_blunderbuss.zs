@@ -7,10 +7,13 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 	
 	Default
 	{
+		Tag "Blunderbuss";
 		+WEAPON.NOAUTOFIRE
 		+WEAPON.BFG
 		Weapon.slotnumber 7;
-		Tag "Blunderbuss";
+		weapon.ammotype1 "ToM_PurpleMana";
+		weapon.ammouse1 100;
+		weapon.ammogive1 100;
 	}
 	
 	action void A_FireBlunderbuss()
@@ -87,7 +90,7 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 			A_WeaponOffset(30, 20, WOF_ADD);
 			A_OverlayScale(OverlayID(), 0.08, 0.08, WOF_ADD);
 		}
-		TNT1 A 25;
+		TNT1 A 25 A_CheckReload();
 		BBUS B 0 
 		{
 			A_WeaponOffset(-16, 90+WEAPONTOP);

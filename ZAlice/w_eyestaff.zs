@@ -8,8 +8,13 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	
 	Default
 	{
-		Weapon.slotnumber 6;
 		Tag "Jabbberwock's Eye Staff";
+		Weapon.slotnumber 6;
+		weapon.ammotype1 "ToM_PurpleMana";
+		weapon.ammouse1 1;
+		weapon.ammogive1 100;
+		weapon.ammotype2 "ToM_PurpleMana";
+		weapon.ammouse2 50;
 	}
 	
 	action void A_StopCharge()
@@ -162,7 +167,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			A_StartSound("weapons/eyestaff/beam", CHAN_WEAPON, CHANF_LOOPING);
 			A_EyeStaffRecoil();
 			A_FireBeam();
-			A_FireBullets(0, 0, 1, 5, pufftype: "ToM_EyeStaffPuff", flags:FBF_NORANDOM);
+			A_FireBullets(0, 0, 1, 5, pufftype: "ToM_EyeStaffPuff", flags:FBF_NORANDOM|FBF_USEAMMO);
 		}
 		TNT1 A 0 A_ReFire("FireBeam");
 		goto FireEnd;
@@ -194,7 +199,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			A_StopBeam();
 			A_StopSound(CHAN_WEAPON);
-			let proj = A_FireProjectile("ToM_EyeStaffProjectile");
+			let proj = A_FireProjectile("ToM_EyeStaffProjectile", useammo: false);
 			if (proj)
 				proj.A_StartSound("weapons/eyestaff/fireProjectile");
 		}

@@ -8,6 +8,11 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	{
 		Weapon.slotnumber 4;
 		Tag "Pepper Grinder";
+		weapon.ammotype1 "ToM_YellowMana";
+		weapon.ammouse1 2;
+		weapon.ammogive1 100;
+		weapon.ammotype2 "ToM_YellowMana";
+		weapon.ammouse2 20;
 	}
 	
 	action void A_PepperFlash()
@@ -51,8 +56,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		A_StartSound("weapons/pgrinder/fire", flags: CHANF_OVERLAP);
 		let proj = A_FireProjectile(
 			"ToM_PepperProjectile", 
-			angle: angleofs, 
-			useammo: !hitscan, 
+			angle: angleofs,
 			spawnofs_xy: spawnofs_xy + frandom[ppgr](-0.5,0.5),
 			spawnheight: spawnheight + frandom[ppgr](-1,1),
 			pitch: pitchofs

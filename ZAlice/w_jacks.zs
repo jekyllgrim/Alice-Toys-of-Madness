@@ -18,7 +18,7 @@ class ToM_Jacks : ToM_BaseWeapon
 		weapon.slotnumber 3;
 		weapon.ammotype1 "ToM_RedMana";
 		weapon.ammouse1 12;
-		weapon.ammogive1 150;
+		weapon.ammogive1 60;
 		weapon.ammotype2 "ToM_RedMana";
 		weapon.ammouse2 15;
 	}
@@ -196,6 +196,7 @@ class ToM_Jacks : ToM_BaseWeapon
 			A_WeaponOffset(-5, 20, WOF_ADD);
 			A_OverlayScale(OverlayID(), -0.03, -0.03, WOF_ADD);
 		}
+		TNT1 A 0 A_CheckReload();
 		TNT1 A 10
 		{
 			A_WeaponOffset(-42, WEAPONTOP + 60);
@@ -214,6 +215,7 @@ class ToM_Jacks : ToM_BaseWeapon
 		TNT1 A 0 A_FireJackSeekers;
 		AJCK LLL 1 A_WeaponOffset(5, -1, WOF_ADD);
 		AJCK LLLLLLLLL 1 A_WeaponOffset(3, 1, WOF_ADD);
+		TNT1 A 0 A_CheckReload();
 		AJCK MMMNN 1 A_ResetPSprite(OverlayID(), 5);
 		goto Ready;
 	}

@@ -187,6 +187,10 @@ class ToM_AliceHUD : BaseStatusBar
 		if (!am)
 			return;
 		
+		bool isSelected;
+		let weap = CPlayer.readyweapon;
+		isSelected = (weap && weap.ammotype1 == ammocls);
+		
 		double amount = am.amount;
 		double maxamount = am.maxamount;
 		if (maxamount <= 0)
@@ -205,43 +209,102 @@ class ToM_AliceHUD : BaseStatusBar
 			diameter - gclip,
 			DI_SCREEN_RIGHT_BOTTOM
 		);
-		//Fill(color(255,255,0,0), 0, 0, Screen.GetWidth(), Screen.GetHeight());
 		ToM_DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP);
+		if (!isSelected)
+		{
+			ToM_DrawImage("graphics/HUD/vessel_black_liquid.png", pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: 0.45);
+		}
 		ClearClipRect();
 		
+		// The top of the liquid is a separate, fake-3D texture.
+		// We need to scale it dynamically, so that it matches the
+		// width of the bubble. Here we need a bit of geometry:
+		// the bubble is a circle with a diameter of 43, and the top
+		// line of the mana texture is that circle's chord.
+		// Using Pythagorean theorem, knowing the vertical pos of that chord
+		// we can calculate its exact width. We start with the circle's
+		// diameter and with amtFac, which corresponds to the height
+		// of the mana level in the bubble:
+		// (https://www.cuemath.com/geometry/Chords-of-a-circle/)
 		if (toptexture && amtFac < 0.99 && amtFac > 0.01)
 		{
 			double rad = diameter / 2;
 			double width;
 			
+			// If we're exactly at half ammo, the chord equals
+			// the circle's diameter:
 			if (amtFac == 0.5)
 				width = diameter;
 			else
 			{
+				// Otherwise the Pythagorean theorem comes into play.
+				// We imagine a triangle, whose top is at the middle of the
+				// circle, its sides are equal to the circle's radius,
+				// and the widest side is the chord itself.
+				// Now split it into 2 equal triangles. We're only using
+				// one of those smaller triangles. One of its catheti is
+				// equal to the distance from the circle's center
+				// to the height of the chord. The other catheti is
+				// the chord itself, and its hypotenuse is equal to the
+				// circle's radius. We know the radius and the distance 
+				// from center to the chord, now we need to find the
+				// cathetus of that triangle, multiply it by 2, and we got
+				// the length of the chord.
+				
+				// First, get the first cathetus, i.e. distance from the center
+				// of the bubble to the chord. Note that the chord can be
+				// below the center, but the length of the cathetus is
+				// always positive. We need to map it using amtFac.
 				double triHeight;
+				
+				// From half ammo to full ammo: the cathetus goes from 0 to
+				// circle's radius:
 				if (amtFac > 0.5)
 					triHeight = ToM_BaseActor.LinearMap(amtFac, 0.5, 1.0, 0, rad);
+				// From half ammo to zero ammo: the cathetus also goes from 0 to
+				// circle's radius:
 				else
 					triHeight = ToM_BaseActor.LinearMap(amtFac, 0.5, 0.0, 0, rad);
+				// The Pythagorean theorem is: hypotenuse squared equals the sum
+				// of its squared catheti (c2 = a2 + b2).
+				// Since the chord (or rather, half of it) is a cathetus here,
+				// and radius is the hypotenuse, restructure the formula:
+				// cathetus squared equals hypotenuse squared minus the other
+				// cathetus squared:
 				double halfChordSquared = ((rad * rad) - (triHeight * triHeight));
+				
+				// To get the full chord, take a square root of the value
+				// calculated above (that's half of the length of the chord)
+				// and multiply it by 2 (that's full length);
 				double chord = sqrt(halfChordSquared) * 2;
-				width = chord;
+				
+				// Make it a bit smaller so that it doesn't stick out of
+				// the bubble's sides (the bubble is pixelated, after all,
+				// so it can happen):
+				width = chord * 0.98;
 			}
 			
-			ToM_DrawImage(
-				toptexture, 
-				( pos.x + rad,
-				pos.y + gclip ),
-				flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER,
-				box: (width, -1)
-			);
+			// The top texture is aligned to its center (middle of the
+			// bubble's width), and its horizontal position is equal
+			// to the position of the clip rectangle (which is the top
+			// end of the mana texture):
+			vector2 tpos = ( pos.x + rad, pos.y + gclip );
+			ToM_DrawImage(toptexture, tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, box: (width, -1));
+			if (!isSelected)
+			{
+				ToM_DrawImage("graphics/HUD/vessel_black_liquidtop.png", tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, alpha: 0.45, box: (width, -1));
+			}
 		}
 	}
 	
 	void DrawRightcorner()
 	{
 		// red mana:
-		DrawManaVessel("ToM_RedMana", "graphics/HUD/vessel_red_liquid.png", (-134, -75), 43, toptexture: "graphics/HUD/vessel_red_liquidtop.png");
+		DrawManaVessel("ToM_RedMana", "graphics/HUD/vessel_red_liquid.png", (-134, -75), 43, toptexture: "graphics/HUD/vessel_red_liquidtop.png");// red mana:
+		// yellow mana:
+		DrawManaVessel("ToM_YellowMana", "graphics/HUD/vessel_Yellow_liquid.png", (-106, -122), 43, toptexture: "graphics/HUD/vessel_Yellow_liquidtop.png");
+		// purple mana:
+		DrawManaVessel("ToM_PurpleMana", "graphics/HUD/vessel_Purple_liquid.png", (-78, -75), 43, toptexture: "graphics/HUD/vessel_Purple_liquidtop.png");
 	
 		// vessels:
 		ToM_DrawImage("graphics/HUD/vessels.png", (0, 0), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
@@ -387,31 +450,38 @@ class ToM_HUDFaceController : Actor
 		else if (HPlayer.damagecount > 0 && dmgwait <= 0)
 		{
 			dmgwait = DMGDELAY;
-			double atkangle = 0;
-			// angle to attacker:
-			if (HPlayer.attacker)
+			if (HPlayer.damagecount >= 25)
 			{
-				atkangle = HPlayerPawn.DeltaAngle(HPlayerPawn.angle, HPlayerPawn.AngleTo(HPlayer.attacker));
+				SetFaceState(s_front_ouch, true);
 			}
-			// Attacked from the front:
-			if (abs(atkangle) < 40)
-			{
-				// If already looking left, return from left:
-				if (CheckFaceSequence(s_left_angry))
-					SetFaceState(s_return_left_angry);
-				// If looking right, return from right:
-				else if (CheckFaceSequence(s_right_angry))
-					SetFaceState(s_return_right_angry);
-				// Otherwise just show front damage face:
-				else
-					SetFaceState(s_front_angry);
-			}
-			// Attacked from the right:
-			else if (atkangle < 0)
-				SetFaceState(s_right_angry);
-			// Attacked from the left:
 			else
-				SetFaceState(s_left_angry);
+			{
+				double atkangle = 0;
+				// angle to attacker:
+				if (HPlayer.attacker)
+				{
+					atkangle = HPlayerPawn.DeltaAngle(HPlayerPawn.angle, HPlayerPawn.AngleTo(HPlayer.attacker));
+				}
+				// Attacked from the front:
+				if (abs(atkangle) < 40)
+				{
+					// If already looking left, return from left:
+					if (CheckFaceSequence(s_left_angry))
+						SetFaceState(s_return_left_angry);
+					// If looking right, return from right:
+					else if (CheckFaceSequence(s_right_angry))
+						SetFaceState(s_return_right_angry);
+					// Otherwise just show front damage face:
+					else
+						SetFaceState(s_front_angry);
+				}
+				// Attacked from the right:
+				else if (atkangle < 0)
+					SetFaceState(s_right_angry);
+				// Attacked from the left:
+				else
+					SetFaceState(s_left_angry);
+			}
 		}
 		
 		if (dmgwait > 0)
@@ -433,7 +503,7 @@ class ToM_HUDFaceController : Actor
 		goto FrontCalm;
 	FrontOuch:
 		AHF1 FG 3;
-		AHF1 H 30;
+		AHF1 H 60;
 		goto FrontCalm;
 	FrontDemon:
 		AHF5 ABCD 4;

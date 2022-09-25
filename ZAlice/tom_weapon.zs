@@ -1315,7 +1315,7 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 	}
 }
 
-class ToM_YellowMana : Ammo
+class ToM_RedMana : Ammo
 {
 	Default
 	{
@@ -1326,7 +1326,7 @@ class ToM_YellowMana : Ammo
 	}
 }
 
-class ToM_RedMana : Ammo
+class ToM_YellowMana : Ammo
 {
 	Default
 	{

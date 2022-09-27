@@ -30,10 +30,10 @@ class ToM_BaseWeapon : Weapon abstract
 	
 	enum PABCheck
 	{
-		PAB_ANY,		//don't check if the button is held down
-		PAB_HELD,		//check if the button is held down
-		PAB_NOTHELD,	//check if the button is NOT held down
-		PAB_HELDONLY	//check ONLY if the button is held down and ignore if it's pressed now
+		PAB_ANY,		//pressed now (doesn't matter if held)
+		PAB_HELD,		//pressed AND held
+		PAB_NOTHELD,	//pressed but NOT held
+		PAB_HELDONLY	//NOT pressed but held
 	}
 	
 	Default 
@@ -71,22 +71,6 @@ class ToM_BaseWeapon : Weapon abstract
 			owner.A_SetPitch(finalPitch, SPF_INTERPOLATE);
 			SwayTics--;
 		}
-		
-		/*
-		if (!owner || !owner.player || owner.health <= 0)
-			return;
-		
-		if (!kickstate)
-			kickstate = ResolveState("KickDo");
-		
-		let plr = owner.player;
-		if (kickstate && plr && (plr.cmd.buttons & BT_USER4))
-		{
-			let psp = plr.FindPSprite(APSP_KickDo);
-			if (!psp || !InStateSequence(psp.curstate, kickstate))
-				plr.SetPSprite(APSP_Kick, ResolveState("Kick"));
-		}
-		*/
 	}
 	
 	override void Tick()
@@ -102,17 +86,6 @@ class ToM_BaseWeapon : Weapon abstract
 		if (!canSeePlayer)
 			return;
 			
-		/*for (int i = 0; i < 5; i++)
-		{		
-			A_SpawnItemEx(
-				"ToM_WeaponPickupParticle",
-				xofs: radius,
-				zofs: frandom[pickupPartvis](8, 16),
-				zvel: frandom[pickupPartvis](2, 4),
-				angle: frandom[pickupPartvis](0, 359),
-				flags:SXF_SETMASTER
-			);
-		}*/
 		if (players[consoleplayer].mo && players[consoleplayer].mo.CountInv(self.GetClass()) <= 0 )
 		{
 			for (int i = 0; i < 5; i++)
@@ -128,9 +101,9 @@ class ToM_BaseWeapon : Weapon abstract
 		}
 	}
 	
-	/*	Function by Lewisk3 using Gutamatics to fire stake projectiles.
-		Used in most cases instead of PK_FireArchingProjectile above
-		since it produces a more accurate movement.
+	/*	Function by Lewisk3 using Gutamatics to fire 3D projectiles
+		with proper 3D offsets and optional crosshair converging.
+		(Adapted from a static version to an action function by me.)
 	*/
 	action Actor A_Fire3DProjectile(class<Actor> proj, bool useammo = true, double forward = 0, double leftright = 0, double updown = 0, bool crosshairConverge = false, double angleoffs = 0, double pitchoffs = 0)
 	{
@@ -242,7 +215,7 @@ class ToM_BaseWeapon : Weapon abstract
 		return true;
 	}
 
-	//A variation on GetPlayerInput that incorporates the switching primary/secondary attack feature:
+	//A variation on GetPlayerInput with a more convenient syntax
 	action bool PressingAttackButton(bool secondary = false, int holdCheck = PAB_ANY) 
 	{
 		if (!player)
@@ -268,9 +241,10 @@ class ToM_BaseWeapon : Weapon abstract
 		return pressed;				//true if pressed, ignore held check
 	}
 	
-	/*	This function staggers an overlay offset change over a few tics, so that
-		I can randomize layer offsets but make it smoother than if it were called
-		every tic.
+	/*	This function staggers randomizes offsets of a PSprite
+		staggering the randomization over a few tics, so that it
+		can be used for randomized shaking, but smoother than if it
+		were called every tic.
 	*/
 	action void A_DampedRandomOffset(double rangeX, double rangeY, double rate = 1) 
 	{
@@ -321,7 +295,9 @@ class ToM_BaseWeapon : Weapon abstract
 				console.printf("Error: Tried calling A_ResetPSprite on invalid player");
 			return;
 		}
+		
 		int tlayer = layer == 0 ? OverlayID() : layer;
+		
 		let psp = player.FindPSprite(tlayer);
 		if (!psp)
 		{
@@ -329,18 +305,29 @@ class ToM_BaseWeapon : Weapon abstract
 				console.printf("Error: PSprite %d doesn't exist", layer);
 			return;
 		}
+		
+		// Handle offsets:
 		vector2 targetofs = (0, tlayer == PSP_WEAPON ? WEAPONTOP : 0);
+		
+		// stagger 
 		if (staggertics > 1)
 		{
 			int id = layer + 100;
+			
 			if (id < 0 || id >= invoker.PSpriteStartX.Size() || id >= invoker.PSpriteStartX.Size())
 			{
 				if (ToM_debugmessages)
 					console.printf("Error: PSprite index %d is out of PSpriteStart offset bounds", id);
 				return;
 			}
-			vector2 ofs = ( invoker.PSpriteStartX[id] == 0 ? psp.x : invoker.PSpriteStartX[id], invoker.PSpriteStartY[id] == 0 ? psp.y : invoker.PSpriteStartY[id]);
-			vector2 ofsStep = (-(ofs.x - targetOfs.x) / staggertics, -(ofs.y - targetOfs.y) / staggertics);
+			
+			vector2 ofs = ( 
+				invoker.PSpriteStartX[id] == 0 ? psp.x : invoker.PSpriteStartX[id], invoker.PSpriteStartY[id] == 0 ? psp.y : invoker.PSpriteStartY[id]
+			);
+			vector2 ofsStep = (
+				-(ofs.x - targetOfs.x) / staggertics, 
+				-(ofs.y - targetOfs.y) / staggertics
+			);
 			/*console.printf("target ofs: (%1.f, %1.f) \ncurrent ofs: (%1.f, %1.f) \ncurrent step: target ofs: (%1.f, %1.f)",
 				targetofs.x, targetOfs.y, 
 				ofs.x, ofs.y, 
@@ -348,20 +335,23 @@ class ToM_BaseWeapon : Weapon abstract
 			);*/
 			
 			A_OverlayOffset(layer, ofsStep.x, ofsStep.y, WOF_ADD);
+			
 			vector2 sc = psp.scale;
 			double ang = psp.rotation;
-			if (psp.x == targetOfs.x) invoker.PSpriteStartX[id] = 0;
-			if (psp.y == targetOfs.y) invoker.PSpriteStartY[id] = 0;
+			if (psp.x == targetOfs.x) 
+				invoker.PSpriteStartX[id] = 0;
+			if (psp.y == targetOfs.y) 
+				invoker.PSpriteStartY[id] = 0;
 			A_RotatePSprite(layer, -ang / staggertics, WOF_ADD);
-			//A_OverlayRotate(layer, -ang / staggertics, WOF_ADD);
 			A_ScalePSprite(layer, -(sc.x - 1) / staggertics, -(sc.y - 1) / staggertics, WOF_ADD);
-			//A_OverlayScale(layer, -(sc.x - 1) / staggertics, -(sc.y - 1) / staggertics, WOF_ADD);
 			return;
 		}
-		A_OverlayOffset(layer, targetOfs.x, targetOfs.y/*, WOF_INTERPOLATE*/);
-		A_OverlayRotate(layer, 0/*, WOF_INTERPOLATE*/);
-		A_OverlayScale(layer, 1, 1/*, WOF_INTERPOLATE*/);
-		if (ToM_debugmessages)
+		
+		A_OverlayOffset(layer, targetOfs.x, targetOfs.y);
+		A_OverlayRotate(layer, 0);
+		A_OverlayScale(layer, 1, 1);
+		
+		if (ToM_debugmessages > 1)
 		{
 			console.printf("PSprite offset: %.1f:%.1f | PSprite scale: %.1f:%.1f", psp.x, psp.y, psp.scale.x, psp.scale.y);
 		}
@@ -370,7 +360,7 @@ class ToM_BaseWeapon : Weapon abstract
 	/*
 		A version of A_OverlayRotate that allows additive rotation
 		without intepolation. Necessary because interpolation breaks 
-		when combined with animation.
+		when combined with animation of differently-sized frames.
 	*/
 	action void A_RotatePSprite(int layer = 0, double degrees = 0, int flags = 0) 
 	{
@@ -398,29 +388,31 @@ class ToM_BaseWeapon : Weapon abstract
 	action void A_CopyPSprite(int layer)
 	{
 		if (!player) return;
-		let ps1 = player.FindPSprite(OverlayID());
-		if (!ps1) return;
-		let psp = player.GetPSprite(layer);
-		psp.translation = ps1.translation;
-		psp.x = ps1.x;
-		psp.y = ps1.y;
-		psp.Coord0 = ps1.Coord0;
-		psp.Coord1 = ps1.Coord1;
-		psp.Coord2 = ps1.Coord2;
-		psp.Coord3 = ps1.Coord3;
-		psp.pivot = ps1.pivot;
-		psp.bPivotPercent = ps1.bPivotPercent;
-		psp.bInterpolate = ps1.bInterpolate;
-		psp.scale = ps1.scale;
-		psp.rotation = ps1.rotation;
-		//A_OverlayRenderstyle(layer, ps1.GetRenderstyle());
-		psp.alpha = ps1.alpha;
-		psp.bAddWeapon = ps1.bAddWeapon;
-		psp.bMirror = ps1.bMirror;
-		psp.bFlip = ps1.bFlip;
-		psp.bAddBob = ps1.bAddBob;
-		psp.sprite = ps1.sprite;
-		psp.frame = ps1.frame;
+		let from = player.FindPSprite(OverlayID());
+		if (!from) 
+			return;
+		
+		let to = player.GetPSprite(layer);
+		to.translation = from.translation;
+		to.x = from.x;
+		to.y = from.y;
+		to.Coord0 = from.Coord0;
+		to.Coord1 = from.Coord1;
+		to.Coord2 = from.Coord2;
+		to.Coord3 = from.Coord3;
+		to.pivot = from.pivot;
+		to.bPivotPercent = from.bPivotPercent;
+		to.bInterpolate = from.bInterpolate;
+		to.scale = from.scale;
+		to.rotation = from.rotation;
+		//A_OverlayRenderstyle(layer, from.GetRenderstyle());
+		to.alpha = from.alpha;
+		to.bAddWeapon = from.bAddWeapon;
+		to.bMirror = from.bMirror;
+		to.bFlip = from.bFlip;
+		to.bAddBob = from.bAddBob;
+		to.sprite = from.sprite;
+		to.frame = from.frame;
 	}
 	
 	action void A_SpawnPSParticle(stateLabel statename, bool bottom = false, int density = 1, double xofs = 0, double yofs = 0, int chance = 100)

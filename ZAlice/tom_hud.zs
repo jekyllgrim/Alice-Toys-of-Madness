@@ -7,17 +7,15 @@ class ToM_AliceHUD : BaseStatusBar
 	protected ToM_HUDFaceController FaceController;
 	protected TextureID HUDFace;
 	protected int hudstate;
-	const eShiftX = 32;	
-	const eShiftY = 24;
 	
-	vector2 GetElementOffset(int flags = 0)
+	vector2 GetSbarOffsets(bool right = false, int eShiftX = 32, int eShiftY = 24)
 	{
 		vector2 ofs = (0, 0);
 	
 		if (hudstate == HUD_StatusBar)
 		{
 			ofs = (-eShiftX, eShiftY);
-			if (flags & DI_SCREEN_RIGHT)
+			if (right)
 			{
 				ofs.x *= -1;
 			}
@@ -31,13 +29,9 @@ class ToM_AliceHUD : BaseStatusBar
 	// These also incorporate automatic offsets
 	// to account for minimal and full versions of the HUD.
 
-	void ToM_DrawImage(String texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1), bool sbarofs = true)
+	void ToM_DrawImage(String texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1))
 	{
-		if (sbarofs)
-		{
-			pos += GetElementOffset(flags);
-		}
-		if (aspectScale.GetBool() == true) 
+		if (aspectScale && aspectScale.GetBool() == true) 
 		{
 			scale.y *= noYStretch;
 			pos.y *= noYStretch;
@@ -45,13 +39,9 @@ class ToM_AliceHUD : BaseStatusBar
 		DrawImage(texture, pos, flags, Alpha, box, scale);
 	}
 	
-	void ToM_DrawTexture(TextureID texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1), bool sbarofs = true)
+	void ToM_DrawTexture(TextureID texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1))
 	{
-		if (sbarofs)
-		{
-			pos += GetElementOffset(flags);
-		}
-		if (aspectScale.GetBool() == true) 
+		if (aspectScale && aspectScale.GetBool() == true) 
 		{
 			scale.y *= noYStretch;
 			pos.y *= noYStretch;
@@ -59,13 +49,9 @@ class ToM_AliceHUD : BaseStatusBar
 		DrawTexture(texture, pos, flags, Alpha, box, scale);
 	}
 	
-	void ToM_DrawString(HUDFont font, String string, Vector2 pos, int flags = 0, int translation = Font.CR_UNTRANSLATED, double Alpha = 1., int wrapwidth = -1, int linespacing = 4, Vector2 scale = (1, 1), bool sbarofs = true) 
+	void ToM_DrawString(HUDFont font, String string, Vector2 pos, int flags = 0, int translation = Font.CR_UNTRANSLATED, double Alpha = 1., int wrapwidth = -1, int linespacing = 4, Vector2 scale = (1, 1)) 
 	{
-		if (sbarofs)
-		{
-			pos += GetElementOffset(flags);
-		}
-		if (aspectScale.GetBool() == true) 
+		if (aspectScale && aspectScale.GetBool() == true) 
 		{
 			scale.y *= noYStretch;
 			pos.y *= noYStretch;
@@ -73,13 +59,9 @@ class ToM_AliceHUD : BaseStatusBar
 		DrawString(font, string, pos, flags, translation, Alpha, wrapwidth, linespacing, scale);
 	}
 
-	void ToM_DrawInventoryIcon(Inventory item, Vector2 pos, int flags = 0, double alpha = 1.0, Vector2 boxsize = (-1, -1), Vector2 scale = (1.,1.), bool sbarofs = true) 
+	void ToM_DrawInventoryIcon(Inventory item, Vector2 pos, int flags = 0, double alpha = 1.0, Vector2 boxsize = (-1, -1), Vector2 scale = (1.,1.)) 
 	{
-		if (sbarofs)
-		{
-			pos += GetElementOffset(flags);
-		}
-		if (aspectScale.GetBool() == true) 
+		if (aspectScale && aspectScale.GetBool() == true) 
 		{
 			scale.y *= noYStretch;
 			pos.y *= noYStretch;
@@ -151,35 +133,38 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	void DrawLeftCorner()
 	{
+		vector2 ofs = GetSbarOffsets();
 	
 		// armor frame goes first
 		let armor = BasicArmor(CPlayer.mo.FindInventory("BasicArmor"));
 		if (armor && armor.amount > 0)
 		{
-			ToM_DrawInventoryIcon(armor, (0, 0),DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
+			ToM_DrawInventoryIcon(armor, ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
 		}
 		
 		// mirror's background:
-		ToM_DrawImage("graphics/HUD/mirror_back.png", (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
+		ToM_DrawImage("graphics/HUD/mirror_back.png", ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		
 		// Alice's face:
-		DrawAliceFace();
+		DrawAliceFace((80, -85) + ofs);
 		
 		// mirror's glass:
-		ToM_DrawImage("graphics/HUD/mirror_glass.png", (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
+		ToM_DrawImage("graphics/HUD/mirror_glass.png", ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		
 		// cracks in glass (health indication):
-		DrawMirrorCracks();
+		DrawMirrorCracks(ofs);
 		
 		// mirror's frame goes on top:
-		ToM_DrawImage("graphics/HUD/mirror_frame.png", (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
+		ToM_DrawImage("graphics/HUD/mirror_frame.png", ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		
 		// finally, health numbers:
-		ToM_DrawString(mIndexFont, String.Format("%d",CPlayer.health), (81, -44), DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetHealthColor());
+		ToM_DrawString(mIndexFont, String.Format("%d",CPlayer.health), (81, -44) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetHealthColor());
 	}
 	
+	// Draws a single mana vessel (3 of them used in right corner)
 	void DrawManaVessel(name ammotype, string texture, vector2 pos, double diameter, int flags = 0, string toptexture = "")
 	{
+		// Get ammo type:
 		Class<Ammo> ammocls = ammotype;
 		if (!ammotype)
 			return;
@@ -187,21 +172,33 @@ class ToM_AliceHUD : BaseStatusBar
 		if (!am)
 			return;
 		
+		// Check if current weapon is using this
+		// ammo type (if not, we'll dim it)
 		bool isSelected;
 		let weap = CPlayer.readyweapon;
 		isSelected = (weap && weap.ammotype1 == ammocls);
 		
+		// Get amount and maxamount:
 		double amount = am.amount;
 		double maxamount = am.maxamount;
 		if (maxamount <= 0)
 			return;
 		
-		//console.printf("%s: %d / %d", ammotype, amount, maxamount);
-		
+		// Get current ammo/max ammo as a 0.0-1.0 range:
 		double amtFac = amount / double(maxamount);
-		double gclip = diameter - diameter * amtFac;
-		//gclip = int(gclip);
 		
+		// Calculate the distance of how far to clip the
+		// mana texture from the top of the bubble. This
+		// distance equals the bubble's diameter multiplied
+		// by the factor calculated above:
+		double gclip = diameter - diameter * amtFac;
+		
+		// Clipping rectangle allows only things within that
+		// rectangle to be rendered. It's also always anchored
+		// at its bottom left corner (they ignore DI_ITEM* flags),
+		// so we need to move the clipping rectangle down AND
+		// change its vertical height so it only covers a part
+		// of the bubble from the bottom:
 		SetClipRect(
 			pos.x,
 			pos.y + gclip,
@@ -209,11 +206,16 @@ class ToM_AliceHUD : BaseStatusBar
 			diameter - gclip,
 			DI_SCREEN_RIGHT_BOTTOM
 		);
+		
+		// Draw the mana texture (properly clipped)
 		ToM_DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP);
+		// Dim if current weapon isn't using this mana type:
 		if (!isSelected)
 		{
 			ToM_DrawImage("graphics/HUD/vessel_black_liquid.png", pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: 0.45);
 		}
+		// The rest shoudln't be clipped, don't forget to
+		// clear the rectangle:
 		ClearClipRect();
 		
 		// The top of the liquid is a separate, fake-3D texture.
@@ -221,11 +223,11 @@ class ToM_AliceHUD : BaseStatusBar
 		// width of the bubble. Here we need a bit of geometry:
 		// the bubble is a circle with a diameter of 43, and the top
 		// line of the mana texture is that circle's chord.
+		// (https://www.cuemath.com/geometry/Chords-of-a-circle/)
 		// Using Pythagorean theorem, knowing the vertical pos of that chord
 		// we can calculate its exact width. We start with the circle's
 		// diameter and with amtFac, which corresponds to the height
 		// of the mana level in the bubble:
-		// (https://www.cuemath.com/geometry/Chords-of-a-circle/)
 		if (toptexture && amtFac < 0.99 && amtFac > 0.01)
 		{
 			double rad = diameter / 2;
@@ -281,7 +283,7 @@ class ToM_AliceHUD : BaseStatusBar
 				// Make it a bit smaller so that it doesn't stick out of
 				// the bubble's sides (the bubble is pixelated, after all,
 				// so it can happen):
-				width = chord * 0.98;
+				width = chord * 0.96;
 			}
 			
 			// The top texture is aligned to its center (middle of the
@@ -290,6 +292,8 @@ class ToM_AliceHUD : BaseStatusBar
 			// end of the mana texture):
 			vector2 tpos = ( pos.x + rad, pos.y + gclip );
 			ToM_DrawImage(toptexture, tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, box: (width, -1));
+			
+			// Dim if current weapon isn't using this mana type:
 			if (!isSelected)
 			{
 				ToM_DrawImage("graphics/HUD/vessel_black_liquidtop.png", tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, alpha: 0.45, box: (width, -1));
@@ -299,32 +303,34 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	void DrawRightcorner()
 	{
+		vector2 ofs = GetSbarOffsets(right: true);
+	
 		// red mana:
-		DrawManaVessel("ToM_RedMana", "graphics/HUD/vessel_red_liquid.png", (-134, -75), 43, toptexture: "graphics/HUD/vessel_red_liquidtop.png");// red mana:
+		DrawManaVessel("ToM_RedMana", "graphics/HUD/vessel_red_liquid.png", (-134, -75) + ofs, 43, toptexture: "graphics/HUD/vessel_red_liquidtop.png");
 		// yellow mana:
-		DrawManaVessel("ToM_YellowMana", "graphics/HUD/vessel_Yellow_liquid.png", (-106, -122), 43, toptexture: "graphics/HUD/vessel_Yellow_liquidtop.png");
+		DrawManaVessel("ToM_YellowMana", "graphics/HUD/vessel_Yellow_liquid.png", (-106, -122) + ofs, 43, toptexture: "graphics/HUD/vessel_Yellow_liquidtop.png");
 		// purple mana:
-		DrawManaVessel("ToM_PurpleMana", "graphics/HUD/vessel_Purple_liquid.png", (-78, -75), 43, toptexture: "graphics/HUD/vessel_Purple_liquidtop.png");
+		DrawManaVessel("ToM_PurpleMana", "graphics/HUD/vessel_Purple_liquid.png", (-78, -75) + ofs, 43, toptexture: "graphics/HUD/vessel_Purple_liquidtop.png");
 	
 		// vessels:
-		ToM_DrawImage("graphics/HUD/vessels.png", (0, 0), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
+		ToM_DrawImage("graphics/HUD/vessels.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
 		
 		// runes on the vessels:
-		ToM_DrawImage("graphics/HUD/vessel_runes.png", (0, 0), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
+		ToM_DrawImage("graphics/HUD/vessel_runes.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
 		
 		// highlights go on top:
-		ToM_DrawImage("graphics/HUD/vessel_highlights.png", (0, 0), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
+		ToM_DrawImage("graphics/HUD/vessel_highlights.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
 	}
 	
-	void DrawAliceFace()
+	void DrawAliceFace(vector2 pos)
 	{
 		if (!HUDFace || CPlayer.health <= 0)
 			return;
 		
-		ToM_DrawTexture(HUDFace, (80, -85), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
+		ToM_DrawTexture(HUDFace, pos, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
 	}
 	
-	void DrawMirrorCracks()
+	void DrawMirrorCracks(vector2 pos)
 	{
 		int health = CPlayer.health;
 		if (health > 70)
@@ -366,33 +372,39 @@ class ToM_AliceHUD : BaseStatusBar
 
 		if (tex)
 		{
-			ToM_DrawImage(path..tex, (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
+			ToM_DrawImage(path..tex, pos, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		}
 	}
 }
 
+// Since it's impossible to easily do multi-frame animations
+// in the HUD, I'm using a simple actor attached to the player
+// and use its state sequences to do the animation.
+// The actor's current sprite is read by the HUD and drawn
+// as a regular texture.
+
 class ToM_HUDFaceController : Actor
 {
+	PlayerInfo HPlayer;
+	PlayerPawn HPlayerPawn;
+	
 	const BLINK_MIN = 35;
 	const BLINK_MAX = 35 * 5;
 	
 	const DMGDELAY = 20;
-	int dmgwait;
+	protected int dmgwait;
 	
-	state s_front_calm;
-	state s_front_angry;
-	state s_front_smile;
-	state s_front_demon;
-	state s_front_ouch;
-	state s_return_left_calm;
-	state s_return_right_calm;
-	state s_return_left_angry;
-	state s_return_right_angry;
-	state s_right_angry;
-	state s_left_angry;
-	
-	PlayerInfo HPlayer;
-	PlayerPawn HPlayerPawn;
+	protected state s_front_calm;
+	protected state s_front_angry;
+	protected state s_front_smile;
+	protected state s_front_demon;
+	protected state s_front_ouch;
+	protected state s_return_left_calm;
+	protected state s_return_right_calm;
+	protected state s_return_left_angry;
+	protected state s_return_right_angry;
+	protected state s_right_angry;
+	protected state s_left_angry;
 	
 	Default
 	{

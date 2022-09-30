@@ -144,6 +144,7 @@ class ToM_Knife : ToM_BaseWeapon
 	Fire:
 		TNT1 A 0 
 		{
+			A_StopPSpriteReset();
 			invoker.trailFrame = 0;
 			invoker.combo++;
 			if (invoker.combo >= 5)
@@ -158,7 +159,6 @@ class ToM_Knife : ToM_BaseWeapon
 	RightSlash:
 		TNT1 A 0 
 		{
-			A_ResetPSprite(OverlayID());
 			A_OverlayPivot(OverlayID(), 0.5, 0.5);
 			A_RotatePSprite(OverlayID(), frandom[wrot](-15,0), WOF_INTERPOLATE);
 		}
@@ -170,7 +170,7 @@ class ToM_Knife : ToM_BaseWeapon
 		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
 		VKNF BBB 1
 		{
-			A_WeaponOffset(-55, 0, WOF_ADD);
+			A_WeaponOffset(-60, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
 		}
 		TNT1 C 0
@@ -179,7 +179,7 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		VKNS CCC 1
 		{
-			A_WeaponOffset(-55, 0, WOF_ADD);
+			A_WeaponOffset(-44, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		TNT1 A 0 A_ResetPSprite(OverlayID(), 10);
@@ -188,19 +188,18 @@ class ToM_Knife : ToM_BaseWeapon
 	LeftSlash:
 		TNT1 A 0 
 		{
-			A_ResetPSprite(OverlayID());
 			A_OverlayPivot(OverlayID(), 0.9, 0.7);
 			A_RotatePSprite(OverlayID(), frandom[wrot](0,15), WOF_INTERPOLATE);
 		}
 		VKNF ADDEE 1
 		{
-			A_WeaponOffset(-32, -4, WOF_ADD);
+			A_WeaponOffset(-20, -4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
 		VKNF EEE 1
 		{
-			A_WeaponOffset(44, 4, WOF_ADD);
+			A_WeaponOffset(80, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5, WOF_ADD);
 		}		
 		TNT1 E 0 
@@ -209,7 +208,7 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		VKNS FFF 1
 		{
-			A_WeaponOffset(44, 4, WOF_ADD);
+			A_WeaponOffset(65, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		TNT1 A 0 A_ResetPSprite(OverlayID(), 10);
@@ -218,32 +217,16 @@ class ToM_Knife : ToM_BaseWeapon
 	DownSlash:
 		TNT1 A 0 
 		{
-			A_ResetPSprite(OverlayID());
 			A_OverlayPivot(OverlayID(), 0.5, 1);
 			A_RotatePSprite(OverlayID(), frandom[wrot](-5,15), WOF_INTERPOLATE);
 		}
-		VKNF GGGG 1
-		{
-			A_WeaponOffset(5, -4, WOF_ADD);
-		}
+		VKNF GGGG 1 A_WeaponOffset(5, -4, WOF_ADD);
 		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);		
-		VKNF GGH 1
-		{
-			A_WeaponOffset(-12, 24, WOF_ADD);
-		}		
-		TNT1 H 0 
-		{
-			A_CustomPunch(25, true, CPF_NOTURN, "ToM_KnifePuff");
-		}
-		VKNS HHHH 1
-		{
-			A_WeaponOffset(-18, 24, WOF_ADD);
-		}
-		TNT1 A 0A_ResetPSprite(OverlayID(), 9);
-		VKNF HHHHZZZZZ 1
-		{
-			A_WeaponReady(WRF_NOBOB);
-		}
+		VKNF GGH 1 A_WeaponOffset(-12, 35, WOF_ADD);
+		TNT1 H 0  A_CustomPunch(25, true, CPF_NOTURN, "ToM_KnifePuff");
+		VKNS HHHH 1 A_WeaponOffset(-18, 25, WOF_ADD);
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 9);
+		VKNF HHHHZZZZZ 1 A_WeaponReady(WRF_NOBOB);
 		goto ready;
 	AltFire:
 		TNT1 A 0 A_ResetPSprite(OverlayID());

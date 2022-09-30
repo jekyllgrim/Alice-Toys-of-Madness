@@ -333,7 +333,7 @@ class ToM_BaseWeapon : Weapon abstract
 		if (!psp)
 		{
 			if (ToM_debugmessages)
-				console.printf("Error: PSprite %d doesn't exist", layer);
+				console.printf("Error: PSprite %d doesn't exist", tlayer);
 			return;
 		}
 		
@@ -341,7 +341,7 @@ class ToM_BaseWeapon : Weapon abstract
 		if (!cont)
 		{
 			if (ToM_debugmessages)
-				console.printf("Error: Couldn't create ToM_PspResetController", layer);
+				console.printf("Error: Couldn't create ToM_PspResetController", tlayer);
 			return;
 		}
 		
@@ -352,9 +352,36 @@ class ToM_BaseWeapon : Weapon abstract
 				console.printf("Pushing layer %d into pspcontrol sarray. Tics: %d, target offsets: (%d, %d)", tlayer, staggertics, tofs.x, tofs.y);
 			}
 			invoker.pspcontrols.Push(cont);
-			console.printf("pspcontrols size: %d", invoker.pspcontrols.Size());
 		}
 	}
+	
+	// This stops the process of the calling layer
+	// being reset, so that new offsets could be easily
+	// applied on top.
+	action void A_StopPSpriteReset(int layer = 0)
+	{
+		int tlayer = layer == 0 ? OverlayID() : layer;
+		let psp = player.FindPSprite(tlayer);
+		
+		if (!psp)
+		{
+			if (ToM_debugmessages)
+				console.printf("Error: PSprite %d doesn't exist", tlayer);
+			return;
+		}
+		
+		for (int i = invoker.pspcontrols.Size() - 1; i >= 0; i--)
+		{
+			if (invoker.pspcontrols[i] && invoker.pspcontrols[i].GetPSprite() == psp)
+			{
+				if (ToM_debugmessages > 1)
+					console.printf("Removing psp controller for PSprite %d", tlayer);
+				invoker.pspcontrols.Delete(i);
+				return;
+			}
+		}
+	}
+		
 	
 	/*
 		A version of A_OverlayRotate that allows additive rotation
@@ -1359,6 +1386,11 @@ class ToM_PspResetController : Object play
 			Destroy();
 			return;
 		}
+	}
+	
+	PSprite GetPSprite()
+	{
+		return psp;
 	}
 }
 	

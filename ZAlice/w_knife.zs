@@ -119,7 +119,6 @@ class ToM_Knife : ToM_BaseWeapon
 	Ready:
 		TNT1 A 0 
 		{
-			//A_ResetPSprite(OverlayID());
 			invoker.rightSlash = false;
 			invoker.combo = 0;
 		}
@@ -184,7 +183,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		TNT1 A 0 A_ResetPSprite(OverlayID(), 10);
-		VKNF CCCHHHHAAA 1;
+		VKNF CCCHHHHAAA 1 A_WeaponReady(WRF_NOBOB);
 		goto ready;
 	LeftSlash:
 		TNT1 A 0 
@@ -214,10 +213,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		TNT1 A 0 A_ResetPSprite(OverlayID(), 10);
-		VKNF FFFEEEDDAA 1
-		{
-			A_WeaponReady(WRF_NOBOB);
-		}
+		VKNF FFFEEEDDAA 1 A_WeaponReady(WRF_NOBOB);
 		goto ready;
 	DownSlash:
 		TNT1 A 0 

@@ -124,7 +124,6 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		TNT1 A 0 A_Lower;
 		wait;
 	Ready:
-		TNT1 A 0 A_ResetPsprite;
 		JEYC A 1 
 		{
 			A_ResetZoom();

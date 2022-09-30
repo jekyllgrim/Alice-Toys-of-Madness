@@ -216,7 +216,8 @@ class ToM_Jacks : ToM_BaseWeapon
 		AJCK LLL 1 A_WeaponOffset(5, -1, WOF_ADD);
 		AJCK LLLLLLLLL 1 A_WeaponOffset(3, 1, WOF_ADD);
 		TNT1 A 0 A_CheckReload();
-		AJCK MMMNN 1 A_ResetPSprite(OverlayID(), 5);
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 5);
+		AJCK MMMNN 1;
 		goto Ready;
 	}
 }

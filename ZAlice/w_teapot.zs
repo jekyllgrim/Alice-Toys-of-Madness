@@ -175,11 +175,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		TNT1 A 0 A_Lower;
 		wait;
 	Ready:
-		TPOT C 1
-		{
-			A_ResetPSprite();
-			A_TeapotReady();
-		}
+		TPOT C 1 A_TeapotReady();
 		TNT1 A 0 A_PickReady();
 		loop;
 	ReadyHeat:
@@ -234,16 +230,12 @@ class ToM_Teapot : ToM_BaseWeapon
 				return ResolveState("FireEndHeat");
 			return ResolveState(null);
 		}
-		TPOT IIKKAAABBB 1 
-		{
-			A_ResetPSprite(OverlayID(), 10);
-			A_ResetZoom();
-		}
-		TNT1 A 0 A_ResetPSprite;
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 10);
+		TPOT IIKKAAABBB 1 A_ResetZoom();
 		goto Ready;
 	FireEndHeat:
-		TPOT IIKKJJJJJJ 1 A_ResetPSprite(OverlayID(), 10);
-		TNT1 A 0 A_ResetPSprite;
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 10);
+		TPOT IIKKJJJJJJ 1;
 		goto ReadyOverHeatLoop;
 	Vapor:
 		TNT1 A 0

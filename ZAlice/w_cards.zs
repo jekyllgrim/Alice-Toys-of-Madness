@@ -380,7 +380,8 @@ class ToM_Cards : ToM_BaseWeapon
 			invoker.cardXpos += 2;
 		}
 		APCR OOOO 1 A_OverlayOffset(OverlayID(), 2, 0, WOF_ADD);
-		APCR PPQA 1 A_ResetPSprite(OverlayID(), 4);
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 4);
+		APCR PPQA 1;
 		TNT1 A 0 A_ReFire();
 		APCR A 6 A_CreateCardLayers();
 		goto ready;

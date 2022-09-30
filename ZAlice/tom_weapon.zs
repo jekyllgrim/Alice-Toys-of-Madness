@@ -3,8 +3,8 @@ class ToM_BaseWeapon : Weapon abstract
 	mixin ToM_Math;
 	mixin ToM_PlayerSightCheck;
 	
-	double PSpriteStartX[200];
-	double PSpriteStartY[200];
+	array <ToM_PspResetController> pspcontrols;
+	
 	protected vector2 targOfs; //used by DampedRandomOffset
 	protected vector2 shiftOfs; //used by DampedRandomOffset
 	protected int idleCounter; //used by idle animations 
@@ -58,6 +58,15 @@ class ToM_BaseWeapon : Weapon abstract
 	override void DoEffect()
 	{
 		super.DoEffect();
+		
+		if (!owner || !owner.player)
+			return;
+			
+		let weap = owner.player.readyweapon;
+		
+		if (!weap || weap != self)
+			return;
+		
 		if (SwayTics >= 0) 
 		{
 			double phase = (SwayTics / maxSwayTics) * 90.0;
@@ -70,6 +79,18 @@ class ToM_BaseWeapon : Weapon abstract
 			owner.A_SetAngle(finalAngle, SPF_INTERPOLATE);
 			owner.A_SetPitch(finalPitch, SPF_INTERPOLATE);
 			SwayTics--;
+		}
+	
+		for (int i = pspcontrols.Size() - 1; i >= 0; i--)
+		{
+			if (pspcontrols[i])
+			{
+				pspcontrols[i].DoResetStep();
+			}
+			else
+			{
+				pspcontrols.Delete(i);
+			}	
 		}
 	}
 	
@@ -283,20 +304,30 @@ class ToM_BaseWeapon : Weapon abstract
 	}
 	
 	// Reset the specified PSprite's offset, scale and angle
-	// to default values. If staggertics is above 1, performs
-	// only a partial reset. This argument is meant to be used
-	// for a gradual reset, to be called over the matching number
-	// of frames.
-	action void A_ResetPSprite(int layer = 0, int staggertics = 1)
+	// to default values.
+	// In conjuction with ToM_PspResetController allows to
+	// stagger this process over multiple tics
+	// (see pspcontrol array and Tick())
+	action void A_ResetPSprite(int layer = 0, int staggertics = 0)
 	{
-		if (!player)
+		// If using default value, interpret as calling layer
+		int tlayer = layer == 0 ? OverlayID() : layer;
+		
+		// If this is main layer (PSP_WEAPON), base offsets
+		// are (0, 32) aka (0, WEAPONTOP). Otherwise it's (0,0):
+		vector2 tofs = (0, (tlayer == PSP_WEAPON ? WEAPONTOP : 0));
+		
+		// If stagger tics is 1 or fewer, simply reset everything:
+		if (staggertics <= 1)
 		{
-			if (ToM_debugmessages)
-				console.printf("Error: Tried calling A_ResetPSprite on invalid player");
+			A_OverlayOffset(tlayer, tofs.x, tofs.y);
+			A_OverlayRotate(tlayer, 0);
+			A_OverlayScale(tlayer, 1, 1);
 			return;
 		}
 		
-		int tlayer = layer == 0 ? OverlayID() : layer;
+		// Otherwise create a ToM_PspResetController and pass
+		// the current PSPrite and target values to it:
 		
 		let psp = player.FindPSprite(tlayer);
 		if (!psp)
@@ -306,54 +337,22 @@ class ToM_BaseWeapon : Weapon abstract
 			return;
 		}
 		
-		// Handle offsets:
-		vector2 targetofs = (0, tlayer == PSP_WEAPON ? WEAPONTOP : 0);
-		
-		// stagger 
-		if (staggertics > 1)
+		let cont = ToM_PspResetController(ToM_PspResetController.Create(psp, staggertics, tofs));
+		if (!cont)
 		{
-			int id = layer + 100;
-			
-			if (id < 0 || id >= invoker.PSpriteStartX.Size() || id >= invoker.PSpriteStartX.Size())
-			{
-				if (ToM_debugmessages)
-					console.printf("Error: PSprite index %d is out of PSpriteStart offset bounds", id);
-				return;
-			}
-			
-			vector2 ofs = ( 
-				invoker.PSpriteStartX[id] == 0 ? psp.x : invoker.PSpriteStartX[id], invoker.PSpriteStartY[id] == 0 ? psp.y : invoker.PSpriteStartY[id]
-			);
-			vector2 ofsStep = (
-				-(ofs.x - targetOfs.x) / staggertics, 
-				-(ofs.y - targetOfs.y) / staggertics
-			);
-			/*console.printf("target ofs: (%1.f, %1.f) \ncurrent ofs: (%1.f, %1.f) \ncurrent step: target ofs: (%1.f, %1.f)",
-				targetofs.x, targetOfs.y, 
-				ofs.x, ofs.y, 
-				ofsStep.x, ofsStep.y
-			);*/
-			
-			A_OverlayOffset(layer, ofsStep.x, ofsStep.y, WOF_ADD);
-			
-			vector2 sc = psp.scale;
-			double ang = psp.rotation;
-			if (psp.x == targetOfs.x) 
-				invoker.PSpriteStartX[id] = 0;
-			if (psp.y == targetOfs.y) 
-				invoker.PSpriteStartY[id] = 0;
-			A_RotatePSprite(layer, -ang / staggertics, WOF_ADD);
-			A_ScalePSprite(layer, -(sc.x - 1) / staggertics, -(sc.y - 1) / staggertics, WOF_ADD);
+			if (ToM_debugmessages)
+				console.printf("Error: Couldn't create ToM_PspResetController", layer);
 			return;
 		}
 		
-		A_OverlayOffset(layer, targetOfs.x, targetOfs.y);
-		A_OverlayRotate(layer, 0);
-		A_OverlayScale(layer, 1, 1);
-		
-		if (ToM_debugmessages > 1)
+		if (invoker.pspcontrols.Find(cont) == invoker.pspcontrols.Size())
 		{
-			console.printf("PSprite offset: %.1f:%.1f | PSprite scale: %.1f:%.1f", psp.x, psp.y, psp.scale.x, psp.scale.y);
+			if (tom_debugmessages > 1)
+			{
+				console.printf("Pushing layer %d into pspcontrol sarray. Tics: %d, target offsets: (%d, %d)", tlayer, staggertics, tofs.x, tofs.y);
+			}
+			invoker.pspcontrols.Push(cont);
+			console.printf("pspcontrols size: %d", invoker.pspcontrols.Size());
 		}
 	}
 	
@@ -1283,6 +1282,86 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 	}
 }
 
+class ToM_PspResetController : Object play
+{
+	protected PSprite psp;	
+	protected int tics;
+	
+	protected vector2 ofs;
+	protected vector2 scale;
+	protected double rotation;
+	
+	protected vector2 targetofs;
+	protected vector2 targetscale;
+	protected double targetrotation;
+	
+	protected vector2 ofs_step;
+	protected vector2 scale_step;
+	protected double rotation_step;
+	
+	static ToM_PspResetController Create (PSprite psp, int tics, vector2 tofs = (0,0), vector2 tscale = (1, 1), int trotation = 0)
+	{
+		if (!psp || tics <= 0)
+			return null;
+		
+		let prc = ToM_PspResetController(New("ToM_PspResetController"));
+		if (prc)
+		{
+			prc.psp = psp;
+			prc.tics = tics;
+			
+			prc.ofs = (psp.x, psp.y);
+			prc.scale = psp.scale;
+			prc.rotation = psp.rotation;
+			
+			prc.targetofs = tofs;
+			prc.targetscale = tscale;
+			prc.targetrotation = trotation;
+			
+			prc.ofs_step = (tofs - prc.ofs) / tics;
+			prc.scale_step = (tscale - prc.scale ) / tics;
+			prc.rotation_step = (trotation - prc.rotation) / tics;
+			if (tom_debugmessages > 1)
+			{
+				console.printf(
+					"PSP reset controller created:\n"
+					"ofs: %d, %d | target ofs: %d, %d | step: %d, %d\n"
+					"scale: %.1f, %.1f | target scale: %.1f, %.1f | step: %.1f\n"
+					"rotation: %.1f | target rotation: %.1f | step: %.1f",
+					psp.x, psp.y, prc.targetofs.x, prc.targetofs.y, prc.ofs_step.x, prc.ofs_step.y,
+					psp.scale.x, psp.scale.y, prc.targetscale.x, prc.targetscale.y, prc.scale_step.x, prc.scale_step.y,
+					psp.rotation, prc.targetrotation, prc.rotation_step
+				);
+			}
+		}
+		return prc;
+	}
+	
+	void DoResetStep()
+	{
+		psp.x = Clamp(psp.x + ofs_step.x, ofs.x, targetofs.x);
+		psp.y = Clamp(psp.y + ofs_step.y, ofs.y, targetofs.y);
+		psp.scale.x = Clamp(psp.scale.x + scale_step.x, scale.x, targetscale.x);
+		psp.scale.y = Clamp(psp.scale.y + scale_step.y, scale.y, targetscale.y);
+		psp.rotation = Clamp(psp.rotation + rotation_step, rotation, targetrotation);
+		if (tom_debugmessages > 1)
+		{
+			console.printf("Updating psprite values. Tics left: %d", tics);
+		}
+		
+		tics--;
+		if (tics < 0)
+		{
+			if (tom_debugmessages > 1)
+			{
+				console.printf("PSP reset controller destroyed");
+			}
+			Destroy();
+			return;
+		}
+	}
+}
+	
 
 class ToM_CrosshairSpot : ToM_BaseDebris
 {

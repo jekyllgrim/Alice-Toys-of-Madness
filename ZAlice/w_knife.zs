@@ -183,11 +183,8 @@ class ToM_Knife : ToM_BaseWeapon
 			A_WeaponOffset(-55, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
-		VKNF CCCHHHHAAA 1
-		{
-			A_ResetPSprite(OverlayID(), 10);
-			//A_WeaponReady(WRF_NOBOB);
-		}
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 10);
+		VKNF CCCHHHHAAA 1;
 		goto ready;
 	LeftSlash:
 		TNT1 A 0 
@@ -216,9 +213,9 @@ class ToM_Knife : ToM_BaseWeapon
 			A_WeaponOffset(44, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 10);
 		VKNF FFFEEEDDAA 1
 		{
-			A_ResetPSprite(OverlayID(), 10);
 			A_WeaponReady(WRF_NOBOB);
 		}
 		goto ready;
@@ -246,9 +243,9 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_WeaponOffset(-18, 24, WOF_ADD);
 		}
+		TNT1 A 0A_ResetPSprite(OverlayID(), 9);
 		VKNF HHHHZZZZZ 1
 		{
-			A_ResetPSprite(OverlayID(), 9);
 			A_WeaponReady(WRF_NOBOB);
 		}
 		goto ready;
@@ -286,9 +283,9 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			invoker.knifeReload = KNIFE_RELOAD_TIME;
 		}
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 8);
 		TNT1 AAAAAAAA 1 
 		{
-			A_ResetPSprite(OverlayID(), 8);
 			A_WeaponReady(WRF_NOBOB|WRF_NOFIRE);
 		}
 		goto Ready;

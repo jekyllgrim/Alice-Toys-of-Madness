@@ -62,7 +62,6 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 		TNT1 A 0 A_Lower;
 		wait;
 	Ready:
-		TNT1 A 0 A_ResetPsprite;
 		BBUS A 1 
 		{
 			A_ResetZoom();

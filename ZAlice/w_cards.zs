@@ -77,6 +77,8 @@ class ToM_Cards : ToM_BaseWeapon
 		double ang = ANGLESTEP * Clamp(invoker.handVertStep, 1, CARDSTEPS);
 		vector2 coords = (cos(ang) * CARDRAD, sin(ang) * CARDRAD);
 		A_WeaponOffset(coords.x, WEAPONTOP + coords.y);
+		double sc = LinearMap(coords.y, -CARDRAD, CARDRAD, 1, 1.06);
+		A_OverlayScale(OverlayID(), sc, sc, WOF_INTERPOLATE);
 	}
 	
 	action void A_OffsetCardLayer(int layer)
@@ -145,7 +147,6 @@ class ToM_Cards : ToM_BaseWeapon
 	}
 	
 	protected array <ToM_CardData> Cards;
-	//static const string AvailableCards[] = { "ACC1A", "ACC2A", "ACC3A", "ACC4A", "ACC5A", "ACC6A", "ACC7A", "ACC8A", "ACC9A", "ACCTA", "ACCJA", "ACCQA", "ACCKA", "ACD1A", "ACD2A", "ACD3A", "ACD4A", "ACD5A", "ACD6A", "ACD7A", "ACD8A", "ACD9A", "ACDTA", "ACDJA", "ACDQA", "ACDKA", "ACH1A", "ACH2A", "ACH3A", "ACH4A", "ACH5A", "ACH6A", "ACH7A", "ACH8A", "ACH9A", "ACHTA", "ACHJA", "ACHQA", "ACHKA", "ACS1A", "ACS2A", "ACS3A", "ACS4A", "ACS5A", "ACS6A", "ACS7A", "ACS8A", "ACS9A", "ACSTA", "ACSJA", "ACSQA", "ACSKA" };
 	static const name CardSuits[] = { "C", "S", "H", "D" };
 	static const name CardValues[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K" };
 	
@@ -158,7 +159,7 @@ class ToM_Cards : ToM_BaseWeapon
 			{
 				string spritename = String.Format("%s%s%s", prefix, CardSuits[suit], CardValues[val]);
 				SpriteID csprite = GetSpriteIndex(spritename);
-				if (csprite)
+				if (csprite && csprite > 0)
 				{
 					let ct = ToM_CardData.Create(name(spritename), val);
 					if (ct)
@@ -339,6 +340,8 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 		loop;
 	Fire:
+		TNT1 A 0 A_StopPSpriteReset();
+	Hold:
 		TNT1 A 0 
 		{
 			A_FireCardLayer();
@@ -353,7 +356,14 @@ class ToM_Cards : ToM_BaseWeapon
 			//console.printf("ofs: %1.f, %1.f", ofs.x, ofs.y);
 			A_FireCard(1, 1, xofs: ofs.x, yofs: ofs.y);
 		}
-		APCR AAAAAAAAA 1 A_RotateHand();	
+		APCR AAAAAAAAA 1 A_RotateHand();
+		TNT1 A 0 
+		{
+			A_CheckReload();
+			A_Refire();
+		}
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 4);
+		APCR A 4 A_WeaponReady(WRF_NOBOB); 
 		goto Ready;
 	AltFire:
 		APCR A 5 A_RemoveCardLayers();

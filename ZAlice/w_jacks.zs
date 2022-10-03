@@ -379,7 +379,6 @@ class ToM_RealSeeker : ToM_JackProjectile
 		{
 			bMISSILE = false;
 		}
-		console.printf("jack vel: %.2f", vel.length());
 	}
 	
 	// Reuse collision rules from the regular jack (ToM_JackProjectile),

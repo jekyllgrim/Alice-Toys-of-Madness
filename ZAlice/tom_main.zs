@@ -1174,11 +1174,11 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 		alpha 0.5;
 	}
 	
-	static ToM_WhiteSmoke Spawn(vector3 pos, double ofs = 0, vector3 vel = (0,0,0), double scale = (0.1), double rotation = 4, double alpha = 0.5, double fade = 0, double dbrake = 0.98, double dscale = 1.04, int fadedelay = 25, bool cheap = false)
+	static ToM_WhiteSmoke Spawn(vector3 pos, double ofs = 0, vector3 vel = (0,0,0), double scale = (0.1), double rotation = 4, double alpha = 0.5, double fade = 0, double dbrake = 0.98, double dscale = 1.04, int fadedelay = 25, bool cheap = false, class<ToM_WhiteSmoke> smoke = "ToM_WhiteSmoke")
 	{
 		let smk = ToM_WhiteSmoke(
 			Actor.Spawn(
-				"ToM_WhiteSmoke", 
+				smoke, 
 				pos + (frandom[wsmk](-ofs,ofs), frandom[wsmk](-ofs,ofs), frandom[wsmk](-ofs,ofs))
 			)
 		);

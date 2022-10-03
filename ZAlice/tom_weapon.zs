@@ -320,6 +320,7 @@ class ToM_BaseWeapon : Weapon abstract
 		// If stagger tics is 1 or fewer, simply reset everything:
 		if (staggertics <= 1)
 		{
+			A_StopPSpriteReset(tlayer);
 			A_OverlayOffset(tlayer, tofs.x, tofs.y);
 			A_OverlayRotate(tlayer, 0);
 			A_OverlayScale(tlayer, 1, 1);
@@ -349,7 +350,7 @@ class ToM_BaseWeapon : Weapon abstract
 		{
 			if (tom_debugmessages > 1)
 			{
-				console.printf("Pushing layer %d into pspcontrol sarray. Tics: %d, target offsets: (%d, %d)", tlayer, staggertics, tofs.x, tofs.y);
+				console.printf("Pushing layer %d into pspcontrols array. Tics: %d, target offsets: (%d, %d)", tlayer, staggertics, tofs.x, tofs.y);
 			}
 			invoker.pspcontrols.Push(cont);
 		}
@@ -366,7 +367,7 @@ class ToM_BaseWeapon : Weapon abstract
 		if (!psp)
 		{
 			if (ToM_debugmessages)
-				console.printf("Error: PSprite %d doesn't exist", tlayer);
+				console.printf("PSprite %d doesn't exist", tlayer);
 			return;
 		}
 		
@@ -376,12 +377,12 @@ class ToM_BaseWeapon : Weapon abstract
 			{
 				if (ToM_debugmessages > 1)
 					console.printf("Removing psp controller for PSprite %d", tlayer);
+				invoker.pspcontrols[i].Destroy();
 				invoker.pspcontrols.Delete(i);
 				return;
 			}
 		}
-	}
-		
+	}	
 	
 	/*
 		A version of A_OverlayRotate that allows additive rotation
@@ -390,25 +391,29 @@ class ToM_BaseWeapon : Weapon abstract
 	*/
 	action void A_RotatePSprite(int layer = 0, double degrees = 0, int flags = 0) 
 	{
-		let psp = player.FindPSprite(layer);
+		int tlayer = layer == 0 ? OverlayID() : layer;
+		
+		let psp = player.FindPSprite(tlayer);
 		if (!psp)
 			return;
 		double targetAngle = degrees;
 		if (flags & WOF_ADD)
 			targetAngle += psp.rotation;
-		A_OverlayRotate(OverlayID(), targetAngle);
+		A_OverlayRotate(tlayer, targetAngle);
 	}
 	
 	// Same but for scale:
 	action void A_ScalePSprite(int layer = 0, double wx = 1, double wy = 1, int flags = 0) 
 	{
-		let psp = player.FindPsprite(OverlayID());
+		int tlayer = layer == 0 ? OverlayID() : layer;
+		
+		let psp = player.FindPSprite(tlayer);
 		if (!psp)
 			return;
 		vector2 targetScale = (wx,wy);
 		if (flags & WOF_ADD)
 			targetScale += psp.scale;
-		A_OverlayScale(OverlayID(), targetScale.x, targetScale.y);
+		A_OverlayScale(tlayer, targetScale.x, targetScale.y);
 	}
 	
 	action void A_CopyPSprite(int layer)
@@ -731,6 +736,8 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	double trailz;
 	double trailshrink;
 	
+	double wrot;
+	
 	class<Actor> trailactor;
 	property trailactor : trailactor;
 	class<ToM_ProjFlare> flareactor;	
@@ -751,6 +758,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		projectile;
 		height 6;
 		radius 6;
+		+ROLLSPRITE
 		ToM_Projectile.flarescale 0.065;
 		ToM_Projectile.flarealpha 0.7;
 		ToM_Projectile.trailscale 0.04;
@@ -1366,11 +1374,15 @@ class ToM_PspResetController : Object play
 	
 	void DoResetStep()
 	{
-		psp.x = Clamp(psp.x + ofs_step.x, ofs.x, targetofs.x);
+		/*psp.x = Clamp(psp.x + ofs_step.x, ofs.x, targetofs.x);
 		psp.y = Clamp(psp.y + ofs_step.y, ofs.y, targetofs.y);
 		psp.scale.x = Clamp(psp.scale.x + scale_step.x, scale.x, targetscale.x);
 		psp.scale.y = Clamp(psp.scale.y + scale_step.y, scale.y, targetscale.y);
-		psp.rotation = Clamp(psp.rotation + rotation_step, rotation, targetrotation);
+		psp.rotation = Clamp(psp.rotation + rotation_step, rotation, targetrotation);*/
+		psp.x += ofs_step.x;
+		psp.y + ofs_step.y;
+		psp.scale += scale_step;
+		psp.rotation += rotation_step;
 		if (tom_debugmessages > 1)
 		{
 			console.printf("Updating psprite values. Tics left: %d", tics);
@@ -1383,6 +1395,11 @@ class ToM_PspResetController : Object play
 			{
 				console.printf("PSP reset controller destroyed");
 			}
+			// Double-check we didn't overshoot with the values:
+			psp.x = targetofs.x;
+			psp.y = targetofs.y;
+			psp.scale = targetscale;
+			psp.rotation = targetrotation;
 			Destroy();
 			return;
 		}

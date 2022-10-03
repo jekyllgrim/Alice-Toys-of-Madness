@@ -1374,11 +1374,6 @@ class ToM_PspResetController : Object play
 	
 	void DoResetStep()
 	{
-		/*psp.x = Clamp(psp.x + ofs_step.x, ofs.x, targetofs.x);
-		psp.y = Clamp(psp.y + ofs_step.y, ofs.y, targetofs.y);
-		psp.scale.x = Clamp(psp.scale.x + scale_step.x, scale.x, targetscale.x);
-		psp.scale.y = Clamp(psp.scale.y + scale_step.y, scale.y, targetscale.y);
-		psp.rotation = Clamp(psp.rotation + rotation_step, rotation, targetrotation);*/
 		psp.x += ofs_step.x;
 		psp.y + ofs_step.y;
 		psp.scale += scale_step;
@@ -1395,11 +1390,6 @@ class ToM_PspResetController : Object play
 			{
 				console.printf("PSP reset controller destroyed");
 			}
-			// Double-check we didn't overshoot with the values:
-			psp.x = targetofs.x;
-			psp.y = targetofs.y;
-			psp.scale = targetscale;
-			psp.rotation = targetrotation;
 			Destroy();
 			return;
 		}
@@ -1408,6 +1398,18 @@ class ToM_PspResetController : Object play
 	PSprite GetPSprite()
 	{
 		return psp;
+	}
+	
+	override void OnDestroy()
+	{
+		if (psp)
+		{
+			// Double-check we didn't overshoot with the values:
+			psp.x = targetofs.x;
+			psp.y = targetofs.y;
+			psp.scale = targetscale;
+			psp.rotation = targetrotation;
+		}
 	}
 }
 	

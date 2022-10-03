@@ -1170,6 +1170,7 @@ Sprite "PPGRA0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGRA", 0, 0
+	NoTrim
 }
 
 Sprite "PPGRB0", 403, 215
@@ -1177,6 +1178,7 @@ Sprite "PPGRB0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGRB", 0, 0
+	NoTrim
 }
 
 Sprite "PPGRC0", 403, 215
@@ -1184,6 +1186,7 @@ Sprite "PPGRC0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGRC", 0, 0
+	NoTrim
 }
 
 Sprite "PPGRD0", 403, 215
@@ -1191,6 +1194,7 @@ Sprite "PPGRD0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGRD", 0, 0
+	NoTrim
 }
 
 Sprite "PPGRE0", 403, 215
@@ -1198,6 +1202,7 @@ Sprite "PPGRE0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGRE", 0, 0
+	NoTrim
 }
 
 Sprite "PPGRF0", 403, 215
@@ -1205,6 +1210,7 @@ Sprite "PPGRF0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGRF", 0, 0
+	NoTrim
 }
 
 Sprite "PPGRG0", 403, 215
@@ -1212,6 +1218,7 @@ Sprite "PPGRG0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGRG", 0, 0
+	NoTrim
 }
 
 Sprite "PPGRH0", 403, 215
@@ -1219,6 +1226,7 @@ Sprite "PPGRH0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGRH", 0, 0
+	NoTrim
 }
 
 Sprite "PPGRI0", 403, 215
@@ -1226,6 +1234,7 @@ Sprite "PPGRI0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGRI", 0, 0
+	NoTrim
 }
 
 Sprite "PPGRJ0", 403, 215
@@ -1233,6 +1242,7 @@ Sprite "PPGRJ0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGRJ", 0, 0
+	NoTrim
 }
 
 Sprite "PPGFA0", 403, 215
@@ -1261,6 +1271,7 @@ Sprite "PPGFZ0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGFZ", 0, 0
+	NoTrim
 }
 
 Sprite "PPGRZ0", 403, 215
@@ -1268,6 +1279,7 @@ Sprite "PPGRZ0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGRZ", 0, 0
+	NoTrim
 }
 
 Sprite "PPGRY0", 403, 215
@@ -1275,6 +1287,7 @@ Sprite "PPGRY0", 403, 215
 	YScale 1.200
 	Offset -107, 4
 	Patch "PPGRY", 0, 0
+	NoTrim
 }
 
 Sprite "HHRSO0", 698, 683

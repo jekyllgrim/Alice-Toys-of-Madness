@@ -129,7 +129,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		if (proj)
 			proj.A_StartSound(snd);
 		A_StartSound("weapons/teapot/charge", CHAN_AUTO);
-		A_QuakeEX(1,1,0,6,0,1,sfx:"world/null", flags:QF_SCALEDOWN);
+		A_QuakeEX(1,1,0,6,0,1, sfx:"world/null", flags:QF_SCALEDOWN);
 	}
 	
 	action void A_PickLidFrame()
@@ -322,9 +322,8 @@ class ToM_TeaBurnControl : ToM_InventoryToken
 			s_particles = CVar.GetCVar('ToM_particles', players[consoleplayer]);
 		if (s_particles.GetInt() >= 1) 
 		{
-			ToM_WhiteSmoke.SpawnWhiteSmoke(
-				owner, 
-				ofs: (frandom[wsmoke](-rad,rad), frandom[wsmoke](-rad,rad), frandom[wsmoke](owner.pos.z,owner.height*0.75)), 
+			ToM_WhiteSmoke.Spawn(
+				owner.pos + (frandom[wsmoke](-rad,rad), frandom[wsmoke](-rad,rad), frandom[wsmoke](owner.pos.z,owner.height*0.75)), 
 				vel: (frandom[wsmoke](-0.2,0.2),frandom[wsmoke](-0.2,0.2),frandom[wsmoke](0.5,1.2)),
 				scale: 0.15,
 				alpha: 0.4
@@ -373,9 +372,8 @@ class ToM_TeaProjectile : ToM_Projectile
 		TGLO ABCDEFGHIJ 2
 		{
 			if (GetAge() > 8)
-				ToM_WhiteSmoke.SpawnWhiteSmoke(
-					self, 
-					ofs: (frandom[wsmoke](-4,4),frandom[wsmoke](-4,4),frandom[wsmoke](-4,4) + (height * 0.5)), 
+				ToM_WhiteSmoke.Spawn(
+					pos + (frandom[wsmoke](-4,4),frandom[wsmoke](-4,4),frandom[wsmoke](-4,4) + (height * 0.5)), 
 					vel: (frandom[wsmoke](-0.2,0.2),frandom[wsmoke](-0.2,0.2),frandom[wsmoke](-0.2,0.2)),
 					scale: 0.15,
 					alpha: 0.4
@@ -396,9 +394,8 @@ class ToM_TeaProjectile : ToM_Projectile
 				
 			for (int i = 4; i > 0; i--)
 			{
-				ToM_WhiteSmoke.SpawnWhiteSmoke(
-					self, 
-					ofs: (frandom[wsmoke](-6,6),frandom[wsmoke](-6,6),frandom[wsmoke](10,16)), 
+				ToM_WhiteSmoke.Spawn(
+					pos + (frandom[wsmoke](-6,6),frandom[wsmoke](-6,6),frandom[wsmoke](10,16)), 
 					vel: (frandom[wsmoke](-0.2,0.2),frandom[wsmoke](-0.2,0.2),frandom[wsmoke](2,3)),
 					scale: 0.3,
 					alpha: 0.75
@@ -525,9 +522,8 @@ class ToM_TeaPool : ToM_SmallDebris
 			scale *= (1 + wscale);
 			wscale *= 0.95;
 			if (alpha > 0.15 && random[vapr](1,3) == 3)
-				ToM_WhiteSmoke.SpawnWhiteSmoke(
-					self,
-					ofs: (frandom[wsmoke](-64,64),frandom[wsmoke](-64,64), 5), 
+				ToM_WhiteSmoke.Spawn(
+					pos + (frandom[wsmoke](-64,64),frandom[wsmoke](-64,64), 5), 
 					vel: (0, 0, frandom[wsmoke](0.5, 1)),
 					scale: 0.08,
 					alpha: 0.7,

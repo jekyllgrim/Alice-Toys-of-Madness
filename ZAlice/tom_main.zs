@@ -471,8 +471,9 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 	protected bool onliquid;
 	protected int bounces;
 	protected double Voffset;		//small randomized plane offset to reduce z-fighting for blood pools and such
-	double wrot;					//gets added to roll to imitate rotation during flying
-	double dbrake; 				//how quickly to reduce horizontal speed of "landed" particles to simulate sliding along the floor
+	double wrot; //gets added to roll to imitate rotation during flying
+	double dbrake; //how quickly to reduce horizontal speed of "landed" particles to simulate sliding along the floor
+	double dscale;
 	property dbrake : dbrake;	
 	protected bool removeonfall;	//if true, object is removed when reaching the floor
 	property removeonfall : removeonfall;
@@ -533,9 +534,9 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 		d_wall = FindState("HitWall");
 		d_liquid = FindState("DeathLiquid");
 	}
-	//a chad tick override that skips Actor's super.tick!
+	//a chad tick override that skips Actor.Tick()
 	override void Tick() 
-	{
+	{		
 		if (alpha < 0)
 		{
 			destroy();
@@ -856,11 +857,16 @@ Class ToM_SmokingDebris : ToM_RandomDebris
 		super.Tick();	
 		if (isFrozen())
 			return;
-		let smk = Spawn("ToM_WhiteSmoke",pos+(frandom[smk](-4,4),frandom[smk](-4,4),frandom[smk](-4,4)));
-		if (smk) {
-			smk.alpha = alpha*0.4;
-			smk.vel = (frandom[smk](-1,1),frandom[smk](-1,1),frandom[smk](-1,1));
-		}
+		ToM_WhiteSmoke.Spawn(
+			pos, 
+			ofs: 4,
+			vel:(
+				frandom[smk](-1,1),
+				frandom[smk](-1,1),
+				frandom[smk](-1,1)
+			),
+			alpha: alpha *0.4
+		);
 		A_FadeOut(0.03);
 	}
 }
@@ -1083,14 +1089,17 @@ Class ToM_ProjFlare : ToM_BaseFlare
 
 Class ToM_BaseSmoke : ToM_SmallDebris abstract 
 {
+	double fade;
 	Default 
 	{
 		+NOINTERACTION
+		+ROLLCENTER
 		gravity 0;
 		renderstyle 'Translucent';
 		alpha 0.3;
 		scale 0.1;
 	}
+	
 	override void PostBeginPlay() 
 	{
 		super.PostBeginPlay();
@@ -1104,6 +1113,7 @@ Class ToM_BaseSmoke : ToM_SmallDebris abstract
 		bSPRITEFLIP = randompick[sfx](0,1);
 		roll = random[sfx](0,359);
 	}
+	
 	states	
 	{
 	Spawn:
@@ -1153,20 +1163,25 @@ class ToM_BlackSmoke : ToM_BaseSmoke
 
 class ToM_WhiteSmoke : ToM_BaseSmoke 
 {
-	double fade;
+	int fadedelay;
+	bool cheap;
+	double cheapalpha;
+
 	Default 
 	{
-		+ROLLCENTER
 		scale 0.1;
 		renderstyle 'Translucent';
 		alpha 0.5;
 	}
 	
-	static ToM_WhiteSmoke SpawnWhiteSmoke(Actor self, vector3 ofs = (0,0,0), vector3 vel = (0,0,0), double scale = (0.1), double rotation = 4, double alpha = 0.5, double fade = 0)
+	static ToM_WhiteSmoke Spawn(vector3 pos, double ofs = 0, vector3 vel = (0,0,0), double scale = (0.1), double rotation = 4, double alpha = 0.5, double fade = 0, double dbrake = 0.98, double dscale = 1.04, int fadedelay = 25, bool cheap = false)
 	{
-		if (!self)
-			return null;
-		let smk = ToM_WhiteSmoke(Actor.Spawn("ToM_WhiteSmoke", self.pos + ofs));
+		let smk = ToM_WhiteSmoke(
+			Actor.Spawn(
+				"ToM_WhiteSmoke", 
+				pos + (frandom[wsmk](-ofs,ofs), frandom[wsmk](-ofs,ofs), frandom[wsmk](-ofs,ofs))
+			)
+		);
 		if (smk)
 		{
 			smk.vel = vel;
@@ -1174,6 +1189,16 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 			smk.wrot = rotation;
 			smk.alpha = alpha;
 			smk.fade = fade;
+			smk.dbrake = dbrake;
+			smk.dscale = dscale;
+			smk.fadedelay = fadedelay;
+			smk.cheap = cheap;
+			smk.cheapalpha = alpha;
+			if (cheap)
+			{
+				smk.A_SetRenderstyle(alpha, Style_Normal);
+				smk.bROLLSPRITE = false;
+			}
 		}
 		return smk;
 	}
@@ -1184,36 +1209,62 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 		scale *= frandom[sfx](0.9,1.1);
 		wrot *= (frandom[sfx](0.8, 1.2) * randompick[sfx](-1,1));
 		frame = random[sfx](0,5);
-		if (fade == 0)
+		if (fade <= 0)
 			fade = 0.01;
+		if (fadedelay <= 0)
+			fadedelay = 25;
+		if (cheap)
+		{
+			SetStateLabel("SpawnCheap");
+			scale *= 2; //because it's 128x128 instead of 256x256
+		}
 	}	
+	
+	override void Tick()
+	{
+		super.Tick();
+		if (isFrozen())
+			return;
+		
+		wrot = Clamp(wrot *= 0.96, 0.12, 100);
+		roll += wrot;
+		scale *= dscale;
+		vel *= dbrake;
+		
+		if (GetAge() >= fadedelay)
+		{
+			dbrake *= 0.96;
+			dscale = Clamp(dscale *= 0.98, 1, 100);
+			if (!cheap)
+				A_FadeOut(fade);
+			else
+				cheapalpha -= fade;
+		}
+	}
 	
 	states 
 	{
 	Spawn:
-		SMO2 # 1 
+		SMO2 # -1;
+		stop;
+	SpawnCheap:
+		SMO3 A 1
 		{
-			if (GetAge() < 26) 
-			{
-				wrot *= 0.98;
-				scale *= 1.03;
-				vel*=0.98;
-				roll+=wrot;
-				A_FadeOut(fade);
-			}
-			else 
-			{
-				wrot *= 0.92;
-				scale *= 1.01;
-				vel*=0.93;
-				roll+=wrot;
-				A_FadeOut(fade);
-			}
+			if (GetAge() >= fadedelay)
+				SetStateLabel("DespawnCheap");
 		}
 		loop;
+	DespawnCheap:
+		SMO3 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1
+		{
+			int t = LinearMap(cheapalpha, 1.0, 0, 2, 10);
+			A_SetTics(t);
+		}
+		stop;
 	}
 }
 
+/*
 class ToM_WhiteDeathSmoke : ToM_BaseSmoke 
 {
 	Default 
@@ -1232,7 +1283,7 @@ class ToM_WhiteDeathSmoke : ToM_BaseSmoke
 		}
 		stop;
 	}
-}
+}*/
 
 Class ToM_DebugSpot : Actor 
 {	

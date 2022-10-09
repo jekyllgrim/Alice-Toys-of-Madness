@@ -35,9 +35,9 @@ class ToM_Cards : ToM_BaseWeapon
 		A_Overlay(APSP_Card1, "PrepareCard");
 		A_Overlay(APSP_Card2, "PrepareCard");
 		A_Overlay(APSP_Card3, "PrepareCard");
-		invoker.curCardLayer = randompick[acard](APSP_Card1, APSP_Card2, APSP_Card3);
-	}
-	
+		int l = random[acard](0, invoker.cardLayerNum.Size() - 1);
+		invoker.curCardLayer = invoker.cardLayerNum[l];
+	}	
 	
 	action void A_FireCardLayer()
 	{

@@ -115,7 +115,7 @@ Mixin class ToM_Math
 		return finalpos;
 	}
 	
-	void CopyAppearance(Actor to, Actor from, bool style = true, bool size = false) 
+	static void CopyAppearance(Actor to, Actor from, bool style = true, bool size = false) 
 	{
 		if (!to || !from)
 			return;
@@ -125,6 +125,7 @@ Mixin class ToM_Math
 		to.bSPRITEFLIP = from.bSPRITEFLIP;
 		to.bXFLIP = from.bXFLIP;
 		to.bYFLIP = from.bYFLIP;
+		to.angle = from.angle;
 		if (size)
 			to.A_SetSize(from.height, from.radius);
 		if (style) 
@@ -507,7 +508,7 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 		ToM_SmallDebris.hitceiling false;
 		bouncecount 8;
 		+MOVEWITHSECTOR
-		-NOBLOCKMAP
+		+NOBLOCKMAP
 	}
 	
 	override void BeginPlay() 
@@ -1208,7 +1209,6 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 		super.PostBeginPlay();
 		scale *= frandom[sfx](0.9,1.1);
 		wrot *= (frandom[sfx](0.8, 1.2) * randompick[sfx](-1,1));
-		frame = random[sfx](0,5);
 		if (fade <= 0)
 			fade = 0.01;
 		if (fadedelay <= 0)
@@ -1226,7 +1226,10 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 		if (isFrozen())
 			return;
 		
-		wrot = Clamp(wrot *= 0.96, 0.12, 100);
+		if (abs(wrot) > 0.12)
+		{
+			wrot *= 0.96;
+		}
 		roll += wrot;
 		scale *= dscale;
 		vel *= dbrake;
@@ -1245,7 +1248,10 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 	states 
 	{
 	Spawn:
-		SMO2 # -1;
+		SMO2 # -1 NoDelay 
+		{
+			frame = random[sfx](0,5);
+		}
 		stop;
 	SpawnCheap:
 		SMO3 A 1

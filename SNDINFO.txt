@@ -255,6 +255,10 @@ grindercrunch1		"sounds/pgrinder/pgrind1.ogg"
 grindercrunch2		"sounds/pgrinder/pgrind2.ogg"
 grindercrunch3		"sounds/pgrinder/pgrind3.ogg"
 grindercrunch4		"sounds/pgrinder/pgrind4.ogg"
+$random weapons/pgrinder/sneeze { peppersneeze1 peppersneeze2 peppersneeze3 }
+peppersneeze1 "sounds/pgrinder/pepper_sneeze1.ogg"
+peppersneeze2 "sounds/pgrinder/pepper_sneeze2.ogg"
+peppersneeze3 "sounds/pgrinder/pepper_sneeze3.ogg"
 
 // TEAPOT
 

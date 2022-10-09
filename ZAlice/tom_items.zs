@@ -1,8 +1,9 @@
 class ToM_InventoryToken : Inventory abstract 
 {
 	mixin ToM_Math;
-	protected int age;
+	int age;
 	protected transient CVar s_particles;
+	
 	Default 
 	{
 		+INVENTORY.UNDROPPABLE;
@@ -11,6 +12,7 @@ class ToM_InventoryToken : Inventory abstract
 		inventory.amount 1;
 		inventory.maxamount 1;
 	}
+	
 	override void DoEffect() 
 	{
 		super.DoEffect();
@@ -21,6 +23,7 @@ class ToM_InventoryToken : Inventory abstract
 		if (owner && !owner.isFrozen())
 			age++;
 	}
+	
 	override void Tick() {}
 }
 

@@ -79,6 +79,17 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		}
 	}
 	
+	action	 void A_FirePepperSpray()
+	{
+		let proj = A_Fire3DProjectile("ToM_PepperBomb", forward: 8, leftright:11, updown:-16);
+		if (proj)
+		{
+			A_StartSound("weapons/pgrinder/projdie", pitch:0.75, starttime: 0.2);
+			proj.A_StartSound("weapons/pgrinder/projdie", pitch:0.6, starttime: 0.2);
+		}
+		A_QuakeEX(1,1,0,4,0,1, sfx:"world/null", flags:QF_SCALEDOWN);
+	}
+	
 	States
 	{
 	Spawn:
@@ -202,7 +213,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		{
 			A_Overlay(APSP_Righthand, "Right.Chargealt");
 			invoker.crunchpitch = 0.9;
-			A_StartSound("weapons/pgrinder/windup", CHAN_7, CHANF_LOOPING, volume: 0.3, pitch: invoker.crunchpitch);
+			//A_StartSound("weapons/pgrinder/windup", CHAN_7, CHANF_LOOPING, volume: 0.3, pitch: invoker.crunchpitch);
 		}
 		PPGR Z 1 
 		{
@@ -213,14 +224,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	AltFireDo:
 		PPGR Y 1 
 		{
-			let proj = A_FireArchingProjectile("ToM_PepperBomb", spawnofs_xy:8, spawnheight:2, flags:FPF_NOAUTOAIM, pitch:-8);
-			if (proj)
-			{
-				A_StartSound("weapons/pgrinder/projdie", pitch:0.75, starttime: 0.2);
-				proj.A_StartSound("weapons/pgrinder/projdie", pitch:0.6, starttime: 0.2);
-			}
-			A_QuakeEX(1,1,0,4,0,1, sfx:"world/null", flags:QF_SCALEDOWN);
-			
+			A_FirePepperSpray();
 			A_OverlayPivot(OverlayID(), 0.1, 0.8);
 		}
 		PPGR YYYY 1 
@@ -230,23 +234,27 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
-			A_ResetPSprite(OverlayID(), 30);
+			A_ResetPSprite(OverlayID(), 10);
 		}
-		PPGR Y 30 A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
+		PPGR Y 10 A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
 		PPGR Y 20 A_WeaponReady(WRF_NOFIRE);
 		goto Ready;
 	Right.Chargealt:
 		TNT1 A 0 A_StartSound("weapons/pgrinder/crunch");
+		PPGR JIHGFE 1 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
+		PPGR DCB 3 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
+		PPGR AAAAAAAA 1 A_Weaponoffset(frandom(-2,2), WEAPONTOP + frandom(0, 2.5));
+		/*TNT1 A 0 A_StartSound("weapons/pgrinder/crunch");
 		PPGR JIHGFE 2 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
-		PPGR DC 3 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
-		PPGR BA 4 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
-		//TNT1 A 0 A_StartSound("weapons/pgrinder/crunch", pitch:0.9);
-		PPGR JIHGFE 4 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
-		PPGR DC 5 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
-		PPGR BA 6 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
+		PPGR DCB 4 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
+		PPGR A 8;
+		TNT1 A 0 A_StartSound("weapons/pgrinder/crunch");
+		PPGR JIHGFE 3 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
+		PPGR DCB 4 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
+		PPGR A 10;*/
 		TNT1 A 0 
 		{
-			A_StopSound(CHAN_7);
+			//A_StopSound(CHAN_7);
 			player.SetPSprite(PSP_Weapon, ResolveState("AltFireDo"));
 		}
 		stop;
@@ -326,14 +334,55 @@ class ToM_PepperProjectileVisual : ToM_PepperProjectile
 
 class ToM_PepperBomb : ToM_Projectile
 {
-	bool cheap;
+	array <Actor> hitvictims;
 	
 	Default
 	{
 		ToM_Projectile.flarecolor "";
 		ToM_Projectile.trailcolor "";
-		renderstyle 'None';
-		speed 14;
+		renderstyle 'Shaded';
+		stencilcolor "120403";
+		speed 20;
+		+ROLLSPRITE
+		+ROLLCENTER
+		scale 0.1;
+		radius 40;
+		height 60;
+	}
+	
+	override int SpecialMissileHit(actor victim)
+	{
+		if (victim)
+		{
+			bool isValid = (!target || victim != target) && victim.bISMONSTER && victim.bSHOOTABLE && victim.health > 0;
+			if (!isValid)
+				return 1;
+			
+			if (hitvictims.Find(victim) == hitvictims.Size())
+			{
+				hitvictims.Push(victim);
+				
+				let cont = ToM_PepperDOT(victim.FindInventory("ToM_PepperDOT"));
+				if (cont)
+				{
+					cont.age = 0;
+				}
+				else 
+				{
+					victim.GiveInventory("ToM_PepperDOT", 1);
+				}
+			}
+			return 1;
+		}
+		
+		return 1;
+	}
+	
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		if (target)
+			vel += target.vel;
 	}
 	
 	override void Tick()
@@ -342,35 +391,39 @@ class ToM_PepperBomb : ToM_Projectile
 		if (isFrozen())
 			return;
 		
-		vel *= 0.93;
+		vel *= 0.9;
 
 		double v = vel.length();
 		
-		if (v <= 1.1 && GetAge() > 60)
+		if (!InStateSequence(curstate, s_death))
 		{
-			Destroy();
-			return;
+			alpha = LinearMap(v, speed, 0, 1, 0.2);
+			if (v <= 1.1)
+			{
+				SetStateLabel("Death");
+				return;
+			}
 		}
 		
-		if (GetAge() % 4 != 0)
-			return;
-			
-		double svel = 10;// LinearMap(v, speed, 0, 3, 18);
-		double sofs = 0;//LinearMap(v, speed, 0, 0, 18);
-		double sscale = 0.5;//LinearMap(v, speed, 0, 0.22, 0.8);
-		double salpha = 0.85;//LinearMap(v, speed, 0, 0.12, 0.75);
+		roll += LinearMap(v, speed, 0, 10, 0.01);
+		A_SetScale(LinearMap(v, speed, 0, 0.1, 0.15));
+				
+		double svel = 2.4;//LinearMap(v, speed, 0, 1, 8);
+		double sofs = 10;//LinearMap(v, speed, 0, 0, 18);
+		double sscale = LinearMap(v, speed, 0, 0.1, 0.15);
+		double salpha = 0.7;// LinearMap(v, speed, 0, 0.5, 0.85);
 		
 		let smk = ToM_WhiteSmoke.Spawn(
 			pos,
 			ofs: sofs,
-			vel: (
+			/*vel: (
 				frandom[pbom](-svel,svel),
 				frandom[pbom](-svel,svel),
 				frandom[pbom](-svel,svel)
-			),
+			),*/
 			scale: sscale,
 			alpha: salpha,
-			fade: 0.002,
+			fade: 0.04,
 			dbrake: 0.85,
 			//cheap: true,
 			smoke: "ToM_PepperCloud"
@@ -379,30 +432,197 @@ class ToM_PepperBomb : ToM_Projectile
 		{
 			smk.master = self;
 			smk.A_SetRenderstyle(smk.alpha, Style_Shaded);
-			smk.SetShade("000000");
+			smk.SetShade("120403");
+		}
+		
+		for (int i = 4; i > 0; i--)
+		{
+			A_SpawnParticle(
+				"120403",
+				flags: SPF_RELPOS,
+				lifetime: frandom[ppart](25,40),
+				size: 3,
+				xoff: frandom[ppart](-sofs, sofs),
+				yoff: frandom[ppart](-sofs, sofs),
+				zoff: frandom[ppart](-sofs, sofs),
+				velx: frandom[ppart](-svel, svel) * 0.5,
+				vely: frandom[ppart](-svel, svel) * 0.5,
+				velz: frandom[ppart](-svel, svel) * 0.5
+			);
 		}
 	}
 	
 	States
 	{
 	Spawn:
-		TNT1 A 1;
+		SMO2 A 1;
 		wait;
 	Death:
-		TNT1 A -1;
-		stop;
+		SMO2 A 1 A_FadeOut(0.08);
+		loop;
 	}
 }
 
-
 class ToM_PepperCloud : ToM_WhiteSmoke
 {
-	override void PostBeginPlay()
+	vector3 masterofs;	
+	
+	override void Tick()
 	{
-		super.PostBeginPlay();
+		super.Tick();
 		if (master)
 		{
-			vel += master.vel;
+			SetOrigin(pos + masterofs, true);
 		}
+	}
+}
+
+class ToM_PepperDOT : ToM_InventoryToken
+{
+	const DOTDUR = 35 * 6;
+	const SNEEZEDUR = 38;
+	
+	protected double sneezepitch;
+	protected double prevSpeed;
+	protected int prevReactionTime;
+	protected int nexttic;
+	
+	override void AttachToOwner(actor other)
+	{
+		super.AttachToOwner(other);
+		
+		nexttic = random[dotc](20, SNEEZEDUR);
+		
+		if (owner)
+		{
+			prevSpeed = owner.speed;
+			prevReactionTime = owner.reactiontime;
+			
+			owner.speed *= 0.6;
+			owner.reactiontime *= 10;
+			
+			sneezepitch = ToM_BaseActor.LinearMap(owner.spawnhealth(), 100, 2000, 1.0, 0.4);
+			//sneezepitch = Clamp(sneezepitch, 0.5, 1.0);
+		}
+	}
+	
+	override void DoEffect()
+	{
+		super.DoEffect();
+		
+		if (!owner || owner.health <= 0 || age >= DOTDUR)
+		{
+			Destroy();
+			return;
+		}
+		
+		if (owner.isFrozen())
+			return;
+		
+		if (nexttic > 0)
+		{
+			nexttic--;
+			for (int i = 3; i > 0; i--)
+			{
+				owner.A_SpawnParticle(
+					"120403",
+					flags:SPF_RELVEL|SPF_RELACCEL,
+					lifetime:35,
+					size:5,
+					angle:frandom[dotcpart](0,359),
+					xoff:frandom[dotcpart](-6,6),
+					yoff:frandom[dotcpart](-6,6),
+					zoff:owner.height * 0.7 + frandom[dotcpart](-8,4),
+					velx:frandom[dotcpart](1,2),
+					velz:frandom[dotcpart](0.5,2),
+					accelx:frandom[dotcpart](-0.1,-0.3),
+					accelz:-0.05,
+					sizestep:-0.2
+				);
+			}
+		}
+		
+		// attempt to sneeze:
+		else
+		{
+			// set next interval:
+			nexttic = random[dotc](30, 70);
+			// Calculate chance for effect based on painchance:
+			int dotchance = random[dotc](0, 180);
+			
+			// do the sneeze:
+			if (dotchance <= owner.painchance)
+			{
+				owner.A_StartSound("weapons/pgrinder/sneeze", CHAN_AUTO,pitch: sneezepitch);
+				owner.target = null;
+				owner.angle += (randompick[dotc](40, 60, 90) * randompick[dotc](-1, 1));
+				
+				for (int i = 10; i > 0; i--)
+				{
+					double fwvel = frandom[dotcpart](2, 4);
+					double sidevel = frandom[dotcpart](-1.5, 1.5);
+					owner.A_SpawnParticle(
+						"120403",
+						flags: SPF_RELATIVE,
+						lifetime: 25,
+						size: 10,
+						xoff: owner.radius,
+						yoff: frandom[dotcpart](-4, 4),
+						zoff: owner.height * 0.8 + frandom[dotcpart](-2, 2),
+						velx: fwvel,
+						vely: sidevel,
+						velz: frandom[dotcpart](0, 1.2),
+						accelx: -fwvel * 0.05,
+						accely: -sidevel * 0.05,
+						accelz: -0.5
+					);
+				}
+				owner.SetState(owner.FindState("See"));
+				owner.A_SetTics(SNEEZEDUR);
+				owner.A_Recoil(5);
+				if (!owner.bFLOAT && !owner.bNOGRAVITY)
+				{
+					owner.vel.z += 3;
+				}
+				let sl = Spawn("ToM_SneezeLayer", owner.pos);
+				if (sl)
+				{
+					sl.master = owner;
+					ToM_BaseActor.CopyAppearance(sl, owner, style:false);
+				}
+			}
+		}
+	}
+	
+	override void DetachFromOwner()
+	{
+		if (owner)
+		{
+			owner.speed = prevSpeed;
+			//owner.reactiontime = prevReactionTime;
+		}
+		
+		super.DetachFromOwner();
+	}
+}
+
+class ToM_SneezeLayer : ToM_BaseDebris
+{
+	Default
+	{
+		+NOINTERACTION
+		Renderstyle 'Stencil';
+		stencilcolor "120403";
+	}
+	
+	override void Tick()
+	{
+		if (!master)
+		{
+			Destroy();
+			return;
+		}
+		SetOrigin(master.pos, true);
+		A_FadeOut(0.08);
 	}
 }

@@ -373,8 +373,9 @@ class ToM_TeaProjectile : ToM_Projectile
 		{
 			if (GetAge() > 8)
 				ToM_WhiteSmoke.Spawn(
-					pos + (frandom[wsmoke](-4,4),frandom[wsmoke](-4,4),frandom[wsmoke](-4,4) + (height * 0.5)), 
-					vel: (frandom[wsmoke](-0.2,0.2),frandom[wsmoke](-0.2,0.2),frandom[wsmoke](-0.2,0.2)),
+					pos,
+					ofs:4,
+					vel: (frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2)),
 					scale: 0.15,
 					alpha: 0.4
 				);
@@ -395,8 +396,8 @@ class ToM_TeaProjectile : ToM_Projectile
 			for (int i = 4; i > 0; i--)
 			{
 				ToM_WhiteSmoke.Spawn(
-					pos + (frandom[wsmoke](-6,6),frandom[wsmoke](-6,6),frandom[wsmoke](10,16)), 
-					vel: (frandom[wsmoke](-0.2,0.2),frandom[wsmoke](-0.2,0.2),frandom[wsmoke](2,3)),
+					pos + (frandom[tpotsmk](-6,6),frandom[tpotsmk](-6,6),frandom[tpotsmk](10,16)), 
+					vel: (frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](2,3)),
 					scale: 0.3,
 					alpha: 0.75
 				);
@@ -406,31 +407,31 @@ class ToM_TeaProjectile : ToM_Projectile
 			{
 				A_SpawnItemEx(
 					"ToM_TeaSplash",
-					xofs: frandom[wsplash](-12,12),
-					yofs: frandom[wsplash](-12,12),
-					zofs: frandom[wsplash](-4,12),
-					xvel: frandom[wsplash](-1,1),
-					yvel: frandom[wsplash](-1,1),
-					zvel: frandom[wsplash](1,3.5)
+					xofs: frandom[tsplash](-12,12),
+					yofs: frandom[tsplash](-12,12),
+					zofs: frandom[tsplash](-4,12),
+					xvel: frandom[tsplash](-1,1),
+					yvel: frandom[tsplash](-1,1),
+					zvel: frandom[tsplash](1,3.5)
 				);
 			}
 			
 			
 			for (int i = 40; i > 0; i--)
 			{
-				double vx = frandom[wsplash](2, 6);
+				double vx = frandom[tsplash](2, 6);
 				double bx = vx * -0.01;
 				A_SpawnParticle(
 					"00FF00",
 					SPF_RELATIVE,
 					lifetime: 50,					
 					size: 10,
-					angle: frandom[wsplash](0, 359),
-					xoff: frandom[wsplash](-8,8),
-					yoff: frandom[wsplash](-8,8),
-					zoff: frandom[wsplash](-8,8),
+					angle: frandom[tsplash](0, 359),
+					xoff: frandom[tsplash](-8,8),
+					yoff: frandom[tsplash](-8,8),
+					zoff: frandom[tsplash](-8,8),
 					velx: vx,
-					velz: frandom[wsplash](3, 10),
+					velz: frandom[tsplash](3, 10),
 					accelx: bx,
 					accelz: -0.3,
 					sizestep: -0.2			

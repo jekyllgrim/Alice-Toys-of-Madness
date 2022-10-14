@@ -2,8 +2,14 @@ class ToM_Teapot : ToM_BaseWeapon
 {
 	double heat;
 	int lidframe;	
+	const OPENLIDFRAME = 11;
 	double vaporYvel;
 	double vaporScaleShift;
+	
+	const STEAMFRAMES = 10;
+	private double prevAngle[STEAMFRAMES];
+	private double prevPitch[STEAMFRAMES];
+	private int steamFrame;
 	
 	enum HeatLevels
 	{
@@ -53,7 +59,7 @@ class ToM_Teapot : ToM_BaseWeapon
 			}
 		}
 		
-		// Stop looped sounds if dead or using different weapon:
+		// Stop looped sounds if dead or has no weapon: 
 		if (owner.health <= 0 || !weap)
 		{
 			owner.A_StopSound(CH_TPOTHEAT);
@@ -64,7 +70,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		// Overheat sound:
 		if (heat >= HEAT_MAX)
 		{
-			owner.A_StartSound("weapons/teapot/highheat", CH_TPOTCHARGE, CHANF_LOOPING);
+			//owner.A_StartSound("weapons/teapot/highheat", CH_TPOTCHARGE, CHANF_LOOPING);
 		}
 		// Heat looped sound:
 		if (heat >= HEAT_MED)
@@ -185,7 +191,7 @@ class ToM_Teapot : ToM_BaseWeapon
 			A_SetTics(int(invoker.LinearMap(invoker.heat, HEAT_MED, HEAT_MAX, 4, 2)));
 			A_PickLidFrame();
 			let psp = player.FindPSprite(OverlayID());
-			if (psp && psp.frame == 11)
+			if (psp && psp.frame == OPENLIDFRAME)
 				A_SpawnPSParticle("Vapor", bottom: true, xofs: 7, yofs: 7, chance: 80);
 		}
 		TNT1 A 1 A_PickReady;
@@ -231,7 +237,7 @@ class ToM_Teapot : ToM_BaseWeapon
 			return ResolveState(null);
 		}
 		TNT1 A 0 A_ResetPSprite(OverlayID(), 10);
-		TPOT IIKKAAABBB 1 A_ResetZoom();
+		TPOT IIKKAABBCC 1 A_ResetZoom();
 		goto Ready;
 	FireEndHeat:
 		TNT1 A 0 A_ResetPSprite(OverlayID(), 10);
@@ -244,8 +250,7 @@ class ToM_Teapot : ToM_BaseWeapon
 			if (psp)
 			{
 				A_OverlayFlags(OverlayID(), PSPF_AddWeapon|PSPF_AddBob, false);
-				A_OverlayFlags(OverlayID(), PSPF_Renderstyle|PSPF_ForceAlpha, true);
-				A_OverlayRenderstyle(OverlayID(), Style_Translucent);
+				A_PSPMakeTranslucent();
 				A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);
 				psp.alpha = frandom[vapr](0.75,1.0);
 				//psp.x = frandom[vapr](-7,7);
@@ -267,6 +272,46 @@ class ToM_Teapot : ToM_BaseWeapon
 			}
 		}
 		stop;
+	AltFire:
+		TPOT OP 3;
+	AltHold:
+		TPOT P 2
+		{
+			invoker.steamFrame++;
+			if (invoker.steamFrame >= STEAMFRAMES)
+				invoker.steamFrame = 0;
+			A_Overlay(APSP_BottomParticle + invoker.steamFrame, "SteamOverlay");
+		}
+		TNT1 A 0 A_ReFire();
+		//TNT1 A 0 A_ClearOverlays(APSP_BottomParticle, APSP_BottomParticle + STEAMFRAMES);
+		TPOT PO 3;
+		goto ready;
+	SteamOverlay:
+		TPSM A 0
+		{
+			A_PSPMakeTranslucent();
+			A_OverlayFlags(OverlayID(), PSPF_AddWeapon|PSPF_AddBob, false);
+			A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);
+			A_OverlayRotate(OverlayID(), frandom[tsfx](0, 359));
+			A_OverlayOffset(OverlayID(), -16, 14);
+			invoker.prevAngle[invoker.steamFrame] = angle;
+			invoker.prevPitch[invoker.steamFrame] = pitch;
+			let psp = player.FindPSprite(OverlayID());
+			if (psp)
+			{
+				psp.frame = random[tsfx](0, 5);
+			}
+		}
+		TPSM # 1
+		{
+			A_OverlayRotate(OverlayID(), 4, WOF_ADD);
+			A_OverlayScale(OverlayID(), 0.07, 0.07, WOF_ADD);
+			A_OverlayOffset(OverlayID(),-5 - (invoker.prevAngle[invoker.steamFrame] - angle),-5 + (invoker.prevPitch[invoker.steamFrame] - pitch),WOF_ADD);
+			invoker.prevAngle[invoker.steamFrame] = angle;
+			invoker.prevPitch[invoker.steamFrame] = pitch;
+			A_PSPFadeOut(0.11);
+		}
+		wait;
 	}
 }
 
@@ -444,6 +489,15 @@ class ToM_TeaProjectile : ToM_Projectile
 			A_FadeOut(0.1);
 		}*/
 		stop;
+	}
+}
+
+class ToM_TeaBurnLayer : ToM_ActorLayer
+{
+	Default
+	{
+		Translation "GreenTea";
+		ToM_ActorLayer.Fade 0.075;
 	}
 }
 

@@ -25,9 +25,13 @@ class ToM_Mainhandler : EventHandler
 	{
 		if (e.thing && e.Inflictor && e.Inflictor.GetClass() == 'ToM_TeaProjectile')
 		{
-			e.thing.GiveInventory("ToM_TeaBurnControl", 1);
-			if (tom_debugmessages > 0)
-				console.printf("%s is damaged by %s", e.thing.GetClassName(), e.inflictor.GetClassName());
+			let cont = ToM_TeaBurnControl(e.thing.FindInventory("ToM_TeaBurnControl"));
+			if (cont)
+				cont.ResetTimer();
+			else
+				e.thing.GiveInventory("ToM_TeaBurnControl", 1);
+			//if (tom_debugmessages > 0)
+				//console.printf("%s is damaged by %s", e.thing.GetClassName(), e.inflictor.GetClassName());
 		}
 	}
 	

@@ -14,7 +14,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		weapon.ammouse1 2;
 		weapon.ammogive1 100;
 		weapon.ammotype2 "ToM_YellowMana";
-		weapon.ammouse2 20;
+		weapon.ammouse2 18;
 	}
 	
 	action void A_PepperFlash()
@@ -236,7 +236,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 			A_ResetPSprite(OverlayID(), 10);
 		}
 		PPGR Y 10 A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
-		PPGR Y 20 A_WeaponReady(WRF_NOFIRE);
+		PPGR Y 10 A_WeaponReady(WRF_NOFIRE);
 		goto Ready;
 	Right.Chargealt:
 		TNT1 A 0 A_StartSound("weapons/pgrinder/crunch");
@@ -277,6 +277,7 @@ class ToM_PepperProjectile : ToM_Projectile
 		+ROLLCENTER
 		seesound "";
 		deathsound "";
+		damagetype 'Pepper';
 		//ToM_Projectile.ShouldActivateLines true;
 		ToM_Projectile.flarecolor "fb4834";
 		ToM_Projectile.trailcolor "fb4834";
@@ -320,7 +321,21 @@ class ToM_PepperProjectile : ToM_Projectile
 		stop;
 	}
 }
-					
+
+class ToM_PepperPuff : ToM_BasePuff
+{
+	Default
+	{
+		Damagetype 'Pepper';
+	}
+	
+	States
+	{
+	Spawn:
+		TNT1 A 1;
+		stop;
+	}
+}
 
 class ToM_PepperProjectileVisual : ToM_PepperProjectile
 {	
@@ -410,7 +425,7 @@ class ToM_PepperBomb : ToM_Projectile
 		double svel = 2.4;//LinearMap(v, speed, 0, 1, 8);
 		double sofs = 10;//LinearMap(v, speed, 0, 0, 18);
 		double sscale = LinearMap(v, speed, 0, 0.1, 0.15);
-		double salpha = 0.7;// LinearMap(v, speed, 0, 0.5, 0.85);
+		double salpha = 0.35;// LinearMap(v, speed, 0, 0.5, 0.85);
 		
 		let smk = ToM_WhiteSmoke.Spawn(
 			pos,
@@ -422,7 +437,7 @@ class ToM_PepperBomb : ToM_Projectile
 			),*/
 			scale: sscale,
 			alpha: salpha,
-			fade: 0.04,
+			fade: 0.02,
 			dbrake: 0.85,
 			//cheap: true,
 			smoke: "ToM_PepperCloud"
@@ -486,6 +501,12 @@ class ToM_PepperDOT : ToM_InventoryToken
 	protected int prevReactionTime;
 	protected int nexttic;
 	
+	override void ModifyDamage(int damage, Name damageType, out int newdamage, bool passive, Actor inflictor, Actor source, int flags)
+	{
+		if (damageType == 'Pepper')
+			newdamage = damage * 1.25;
+	}
+	
 	override void AttachToOwner(actor other)
 	{
 		super.AttachToOwner(other);
@@ -500,8 +521,8 @@ class ToM_PepperDOT : ToM_InventoryToken
 			owner.speed *= 0.6;
 			owner.reactiontime *= 10;
 			
-			sneezepitch = ToM_BaseActor.LinearMap(owner.spawnhealth(), 100, 2000, 1.0, 0.4);
-			//sneezepitch = Clamp(sneezepitch, 0.5, 1.0);
+			sneezepitch = ToM_BaseActor.LinearMap(owner.spawnhealth(), 100, 1000, 0.9, 0.5);
+			sneezepitch = Clamp(sneezepitch, 0.25, 0.9);
 		}
 	}
 	
@@ -565,7 +586,6 @@ class ToM_PepperDOT : ToM_InventoryToken
 						flags: SPF_RELATIVE,
 						lifetime: 25,
 						size: 10,
-						xoff: owner.radius,
 						yoff: frandom[dotcpart](-4, 4),
 						zoff: owner.height * 0.8 + frandom[dotcpart](-2, 2),
 						velx: fwvel,
@@ -573,12 +593,14 @@ class ToM_PepperDOT : ToM_InventoryToken
 						velz: frandom[dotcpart](0, 1.2),
 						accelx: -fwvel * 0.05,
 						accely: -sidevel * 0.05,
-						accelz: -0.5
+						accelz: -0.5,
+						sizestep: -0.2
 					);
 				}
 				owner.SetState(owner.FindState("See"));
 				owner.A_SetTics(SNEEZEDUR);
-				owner.A_Recoil(5);
+				double pstrength = ToM_BaseActor.LinearMap(owner.mass, 300, 1000, 5, 1.5);
+				owner.A_Recoil(Clamp(pstrength, 1.5 ,5));
 				if (!owner.bFLOAT && !owner.bNOGRAVITY)
 				{
 					owner.vel.z += 3;
@@ -587,7 +609,6 @@ class ToM_PepperDOT : ToM_InventoryToken
 				if (sl)
 				{
 					sl.master = owner;
-					ToM_BaseActor.CopyAppearance(sl, owner, style:false);
 				}
 			}
 		}
@@ -598,7 +619,7 @@ class ToM_PepperDOT : ToM_InventoryToken
 		if (owner)
 		{
 			owner.speed = prevSpeed;
-			//owner.reactiontime = prevReactionTime;
+			owner.reactiontime = prevReactionTime;
 		}
 		
 		super.DetachFromOwner();

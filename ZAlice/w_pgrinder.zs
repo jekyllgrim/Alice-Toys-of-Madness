@@ -84,8 +84,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		let proj = A_Fire3DProjectile("ToM_PepperBomb", forward: 8, leftright:11, updown:-16);
 		if (proj)
 		{
-			A_StartSound("weapons/pgrinder/projdie", pitch:0.75, starttime: 0.2);
-			proj.A_StartSound("weapons/pgrinder/projdie", pitch:0.6, starttime: 0.2);
+			proj.A_StartSound("weapons/pgrinder/spray", pitch:0.6);
 		}
 		A_QuakeEX(1,1,0,4,0,1, sfx:"world/null", flags:QF_SCALEDOWN);
 	}

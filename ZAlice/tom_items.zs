@@ -304,6 +304,7 @@ class ToM_SilverArmor : GreenArmor
 	Default
 	{
 		Inventory.icon "ACARM_1";
+		Inventory.pickupsound "pickups/armor/light";
 		xscale 0.5;
 		yscale 0.45;
 	}
@@ -321,6 +322,9 @@ class ToM_GoldArmor : BlueArmor
 	Default
 	{
 		Inventory.icon "ACARM_2";
+		Inventory.pickupsound "pickups/armor/heavy";
+		xscale 0.5;
+		yscale 0.45;
 	}
 	
 	States

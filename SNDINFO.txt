@@ -1,5 +1,3 @@
-alice/pickups/weapon "sounds/weaponpickup.ogg"
-
 misc/teleport "sounds/player/respawn.ogg"
 
 // ALICE
@@ -299,6 +297,13 @@ weapons/blunderbuss/pull		"Sounds/blunderbuss/bb_pull.ogg"
 weapons/blunderbuss/cock		"Sounds/blunderbuss/bb_cock.ogg"
 weapons/blunderbuss/flyloop	"Sounds/blunderbuss/bb_loop.wav"
 
+
+// ITEMS
+
+pickups/weapon					"sounds/pickups/weaponpickup.ogg"
+pickups/armor/light		"sounds/pickups/pickup_armor_light.ogg"
+$pitchset pickups/armor/heavy 0.8
+pickups/armor/heavy		"sounds/pickups/pickup_armor_light.ogg"
 
 //// CHARACTERS
 

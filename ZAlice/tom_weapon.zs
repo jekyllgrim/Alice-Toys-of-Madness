@@ -39,7 +39,7 @@ class ToM_BaseWeapon : Weapon abstract
 	Default 
 	{
 		Inventory.Pickupmessage "";
-		Inventory.PickupSound "alice/pickups/weapon";
+		Inventory.PickupSound "pickups/weapon";
 		weapon.BobStyle "InverseSmooth";
 		weapon.BobRangeX 0.32;
 		weapon.BobRangeY 0.17;

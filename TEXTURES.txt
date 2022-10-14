@@ -977,6 +977,20 @@ Sprite "TPSMF0", 256, 256
 	Patch "SMO2F0", 0, 0
 }
 
+Sprite "TPOHA0", 396, 280
+{
+	YScale 1.200
+	Offset -59, 11
+	Patch "TPOHA", 0, 0
+}
+
+Sprite "TPOHB0", 396, 280
+{
+	YScale 1.200
+	Offset -59, 11
+	Patch "TPOHB", 0, 0
+}
+
 Sprite "TPOTA0", 396, 280
 {
 	YScale 1.200

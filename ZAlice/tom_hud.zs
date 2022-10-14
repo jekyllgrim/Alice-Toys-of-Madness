@@ -23,6 +23,14 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		return ofs;
 	}
+	
+	bool IsAspectCorrected()
+	{
+		if (!aspectScale)
+			aspectScale = CVar.GetCvar('hud_aspectscale',CPlayer);
+		
+		return (aspectScale && aspectScale.GetBool());
+	}
 
 	// Versions of the draw functions that respect
 	// UI scaling but ignore UI stretching.
@@ -31,7 +39,7 @@ class ToM_AliceHUD : BaseStatusBar
 
 	void ToM_DrawImage(String texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1))
 	{
-		if (aspectScale && aspectScale.GetBool() == true) 
+		if (IsAspectCorrected()) 
 		{
 			scale.y *= noYStretch;
 			pos.y *= noYStretch;
@@ -41,7 +49,7 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	void ToM_DrawTexture(TextureID texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1))
 	{
-		if (aspectScale && aspectScale.GetBool() == true) 
+		if (IsAspectCorrected()) 
 		{
 			scale.y *= noYStretch;
 			pos.y *= noYStretch;
@@ -51,7 +59,7 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	void ToM_DrawString(HUDFont font, String string, Vector2 pos, int flags = 0, int translation = Font.CR_UNTRANSLATED, double Alpha = 1., int wrapwidth = -1, int linespacing = 4, Vector2 scale = (1, 1)) 
 	{
-		if (aspectScale && aspectScale.GetBool() == true) 
+		if (IsAspectCorrected()) 
 		{
 			scale.y *= noYStretch;
 			pos.y *= noYStretch;
@@ -61,7 +69,7 @@ class ToM_AliceHUD : BaseStatusBar
 
 	void ToM_DrawInventoryIcon(Inventory item, Vector2 pos, int flags = 0, double alpha = 1.0, Vector2 boxsize = (-1, -1), Vector2 scale = (1.,1.)) 
 	{
-		if (aspectScale && aspectScale.GetBool() == true) 
+		if (IsAspectCorrected()) 
 		{
 			scale.y *= noYStretch;
 			pos.y *= noYStretch;
@@ -93,9 +101,6 @@ class ToM_AliceHUD : BaseStatusBar
 	override void Draw (int state, double TicFrac) 
 	{
 		Super.Draw (state, TicFrac);
-		
-		if (aspectScale == null)
-			aspectScale = CVar.GetCvar('hud_aspectscale',CPlayer);
 			
 		if (state == HUD_AltHUD || state == HUD_None)
 			return;
@@ -178,6 +183,11 @@ class ToM_AliceHUD : BaseStatusBar
 	// Draws a single mana vessel (3 of them used in right corner)
 	void DrawManaVessel(name ammotype, string texture, vector2 pos, double diameter, int flags = 0, string toptexture = "")
 	{
+		if (IsAspectCorrected()) 
+		{
+			pos.y *= noYStretch;
+		}
+	
 		// Get ammo type:
 		Class<Ammo> ammocls = ammotype;
 		if (!ammotype)
@@ -206,6 +216,10 @@ class ToM_AliceHUD : BaseStatusBar
 		// distance equals the bubble's diameter multiplied
 		// by the factor calculated above:
 		double gclip = diameter - diameter * amtFac;
+		if (IsAspectCorrected()) 
+		{
+			gclip *= noYStretch;
+		}
 		
 		// Clipping rectangle allows only things within that
 		// rectangle to be rendered. It's also always anchored
@@ -221,12 +235,13 @@ class ToM_AliceHUD : BaseStatusBar
 			DI_SCREEN_RIGHT_BOTTOM
 		);
 		
+		vector2 tscale = (1, (IsAspectCorrected() ? noYStretch : 1));
 		// Draw the mana texture (properly clipped)
-		ToM_DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP);
+		DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, scale: tscale);
 		// Dim if current weapon isn't using this mana type:
 		if (!isSelected)
 		{
-			ToM_DrawImage("graphics/HUD/vessel_black_liquid.png", pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: 0.45);
+			DrawImage("graphics/HUD/vessel_black_liquid.png", pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: 0.45, scale: tscale);
 		}
 		// The rest shoudln't be clipped, don't forget to
 		// clear the rectangle:
@@ -306,12 +321,12 @@ class ToM_AliceHUD : BaseStatusBar
 			// to the position of the clip rectangle (which is the top
 			// end of the mana texture):
 			vector2 tpos = ( pos.x + rad, pos.y + gclip );
-			ToM_DrawImage(toptexture, tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, box: (width, -1));
+			DrawImage(toptexture, tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, box: (width, -1), scale: tscale);
 			
 			// Dim if current weapon isn't using this mana type:
 			if (!isSelected)
 			{
-				ToM_DrawImage("graphics/HUD/vessel_black_liquidtop.png", tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, alpha: 0.45, box: (width, -1));
+				DrawImage("graphics/HUD/vessel_black_liquidtop.png", tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, alpha: 0.45, box: (width, -1), scale: tscale);
 			}
 		}
 	}

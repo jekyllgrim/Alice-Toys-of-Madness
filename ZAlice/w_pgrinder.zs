@@ -605,23 +605,12 @@ class ToM_PepperDOT : ToM_InventoryToken
 	}
 }
 
-class ToM_SneezeLayer : ToM_BaseDebris
+class ToM_SneezeLayer : ToM_ActorLayer
 {
 	Default
 	{
-		+NOINTERACTION
 		Renderstyle 'Stencil';
 		stencilcolor "120403";
-	}
-	
-	override void Tick()
-	{
-		if (!master)
-		{
-			Destroy();
-			return;
-		}
-		SetOrigin(master.pos, true);
-		A_FadeOut(0.08);
+		ToM_ActorLayer.Fade 0.08;
 	}
 }

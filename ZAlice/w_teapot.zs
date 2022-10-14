@@ -270,14 +270,13 @@ class ToM_Teapot : ToM_BaseWeapon
 	}
 }
 
-class ToM_TeaBurnControl : ToM_InventoryToken 
+class ToM_TeaBurnControl : ToM_ControlToken 
 {
-	protected int timer;
 	protected uint prevtrans;
 	
-	void ResetTimer() 
+	Default
 	{
-		timer = 35*5;
+		ToM_ControlToken.duration 175;
 	}
 	
 	override void AttachToOwner(actor other) 
@@ -288,46 +287,44 @@ class ToM_TeaBurnControl : ToM_InventoryToken
 		ResetTimer();
 		prevtrans = owner.translation;
 		owner.A_SetTranslation("GreenTea");
-		if (tom_debugmessages > 0)
-			console.printf("giving %s to %s", GetClassName(), owner.GetClassName());
 	}
 	
 	override void DoEffect() 
 	{
 		super.DoEffect();
-		if (!owner || !owner.target)
+		
+		console.printf("timer: %d", timer);
+		
+		if (!owner)
 		{
-			DepleteOrDestroy();
+			Destroy();
 			return;
 		}
-		if (owner.isFrozen())
-			return;
-		if (timer <= 0) 
+
+		if (timer % 35 == 0 && owner.target) 
 		{
-			DepleteOrDestroy();
-			return;
-		}
-		timer--;
-		if (timer % 35 == 0) 
-		{
-			int fl = (random[tea](1,3) == 1) ? 0 : DMG_NO_PAIN;
+			int fl = (random[tsfx](1,3) == 1) ? 0 : DMG_NO_PAIN;
 			owner.DamageMobj(self,owner.target,4,"Normal",flags:DMG_THRUSTLESS|fl);
 		}
-		/*if (owner.health <= 0) 
+
+		if (timer % 4 == 0)
 		{
-			owner.A_SetTRanslation("Scorched");
-		}*/
-		double rad = owner.radius*0.75;		
-		if (!s_particles)
-			s_particles = CVar.GetCVar('ToM_particles', players[consoleplayer]);
-		if (s_particles.GetInt() >= 1) 
-		{
-			ToM_WhiteSmoke.Spawn(
-				owner.pos + (frandom[wsmoke](-rad,rad), frandom[wsmoke](-rad,rad), frandom[wsmoke](owner.pos.z,owner.height*0.75)), 
-				vel: (frandom[wsmoke](-0.2,0.2),frandom[wsmoke](-0.2,0.2),frandom[wsmoke](0.5,1.2)),
-				scale: 0.15,
-				alpha: 0.4
-			);
+			double rad = owner.radius*0.6;		
+			if (!s_particles)
+				s_particles = CVar.GetCVar('ToM_particles', players[consoleplayer]);
+			if (s_particles.GetInt() >= 1) 
+			{
+				ToM_WhiteSmoke.Spawn(
+					owner.pos + (
+						frandom[tsfx](-rad,rad), 
+						frandom[tsfx](-rad,rad), 
+						frandom[tsfx](owner.pos.z,owner.height*0.75)
+					), 
+					vel: (frandom[tsfx](-0.2,0.2),frandom[tsfx](-0.2,0.2),frandom[tsfx](0.5,1.2)),
+					scale: 0.15,
+					alpha: 0.2
+				);
+			}
 		}
 	}
 	
@@ -336,6 +333,9 @@ class ToM_TeaBurnControl : ToM_InventoryToken
 		if (owner)
 		{
 			owner.translation = prevtrans;
+			let al = Spawn("ToM_TeaBurnLayer", owner.pos);
+			if (al)
+				al.master = owner;
 		}	
 		super.DetachFromOwner();
 	}

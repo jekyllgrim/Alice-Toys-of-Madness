@@ -478,12 +478,14 @@ class ToM_BaseWeapon : Weapon abstract
 		}
 	}
 	
-	action void A_PSPMakeTranslucent(int layer = 0)
+	action void A_PSPMakeTranslucent(int layer = 0, double alpha = 1.0)
 	{
 		if (!player)
 			return;
+		int tlayer = layer == 0 ? OverlayID() : layer;
 		A_OverlayFlags(layer, PSPF_Renderstyle|PSPF_ForceAlpha, true);
 		A_OverlayRenderstyle(layer, Style_Translucent);
+		A_OverlayAlpha(layer, alpha);
 	}
 	
 	action actor A_FireArchingProjectile(class<Actor> missiletype, double angle = 0, bool useammo = true, double spawnofs_xy = 0, double spawnheight = 0, int flags = 0, double pitch = 0) 

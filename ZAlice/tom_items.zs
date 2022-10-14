@@ -16,7 +16,8 @@ class ToM_InventoryToken : Inventory abstract
 	override void DoEffect() 
 	{
 		super.DoEffect();
-		if (!owner || (owner.player && ToM_Mainhandler.IsVoodooDoll(PlayerPawn(owner)))) {
+		if (!owner || (owner.player && ToM_Mainhandler.IsVoodooDoll(PlayerPawn(owner)))) 
+		{
 			Destroy();
 			return;
 		}
@@ -27,7 +28,44 @@ class ToM_InventoryToken : Inventory abstract
 	override void Tick() {}
 }
 
-Class ToM_InvReplacementControl : ToM_InventoryToken {
+class ToM_ControlToken : ToM_InventoryToken abstract
+{
+	protected int timer;
+	protected int duration;
+	property duration : duration;
+	
+	Default
+	{
+		ToM_ControlToken.duration 35;
+	}
+	
+	void ResetTimer()
+	{
+		timer = 0;
+	}
+	
+	int GetTimer()
+	{
+		return timer;
+	}
+	
+	override void DoEffect()
+	{
+		super.DoEffect();
+		if (self && owner && !owner.isFrozen())
+		{
+			timer++;
+			if (timer >= duration)
+			{
+				Destroy();
+				return;
+			}
+		}
+	}
+}
+
+class ToM_InvReplacementControl : ToM_InventoryToken 
+{
 	//Class<Inventory> latestPickup; //keep track of the latest pickup
 	//string latestPickupName; //the tag of the latest pickup
 	//bool codexOpened;
@@ -58,31 +96,36 @@ Class ToM_InvReplacementControl : ToM_InventoryToken {
 		"ToM_Blunderbuss"
 	};
 	
-	/*
+	
 	static const Class<Inventory> vanillaItems[] = {
 		"GreenArmor",
-		"BlueArmor",
-		"BasicArmorPickup"
+		"BlueArmor"
+		//"BasicArmorPickup"
 	};
-	static const Class<Inventory> pkItems[] = {
-		"PK_SilverArmor",
-		"PK_GoldArmor",
-		"PK_GoldArmor"
-	};*/
+	static const Class<Inventory> modItems[] = {
+		"ToM_SilverArmor",
+		"ToM_GoldArmor"
+		//"ToM_GoldArmor"
+	};
 	
 	//here we make sure that the player will never have vanilla weapons in their inventory:
-	override void DoEffect() {
+	override void DoEffect() 
+	{
 		super.DoEffect();
 		if (!owner || !owner.player)
 			return;
+	
 		let plr = owner.player;
 		array < int > changeweapons; //stores all weapons that need to be exchanged
 		int selweap = -1; //will store readyweapon
+		
 		//record all weapons that need to be replaced
-		for (int i = 0; i < vanillaWeapons.Size(); i++) {
+		for (int i = 0; i < vanillaWeapons.Size(); i++) 
+		{
 			//if a weapon is found, cache its position in the array:
 			Class<Weapon> oldweap = vanillaWeapons[i];
-			if (owner.CountInv(oldweap) >= 1) {
+			if (owner.CountInv(oldweap) >= 1) 
+			{
 				if (tom_debugmessages)  console.printf("found %s that shouldn't be here",oldweap.GetClassName());
 				changeweapons.Push(i);
 			}
@@ -90,10 +133,13 @@ Class ToM_InvReplacementControl : ToM_InventoryToken {
 			if (owner.player.readyweapon && owner.player.readyweapon.GetClass() == oldweap)
 				selweap = i;
 		}
+		
 		//if no old weapons were found, do nothing else:
 		if (changeweapons.Size() <= 0)
 			return;
-		for (int i = 0; i < vanillaWeapons.Size(); i++) {
+		
+		for (int i = 0; i < vanillaWeapons.Size(); i++) 
+		{
 			//do nothing if this weapon wasn't cached:
 			if (changeweapons.Find(i) == changeweapons.Size())
 				continue;
@@ -102,15 +148,19 @@ Class ToM_InvReplacementControl : ToM_InventoryToken {
 			//remove old weapon
 			owner.A_TakeInventory(oldweap);
 			if (tom_debugmessages) console.printf("Exchanging %s for %s",oldweap.GetClassName(),newweap.GetClassName());
-			if (!owner.CountInv(newweap)) {
+			if (!owner.CountInv(newweap)) 
+			{
 				owner.A_GiveInventory(newweap,1);
 			}
 		}		
+		
 		//select the corresponding new weapon if an old weapon was selected:
-		if (selweap != -1) {
+		if (selweap != -1) 
+		{
 			Class<Weapon> newsel = modWeapons[selweap];
 			let wp = Weapon(owner.FindInventory(newsel));
-			if (wp) {
+			if (wp) 
+			{
 				if (tom_debugmessages) console.printf("Selecting %s", wp.GetClassName());
 				owner.player.pendingweapon = wp;
 			}
@@ -118,30 +168,55 @@ Class ToM_InvReplacementControl : ToM_InventoryToken {
 		changeweapons.Clear();
 	}
 	
-    override bool HandlePickup (Inventory item) {
+    override bool HandlePickup (Inventory item) 
+	{
 		bool ret = false;
 		let oldItemClass = item.GetClassName();
         Class<Inventory> replacement =  null;
-		for (int i = 0; i < vanillaWeapons.Size(); i++) {
-			if (modWeapons[i] && oldItemClass == vanillaWeapons[i]) {
+		
+		// handle weapons:
+		for (int i = 0; i < vanillaWeapons.Size(); i++) 
+		{
+			if (modWeapons[i] && oldItemClass == vanillaWeapons[i]) 
+			{
 				replacement = modWeapons[i];
 				break;
 			}
 		}
-        if (!replacement) {
+		// handle items:
+		if (!replacement)
+		{
+			for (int i = 0; i < vanillaItems.Size(); i++) 
+			{
+				if (modItems[i] && oldItemClass == vanillaItems[i]) 
+				{
+					replacement = modItems[i];
+					break;
+				}
+			}
+		}
+		
+		// nothing found, giving as is:
+        if (!replacement) 
+		{
 			if (tom_debugmessages > 1)
 				console.printf("%s doesn't need replacing, giving as is",oldItemClass);
 			ret = super.HandlePickup(item);
 		}
-		else {
+		
+		// otherwise give the found replacement:
+		else 
+		{
 			int r_amount = GetDefaultByType(replacement).amount;
 			item.bPickupGood = true;
 			owner.A_GiveInventory(replacement,r_amount);
-			if (tom_debugmessages) {
+			if (tom_debugmessages) 
+			{
 				console.printf("Replacing %s with %s (amount: %d)",oldItemClass,replacement.GetClassName(),r_amount);
 			}
 			ret = true;
-		}		
+		}
+		
 		//RecordLastPickup(replacement ? replacement : item.GetClass());
         return ret;
     }

@@ -1,6 +1,6 @@
 Mixin class ToM_Math 
 {		
-	int Sign (double i) 
+	static clearscope int Sign (double i) 
 	{
 		return (i >= 0) ? 1 : -1;
 	}
@@ -13,14 +13,14 @@ Mixin class ToM_Math
 	//Utility functions by Marisa Kirisame
 	
 	//Checks which side of a lindef the actor is on:
-	clearscope int PointOnLineSide( Vector2 p, Line l ) 
+	static clearscope int PointOnLineSide( Vector2 p, Line l ) 
 	{
 		if ( !l ) return 0;
 		return (((p.y-l.v1.p.y)*l.delta.x+(l.v1.p.x-p.x)*l.delta.y) > double.epsilon);	
 	}
 	
 	//Returns -1 if the box (normally an actor's radius) intersects a linedef:
-    int BoxOnLineSide( double top, double bottom, double left, double right, Line l ) 
+    static int BoxOnLineSide( double top, double bottom, double left, double right, Line l ) 
 {
 		if ( !l ) return 0;
 		int p1, p2;
@@ -173,7 +173,7 @@ class ToM_NullActor : Actor
 class ToM_Keybinds 
 {
     static string getKeyboard(string keybind) 
-{
+	{
         Array<int> keyInts;
         Bindings.GetAllKeysForCommand(keyInts, keybind);
 		if (keyInts.Size() == 0)
@@ -752,6 +752,43 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 	Spawn:
 		#### # -1;
 		stop;
+	}
+}
+
+class ToM_ActorLayer : ToM_SmallDebris
+{
+	double fade;
+	property fade : fade;
+
+	Default
+	{
+		+NOINTERACTION
+		ToM_ActorLayer.fade 0.1;
+		Renderstyle 'Translucent';
+	}
+	
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		if (!master)
+		{
+			Destroy();
+		}
+		CopyAppearance(self, master, style: false);
+	}
+	
+	override void Tick()
+	{
+		if (!master)
+		{
+			Destroy();
+			return;
+		}
+		SetOrigin(master.pos, true);
+		angle = master.angle;
+		sprite = master.sprite;
+		frame = master.frame;
+		A_FadeOut(fade);
 	}
 }
 

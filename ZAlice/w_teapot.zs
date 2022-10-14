@@ -185,7 +185,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		TNT1 A 0 A_PickReady();
 		loop;
 	ReadyHeat:
-		TPOT C 1
+		TPOT A 1
 		{
 			A_TeapotReady();
 			A_SetTics(int(invoker.LinearMap(invoker.heat, HEAT_MED, HEAT_MAX, 4, 2)));
@@ -199,15 +199,20 @@ class ToM_Teapot : ToM_BaseWeapon
 	ReadyOverHeat:
 		TPOT BA 3;
 	ReadyOverHeatLoop:
-		TPOT J 3
+		TPOH A 3
 		{
 			A_TeapotReady(WRF_NOPRIMARY);
 			A_SpawnPSParticle("Vapor", bottom: true, xofs: 9, yofs: 9);
 			if (invoker.heat < HEAT_MED)
 				return ResolveState("ReadyOverHeatEnd");
+			// Draw the teapot's nose just below the vapor:
+			A_Overlay(APSP_BottomParticle-1, "ReadyOverHeatTip");
 			return ResolveState(null);
 		}
 		loop;
+	ReadyOverHeatTip:
+		TPOH B 3;
+		stop;
 	ReadyOverHeatEnd:
 		TNT1 A 0 A_StartSound("weapons/teapot/close", CHAN_AUTO);
 		TPOT AB 4;
@@ -250,9 +255,8 @@ class ToM_Teapot : ToM_BaseWeapon
 			if (psp)
 			{
 				A_OverlayFlags(OverlayID(), PSPF_AddWeapon|PSPF_AddBob, false);
-				A_PSPMakeTranslucent();
+				A_PSPMakeTranslucent(OverlayID(), 0.6);
 				A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);
-				psp.alpha = frandom[vapr](0.75,1.0);
 				//psp.x = frandom[vapr](-7,7);
 				//psp.y = 38 + frandom[vapr](-7,7);
 			}
@@ -265,11 +269,13 @@ class ToM_Teapot : ToM_BaseWeapon
 			if (psp)
 			{
 				psp.alpha -= 0.03;
+				if (psp.alpha <= 0)
+					return ResolveState("Null");
 				psp.y += invoker.vaporYvel;
 				psp.scale *= invoker.vaporScaleShift;
 				invoker.vaporYvel *= 0.92;
-				//invoker.vaporScaleShift *= 0.8;
 			}
+			return ResolveState(null);
 		}
 		stop;
 	AltFire:

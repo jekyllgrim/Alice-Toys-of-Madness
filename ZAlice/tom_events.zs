@@ -87,6 +87,8 @@ class ToM_Mainhandler : EventHandler
 		case 'RocketLauncher':	e.Replacement = "ToM_Teapot"; break;
 		case 'PlasmaRifle':		e.Replacement = "ToM_Eyestaff"; break;
 		case 'BFG9000':			e.Replacement = "ToM_Blunderbuss"; break;
+		case 'GreenArmor':			e.Replacement = "ToM_SilverArmor"; break;
+		case 'BlueArmor':			e.Replacement = "ToM_GoldArmor"; break;
 		}
 	}
 }

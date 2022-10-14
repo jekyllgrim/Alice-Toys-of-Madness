@@ -298,3 +298,35 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 		'PK_GoldPickup'
 	};*/
 }
+
+class ToM_SilverArmor : GreenArmor
+{
+	Default
+	{
+		Inventory.icon "ACARM_1";
+		xscale 0.5;
+		yscale 0.45;
+	}
+	
+	States
+	{
+	Spawn:
+		AARM A -1;
+		stop;
+	}
+}
+
+class ToM_GoldArmor : BlueArmor
+{
+	Default
+	{
+		Inventory.icon "ACARM_2";
+	}
+	
+	States
+	{
+	Spawn:
+		AARM B -1;
+		stop;
+	}
+}

@@ -131,6 +131,19 @@ class ToM_AliceHUD : BaseStatusBar
 		return Font.CR_White;
 	}
 	
+	int GetArmorColor(BasicArmor armor)
+	{
+		if (!armor)
+			return Font.CR_UNTRANSLATED;
+		
+		if (armor.savepercent < 0.5)
+			return Font.CR_White;
+		
+		else
+			return Font.CR_Gold;
+	}
+		
+	
 	void DrawLeftCorner()
 	{
 		vector2 ofs = GetSbarOffsets();
@@ -139,7 +152,8 @@ class ToM_AliceHUD : BaseStatusBar
 		let armor = BasicArmor(CPlayer.mo.FindInventory("BasicArmor"));
 		if (armor && armor.amount > 0)
 		{
-			ToM_DrawInventoryIcon(armor, ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
+			ToM_DrawInventoryIcon(armor, ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
+			ToM_DrawString(mIndexFont, String.Format("%d",GetArmorAmount()), (81, -144) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetArmorColor(armor));
 		}
 		
 		// mirror's background:
@@ -263,26 +277,27 @@ class ToM_AliceHUD : BaseStatusBar
 				// circle's radius:
 				if (amtFac > 0.5)
 					triHeight = ToM_BaseActor.LinearMap(amtFac, 0.5, 1.0, 0, rad);
-				// From half ammo to zero ammo: the cathetus also goes from 0 to
-				// circle's radius:
+				// From half ammo to zero ammo: the cathetus also goes from 
+				// 0 to circle's radius:
 				else
 					triHeight = ToM_BaseActor.LinearMap(amtFac, 0.5, 0.0, 0, rad);
-				// The Pythagorean theorem is: hypotenuse squared equals the sum
-				// of its squared catheti (c2 = a2 + b2).
-				// Since the chord (or rather, half of it) is a cathetus here,
-				// and radius is the hypotenuse, restructure the formula:
-				// cathetus squared equals hypotenuse squared minus the other
-				// cathetus squared:
+				// The Pythagorean theorem is: hypotenuse squared equals 
+				// the sum of its squared catheti (c2 = a2 + b2).
+				// Since the chord (or rather, half of it) is a cathetus 
+				// here,and radius is the hypotenuse, restructure the 
+				// formula:
+				// cathetus squared equals hypotenuse squared minus the 
+				// other cathetus squared:
 				double halfChordSquared = ((rad * rad) - (triHeight * triHeight));
 				
 				// To get the full chord, take a square root of the value
 				// calculated above (that's half of the length of the chord)
-				// and multiply it by 2 (that's full length);
+				// and multiply the result by 2 (that's full length);
 				double chord = sqrt(halfChordSquared) * 2;
 				
 				// Make it a bit smaller so that it doesn't stick out of
 				// the bubble's sides (the bubble is pixelated, after all,
-				// so it can happen):
+				// not a perfectly smooth circle, so it can happen):
 				width = chord * 0.96;
 			}
 			

@@ -181,8 +181,13 @@ class ToM_AliceHUD : BaseStatusBar
 	}
 	
 	// Draws a single mana vessel (3 of them used in right corner)
-	void DrawManaVessel(name ammotype, string texture, vector2 pos, double diameter, int flags = 0, string toptexture = "")
+	void DrawManaVessel(name ammotype, string texture, string fasttexture, vector2 pos, double diameter, int flags = 0, string toptexture = "")
 	{
+		// Since SetClipRect is also subjected to aspect ratio
+		// correction, I can't use ToM_Draw* functions here,
+		// and instead modify pos and scale and use the regular
+		// Draw functions to avoid pixel stretching.
+		
 		if (IsAspectCorrected()) 
 		{
 			pos.y *= noYStretch;
@@ -201,6 +206,8 @@ class ToM_AliceHUD : BaseStatusBar
 		bool isSelected;
 		let weap = CPlayer.readyweapon;
 		isSelected = (weap && weap.ammotype1 == ammocls);
+		
+		string dtexture = isSelected ? fasttexture : texture;
 		
 		// Get amount and maxamount:
 		double amount = am.amount;
@@ -237,11 +244,12 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		vector2 tscale = (1, (IsAspectCorrected() ? noYStretch : 1));
 		// Draw the mana texture (properly clipped)
-		DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, scale: tscale);
+		DrawImage(dtexture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, scale: tscale);
+		
 		// Dim if current weapon isn't using this mana type:
 		if (!isSelected)
 		{
-			DrawImage("graphics/HUD/vessel_black_liquid.png", pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: 0.45, scale: tscale);
+			DrawImage("graphics/HUD/vessel_black_liquid.png", pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: 0.3, scale: tscale);
 		}
 		// The rest shoudln't be clipped, don't forget to
 		// clear the rectangle:
@@ -301,7 +309,7 @@ class ToM_AliceHUD : BaseStatusBar
 				// Since the chord (or rather, half of it) is a cathetus 
 				// here,and radius is the hypotenuse, restructure the 
 				// formula:
-				// cathetus squared equals hypotenuse squared minus the 
+				// cathetus squared = hypotenuse squared minus the 
 				// other cathetus squared:
 				double halfChordSquared = ((rad * rad) - (triHeight * triHeight));
 				
@@ -326,7 +334,7 @@ class ToM_AliceHUD : BaseStatusBar
 			// Dim if current weapon isn't using this mana type:
 			if (!isSelected)
 			{
-				DrawImage("graphics/HUD/vessel_black_liquidtop.png", tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, alpha: 0.45, box: (width, -1), scale: tscale);
+				DrawImage("graphics/HUD/vessel_black_liquidtop.png", tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, alpha: 0.25, box: (width, -1), scale: tscale);
 			}
 		}
 	}
@@ -336,17 +344,32 @@ class ToM_AliceHUD : BaseStatusBar
 		vector2 ofs = GetSbarOffsets(right: true);
 	
 		// red mana:
-		DrawManaVessel("ToM_RedMana", "graphics/HUD/vessel_red_liquid.png", (-134, -75) + ofs, 43, toptexture: "graphics/HUD/vessel_red_liquidtop.png");
+		DrawManaVessel("ToM_RedMana", "amanaR01", "amanaR21", (-134, -75) + ofs, 43, toptexture: "amanaRtp");
 		// yellow mana:
-		DrawManaVessel("ToM_YellowMana", "graphics/HUD/vessel_Yellow_liquid.png", (-106, -122) + ofs, 43, toptexture: "graphics/HUD/vessel_Yellow_liquidtop.png");
+		DrawManaVessel("ToM_YellowMana", "amanaY01", "amanaY21", (-106, -122) + ofs, 43, toptexture: "amanaYtp");
 		// purple mana:
-		DrawManaVessel("ToM_PurpleMana", "graphics/HUD/vessel_Purple_liquid.png", (-78, -75) + ofs, 43, toptexture: "graphics/HUD/vessel_Purple_liquidtop.png");
+		DrawManaVessel("ToM_PurpleMana", "amanaB01", "amanaB21", (-78, -75) + ofs, 43, toptexture: "amanaBtp");
 	
 		// vessels:
 		ToM_DrawImage("graphics/HUD/vessels.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
 		
 		// runes on the vessels:
 		ToM_DrawImage("graphics/HUD/vessel_runes.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
+		Ammo am1; Ammo am2; int amt1; int amt2;
+		[am1, am2, amt1, amt2] = GetCurrentAmmo();
+		string amtex;
+		if (am1)
+		{
+			if (am1.GetClass() == "ToM_RedMana")
+				amtex = "vessel_runes_red.png";
+			else if (am1.GetClass() == "ToM_YellowMana")
+				amtex = "vessel_runes_yellow.png";
+			else if (am1.GetClass() == "ToM_PurpleMana")
+				amtex = "vessel_runes_blue.png";
+			double amtAlpha = ToM_BaseActor.LinearMap(amt1, 0, am1.maxamount, 0.5, 1);
+			amtex = String.Format("graphics/HUD/%s", amtex);
+			ToM_DrawImage(amtex, ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM, alpha: amtAlpha);
+		}
 		
 		// highlights go on top:
 		ToM_DrawImage("graphics/HUD/vessel_highlights.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);

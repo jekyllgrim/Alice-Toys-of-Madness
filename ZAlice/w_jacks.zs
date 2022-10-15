@@ -341,6 +341,10 @@ class ToM_JackProjectile : ToM_Projectile
 	}
 }
 
+// Seeking, bouncing jacks used by the 
+// alt attack (primary attack int the original
+// game, but I made it into alt because
+// it's more powerful and harder to use):
 class ToM_RealSeeker : ToM_JackProjectile
 {
 	enum JACKSFLAGS
@@ -539,6 +543,10 @@ class ToM_RealSeeker : ToM_JackProjectile
 /// FAKE DOT ///
 ////////////////
 
+// Currently unused. An invisible seeker combined with
+// a bunch of visual-only jacks and a token item
+// that controls DOT
+
 class ToM_JackSeeker : ToM_Projectile
 {
 	array <ToM_VisualSeeker> followjacks; //array of visual dummy projs
@@ -717,8 +725,8 @@ class ToM_VisualSeeker : ToM_JackProjectile
 	}
 }
 
-// This deals the actual damage over time
-// from the secondary attack:
+// This deals damage after being hit by
+// the fake projectile
 class ToM_JackDOTControl : ToM_InventoryToken
 {
 	const SEEKERTICDAMAGE = 25; // damage per one effect tick

@@ -8,6 +8,10 @@ class ToM_AliceHUD : BaseStatusBar
 	protected TextureID HUDFace;
 	protected int hudstate;
 	
+	protected int redAmmoFrame;
+	protected int YellowAmmoFrame;
+	protected int BlueAmmoFrame;
+	
 	vector2 GetSbarOffsets(bool right = false, int eShiftX = 32, int eShiftY = 24)
 	{
 		vector2 ofs = (0, 0);
@@ -77,6 +81,34 @@ class ToM_AliceHUD : BaseStatusBar
 		DrawInventoryIcon(item, pos, flags, alpha, boxsize, scale);
 	}
 	
+	void UpdateManaFrames()
+	{
+		if (level.time % 3 != 0)
+			return;
+	
+		let am1 = GetCurrentAmmo();
+		if (!am1)
+			return;
+		
+		if (am1.GetClass() == "ToM_RedMana")
+		{
+			if (++redAmmoFrame >= RedManaFrames.Size())
+				redAmmoFrame = 0;
+		}
+			
+		else if (am1.GetClass() == "ToM_YellowMana")
+		{
+			if (++yellowAmmoFrame >= yellowManaFrames.Size())
+				yellowAmmoFrame = 0;
+		}
+		else if (am1.GetClass() == "ToM_PurpleMana")
+		{
+			if (++blueAmmoFrame >= blueManaFrames.Size())
+				blueAmmoFrame = 0;
+		}
+	}
+		
+	
 	override void Init() 
 	{
 		super.Init();
@@ -96,6 +128,7 @@ class ToM_AliceHUD : BaseStatusBar
 		}
 		
 		HUDFace = FaceController.GetFaceTexture();
+		UpdateManaFrames();
 	}
 	
 	override void Draw (int state, double TicFrac) 
@@ -109,21 +142,8 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		BeginHUD(1., false, 320, 200);
 		
-		DrawBackgroundStuff();
 		DrawLeftCorner();
 		DrawRightcorner();
-	}
-	
-	void DrawBackgroundStuff()
-	{
-		if (hudstate == HUD_StatusBar)
-			return;
-	
-		// left decoration
-		ToM_DrawImage("graphics/HUD/base_left.png", (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
-		
-		// right decoration
-		ToM_DrawImage("graphics/HUD/base_right.png", (0, 0), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
 	}
 	
 	// Red at 25% or less, white otherwise:
@@ -147,10 +167,15 @@ class ToM_AliceHUD : BaseStatusBar
 		else
 			return Font.CR_Gold;
 	}
-		
 	
 	void DrawLeftCorner()
 	{
+		// left decoration - goes below everything
+		if (hudstate == HUD_Fullscreen)
+		{
+			ToM_DrawImage("graphics/HUD/base_left.png", (0, 0), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
+		}
+		
 		vector2 ofs = GetSbarOffsets();
 	
 		// armor frame goes first
@@ -181,7 +206,7 @@ class ToM_AliceHUD : BaseStatusBar
 	}
 	
 	// Draws a single mana vessel (3 of them used in right corner)
-	void DrawManaVessel(name ammotype, string texture, string fasttexture, vector2 pos, double diameter, int flags = 0, string toptexture = "")
+	void DrawManaVessel(name ammotype, string texture, vector2 pos, double diameter, int flags = 0, string toptexture = "")
 	{
 		// Since SetClipRect is also subjected to aspect ratio
 		// correction, I can't use ToM_Draw* functions here,
@@ -206,8 +231,6 @@ class ToM_AliceHUD : BaseStatusBar
 		bool isSelected;
 		let weap = CPlayer.readyweapon;
 		isSelected = (weap && weap.ammotype1 == ammocls);
-		
-		string dtexture = isSelected ? fasttexture : texture;
 		
 		// Get amount and maxamount:
 		double amount = am.amount;
@@ -244,7 +267,7 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		vector2 tscale = (1, (IsAspectCorrected() ? noYStretch : 1));
 		// Draw the mana texture (properly clipped)
-		DrawImage(dtexture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, scale: tscale);
+		DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, scale: tscale);
 		
 		// Dim if current weapon isn't using this mana type:
 		if (!isSelected)
@@ -344,14 +367,22 @@ class ToM_AliceHUD : BaseStatusBar
 		vector2 ofs = GetSbarOffsets(right: true);
 	
 		// red mana:
-		DrawManaVessel("ToM_RedMana", "amanaR01", "amanaR21", (-134, -75) + ofs, 43, toptexture: "amanaRtp");
+		DrawManaVessel("ToM_RedMana", RedManaFrames[redAmmoFrame], (-134, -75) + ofs, 43, toptexture: "amanaRtp");
 		// yellow mana:
-		DrawManaVessel("ToM_YellowMana", "amanaY01", "amanaY21", (-106, -122) + ofs, 43, toptexture: "amanaYtp");
+		DrawManaVessel("ToM_YellowMana", yellowManaFrames[yellowAmmoFrame], (-106, -122) + ofs, 43, toptexture: "amanaYtp");
 		// purple mana:
-		DrawManaVessel("ToM_PurpleMana", "amanaB01", "amanaB21", (-78, -75) + ofs, 43, toptexture: "amanaBtp");
+		DrawManaVessel("ToM_PurpleMana", blueManaFrames[blueAmmoFrame], (-78, -75) + ofs, 43, toptexture: "amanaBtp");
 	
 		// vessels:
 		ToM_DrawImage("graphics/HUD/vessels.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
+		
+		if (hudstate == HUD_Fullscreen)
+		{
+			// right decoration - in contrast to left one,
+			// this is drawn on top of the vessels, because
+			// some of its elements wrap around them
+			ToM_DrawImage("graphics/HUD/base_right.png", (0, 0), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
+		}
 		
 		// runes on the vessels:
 		ToM_DrawImage("graphics/HUD/vessel_runes.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
@@ -428,6 +459,54 @@ class ToM_AliceHUD : BaseStatusBar
 			ToM_DrawImage(path..tex, pos, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		}
 	}
+	
+	static const name RedManaFrames[] = 
+	{
+		"amanaR01",
+		"amanaR02",
+		"amanaR03",
+		"amanaR04",
+		"amanaR05",
+		"amanaR06",
+		"amanaR07",
+		"amanaR08",
+		"amanaR09",
+		"amanaR10",
+		"amanaR11",
+		"amanaR12"
+	};
+
+	static const name YellowManaFrames[] = 
+	{
+		"amanaY01",
+		"amanaY02",
+		"amanaY03",
+		"amanaY04",
+		"amanaY05",
+		"amanaY06",
+		"amanaY07",
+		"amanaY08",
+		"amanaY09",
+		"amanaY10",
+		"amanaY11",
+		"amanaY12"
+	};
+	
+	static const name BlueManaFrames[] = 
+	{
+		"amanaB01",
+		"amanaB02",
+		"amanaB03",
+		"amanaB04",
+		"amanaB05",
+		"amanaB06",
+		"amanaB07",
+		"amanaB08",
+		"amanaB09",
+		"amanaB10",
+		"amanaB11",
+		"amanaB12"
+	};
 }
 
 // Since it's impossible to easily do multi-frame animations

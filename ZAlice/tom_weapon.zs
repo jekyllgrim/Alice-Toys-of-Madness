@@ -53,6 +53,11 @@ class ToM_BaseWeapon : Weapon abstract
 	{
 		super.BeginPlay();
 		swayTics = -1;
+		s_fire = FindState("Fire");
+		s_hold = FindState("Hold");
+		s_altfire = FindState("AltFire");
+		s_althold = FindState("AltHold");
+		s_idle = FindState("IdleAnim");
 	}
 	
 	override void DoEffect()
@@ -496,16 +501,6 @@ class ToM_BaseWeapon : Weapon abstract
 		if (pitch != 0 && self.pitch < 0)
 			pitchOfs = invoker.LinearMap(self.pitch, 0, -90, pitchOfs, 0);
 		return A_FireProjectile(missiletype, angle, useammo, spawnofs_xy, spawnheight, flags, pitchOfs);
-	}
-
-	override void PostBeginPlay() 
-	{
-		super.PostBeginPlay();
-		s_fire = FindState("Fire");
-		s_hold = FindState("Hold");
-		s_altfire = FindState("AltFire");
-		s_althold = FindState("AltHold");
-		s_idle = FindState("IdleAnim");
 	}
 	
 	protected state kickstate;

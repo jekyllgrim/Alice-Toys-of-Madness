@@ -16,6 +16,11 @@ Graphic "ACARM_2", 128, 160
 	Patch "graphics/hud/armor_gold.png", 0, 0
 }
 
+texture "ACTPPUFF", 66, 68
+{
+	Patch "graphics/hud/teapot_steam.png", 0, 0
+}
+
 Sprite "AMCRX0", 64, 64
 {
 	YScale 1.200

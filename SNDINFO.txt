@@ -280,6 +280,7 @@ teafire1 "sounds/teapot/teacannon_fire01.ogg"
 teafire2 "sounds/teapot/teacannon_fire02.ogg"
 
 weapons/teapot/altfire "sounds/teapot/teapot_locowhistle.ogg"
+weapons/teapot/discharge "sounds/teapot/teacannon_charged_tell.ogg"
 
 // EYE STAFF
 

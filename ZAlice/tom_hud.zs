@@ -12,13 +12,13 @@ class ToM_AliceHUD : BaseStatusBar
 	protected int YellowAmmoFrame;
 	protected int BlueAmmoFrame;
 	
-	vector2 GetSbarOffsets(bool right = false, int eShiftX = 32, int eShiftY = 24)
+	vector2 GetSbarOffsets(bool right = false, int shiftX = 32, int shiftY = 24)
 	{
 		vector2 ofs = (0, 0);
 	
 		if (hudstate == HUD_StatusBar)
 		{
-			ofs = (-eShiftX, eShiftY);
+			ofs = (-shiftX, shiftY);
 			if (right)
 			{
 				ofs.x *= -1;
@@ -144,6 +144,7 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		DrawLeftCorner();
 		DrawRightcorner();
+		DrawTeapotIcon(pos: (128, -69), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_TOP);
 	}
 	
 	// Red at 25% or less, white otherwise:
@@ -220,8 +221,9 @@ class ToM_AliceHUD : BaseStatusBar
 	
 		// Get ammo type:
 		Class<Ammo> ammocls = ammotype;
-		if (!ammotype)
+		if (!ammocls)
 			return;
+			
 		let am = Ammo(CPlayer.mo.FindInventory(ammocls));
 		if (!am)
 			return;
@@ -253,10 +255,10 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		// Clipping rectangle allows only things within that
 		// rectangle to be rendered. It's also always anchored
-		// at its bottom left corner (they ignore DI_ITEM* flags),
+		// at its top left corner (they ignore DI_ITEM* flags),
 		// so we need to move the clipping rectangle down AND
 		// change its vertical height so it only covers a part
-		// of the bubble from the bottom:
+		// of the bubble from the top:
 		SetClipRect(
 			pos.x,
 			pos.y + gclip,
@@ -272,7 +274,7 @@ class ToM_AliceHUD : BaseStatusBar
 		// Dim if current weapon isn't using this mana type:
 		if (!isSelected)
 		{
-			DrawImage("graphics/HUD/vessel_black_liquid.png", pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: 0.3, scale: tscale);
+			DrawImage("graphics/HUD/vessel_black_liquid.png", pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: 0.7, scale: tscale);
 		}
 		// The rest shoudln't be clipped, don't forget to
 		// clear the rectangle:
@@ -357,7 +359,7 @@ class ToM_AliceHUD : BaseStatusBar
 			// Dim if current weapon isn't using this mana type:
 			if (!isSelected)
 			{
-				DrawImage("graphics/HUD/vessel_black_liquidtop.png", tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, alpha: 0.25, box: (width, -1), scale: tscale);
+				DrawImage("graphics/HUD/vessel_black_liquidtop.png", tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, alpha: 0.7, box: (width, -1), scale: tscale);
 			}
 		}
 	}
@@ -405,6 +407,60 @@ class ToM_AliceHUD : BaseStatusBar
 		// highlights go on top:
 		ToM_DrawImage("graphics/HUD/vessel_highlights.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
 	}
+	
+	void DrawTeapotIcon(double height = 68, vector2 pos = (0,0), int fflags = DI_SCREEN_LEFT_TOP|DI_ITEM_LEFT_TOP)
+	{
+		if (!CPlayer.readyweapon)
+			return;
+		
+		let teapot = ToM_Teapot(CPlayer.readyweapon);
+		if (!teapot)
+			return;
+		
+		pos += GetSbarOffsets();
+		//if (IsAspectCorrected()) pos.y *= noYStretch;
+		
+		ToM_DrawImage("graphics/hud/teapot_base.png", pos, fflags);
+		
+		if (teapot.heat <= 0)
+			return;
+		
+		// Get current heat level as a 0.0-1.0 range:
+		double amtFac = teapot.heat / teapot.HEAT_MAX;
+		// clip distance:
+		double cclip = height - height * amtFac;
+		
+		vector2 cpos = pos;
+		if (IsAspectCorrected())
+		{
+			cpos.y *= noYStretch;
+			//cclip *= noYStretch;
+		}
+		SetClipRect(
+			pos.x,
+			pos.y + cclip,
+			height,
+			height - cclip,
+			fflags
+		);
+		
+		string tex = "teapot_yellow.png";
+		if (teapot.overheated)
+			tex = "teapot_red.png";
+		else if (teapot.heat >= teapot.HEAT_MED)
+			tex = "teapot_orange.png";
+		string ftex = String.Format("graphics/hud/%s",tex);
+		
+		ToM_DrawImage(ftex, pos, fflags);
+		ClearClipRect();
+		
+		if (teapot.overheated)
+		{
+			ToM_DrawImage("ACTPPUFF", pos, fflags);
+		}
+	}
+		
+		
 	
 	void DrawAliceFace(vector2 pos)
 	{

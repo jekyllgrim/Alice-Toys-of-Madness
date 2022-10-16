@@ -15,7 +15,7 @@ class ToM_Teapot : ToM_BaseWeapon
 	
 	enum HeatLevels
 	{
-		HEAT_STEP = 20,
+		HEAT_STEP = 25,
 		HEAT_MED = 35,
 		HEAT_MAX = 100,
 	}
@@ -27,8 +27,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		weapon.ammotype1 "ToM_YellowMana";
 		weapon.ammouse1 20;
 		weapon.ammogive1 100;
-		weapon.ammotype2 "ToM_YellowMana";
-		weapon.ammouse2 1;
+		+WEAPON.ALT_AMMO_OPTIONAL
 	}
 	
 	
@@ -37,57 +36,85 @@ class ToM_Teapot : ToM_BaseWeapon
 		super.DoEffect();
 		if (!owner || !owner.player)
 			return;
+			
 		let weap = owner.player.readyweapon;
+		if (!weap)
+			return;
 		
-		// Decay heat:
-		if (heat > 0 && weap)
+		if (tom_debugmessages > 1 && weap == self)
 		{
-			let psp = owner.player.FindPSprite(PSP_WEAPON);
-			if (weap != self || (psp && !InStateSequence(psp.curstate, s_altfire) && !InStateSequence(psp.curstate, s_althold)))
-			{
-				console.printf("heat : %f", heat);
-				double decayRate = 0.5;
-				// Decay at 50% rate if different weapon is selected:
-				if (weap != self)
-				{
-					decayRate *= 0.5;
-					heat -= decayRate;
-				}
-				// Otherwise decay only when not firing:
-				else
-				{
-					let psp = owner.player.FindPSprite(PSP_Weapon);
-					if (psp && !InStateSequence(psp.curstate, s_fire))
-					{
-						heat -= decayRate;
-					}
-				}
-			}
+			console.midprint(smallfont, String.Format("Heat : %1.f. Overheated: %d", heat, overheated));
 		}
 		
-		// Stop looped sounds if dead or has no weapon: 
-		if (owner.health <= 0 || !weap)
+		// Highest priority: determine overheated state,
+		// doesn't matter if the owner is alive or dead,
+		// using a different weapon or currently firing:
+		if (heat >= HEAT_MAX)
+			overheated = true;
+		if (heat <= HEAT_MED)
+			overheated = false;
+		
+		// Priority 2: stop looped sounds if owner is dead,
+		// and do nothing else:
+		if (owner.health <= 0)
 		{
 			owner.A_StopSound(CH_TPOTHEAT);
 			owner.A_StopSound(CH_TPOTCHARGE);
 			return;
 		}
 		
-		// Overheat sound:
+		// The other behavior (heat decay and sounds) is not
+		// handled at all when altfiring (pushing out steam):
+		let psp = owner.player.FindPSprite(PSP_WEAPON);
+		if (weap == self && psp && (InStateSequence(psp.curstate, s_altfire) || InStateSequence(psp.curstate, s_althold)))
+		{
+			return;
+		}
+		
+		// Priority 3: decay heat, as long as we're not altfiring,
+		// regardless of which weapon is actually in use:
+		if (heat > 0 && weap)
+		{
+			double decayRate = 0.5;
+			// Decay at 50% rate if different weapon is selected:
+			if (weap != self)
+			{
+				decayRate *= 0.5;
+				heat -= decayRate;
+			}
+			// Otherwise decay only when not primary-firing:
+			else
+			{
+				if (psp && !InStateSequence(psp.curstate, s_fire))
+				{
+					heat = Clamp(heat - decayRate, 0, HEAT_MAX);
+				}
+			}
+		}
+		
+		// Finally, handle looped heat sounds, regardless of
+		// currently used weapon:
+		
+		// "Strong" overheat sound:
 		if (heat >= HEAT_MAX)
 		{
 			owner.A_StartSound("weapons/teapot/highheat", CH_TPOTCHARGE, CHANF_LOOPING);
 		}
-		// Heat looped sound:
+		
+		// "Medium" overheat sound:
 		if (heat >= HEAT_MED)
 		{
-			// Do not play over overheat:
+			// Do not play over the "strong" one:
 			if (!owner.IsActorPlayingSound(CH_TPOTCHARGE))
+			{
 				owner.A_StartSound("weapons/teapot/heatloop", CH_TPOTHEAT, CHANF_LOOPING);
-			// define volume based on heat:
+			}
+			
+			// define volume based on heat level:
 			double heatvol = LinearMap(heat, HEAT_MED, HEAT_MAX, 0, 1.0);
 			double chargevol = LinearMap(heat, HEAT_MED, HEAT_MAX, 0, 1.0);
-			// reduce by 50% if a different weapon is selected:
+			
+			// Reduce by 50% if a different weapon is selected:
 			// (since the heat decays while in background,
 			// the sound cues should still be heard)
 			if (weap != self)
@@ -98,11 +125,23 @@ class ToM_Teapot : ToM_BaseWeapon
 			owner.A_SoundVolume(CH_TPOTHEAT, heatvol);
 			owner.A_SoundVolume(CH_TPOTCHARGE, chargevol);
 		}
+		// If heat is under HEAT_MED value, stop 
+		// the sounds:
 		else
 		{
 			owner.A_StopSound(CH_TPOTHEAT);
 			owner.A_StopSound(CH_TPOTCHARGE);
 		}
+	}
+	
+	override void DetachFromOwner()
+	{
+		if (owner)
+		{
+			owner.A_StopSound(CH_TPOTHEAT);
+			owner.A_StopSound(CH_TPOTCHARGE);
+		}
+		super.DetachFromOwner();
 	}
 	
 	action state A_PickReady()
@@ -111,8 +150,11 @@ class ToM_Teapot : ToM_BaseWeapon
 			return ResolveState(null);
 			
 		let heat = invoker.heat;
-		if (heat >= HEAT_MAX)
+		if (heat >= HEAT_MAX || invoker.overheated)
+		{
 			A_StartSound("weapons/teapot/heatloop", CH_TPOTHEAT, CHANF_LOOPING);
+			return ResolveState("ReadyOverHeat");
+		}
 		if (heat >= HEAT_MED)
 			return ResolveState("ReadyHeat");
 			
@@ -128,6 +170,7 @@ class ToM_Teapot : ToM_BaseWeapon
 	
 	action void A_TeapotReady(int flags = WRF_NOSECONDARY)
 	{
+		A_ClearRefire();
 		if (invoker.heat >= HEAT_MAX)
 		{
 			flags |= WRF_NOPRIMARY;
@@ -149,6 +192,17 @@ class ToM_Teapot : ToM_BaseWeapon
 			proj.A_StartSound(snd);
 		A_StartSound("weapons/teapot/charge", CHAN_AUTO);
 		A_QuakeEX(1,1,0,6,0,1, sfx:"world/null", flags:QF_SCALEDOWN);
+	}
+	
+	action void A_FireSteam()
+	{
+		A_Fire3DProjectile("ToM_SteamProjectile", forward: 64, leftright:16, updown:-20);
+		invoker.heat = Clamp(invoker.heat - 0.8, 0, HEAT_MAX);
+		double pp = LinearMap(invoker.heat, 0, HEAT_MAX, 1, 1.2);
+		double vol = LinearMap(invoker.heat, 0, HEAT_MAX, 0.25, 0.75);
+		A_StartSound("weapons/teapot/altfire", CHAN_WEAPON, CHANF_LOOPING);
+		A_SoundPitch(CHAN_WEAPON, pp);
+		A_SoundVolume(CHAN_WEAPON, vol);
 	}
 	
 	action void A_JitterLid()
@@ -241,9 +295,8 @@ class ToM_Teapot : ToM_BaseWeapon
 		{
 			A_TeapotReady(WRF_NOPRIMARY);
 			A_SpawnPSParticle("Vapor", bottom: true, xofs: 9, yofs: 9);
-			if (invoker.heat < HEAT_MED)
+			if (!invoker.overheated)
 			{
-				invoker.overheated = false;
 				return ResolveState("ReadyOverHeatEnd");
 			}
 			// Draw the teapot's nose just below the vapor:
@@ -289,7 +342,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		TNT1 A 0 
 		{
 			A_ResetPSprite(OverlayID(), 10);
-			invoker.overheated = true;
+			//invoker.overheated = true;
 		}
 		TPOT IIKKJJJJJJ 1 A_ResetZoom();
 		goto ReadyOverHeatLoop;
@@ -324,31 +377,46 @@ class ToM_Teapot : ToM_BaseWeapon
 		}
 		stop;
 	AltFire:
-		TNT1 A 0 A_JumpIf(!invoker.overheated, "AltFireDo");
+		TNT1 A 0 A_JumpIf(invoker.overheated == false, "AltFireDo");
 		TNT1 A 0 A_StartSound("weapons/teapot/close", CHAN_AUTO);
 		TPOT AB 3;
 	AltFireDo:
-		TPOT OP 3;
+		TPOT OP 2;
+		TNT1 A 0 
+		{
+			A_StopSound(CH_TPOTCHARGE);
+			A_StopSound(CH_TPOTHEAT);
+			A_StartSound("weapons/teapot/charge", CHAN_7);
+		}
 	AltHold:
-		TPOT P 2
+		TPOT P 1
 		{
 			if (invoker.heat <= 0)
+			{
 				return ResolveState("AltFireEnd");
-			invoker.heat--;
-			double vol = LinearMap(invoker.heat, 0, HEAT_MAX, 0.2, 1.0);
-			A_StartSound("weapons/teapot/altfire", CHAN_WEAPON, CHANF_LOOPING);
-			A_SoundVolume(CHAN_WEAPON, vol);
-			invoker.steamFrame++;
-			if (invoker.steamFrame >= STEAMFRAMES)
-				invoker.steamFrame = 0;
-			A_Overlay(APSP_BottomParticle + invoker.steamFrame, "SteamOverlay");
+			}
+			
+			A_FireSteam();
+			
+			int steamfr = Clamp( LinearMap(invoker.heat, 0, HEAT_MAX, 4, 1), 1, 4);
+			if (GetAge() % steamfr == 0)
+			{
+				invoker.steamFrame++;
+				if (invoker.steamFrame >= STEAMFRAMES)
+					invoker.steamFrame = 0;
+				A_Overlay(APSP_BottomParticle + invoker.steamFrame, "SteamOverlay");
+			}
 			return ResolveState(null);
 		}
 		TNT1 A 0 A_ReFire();
 	AltFireEnd:
-		TNT1 A 0 A_StopSound(CHAN_WEAPON);
+		TNT1 A 0 
+		{
+			A_StartSound("weapons/teapot/discharge", CHAN_WEAPON, volume: 0.4);
+		}
 		TPOT PO 3;
-		goto ready;
+		TNT1 A 0 A_PickReady();
+		wait;
 	SteamOverlay:
 		TPSM A 0
 		{
@@ -368,11 +436,11 @@ class ToM_Teapot : ToM_BaseWeapon
 		TPSM # 1
 		{
 			A_OverlayRotate(OverlayID(), 4, WOF_ADD);
-			A_OverlayScale(OverlayID(), 0.07, 0.07, WOF_ADD);
+			A_OverlayScale(OverlayID(), 0.085, 0.08, WOF_ADD);
 			A_OverlayOffset(OverlayID(),-5 - (invoker.prevAngle[invoker.steamFrame] - angle),-5 + (invoker.prevPitch[invoker.steamFrame] - pitch),WOF_ADD);
 			invoker.prevAngle[invoker.steamFrame] = angle;
 			invoker.prevPitch[invoker.steamFrame] = pitch;
-			A_PSPFadeOut(0.11);
+			A_PSPFadeOut(0.2);
 		}
 		wait;
 	}
@@ -400,8 +468,6 @@ class ToM_TeaBurnControl : ToM_ControlToken
 	override void DoEffect() 
 	{
 		super.DoEffect();
-		
-		console.printf("timer: %d", timer);
 		
 		if (!owner)
 		{
@@ -575,6 +641,7 @@ class ToM_TeaSplash : ToM_SmallDebris
 		gravity 0.23;
 		scale 0.35;
 		+NOINTERACTION
+		+BRIGHT
 	}
 
 	override void PostBeginPlay() 
@@ -620,6 +687,7 @@ class ToM_TeaPool : ToM_SmallDebris
 	Default
 	{
 		+NOINTERACTION
+		+BRIGHT
 		Renderstyle 'Translucent';
 		scale 3.4;
 	}
@@ -649,5 +717,75 @@ class ToM_TeaPool : ToM_SmallDebris
 				);
 		}
 		wait;
+	}
+}
+
+class ToM_SteamProjectile : ToM_PiercingProjectile
+{
+	Default
+	{
+		speed 12;
+		radius 56;
+		height 36;
+		renderstyle 'Translucent';
+		alpha 0.5;
+		scale 0.1;
+	}
+	
+	override bool CheckValid(Actor victim)
+	{
+		return (!target || victim != target) && (victim.bSHOOTABLE || victim.bVULNERABLE) && victim.health > 0;
+	}
+	
+	override void HitVictim(actor victim)
+	{
+		if (target)
+		{
+			let norm = LevelLocals.Vec3Diff(pos, pos+vel);
+			let dir = norm.unit();
+			let fac = LinearMap(victim.mass, 100, 1000, 2, 1);
+			victim.vel = vel.length() * dir * fac;
+			victim.target = null;
+			victim.angle += random[teaposteam](20,30);
+			if (!victim.bFLOAT)
+				victim.vel.z += 3;
+		}
+	}
+	
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		if (target)
+		{
+			vel += target.vel;
+		}
+		wrot = frandom[teasmoke](4,7);
+	}
+	
+	override void Tick()
+	{
+		super.Tick();
+		if (isFrozen())
+			return;
+		
+		if (vel.length() < 5)
+			A_FadeOut(0.06);
+		roll += wrot;
+		wrot *= 0.95;
+		scale *= 1.07;
+		vel *= 0.93;
+	}
+	
+	States
+	{
+	Spawn:
+		SMO2 # -1 NoDelay 
+		{
+			frame = random[sfx](0,5);
+		}
+		stop;
+	Death:
+		#### # 1 A_FadeOut(0.03);
+		loop;
 	}
 }

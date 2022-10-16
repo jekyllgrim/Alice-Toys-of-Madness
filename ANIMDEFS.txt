@@ -1,0 +1,3 @@
+texture ACTPPUFF
+	pic ACTPPUFF tics 8
+	pic TNT1A0 tics 8

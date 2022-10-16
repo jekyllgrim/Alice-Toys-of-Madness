@@ -267,6 +267,33 @@ class ToM_BaseWeapon : Weapon abstract
 		return pressed;				//true if pressed, ignore held check
 	}
 	
+	action bool A_CheckAmmo(bool secondary = false, int amount = -1) {
+		if (A_CheckInfiniteAmmo())
+			return true;
+		
+		let tAmmo = secondary ? invoker.ammo2 : invoker.ammo1;
+		if (!tAmmo)
+			return true; //this weapon doesn't use ammo at all
+		
+		//check for default ammouse value if -1, otherwise check for specified:
+		if (amount <= -1) 
+		{
+			amount = secondary ? invoker.ammouse2 : invoker.ammouse1;
+		}
+		
+		if (tAmmo.amount < amount)
+		{
+			return false;
+		}
+		
+		return true;
+	}
+	
+	action bool A_CheckInfiniteAmmo() 
+	{
+		return (sv_infiniteammo || FindInventory("PowerInfiniteAmmo", true) );
+	}
+	
 	/*	This function staggers randomizes offsets of a PSprite
 		staggering the randomization over a few tics, so that it
 		can be used for randomized shaking, but smoother than if it
@@ -902,6 +929,37 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		}
 	}
 }
+
+class ToM_PiercingProjectile : ToM_Projectile
+{
+	array <Actor> hitvictims;
+	
+	virtual void HitVictim(Actor victim)	{}
+	
+	virtual bool CheckValid(Actor victim)
+	{
+		return (!target || victim != target) && (victim.bSHOOTABLE || victim.bVULNERABLE) && victim.health > 0;
+	}
+	
+	override int SpecialMissileHit(actor victim)
+	{
+		if (victim)
+		{
+			if (!CheckValid(victim))
+				return 1;
+			
+			if (hitvictims.Find(victim) == hitvictims.Size())
+			{
+				hitvictims.Push(victim);
+				HitVictim(victim);
+			}
+			return 1;
+		}
+		
+		return 1;
+	}
+}
+	
 
 /*	A base projectile class that can stick into walls and planes.
 	It'll move with the sector if it hit a moving one (e.g. door/platform).

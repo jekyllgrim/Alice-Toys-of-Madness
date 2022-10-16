@@ -346,10 +346,8 @@ class ToM_PepperProjectileVisual : ToM_PepperProjectile
 	}
 }
 
-class ToM_PepperBomb : ToM_Projectile
+class ToM_PepperBomb : ToM_PiercingProjectile
 {
-	array <Actor> hitvictims;
-	
 	Default
 	{
 		ToM_Projectile.flarecolor "";
@@ -364,32 +362,22 @@ class ToM_PepperBomb : ToM_Projectile
 		height 60;
 	}
 	
-	override int SpecialMissileHit(actor victim)
+	override void HitVictim(Actor victim)
 	{
-		if (victim)
+		let cont = ToM_PepperDOT(victim.FindInventory("ToM_PepperDOT"));
+		if (cont)
 		{
-			bool isValid = (!target || victim != target) && victim.bISMONSTER && victim.bSHOOTABLE && victim.health > 0;
-			if (!isValid)
-				return 1;
-			
-			if (hitvictims.Find(victim) == hitvictims.Size())
-			{
-				hitvictims.Push(victim);
-				
-				let cont = ToM_PepperDOT(victim.FindInventory("ToM_PepperDOT"));
-				if (cont)
-				{
-					cont.age = 0;
-				}
-				else 
-				{
-					victim.GiveInventory("ToM_PepperDOT", 1);
-				}
-			}
-			return 1;
+			cont.age = 0;
 		}
-		
-		return 1;
+		else 
+		{
+			victim.GiveInventory("ToM_PepperDOT", 1);
+		}
+	}
+	
+	override bool CheckValid(Actor victim)
+	{
+		return (!target || victim != target) && (victim.bISMONSTER || victim.player) && (victim.bSHOOTABLE || victim.bVULNERABLE) && victim.health > 0;
 	}
 	
 	override void PostBeginPlay()

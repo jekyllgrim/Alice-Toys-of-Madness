@@ -168,7 +168,12 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			A_FireBeam();
 			A_FireBullets(0, 0, 1, 5, pufftype: "ToM_EyeStaffPuff", flags:FBF_NORANDOM|FBF_USEAMMO);
 		}
-		TNT1 A 0 A_ReFire("FireBeam");
+		TNT1 A 0 
+		{
+			if (PressingAttackButton() && A_CheckAmmo())
+				return ResolveState("FireBeam");
+			return ResolveState(null);
+		}
 		goto FireEnd;
 	BeamFlash:
 		JEYC F 2 bright;
@@ -213,6 +218,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			A_ResetZoom();
 			A_WeaponOffset(frandom[eye](-1, 1), frandom[eye](-1, 1), WOF_ADD);
 		}
+		TNT1 A 0 A_CheckReload();
 		TNT1 A 0 A_WeaponOffset(0, WEAPONTOP, WOF_INTERPOLATE);
 		JEYC EEDDCCBBA 1;
 		goto ready;

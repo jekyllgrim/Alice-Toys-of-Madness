@@ -266,7 +266,7 @@ teacharge1 "sounds/teapot/teacannon_charge_a01.ogg"
 teacharge2 "sounds/teapot/teacannon_charge_a02.ogg"
 
 weapons/teapot/heatloop "sounds/teapot/teacannon_charged_loop.ogg"
-weapons/teapot/highheat "sounds/teapot/para.wav"
+weapons/teapot/highheat "sounds/teapot/teapot_steam.wav"
 weapons/teapot/close "sounds/teapot/metal_lid_close.mp3"
 
 $random weapons/teapot/explode { teaboom1 teaboom2 }
@@ -278,6 +278,8 @@ weapons/teapot/firecharged "sounds/teapot/teacannon_fire_charged01.ogg"
 $random weapons/teapot/fire { teafire1 teafire2 }
 teafire1 "sounds/teapot/teacannon_fire01.ogg"
 teafire2 "sounds/teapot/teacannon_fire02.ogg"
+
+weapons/teapot/altfire "sounds/teapot/teapot_locowhistle.ogg"
 
 // EYE STAFF
 

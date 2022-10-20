@@ -299,8 +299,91 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 	};*/
 }
 
+mixin class ToM_PickupSound 
+{
+	//default PlayPickupSound EXCEPT the sounds 
+	// can play over each other
+	override void PlayPickupSound (Actor toucher)	
+	{
+		double atten;
+		int chan;
+		int flags = 0;
+
+		if (bNoAttenPickupSound)
+			atten = ATTN_NONE;
+		else
+			atten = ATTN_NORM;
+		if (toucher != NULL && toucher.CheckLocalView()) 
+		{
+			chan = CHAN_ITEM;
+			flags = CHANF_NOPAUSE | CHANF_MAYBE_LOCAL | CHANF_OVERLAP;
+		}
+		else 
+		{
+			chan = CHAN_ITEM;
+			flags = CHANF_MAYBE_LOCAL;
+		}
+		
+		toucher.A_StartSound(PickupSound, chan, flags, 1, atten);
+	}
+}
+
+mixin class ToM_PickupFlashProperties
+{
+	color flashColor;
+	int flashDuration;
+	//protected int flashTimer;
+	property flashColor : flashColor;
+	property flashDuration : flashDuration;
+
+	override bool TryPickup (in out Actor toucher)
+	{
+		let ret = super.TryPickup(toucher);
+		if (ret && toucher)
+		{
+			toucher.A_SetBlend(flashColor, 0.5, flashDuration);
+		}
+		return ret;
+	}
+	
+	/*override void Tick()
+	{
+		super.Tick();
+		if (owner)
+		{
+			if (flashTimer > 0)
+				flashTimer--;
+			else
+				owner.SetBlend(0, 0);
+		}
+	}*/
+}
+
+mixin class ToM_ComplexPickupmessage
+{
+	string pickupNote;
+	property pickupNote : pickupNote;
+
+	override string PickupMessage () 
+	{
+		string finalmsg = StringTable.Localize(pickupMsg);
+		if (pickupNote)
+		{
+			finalmsg = String.Format("%s (%s)", finalmsg, GetPickupNote());
+		}
+		return finalmsg;
+	}
+	
+	virtual string GetPickupNote() 
+	{
+		return StringTable.Localize(pickupNote);
+	}
+}
+
 class ToM_SilverArmor : GreenArmor
 {
+	mixin ToM_PickupSound;
+	
 	Default
 	{
 		Inventory.icon "ACARM_1";
@@ -331,6 +414,214 @@ class ToM_GoldArmor : BlueArmor
 	{
 	Spawn:
 		AARM B -1;
+		stop;
+	}
+}
+
+class ToM_Health : Health abstract
+{
+	mixin ToM_PickupFlashProperties;
+	mixin ToM_PickupSound;
+	mixin ToM_ComplexPickupmessage;
+}
+
+class ToM_HealthPickup : ToM_Health
+{
+	Default
+	{
+		ToM_Health.PickupNote "$TOM_UNIT_HP";
+		xscale 0.4;
+		yscale 0.33334;
+	}
+	
+	override string GetPickupNote()
+	{
+		return String.Format("+%d %s", amount, StringTable.Localize(pickupnote));
+	}
+}
+
+class ToM_HealthBonus : ToM_HealthPickup
+{
+	Default
+	{
+		+COUNTITEM
+		+INVENTORY.ALWAYSPICKUP
+		Inventory.pickupMessage "$TOM_ITEM_HEALTH1";
+		Inventory.amount 1;
+		Inventory.maxamount 200;
+		Inventory.Pickupsound "pickups/health/petal";
+	}
+	
+	States {
+	Spawn:
+		AROS A -1 NoDelay
+		{
+			frame += random[rosesprite](0,4);
+		}
+		stop;
+	}
+}
+
+class ToM_StimPack : ToM_HealthPickup
+{
+	Default
+	{
+		Inventory.pickupMessage "$TOM_ITEM_HEALTH10";
+		Inventory.amount 10;
+		Inventory.maxamount 100;
+		Inventory.Pickupsound "pickups/health/bud";
+	}
+	
+	States {
+	Spawn:
+		AROS F -1 NoDelay
+		{
+			frame += random[rosesprite](0,2);
+		}
+		stop;
+	}
+}
+
+class ToM_Medikit : ToM_HealthPickup
+{
+	Default
+	{
+		Inventory.pickupMessage "$TOM_ITEM_HEALTH25";
+		Inventory.amount 25;
+		Inventory.maxamount 100;
+		Inventory.Pickupsound "pickups/health/flower";
+	}
+	
+	States {
+	Spawn:
+		AROS I -1 NoDelay
+		{
+			frame += random[rosesprite](0,5);
+		}
+		stop;
+	}
+}
+
+class ToM_Soulsphere : ToM_HealthPickup
+{
+	static const color MagicBudCol[] =
+	{
+		"9f1b1b",
+		"d84848",
+		"ff4343"
+	};
+
+	Default
+	{
+		+COUNTITEM
+		+INVENTORY.ALWAYSPICKUP
+		Inventory.pickupMessage "$TOM_ITEM_HEALTH100";
+		Inventory.amount 100;
+		Inventory.maxamount 200;
+		Inventory.Pickupsound "pickups/health/magicbud";
+		FloatBobStrength 0.65;
+	}
+
+	override void Tick()
+	{
+		super.Tick();
+		if (owner || isFrozen())
+			return;
+		
+		WorldOffset.z = BobSin(FloatBobPhase + 0.85 * level.maptime) * FloatBobStrength;
+		
+		if (GetAge() % 2 == 0)
+		{
+			double vx = frandom[mbcol](0.5, 1.5);
+			double vz = frandom[mbcol](0.85, 1.5);
+			int lt = random[mbcol](15, 23);
+			A_SpawnParticle(
+				MagicBudCol[random[mbcol](0, MagicBudCol.Size () -1)],
+				flags: SPF_RELATIVE|SPF_FULLBRIGHT,
+				lifetime: lt,
+				size: random[mbcol](3,5),
+				angle: random[mbcol](0, 359),
+				xoff: frandom[mbcol](-12,12),
+				zoff: frandom[mbcol](24, 30) +  WorldOffset.z,
+				velx: vx,
+				velz: vz,
+				accelx: -(vx * 0.1),
+				accelz: -(vz * 0.05),
+				sizestep: -0.03
+			);
+		}
+	}
+	
+	States {
+	Spawn:
+		AROS O -1;
+		stop;
+	}
+}
+
+class ToM_Megasphere : ToM_HealthPickup
+{
+	int timer;
+
+	Default
+	{
+		+COUNTITEM
+		+INVENTORY.ALWAYSPICKUP
+		// This seemingly does nothing at all, but
+		// the original Megasphere has it, so... :
+		+INVENTORY.AUTOACTIVATE
+		Inventory.pickupMessage "$TOM_ITEM_HEALTH200";
+		Inventory.amount 200;
+		Inventory.maxamount 200;
+		Inventory.Pickupsound "pickups/health/magicflower";
+	}
+	
+	override bool TryPickup(in out Actor toucher)
+	{
+		toucher.GiveInventory("ToM_GoldArmor", 1);
+		return super.TryPickup(toucher);
+	}
+	
+	override string GetPickupNote()
+	{
+		string hp = String.Format("+%d %s", amount, StringTable.Localize("$TOM_UNIT_HP"));
+		string ar = String.Format("+200 %s", StringTable.Localize("$TOM_UNIT_ARMOR"));
+		return String.Format("%s, %s", hp, ar);
+	}
+
+	override void Tick()
+	{
+		super.Tick();
+		if (owner || isFrozen())
+			return;
+		
+		timer--;
+		if (timer <= 0)
+		{
+			timer = random[mbcol](8, 30);
+			double vx = frandom[mbcol](0.5, 1.5);
+			double vz = frandom[mbcol](0.85, 1.5);
+			int lt = random[mbcol](15, 23);
+			A_SpawnParticle(
+				ToM_Soulsphere.MagicBudCol[random[mbcol](0, ToM_Soulsphere.MagicBudCol.Size () -1)],
+				flags: SPF_RELATIVE|SPF_FULLBRIGHT,
+				lifetime: lt,
+				size: random[mbcol](3,5),
+				angle: random[mbcol](0, 359),
+				xoff: frandom[mbcol](-12,12),
+				zoff: frandom[mbcol](36, 38),
+				velx: vx,
+				velz: vz,
+				accelx: -(vx * 0.1),
+				accelz: -(vz * 0.05),
+				sizestep: -0.03
+			);
+		}
+	}
+	
+	States {
+	Spawn:
+		AROS P -1;
 		stop;
 	}
 }

@@ -308,6 +308,23 @@ pickups/armor/light		"sounds/pickups/pickup_armor_light.ogg"
 $pitchset pickups/armor/heavy 0.8
 pickups/armor/heavy		"sounds/pickups/pickup_armor_light.ogg"
 
+$random pickups/health/petal { petalhealth1 petalhealth2 petalhealth3 }
+$limit pickups/health/petal 0
+petalhealth1 "sounds/pickups/health/pickups_teeth_magic01.ogg"
+petalhealth2 "sounds/pickups/health/pickups_teeth_magic02.ogg"
+petalhealth3 "sounds/pickups/health/pickups_teeth_magic03.ogg"
+
+$random pickups/health/bud { budhealth1 budhealth2 }
+$limit pickups/health/bud 0
+budhealth1 "sounds/pickups/health/pickups_rose_magic.ogg"
+budhealth2 "sounds/pickups/health/pickups_rose_magic02.ogg"
+
+pickups/health/flower "sounds/pickups/health/pickups_bottle_small_magic.ogg"
+pickups/health/magicbud "sounds/pickups/health/shrinkflower_close.ogg"
+pickups/health/magicflower "sounds/pickups/health/pickups_bottle_large_magic.ogg"
+
+
+
 //// CHARACTERS
 
 // Cheshire Cat

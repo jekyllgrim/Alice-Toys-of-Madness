@@ -89,6 +89,12 @@ class ToM_Mainhandler : EventHandler
 		case 'BFG9000':			e.Replacement = "ToM_Blunderbuss"; break;
 		case 'GreenArmor':			e.Replacement = "ToM_SilverArmor"; break;
 		case 'BlueArmor':			e.Replacement = "ToM_GoldArmor"; break;
+		
+		case 'HealthBonus':	e.Replacement = "ToM_HealthBonus"; break;
+		case 'Stimpack':		e.Replacement = "ToM_Stimpack"; break;
+		case 'Medikit':		e.Replacement = "ToM_Medikit"; break;
+		case 'Soulsphere':		e.Replacement = "ToM_Soulsphere"; break;
+		case 'Megasphere':		e.Replacement = "ToM_Megasphere"; break;
 		}
 	}
 }

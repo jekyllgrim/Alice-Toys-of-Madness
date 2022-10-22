@@ -95,6 +95,15 @@ class ToM_Mainhandler : EventHandler
 		case 'Medikit':		e.Replacement = "ToM_Medikit"; break;
 		case 'Soulsphere':		e.Replacement = "ToM_Soulsphere"; break;
 		case 'Megasphere':		e.Replacement = "ToM_Megasphere"; break;
+		
+		case 'Clip':		e.Replacement = "ToM_SmallRedMana"; break;
+		case 'ClipBox':	e.Replacement = "ToM_YellowMana"; break;
+		case 'Shell':	e.Replacement = "ToM_SmallRedMana"; break;
+		case 'ShellBox':	e.Replacement = "ToM_RedMana"; break;
+		case 'RocketAmmo':	e.Replacement = "ToM_SmallYellowMana"; break;
+		case 'RocketBox':	e.Replacement = "ToM_YellowMana"; break;
+		case 'Cell':	e.Replacement = "ToM_SmallPurpleMana"; break;
+		case 'CellPack':	e.Replacement = "ToM_PurpleMana"; break;
 		}
 	}
 }

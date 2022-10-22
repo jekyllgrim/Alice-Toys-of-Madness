@@ -364,13 +364,16 @@ mixin class ToM_ComplexPickupmessage
 	string pickupNote;
 	property pickupNote : pickupNote;
 
-	override string PickupMessage () 
+	override string PickupMessage()
 	{
 		string finalmsg = StringTable.Localize(pickupMsg);
-		if (pickupNote)
+		
+		string note = GetPickupNote();
+		if (note)
 		{
-			finalmsg = String.Format("%s (%s)", finalmsg, GetPickupNote());
+			finalmsg = String.Format("%s %s", finalmsg, note);
 		}
+		
 		return finalmsg;
 	}
 	
@@ -436,7 +439,7 @@ class ToM_HealthPickup : ToM_Health
 	
 	override string GetPickupNote()
 	{
-		return String.Format("+%d %s", amount, StringTable.Localize(pickupnote));
+		return String.Format("(+%d %s)", amount, StringTable.Localize(pickupnote));
 	}
 }
 
@@ -586,7 +589,7 @@ class ToM_Megasphere : ToM_HealthPickup
 	{
 		string hp = String.Format("+%d %s", amount, StringTable.Localize("$TOM_UNIT_HP"));
 		string ar = String.Format("+200 %s", StringTable.Localize("$TOM_UNIT_ARMOR"));
-		return String.Format("%s, %s", hp, ar);
+		return String.Format("(%s, %s)", hp, ar);
 	}
 
 	override void Tick()
@@ -623,5 +626,149 @@ class ToM_Megasphere : ToM_HealthPickup
 	Spawn:
 		AROS P -1;
 		stop;
+	}
+}
+
+class ToM_Ammo : Ammo
+{
+	mixin ToM_PickupFlashProperties;
+	mixin ToM_PickupSound;
+	mixin ToM_ComplexPickupmessage;
+	
+	Default 
+	{
+		xscale 0.5;
+		yscale 0.4167;
+		+BRIGHT
+		+RANDOMIZE
+		Inventory.pickupsound "pickups/ammo";
+	}
+
+	override Class<Ammo> GetParentAmmo ()
+	{
+		class<Object> type = GetClass();
+
+		while (type.GetParentClass() && type.GetParentClass() != "Ammo" && type.GetParentClass() != "ToM_Ammo")
+		{
+			type = type.GetParentClass();
+		}
+		return (class<Ammo>)(type);
+	}
+}
+
+class ToM_RedMana : ToM_Ammo
+{
+	Default
+	{
+		Inventory.pickupmessage "$TOM_MANA_RED";
+		inventory.amount 40;
+		inventory.maxamount 300;
+		ammo.backpackamount 100;
+		ammo.backpackmaxamount 300;
+	}
+	
+	override string GetPickupNote()
+	{
+		return String.Format("+%d", amount);
+	}
+	
+	States {
+	Spawn:
+		AAR1 A 15;
+		AAR1 BCDEFGHIJKLMN 2;
+		loop;
+	}
+}
+
+class ToM_SmallRedMana : ToM_RedMana
+{
+	Default
+	{
+		inventory.amount 10;
+	}
+	
+	States {
+	Spawn:
+		AAR2 A 15;
+		AAR2 BCDEFGHI 3;
+		loop;
+	}
+}
+
+class ToM_YellowMana : ToM_Ammo
+{
+	Default
+	{
+		Inventory.pickupmessage "$TOM_MANA_YELLOW";
+		inventory.amount 50;
+		inventory.maxamount 300;
+		ammo.backpackamount 100;
+		ammo.backpackmaxamount 300;
+	}
+	
+	override string GetPickupNote()
+	{
+		return String.Format("+%d", amount);
+	}
+	
+	States {
+	Spawn:
+		AAY1 A 15;
+		AAY1 BCDEFGHIJK 2;
+		loop;
+	}
+}
+
+class ToM_SmallYellowMana : ToM_YellowMana
+{
+	Default
+	{
+		inventory.amount 10;
+	}
+	
+	States {
+	Spawn:
+		AAY2 A 15;
+		AAY2 BCDEFG 3;
+		loop;
+	}
+}
+
+class ToM_PurpleMana : ToM_Ammo
+{
+	Default
+	{
+		Inventory.pickupmessage "$TOM_MANA_PURPLE";
+		inventory.amount 40;
+		inventory.maxamount 300;
+		ammo.backpackamount 100;
+		ammo.backpackmaxamount 300;
+	}
+	
+	override string GetPickupNote()
+	{
+		return String.Format("+%d", amount);
+	}
+	
+	States {
+	Spawn:
+		AAB1 A 15;
+		AAB1 BCDEFGHIJKL 2;
+		loop;
+	}
+}
+
+class ToM_SmallPurpleMana : ToM_PurpleMana
+{
+	Default
+	{
+		inventory.amount 10;
+	}
+	
+	States {
+	Spawn:
+		AAB2 A 15;
+		AAB2 BCDEFGHI 3;
+		loop;
 	}
 }

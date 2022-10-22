@@ -323,6 +323,8 @@ pickups/health/flower "sounds/pickups/health/pickups_bottle_small_magic.ogg"
 pickups/health/magicbud "sounds/pickups/health/shrinkflower_close.ogg"
 pickups/health/magicflower "sounds/pickups/health/pickups_bottle_large_magic.ogg"
 
+pickups/ammo	"sounds/pickups/shrinkflower_pop.ogg"
+
 
 
 //// CHARACTERS

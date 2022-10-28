@@ -1,3 +1,28 @@
 texture ACTPPUFF
 	pic ACTPPUFF tics 8
 	pic TNT1A0 tics 8
+
+texture JEYCF0 NoTrim
+texture JEYCA0 NoTrim
+texture JEYCB0 NoTrim
+texture JEYCC0 NoTrim
+texture JEYCD0 NoTrim
+texture JEYCE0 NoTrim
+texture JEYCF0 NoTrim
+
+Texture PPGRA0 NoTrim
+Texture PPGRB0 NoTrim
+Texture PPGRC0 NoTrim
+Texture PPGRD0 NoTrim
+Texture PPGRE0 NoTrim
+Texture PPGRF0 NoTrim
+Texture PPGRG0 NoTrim
+Texture PPGRH0 NoTrim
+Texture PPGRI0 NoTrim
+Texture PPGRJ0 NoTrim
+Texture PPGFA0 NoTrim
+Texture PPGFB0 NoTrim
+Texture PPGFC0 NoTrim
+Texture PPGFZ0 NoTrim
+Texture PPGRZ0 NoTrim
+Texture PPGRY0 NoTrim

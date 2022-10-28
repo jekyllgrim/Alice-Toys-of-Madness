@@ -36,6 +36,13 @@ class ToM_BaseWeapon : Weapon abstract
 		PAB_HELDONLY	//NOT pressed but held
 	}
 	
+	enum PABbuttonCheck
+	{
+		PAB_AUTO,
+		PAB_PRIMARY,
+		PAB_SECONDARY
+	}
+	
 	Default 
 	{
 		Inventory.Pickupmessage "";
@@ -242,29 +249,43 @@ class ToM_BaseWeapon : Weapon abstract
 	}
 
 	//A variation on GetPlayerInput with a more convenient syntax
-	action bool PressingAttackButton(bool secondary = false, int holdCheck = PAB_ANY) 
+	action bool PressingAttackButton(int btnCheck = PAB_AUTO, int holdCheck = PAB_ANY) 
 	{
 		if (!player)
 			return false;
 		//get the button:
-		int button = secondary ? BT_ALTATTACK : BT_ATTACK;
+		int button;
+		switch (btnCheck) 
+		{
+		case PAB_AUTO:
+			button = invoker.bAltFire ? BT_ALTATTACK : BT_ATTACK;
+			break;
+		case PAB_PRIMARY:
+			button = BT_ATTACK;
+			break;
+		case PAB_SECONDARY:
+			button = BT_ALTATTACK;
+			break;
+		}
 		
-		bool pressed = (player.cmd.buttons & button); //check if pressed now 
-		bool held = (player.oldbuttons & button); //check if it was held from previous tic
+		//check if pressed now:
+		bool pressed = (player.cmd.buttons & button);
+		//check if it was pressed during previous tic:
+		bool held = (player.oldbuttons & button); 
 		
 		switch (holdCheck) 
 		{
-		case PAB_HELDONLY:			//true if held and not pressed
+		case PAB_HELDONLY: //true if held and not pressed
 			return held;
 			break;
-		case PAB_NOTHELD:				//true if not held, only pressed
+		case PAB_NOTHELD: //true if not held, only pressed
 			return !held && pressed;
 			break;
-		case PAB_HELD:					//true if held and pressed
+		case PAB_HELD: //true if held and pressed
 			return held && pressed;
 			break;
 		}
-		return pressed;				//true if pressed, ignore held check
+		return pressed; //true if pressed, ignore held check
 	}
 	
 	action bool A_CheckAmmo(bool secondary = false, int amount = -1) {

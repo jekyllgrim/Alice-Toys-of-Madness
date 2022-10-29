@@ -136,6 +136,14 @@ Model ToM_VisualSeeker
 	FrameIndex AMRK A 0 0	
 }
 
+Model ToM_EyeStaffTargetCircle
+{
+	Path "models/pool"
+	Model 0 "pool.md3"
+	Skin 0 "jccircle.png"
+	FrameIndex AMRK A 0 0	
+}
+
 Model ToM_TeaPool
 {
 	UseActorRoll

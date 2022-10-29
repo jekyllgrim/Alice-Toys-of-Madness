@@ -1353,6 +1353,8 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 	
 	override void DoEffect()
 	{
+		return; //for now
+	
 		super.DoEffect();
 		if (!owner || !owner.player || owner.player != players[consoleplayer] || !owner.player.readyweapon || owner.health <= 0)
 			return;

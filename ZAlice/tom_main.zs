@@ -61,30 +61,7 @@ Mixin class ToM_Math
 		return (p1==p2)?p1:-1;
 	}
 	
-    bool CheckClippingLines(double size) 
-{
-		BlockLinesIterator it = BlockLinesIterator.Create(self, size);
-		double tbox[4];
-		// top, bottom, left, right
-		tbox[0] = pos.y+size;
-		tbox[1] = pos.y-size;
-		tbox[2] = pos.x-size;
-		tbox[3] = pos.x+size;
-		while (it.Next()) 
-		{
-		    let l = it.CurLine;
-		    if ( !l ) continue;
-		    if ( tbox[2] > l.bbox[3] ) continue;
-		    if ( tbox[3] < l.bbox[2] ) continue;
-		    if ( tbox[0] < l.bbox[1] ) continue;
-		    if ( tbox[1] > l.bbox[0] ) continue;
-		    if (BoxOnLineSide(tbox[0],tbox[1],tbox[2],tbox[3],l) == -1 ) 
-				return true;
-		}
-		return false;
-    }
-	
-	vector3 FindRandomPosAround(vector3 actorpos, double gridrad = 512, double mindist = 16, double fovlimit = 0, double viewangle = 0)
+	static vector3 FindRandomPosAround(vector3 actorpos, double gridrad = 512, double mindist = 16, double fovlimit = 0, double viewangle = 0)
 	{
 		if (!level.IsPointInLevel(actorpos))
 			return actorpos;
@@ -115,25 +92,46 @@ Mixin class ToM_Math
 		return finalpos;
 	}
 	
-	static void CopyAppearance(Actor to, Actor from, bool style = true, bool size = false) 
+	static clearscope double GetPlayerAtkHeight(PlayerPawn ppawn)
 	{
-		if (!to || !from)
-			return;
-		to.sprite = from.sprite;
-		to.frame = from.frame;
-		to.scale = from.scale;
-		to.bSPRITEFLIP = from.bSPRITEFLIP;
-		to.bXFLIP = from.bXFLIP;
-		to.bYFLIP = from.bYFLIP;
-		to.angle = from.angle;
-		if (size)
-			to.A_SetSize(from.height, from.radius);
-		if (style) 
-		{
-			to.A_SetRenderstyle(from.alpha, from.GetRenderstyle());
-			to.translation = from.translation;
-		}
-	}	
+		if (!ppawn)
+			return 0;
+		let player = ppawn.player;
+		if (!player)
+			return 0;
+		return ppawn.height * 0.5 - ppawn.floorclip + ppawn.AttackZOffset*player.crouchFactor;
+	}
+	
+	static vector3 GetRelativePosition(actor mo, vector3 offset)
+	{
+		if (!mo)
+			return (0,0,0);
+		let cosang     = cos(mo.angle);
+		let cosvang    = cos(mo.pitch);
+		let cosrang    = cos(mo.roll);
+		let sinang     = sin(mo.angle);
+		let sinvang    = sin(-mo.pitch);
+		let sinrang    = sin(-mo.roll);
+
+		let up_no_roll = (
+		-   sinvang * cosang,
+		-   sinvang * sinang,
+			cosvang);
+		let left_no_roll = (
+		-   sinang,
+			cosang,
+			0);
+
+		// Now use these three:
+		let forw = (
+			cosvang * cosang,
+			cosvang * sinang,
+			sinvang);
+		let left    = cosrang * left_no_roll - sinrang * up_no_roll;
+		let up      = cosrang * up_no_roll + sinrang * left_no_roll;
+
+		return(mo.pos + forw * offset.x + left * offset.y + up * offset.z);
+	}
 }
 
 mixin class ToM_PlayerSightCheck 
@@ -214,6 +212,47 @@ Class ToM_BaseActor : Actor abstract
 			}
 		}
 		return false;
+	}
+	
+    bool CheckClippingLines(double size) 
+{
+		BlockLinesIterator it = BlockLinesIterator.Create(self, size);
+		double tbox[4];
+		// top, bottom, left, right
+		tbox[0] = pos.y+size;
+		tbox[1] = pos.y-size;
+		tbox[2] = pos.x-size;
+		tbox[3] = pos.x+size;
+		while (it.Next()) 
+		{
+		    let l = it.CurLine;
+		    if ( !l ) continue;
+		    if ( tbox[2] > l.bbox[3] ) continue;
+		    if ( tbox[3] < l.bbox[2] ) continue;
+		    if ( tbox[0] < l.bbox[1] ) continue;
+		    if ( tbox[1] > l.bbox[0] ) continue;
+		    if (BoxOnLineSide(tbox[0],tbox[1],tbox[2],tbox[3],l) == -1 ) 
+				return true;
+		}
+		return false;
+    }
+	
+	vector3 GetEndOfVector(double angle, double distance, double pitch, double offsetz)
+	{
+		FLineTraceData tr;
+		LineTrace(angle, distance, pitch, TRF_THRUACTORS, offsetz, 0, 0, data: tr);
+		
+		vector3 endpos;
+		if (tr.HitType == Trace_HitNone)
+		{
+			let dir = (cos(angle)*cos(pitch), sin(angle)*cos(pitch), sin(-pitch));
+			endpos = (pos + (0,0,offsetz)) + (dir * distance);
+		}
+		else
+		{
+			endpos = tr.HitLocation;
+		}
+		return endpos;
 	}
 	
 	static const string ToM_LiquidFlats[] = 
@@ -324,43 +363,24 @@ Class ToM_BaseActor : Actor abstract
 		}
 	}
 	
-	static clearscope double GetPlayerAtkHeight(PlayerPawn ppawn)
+	static void CopyAppearance(Actor to, Actor from, bool style = true, bool size = false) 
 	{
-		let player = ppawn.player;
-		if (!ppawn)
-			return 0;
-		return ppawn.height * 0.5 - ppawn.floorclip + ppawn.AttackZOffset*player.crouchFactor;
-	}
-	
-	static vector3 GetRelativePosition(actor mo, vector3 offset)
-	{
-		if (!mo)
-			return (0,0,0);
-		let cosang     = cos(mo.angle);
-		let cosvang    = cos(mo.pitch);
-		let cosrang    = cos(mo.roll);
-		let sinang     = sin(mo.angle);
-		let sinvang    = sin(-mo.pitch);
-		let sinrang    = sin(-mo.roll);
-
-		let up_no_roll = (
-		-   sinvang * cosang,
-		-   sinvang * sinang,
-			cosvang);
-		let left_no_roll = (
-		-   sinang,
-			cosang,
-			0);
-
-		// Now use these three:
-		let forw = (
-			cosvang * cosang,
-			cosvang * sinang,
-			sinvang);
-		let left    = cosrang * left_no_roll - sinrang * up_no_roll;
-		let up      = cosrang * up_no_roll + sinrang * left_no_roll;
-
-		return(mo.pos + forw * offset.x + left * offset.y + up * offset.z);
+		if (!to || !from)
+			return;
+		to.sprite = from.sprite;
+		to.frame = from.frame;
+		to.scale = from.scale;
+		to.bSPRITEFLIP = from.bSPRITEFLIP;
+		to.bXFLIP = from.bXFLIP;
+		to.bYFLIP = from.bYFLIP;
+		to.angle = from.angle;
+		if (size)
+			to.A_SetSize(from.height, from.radius);
+		if (style) 
+		{
+			to.A_SetRenderstyle(from.alpha, from.GetRenderstyle());
+			to.translation = from.translation;
+		}
 	}
 	
 	override void BeginPlay() 
@@ -1223,7 +1243,7 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 		if (smk)
 		{
 			smk.vel = vel;
-			smk.scale = (scale, scale);
+			smk.A_SetScale(scale);
 			smk.wrot = rotation;
 			smk.alpha = alpha;
 			smk.fade = fade;

@@ -172,10 +172,11 @@ class ToM_Cannonball : ToM_Projectile
 	{
 		radius 16;
 		height 24;
-		damage (50);
+		damage (80);
 		xscale 0.25;
 		yscale 0.208;
 		speed 50;
+		+FORCERADIUSDMG
 		//ToM_Projectile.trailactor "ToM_CannonballFireTrail";
 		//ToM_Projectile.trailz 16;
 		//ToM_Projectile.trailvel 2;

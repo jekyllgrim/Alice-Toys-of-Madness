@@ -995,6 +995,56 @@ Class ToM_ExplosiveDebris : ToM_RandomDebris
 	}
 }
 
+class ToM_SphereFX : ToM_SmallDebris
+{
+	double grow;
+	protected int growsteps;
+	protected double size;
+	double fade;
+
+	Default
+	{
+		+NOINTERACTION
+		Renderstyle 'Stencil';
+		scale 64;
+	}
+	
+	static ToM_SphereFX Spawn(vector3 pos, double size = 1, double alpha = 1, double grow = 0, double fade = 0)
+	{
+		let sphere = ToM_SphereFX(Actor.Spawn("ToM_SphereFX", pos));
+		if (!sphere)
+			return null;
+		
+		sphere.size = size;
+		sphere.A_SetScale(size);
+		sphere.alpha = alpha;
+		sphere.grow = grow;
+		sphere.fade = fade;
+		return sphere;
+	}
+	
+	override void Tick()
+	{
+		super.Tick();
+		if (isFrozen())
+			return;
+		
+		if (grow > 0)
+		{
+			scale *= grow;
+		}
+		if (fade > 0)
+			A_FadeOut(fade);
+	}
+	
+	States 
+	{
+	Spawn:
+		AMRK A -1;
+		stop;
+	}
+}
+
 Class ToM_Tracer : FastProjectile 
 {
 	Default 

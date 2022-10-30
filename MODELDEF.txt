@@ -136,7 +136,7 @@ Model ToM_VisualSeeker
 	FrameIndex AMRK A 0 0	
 }
 
-Model ToM_EyeStaffTargetCircle
+Model ToM_ESAimingCircle
 {
 	Path "models/pool"
 	Model 0 "pool.md3"
@@ -154,6 +154,13 @@ Model ToM_TeaPool
 	Model 0 "pool.md3"
 	Skin 0 "pool.png"
 	FrameIndex AMRK A 0 0	
+}
+
+Model ToM_SphereFX
+{
+	Path "models/sphere"
+	Model 0 "sphere.obj"
+	FrameIndex AMRK A 0 0
 }
 
 Model ToM_CheshireCat_Talk

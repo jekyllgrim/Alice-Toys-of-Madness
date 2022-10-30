@@ -1353,8 +1353,8 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 	
 	override void DoEffect()
 	{
-		return; //for now
-	
+		return;
+		////////////////		
 		super.DoEffect();
 		if (!owner || !owner.player || owner.player != players[consoleplayer] || !owner.player.readyweapon || owner.health <= 0)
 			return;
@@ -1367,9 +1367,11 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 		
 		FLineTracedata tr;
 		double atkheight = ToM_BaseActor.GetPlayerAtkHeight(ppawn);
-		owner.LineTrace(owner.angle, 2048, owner.pitch, TRF_SOLIDACTORS, atkheight, data: tr);
+		//owner.LineTrace(owner.angle, 2048, owner.pitch, TRF_SOLIDACTORS, atkheight, data: tr);
+		owner.LineTrace(owner.angle, 320, owner.pitch, TRF_THRUACTORS, atkheight, data: tr);
+		console.printf("trace distance: %1.f", tr.Distance);
 		
-		let hitnormal = -tr.HitDir;
+		/*let hitnormal = -tr.HitDir;
 		if ( tr.HitType == TRACE_HitFloor ) {
 			if ( tr.Hit3DFloor ) 
 				hitnormal = -tr.Hit3DFloor.top.Normal;
@@ -1386,9 +1388,9 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 			hitnormal = (-tr.HitLine.delta.y,tr.HitLine.delta.x,0).unit();
 			if ( !tr.LineSide ) 
 				hitnormal *= -1;
-		}
+		}*/
 		
-		aimPos = tr.hitLocation + (hitnormal * 8);
+		aimPos = tr.hitLocation;// + (hitnormal * 8);
 		SpawnCrosshair(weap.GetClass());
 	}
 	

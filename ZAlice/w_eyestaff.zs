@@ -449,6 +449,7 @@ class ToM_EyestaffBeam2 : ToM_EyestaffBeam1
 class ToM_EyestaffProjectile : ToM_Projectile
 {
 	bool alt;
+	const TRAILOFS = 10;
 	
 	static const color SmokeColors[] =
 	{
@@ -463,15 +464,17 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		+FORCEXYBILLBOARD
 		+NOGRAVITY
 		+FORCERADIUSDMG
-		//+BRIGHT
+		+BRIGHT
+		+ROLLCENTER
 		deathsound "weapons/eyestaff/boom1";
-		//translation "0:255=%[0.69,0.00,0.77]:[1.87,0.75,2.00]";
-		height 8;
+		height 12;
 		radius 10;
 		speed 22;		
 		damage (40);
-		//Renderstyle 'Add';
-		//alpha 0.8;
+		Renderstyle 'Add';
+		alpha 0.5;
+		xscale 5;
+		yscale 6;
 	}		
 	
 	override void PostBeginPlay()
@@ -492,16 +495,16 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		if (alt)
 			A_FadeOut(0.07);
 		roll += 8;
-		vector3 projpos = GetRelativePosition(self, (0, -16, 0));
+		vector3 projpos = GetRelativePosition(self, (-TRAILOFS, -TRAILOFS, 0));
 		Spawn("ToM_EStrail", projpos);
-		projpos = GetRelativePosition(self, (0, 16, 0));
+		projpos = GetRelativePosition(self, (-TRAILOFS, TRAILOFS, 0));
 		Spawn("ToM_EStrail", projpos);
 	}
 	
 	States
 	{
 	Spawn:
-		TNT1 A 1 
+		AMRK A 1 
 		{
 			double svel = 2;
 			let smk = ToM_WhiteSmoke.Spawn(

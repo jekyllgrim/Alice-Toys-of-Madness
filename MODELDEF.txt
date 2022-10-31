@@ -163,6 +163,16 @@ Model ToM_SphereFX
 	FrameIndex AMRK A 0 0
 }
 
+Model ToM_EyestaffProjectile
+{
+	DontCullBackfaces
+	UseActorRoll
+	UseActorPitch
+	Path "models/Eyestaff"
+	Model 0 "eye_proj.obj"
+	FrameIndex AMRK A 0 0
+}
+
 Model ToM_CheshireCat_Talk
 {
 	Path "Models/Cheshire"	

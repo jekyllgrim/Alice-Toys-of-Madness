@@ -288,8 +288,11 @@ weapons/eyestaff/beam			"sounds/Eyestaff/beam_loop.wav"
 weapons/eyestaff/charge1		"sounds/Eyestaff/charge1.wav"
 weapons/eyestaff/charge2		"sounds/Eyestaff/charge2.wav"
 weapons/eyestaff/chargeoff	"sounds/Eyestaff/charge_off.wav"
+$limit weapons/eyestaff/boom1 0
 weapons/eyestaff/boom1			"sounds/Eyestaff/explode1.wav"
+$limit weapons/eyestaff/boom2 0
 weapons/eyestaff/boom2			"sounds/Eyestaff/explode2.wav"
+$limit weapons/eyestaff/fireProjectile 0
 weapons/eyestaff/fireProjectile "sounds/Eyestaff/liftoff.wav"
 
 // BLUNDERBUSS

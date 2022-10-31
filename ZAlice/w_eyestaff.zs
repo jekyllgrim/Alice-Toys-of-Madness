@@ -67,12 +67,16 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 	}
 	
-	action void A_EyestaffFlash()
+	action void A_EyestaffFlash(StateLabel label, double alpha = 0)
 	{
-		A_Overlay(PSP_Flash, "BeamFlash");
+		A_Overlay(PSP_Flash, label);
 		A_OverlayFlags(PSP_Flash, PSPF_Renderstyle|PSPF_ForceAlpha, true);
 		A_OverlayRenderstyle(PSP_Flash, Style_Add);
-		A_OverlayAlpha(PSP_Flash, frandom[eye](0.3, 1));
+		if (alpha <= 0)
+		{
+			alpha = invoker.LinearMap(invoker.charge, 0, ES_FULLCHARGE, 0.0, 1.0);
+		}
+		A_OverlayAlpha(PSP_Flash, alpha);
 	}
 	
 	action void A_EyestaffRecoil()
@@ -84,6 +88,32 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		A_OverlayScale(OverlayID(), 1 + sc, 1 + sc, WOF_INTERPOLATE);
 		A_OverlayScale(PSP_Flash, 1 + sc, 1 + sc, WOF_INTERPOLATE);
 		A_AttackZoom(0.001, 0.05, 0.002);
+	}
+	
+	action state A_DoAltCharge()
+	{
+		invoker.charge++;
+		if (tom_debugmessages)
+		{
+			console.printf("Eyestaff alt charge: %d", invoker.charge);
+		}
+		
+		// Cancel charge if:
+		// 1. we're out of ammo
+		// 2. we reached maximum charge
+		// 3. we reached at least partial charge and
+		// the player is not holding the attack button
+		if (!invoker.DepleteAmmo(invoker.bAltFire, true) || invoker.charge >= ES_FULLALTCHARGE || (!PressingAttackButton() && invoker.charge >= ES_PARTALTCHARGE))
+		{
+			return ResolveState("AltFireDo");
+		}
+		
+		A_WeaponOffset(
+			invoker.altChargeOfs.x + frandom[eye](-1,1), 
+			invoker.altChargeOfs.y + frandom[eye](-1,1), 
+			WOF_INTERPOLATE
+		);
+		return ResolveState(null);
 	}
 	
 	action void A_AimCircle(double dist = 350)
@@ -118,6 +148,30 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			invoker.aimCircle.Destroy();
 	}
 	
+	action void A_LaunchSkyMissiles()
+	{
+		A_WeaponOffset(
+			invoker.altChargeOfs.x + frandom[eye](-1.2,1.2), 
+			invoker.altChargeOfs.y + frandom[eye](-1.2,1.2), 
+			WOF_INTERPOLATE
+		);
+		
+		double ofs = 80;
+		let ppos = pos + (frandom[eyemis](-ofs,ofs), frandom[eyemis](-ofs,ofs), floorz);
+		ppos.z = level.PointInSector(ppos.xy).NextLowestFloorAt(ppos.x, ppos.y, ppos.z) + 18;
+		
+		let proj = ToM_EyestaffProjectile(Spawn("ToM_EyestaffProjectile", ppos));
+		//ToM_EyestaffProjectile(A_Fire3DProjectile("ToM_EyestaffProjectile", useammo: false, forward: 56 + frandom(-5,5), leftright: frandom(-5,5), updown: 5));
+		if (proj)
+		{
+			proj.alt = true;
+			proj.target = self;
+			proj.A_StartSound("weapons/eyestaff/boom2");
+			proj.vel.z = proj.speed;
+			proj.vel.xy = (frandom[skyeye](-3,3), frandom[skyeye](-3,3));
+		}
+	}
+	
 	action void A_SpawnSkyMissiles(double height = 800)
 	{
 		if (!invoker.aimCircle)
@@ -134,7 +188,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			sms.target = self;
 			sms.tracer = invoker.aimCircle;
 		}
-	}
+	}	
 	
 	override void DoEffect()
 	{
@@ -193,10 +247,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	Fire:
 		JEYC A 1
 		{
-			A_Overlay(PSP_Flash, "BeamFlash");
-			A_OverlayFlags(PSP_Flash, PSPF_Renderstyle|PSPF_ForceAlpha, true);
-			A_OverlayRenderstyle(PSP_Flash, Style_Add);
-			A_OverlayAlpha(PSP_Flash, invoker.LinearMap(invoker.charge, 0, ES_FULLCHARGE, 0.0, 1.0));
+			A_EyestaffFlash("BeamFlash");
 		}
 		TNT1 A 0
 		{
@@ -222,7 +273,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	FireBeam:
 		JEYC A 2
 		{
-			A_EyestaffFlash();
+			A_EyestaffFlash("BeamFlash", frandom[eye](0.3, 1));
 			A_StartSound("weapons/eyestaff/beam", CHAN_WEAPON, CHANF_LOOPING);
 			A_EyestaffRecoil();
 			A_FireBeam();
@@ -262,6 +313,9 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		TNT1 A 0 A_ResetPsprite(OverlayID(), 9);
 		JEYC EEDDCCBBA 1;
 		goto ready;
+	AltFlash:
+		JEYC G 10 bright;
+		stop;
 	AltFire:
 		//TNT1 A 0 A_OverlayPivot(OverlayID(), 1, 1);
 		JEYC AAABBBCCCDDDEEE 1 
@@ -284,39 +338,11 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			A_StartSound("weapons/eyestaff/charge2", CHAN_WEAPON, CHANF_LOOPING);
 			A_AimCircle(400);
+			A_EyestaffFlash("AltFlash");
 			A_SpawnPSParticle("ChargeParticle", bottom: true, density: 4, xofs: 120, yofs: 120);
 		}			
-		JEYC E 1
-		{
-			invoker.charge++;
-			if (tom_debugmessages)
-			{
-				console.printf("Eyestaff alt charge: %d", invoker.charge);
-			}
-			
-			// Cancel charge if:
-			// 1. we're out of ammo
-			// 2. we reached maximum charge
-			// 3. we reached at least partial charge and
-			// the player is not holding the attack button
-			if (!invoker.DepleteAmmo(invoker.bAltFire, true) || invoker.charge >= ES_FULLALTCHARGE || (!PressingAttackButton() && invoker.charge >= ES_PARTALTCHARGE))
-			{
-				return ResolveState("AltFireDo");
-			}
-			
-			A_WeaponOffset(
-				invoker.altChargeOfs.x + frandom[eye](-1,1), 
-				invoker.altChargeOfs.y + frandom[eye](-1,1), 
-				WOF_INTERPOLATE
-			);
-			return ResolveState(null);
-		}
-		TNT1 A 0 
-		{
-			if (PressingAttackButton() && A_CheckAmmo(true))
-				return ResolveState("AltCharge");
-			return ResolveState(null);
-		}
+		JEYC E 1 { return A_DoAltCharge(); }
+		loop;
 	AltFireDo:
 		JEYC E 6;
 		TNT1 A 0 A_StopSound(CHAN_WEAPON);
@@ -324,23 +350,11 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			invoker.charge--;
 			invoker.altCharge++;
+			A_EyestaffFlash("AltFlash");
 			if (invoker.charge <= 0)
 				return ResolveState("AltFireEnd");
 			
-			A_WeaponOffset(
-				invoker.altChargeOfs.x + frandom[eye](-2.5,2.5), 
-				invoker.altChargeOfs.y + frandom[eye](-2.5,2.5), 
-				WOF_INTERPOLATE
-			);
-			let proj = ToM_EyestaffProjectile(A_Fire3DProjectile("ToM_EyestaffProjectile", useammo: false, forward: 56 + frandom(-5,5), leftright: frandom(-5,5), updown: 5));
-			if (proj)
-			{
-				proj.alt = true;
-				proj.A_StartSound("weapons/eyestaff/boom2");
-				proj.vel.z = proj.speed;
-				proj.vel.xy = (frandom[skyeye](-3,3), frandom[skyeye](-3,3));
-			}
-			
+			A_LaunchSkyMissiles();			
 			return ResolveState(null);
 		}
 		wait;
@@ -349,6 +363,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			A_SpawnSkyMissiles();
 			A_StopCharge();
+			A_ClearOverlays(PSP_Flash,PSP_Flash);
 		}
 	AltFireEndFast:
 		JEYC # 0 
@@ -449,7 +464,7 @@ class ToM_EyestaffBeam2 : ToM_EyestaffBeam1
 class ToM_EyestaffProjectile : ToM_Projectile
 {
 	bool alt;
-	const TRAILOFS = 10;
+	const TRAILOFS = 6;
 	
 	static const color SmokeColors[] =
 	{
@@ -467,7 +482,7 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		+BRIGHT
 		+ROLLCENTER
 		deathsound "weapons/eyestaff/boom1";
-		height 12;
+		height 13;
 		radius 10;
 		speed 22;		
 		damage (40);
@@ -484,6 +499,26 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		if (alt)
 		{
 			bNOINTERACTION = true;
+			double vx = 3.5;
+			int life = 25;
+			int parts = 12;
+			double pangle = 360. / parts;
+			for (int i = 0; i < parts; i++)
+			{
+				int r = random[eyec](0, ToM_EyestaffProjectile.SmokeColors.Size() - 1);
+				let col = ToM_EyestaffProjectile.SmokeColors[r];
+				A_SpawnParticle(
+					col,
+					SPF_FULLBRIGHT|SPF_RELATIVE,
+					lifetime: life,
+					size: 7,
+					angle: pangle * i,
+					velx: vx,
+					accelx: -(vx / life),
+					accelz: -0.1,
+					sizestep: 1. / life
+				);
+			}
 		}
 	}
 	
@@ -494,7 +529,7 @@ class ToM_EyestaffProjectile : ToM_Projectile
 			return;
 		if (alt)
 			A_FadeOut(0.07);
-		roll += 8;
+		roll += 11;
 		vector3 projpos = GetRelativePosition(self, (-TRAILOFS, -TRAILOFS, 0));
 		Spawn("ToM_EStrail", projpos);
 		projpos = GetRelativePosition(self, (-TRAILOFS, TRAILOFS, 0));
@@ -714,7 +749,8 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 				{
 					proj.target = target;
 					proj.vel.z = -proj.speed;
-					proj.vel.xy = (frandom(-3.5,3.5), frandom(-3.5,3.5));
+					double hvel = 2.8;
+					proj.vel.xy = (frandom(-hvel,hvel), frandom(-hvel,hvel));
 					proj.A_FaceMovementDirection();
 					proj.A_StartSound("weapons/eyestaff/boom2");
 				}

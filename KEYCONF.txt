@@ -1,0 +1,3 @@
+addKeySection "Alice: Toys of Madness" AliceToMKeys
+addMenuKey "Quick Kick" +user4
+defaultBind Q +user4

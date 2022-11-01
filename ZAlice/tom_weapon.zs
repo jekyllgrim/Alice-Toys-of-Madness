@@ -1,7 +1,7 @@
 class ToM_BaseWeapon : Weapon abstract
 {
-	mixin ToM_Math;
 	mixin ToM_PlayerSightCheck;
+	mixin ToM_CheckParticles;
 	
 	array <ToM_PspResetController> pspcontrols;
 	
@@ -162,7 +162,7 @@ class ToM_BaseWeapon : Weapon abstract
 		if(player && crosshairConverge)
 		{
 			FLineTraceData lt;
-			LineTrace(a, 1024*1024, p, 0, ToM_BaseActor.GetPlayerAtkHeight(player.mo), 0, data:lt);
+			LineTrace(a, 1024*1024, p, 0, ToM_UtilsP.GetPlayerAtkHeight(player.mo), 0, data:lt);
 			double projrad = GetDefaultByType(proj).radius;			
 			aimPos = (lt.HitLocation.xy - lt.HitDir.xy*projrad, lt.HitLocation.z);
 			
@@ -547,7 +547,7 @@ class ToM_BaseWeapon : Weapon abstract
 			return null;
 		double pitchOfs = pitch;
 		if (pitch != 0 && self.pitch < 0)
-			pitchOfs = invoker.LinearMap(self.pitch, 0, -90, pitchOfs, 0);
+			pitchOfs = ToM_UtilsP.LinearMap(self.pitch, 0, -90, pitchOfs, 0);
 		return A_FireProjectile(missiletype, angle, useammo, spawnofs_xy, spawnheight, flags, pitchOfs);
 	}
 	
@@ -723,10 +723,10 @@ class ToM_Kickpuff : ToM_BasePuff
 			if (target && tracer && tracer.bISMONSTER && !tracer.bDONTTHRUST && !tracer.bBOSS && !tracer.bNOGRAVITY && !tracer.bFLOAT && tracer.mass <= 400) 
 			{
 				//initial push away speed is based on mosnter's mass:
-				double pushspeed = LinearMap(tracer.mass,100,400,10,5);
+				double pushspeed = ToM_UtilsP.LinearMap(tracer.mass,100,400,10,5);
 				pushspeed = Clamp(pushspeed,5,20) * frandom[sfx](0.85,1.2);
 				//bonus Z velocity is based on the players view pitch (so that you can knock monsters further by looking up):
-				double pushz = Clamp(LinearMap(target.pitch,0,-90,0,10), 0, 10);
+				double pushz = Clamp(ToM_UtilsP.LinearMap(target.pitch,0,-90,0,10), 0, 10);
 				tracer.Vel3DFromAngle(
 					pushspeed,
 					target.angle,
@@ -740,18 +740,15 @@ class ToM_Kickpuff : ToM_BasePuff
 	}
 }
 
-class ToM_BasePuff : Actor
+class ToM_BasePuff : ToM_BaseActor
 {
-	mixin ToM_Math;
 	Default 
 	{
 		+NOBLOCKMAP
 		+NOGRAVITY
 		+FORCEXYBILLBOARD
 		+PUFFGETSOWNER
-		-ALLOWPARTICLES
 		+DONTSPLASH
-		-FLOORCLIP
 	}
 	
 	States
@@ -775,7 +772,6 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	protected state s_crash;
 	
 	//protected bool mod; //affteced by Weapon Modifier
-	mixin ToM_Math;
 	protected vector3 spawnpos;
 	protected bool farenough;	
 	color flarecolor;
@@ -908,10 +904,10 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		// ir the trailactor is a custom actor:
 		if ( !(trailactor && (trailcolor || trailactor != "ToM_BaseFlare")) )
 			return;		
-		if (!s_particles)
-			s_particles = CVar.GetCVar('tom_particles', players[consoleplayer]);
-		if (s_particles.GetInt() < 1)
+		
+		if (GetParticlesQuality() <= TOMPART_MIN)
 			return;	
+			
 		if (!farenough) 
 		{
 			if (level.Vec3Diff(pos,spawnpos).length() < DelayTraceDist)
@@ -1094,7 +1090,7 @@ Class ToM_StakeProjectile : ToM_Projectile
 			stuckToSecPlane = true;
 			//if it's two-sided:
 			//check which side we're on:
-			int lside = PointOnLineSide(pos.xy,tline);
+			int lside = ToM_UtilsP.PointOnLineSide(pos.xy,tline);
 			string sside = (lside == 0) ? "front" : "back";
 			//we'll attach the stake to the sector on the other side:
 			let targetsector = (lside == 0 && tline.backsector) ? tline.backsector : tline.frontsector;
@@ -1288,9 +1284,10 @@ Class ToM_GenericExplosion : ToM_SmallDebris
 		A_Quake(quakeintensity,quakeduration,0,quakeradius,"");
 		if (!CheckPlayerSights())
 			return;
-		CVar s_particles = CVar.GetCVar('ToM_particles', players[consoleplayer]);
-		if (s_particles.GetInt() < 1)
+			
+		if (GetParticlesQuality() <= TOMPART_MIN)
 			return;
+		
 		if (randomdebris > 0) 
 		{
 			for (int i = int(randomdebris*frandom[sfx](0.7,1.3)); i > 0; i--) 
@@ -1304,8 +1301,10 @@ Class ToM_GenericExplosion : ToM_SmallDebris
 				}
 			}
 		}
-		if (s_particles.GetInt() < 2)
+		
+		if (GetParticlesQuality() <= TOMPART_MED)
 			return;
+			
 		if (smokingdebris > 0) 
 		{
 			for (int i = int(smokingdebris*frandom[sfx](0.7,1.3)); i > 0; i--) 
@@ -1366,7 +1365,7 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 			return;
 		
 		FLineTracedata tr;
-		double atkheight = ToM_BaseActor.GetPlayerAtkHeight(ppawn);
+		double atkheight = ToM_UtilsP.GetPlayerAtkHeight(ppawn);
 		//owner.LineTrace(owner.angle, 2048, owner.pitch, TRF_SOLIDACTORS, atkheight, data: tr);
 		owner.LineTrace(owner.angle, 320, owner.pitch, TRF_THRUACTORS, atkheight, data: tr);
 		console.printf("trace distance: %1.f", tr.Distance);
@@ -1462,6 +1461,15 @@ class ToM_PspResetController : Object play
 	
 	void DoResetStep()
 	{
+		if (!psp)
+		{
+			if (tom_debugmessages > 1)
+			{
+				console.printf("No PSprite, destroying controller");
+			}
+			Destroy();
+			return;
+		}
 		psp.x += ofs_step.x;
 		psp.y + ofs_step.y;
 		psp.scale += scale_step;

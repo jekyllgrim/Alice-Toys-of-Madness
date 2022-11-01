@@ -111,8 +111,8 @@ class ToM_Teapot : ToM_BaseWeapon
 			}
 			
 			// define volume based on heat level:
-			double heatvol = LinearMap(heat, HEAT_MED, HEAT_MAX, 0, 1.0);
-			double chargevol = LinearMap(heat, HEAT_MED, HEAT_MAX, 0, 1.0);
+			double heatvol = ToM_UtilsP.LinearMap(heat, HEAT_MED, HEAT_MAX, 0, 1.0);
+			double chargevol = ToM_UtilsP.LinearMap(heat, HEAT_MED, HEAT_MAX, 0, 1.0);
 			
 			// Reduce by 50% if a different weapon is selected:
 			// (since the heat decays while in background,
@@ -198,8 +198,8 @@ class ToM_Teapot : ToM_BaseWeapon
 	{
 		A_Fire3DProjectile("ToM_SteamProjectile", forward: 64, leftright:16, updown:-20);
 		invoker.heat = Clamp(invoker.heat - 0.8, 0, HEAT_MAX);
-		double pp = LinearMap(invoker.heat, 0, HEAT_MAX, 1, 1.2);
-		double vol = LinearMap(invoker.heat, 0, HEAT_MAX, 0.25, 0.75);
+		double pp = ToM_UtilsP.LinearMap(invoker.heat, 0, HEAT_MAX, 1, 1.2);
+		double vol = ToM_UtilsP.LinearMap(invoker.heat, 0, HEAT_MAX, 0.25, 0.75);
 		A_StartSound("weapons/teapot/altfire", CHAN_WEAPON, CHANF_LOOPING);
 		A_SoundPitch(CHAN_WEAPON, pp);
 		A_SoundVolume(CHAN_WEAPON, vol);
@@ -283,7 +283,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		TPOT A 1
 		{
 			A_TeapotReady();
-			A_SetTics(int(invoker.LinearMap(invoker.heat, HEAT_MED, HEAT_MAX, 4, 2)));
+			A_SetTics(int(ToM_UtilsP.LinearMap(invoker.heat, HEAT_MED, HEAT_MAX, 4, 2)));
 			A_JitterLid();
 		}
 		TNT1 A 1 A_PickReady;
@@ -398,7 +398,7 @@ class ToM_Teapot : ToM_BaseWeapon
 			
 			A_FireSteam();
 			
-			int steamfr = Clamp( LinearMap(invoker.heat, 0, HEAT_MAX, 4, 1), 1, 4);
+			int steamfr = Clamp( ToM_UtilsP.LinearMap(invoker.heat, 0, HEAT_MAX, 4, 1), 1, 4);
 			if (GetAge() % steamfr == 0)
 			{
 				invoker.steamFrame++;
@@ -484,9 +484,8 @@ class ToM_TeaBurnControl : ToM_ControlToken
 		if (timer % 4 == 0)
 		{
 			double rad = owner.radius*0.6;		
-			if (!s_particles)
-				s_particles = CVar.GetCVar('ToM_particles', players[consoleplayer]);
-			if (s_particles.GetInt() >= 1) 
+			
+			if (GetParticlesQuality() >= TOMPART_MED) 
 			{
 				ToM_WhiteSmoke.Spawn(
 					owner.pos + (
@@ -743,7 +742,7 @@ class ToM_SteamProjectile : ToM_PiercingProjectile
 		{
 			let norm = LevelLocals.Vec3Diff(pos, pos+vel);
 			let dir = norm.unit();
-			let fac = LinearMap(victim.mass, 100, 1000, 2, 1);
+			let fac = ToM_UtilsP.LinearMap(victim.mass, 100, 1000, 2, 1);
 			victim.vel = vel.length() * dir * fac;
 			victim.target = null;
 			victim.angle += random[teaposteam](20,30);

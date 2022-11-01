@@ -74,7 +74,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		A_OverlayRenderstyle(PSP_Flash, Style_Add);
 		if (alpha <= 0)
 		{
-			alpha = invoker.LinearMap(invoker.charge, 0, ES_FULLCHARGE, 0.0, 1.0);
+			alpha = ToM_UtilsP.LinearMap(invoker.charge, 0, ES_FULLCHARGE, 0.0, 1.0);
 		}
 		A_OverlayAlpha(PSP_Flash, alpha);
 	}
@@ -121,7 +121,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		if (!invoker.aimCircle)
 			invoker.aimCircle = ToM_ESAimingCircle(Spawn("ToM_ESAimingCircle", pos));
 		
-		double atkheight = ToM_BaseActor.GetPlayerAtkHeight(PlayerPawn(self));
+		double atkheight = ToM_UtilsP.GetPlayerAtkHeight(PlayerPawn(self));
 		
 		FLineTraceData tr;
 		bool traced = LineTrace(angle, dist, pitch, TRF_THRUACTORS, atkheight, data: tr);
@@ -530,9 +530,9 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		if (alt)
 			A_FadeOut(0.07);
 		roll += 11;
-		vector3 projpos = GetRelativePosition(self, (-TRAILOFS, -TRAILOFS, 0));
+		vector3 projpos = ToM_UtilsP.GetRelativePosition(self, (-TRAILOFS, -TRAILOFS, 0));
 		Spawn("ToM_EStrail", projpos);
-		projpos = GetRelativePosition(self, (-TRAILOFS, TRAILOFS, 0));
+		projpos = ToM_UtilsP.GetRelativePosition(self, (-TRAILOFS, TRAILOFS, 0));
 		Spawn("ToM_EStrail", projpos);
 	}
 	

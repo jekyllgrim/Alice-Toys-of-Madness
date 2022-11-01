@@ -1,4 +1,4 @@
-Mixin class ToM_Math 
+class ToM_UtilsP : Actor abstract
 {		
 	static clearscope int Sign (double i) 
 	{
@@ -149,6 +149,21 @@ mixin class ToM_PlayerSightCheck
 	}
 }
 
+
+
+mixin class ToM_CheckParticles
+{
+	protected transient CVar s_particles;
+	
+	int GetParticlesQuality()
+	{
+		if (!s_particles)
+			s_particles = CVar.GetCVar('tom_particles', players[consoleplayer]);
+		
+		return s_particles.GetInt();
+	}
+}
+
 class ToM_NullActor : Actor 
 {
 	Default 
@@ -185,9 +200,8 @@ Class ToM_BaseActor : Actor abstract
 	protected double pi;
 	protected name bcolor;
 	protected int age;
-	protected transient CVar s_particles;
-	mixin ToM_Math;
 	mixin ToM_PlayerSightCheck;
+	mixin ToM_CheckParticles;
 	
 	bool CheckLandingSize (double cradius = 0, bool checkceiling = false) 
 	{
@@ -231,7 +245,7 @@ Class ToM_BaseActor : Actor abstract
 		    if ( tbox[3] < l.bbox[2] ) continue;
 		    if ( tbox[0] < l.bbox[1] ) continue;
 		    if ( tbox[1] > l.bbox[0] ) continue;
-		    if (BoxOnLineSide(tbox[0],tbox[1],tbox[2],tbox[3],l) == -1 ) 
+		    if (ToM_UtilsP.BoxOnLineSide(tbox[0],tbox[1],tbox[2],tbox[3],l) == -1 ) 
 				return true;
 		}
 		return false;
@@ -383,19 +397,6 @@ Class ToM_BaseActor : Actor abstract
 		}
 	}
 	
-	override void BeginPlay() 
-	{
-		super.BeginPlay();
-		pi = 3.141592653589793;
-	}	
-	
-	override void Tick() 
-	{
-		super.Tick();
-		if (!isFrozen())
-			age++;
-	}
-	
 	/*	Make the given actor invisible, have it drop its items
 		and call A_BossDeath if necessary.
 		If 'remove' is true, also destroy it; otherwise it's implied
@@ -407,7 +408,7 @@ Class ToM_BaseActor : Actor abstract
 		if (!victim)
 			return;
 		//hide the corpse
-		victim.bINVISIBLE = true;
+		victim.A_SetRenderstyle(0, Style_None);
 		//drop the items
 		victim.A_NoBlocking();
 		//call A_BossDeath if necessary
@@ -415,6 +416,19 @@ Class ToM_BaseActor : Actor abstract
 			victim.A_BossDeath();
 		if (remove && !victim.player)
 			victim.Destroy();
+	}
+	
+	override void BeginPlay() 
+	{
+		super.BeginPlay();
+		pi = 3.141592653589793;
+	}	
+	
+	override void Tick() 
+	{
+		super.Tick();
+		if (!isFrozen())
+			age++;
 	}
 	
 	States 
@@ -1370,7 +1384,7 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 	DespawnCheap:
 		SMO3 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1
 		{
-			int t = LinearMap(cheapalpha, 1.0, 0, 2, 10);
+			int t = ToM_UtilsP.LinearMap(cheapalpha, 1.0, 0, 2, 10);
 			A_SetTics(t);
 		}
 		stop;

@@ -324,11 +324,11 @@ class ToM_AliceHUD : BaseStatusBar
 				// From half ammo to full ammo: the cathetus goes from 0 to
 				// circle's radius:
 				if (amtFac > 0.5)
-					triHeight = ToM_BaseActor.LinearMap(amtFac, 0.5, 1.0, 0, rad);
+					triHeight = ToM_UtilsP.LinearMap(amtFac, 0.5, 1.0, 0, rad);
 				// From half ammo to zero ammo: the cathetus also goes from 
 				// 0 to circle's radius:
 				else
-					triHeight = ToM_BaseActor.LinearMap(amtFac, 0.5, 0.0, 0, rad);
+					triHeight = ToM_UtilsP.LinearMap(amtFac, 0.5, 0.0, 0, rad);
 				// The Pythagorean theorem is: hypotenuse squared equals 
 				// the sum of its squared catheti (c2 = a2 + b2).
 				// Since the chord (or rather, half of it) is a cathetus 
@@ -399,7 +399,7 @@ class ToM_AliceHUD : BaseStatusBar
 				amtex = "vessel_runes_yellow.png";
 			else if (am1.GetClass() == "ToM_PurpleMana")
 				amtex = "vessel_runes_blue.png";
-			double amtAlpha = ToM_BaseActor.LinearMap(amt1, 0, am1.maxamount, 0.5, 1);
+			double amtAlpha = ToM_UtilsP.LinearMap(amt1, 0, am1.maxamount, 0.5, 1);
 			amtex = String.Format("graphics/HUD/%s", amtex);
 			ToM_DrawImage(amtex, ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM, alpha: amtAlpha);
 		}

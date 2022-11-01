@@ -67,7 +67,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		{
 			A_FireBullets(angleofs, pitchofs, -1, int(3 * frandom(1., 8.)), "", FBF_NORANDOM|FBF_EXPLICITANGLE);
 			FLineTraceData pp;
-			double atkheight = ToM_BaseActor.GetPlayerAtkHeight(PlayerPawn(self));
+			double atkheight = ToM_UtilsP.GetPlayerAtkHeight(PlayerPawn(self));
 			LineTrace(angle + angleofs, 4096, pitch + pitchofs, TRF_SOLIDACTORS, atkheight, data: pp);
 			double pvel = Clamp(pp.Distance / 12.0, 160, 300);
 			if (proj)
@@ -399,7 +399,7 @@ class ToM_PepperBomb : ToM_PiercingProjectile
 		
 		if (!InStateSequence(curstate, s_death))
 		{
-			alpha = LinearMap(v, speed, 0, 1, 0.2);
+			alpha = ToM_UtilsP.LinearMap(v, speed, 0, 1, 0.2);
 			if (v <= 1.1)
 			{
 				SetStateLabel("Death");
@@ -407,13 +407,13 @@ class ToM_PepperBomb : ToM_PiercingProjectile
 			}
 		}
 		
-		roll += LinearMap(v, speed, 0, 10, 0.01);
-		A_SetScale(LinearMap(v, speed, 0, 0.1, 0.15));
+		roll += ToM_UtilsP.LinearMap(v, speed, 0, 10, 0.01);
+		A_SetScale(ToM_UtilsP.LinearMap(v, speed, 0, 0.1, 0.15));
 				
 		double svel = 2.4;//LinearMap(v, speed, 0, 1, 8);
 		double sofs = 10;//LinearMap(v, speed, 0, 0, 18);
-		double sscale = LinearMap(v, speed, 0, 0.1, 0.15);
-		double salpha = 0.35;// LinearMap(v, speed, 0, 0.5, 0.85);
+		double sscale = ToM_UtilsP.LinearMap(v, speed, 0, 0.1, 0.15);
+		double salpha = 0.35;// ToM_UtilsP.LinearMap(v, speed, 0, 0.5, 0.85);
 		
 		let smk = ToM_WhiteSmoke.Spawn(
 			pos,
@@ -509,7 +509,7 @@ class ToM_PepperDOT : ToM_InventoryToken
 			owner.speed *= 0.6;
 			owner.reactiontime *= 10;
 			
-			sneezepitch = ToM_BaseActor.LinearMap(owner.spawnhealth(), 100, 1000, 0.9, 0.5);
+			sneezepitch = ToM_UtilsP.LinearMap(owner.spawnhealth(), 100, 1000, 0.9, 0.5);
 			sneezepitch = Clamp(sneezepitch, 0.25, 0.9);
 		}
 	}
@@ -587,7 +587,7 @@ class ToM_PepperDOT : ToM_InventoryToken
 				}
 				owner.SetState(owner.FindState("See"));
 				owner.A_SetTics(SNEEZEDUR);
-				double pstrength = ToM_BaseActor.LinearMap(owner.mass, 300, 1000, 5, 1.5);
+				double pstrength = ToM_UtilsP.LinearMap(owner.mass, 300, 1000, 5, 1.5);
 				owner.A_Recoil(Clamp(pstrength, 1.5 ,5));
 				if (!owner.bFLOAT && !owner.bNOGRAVITY)
 				{

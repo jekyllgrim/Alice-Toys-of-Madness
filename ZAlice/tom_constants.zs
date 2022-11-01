@@ -4,6 +4,13 @@ enum ToMChannels
 	CH_TPOTCHARGE = 11,
 }
 
+enum ToMParticlesQuality
+{
+	TOMPART_MIN = 0,
+	TOMPART_MED = 1,
+	TOMPART_MAX = 2,
+}
+
 enum ToM_PSprite_Layers
 {
 	APSP_KickDo = -501,

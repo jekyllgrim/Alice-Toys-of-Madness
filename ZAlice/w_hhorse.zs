@@ -40,7 +40,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			range, 
 			aimPch, 
 			TRF_NOSKY|TRF_SOLIDACTORS, 
-			ToM_BaseActor.GetPlayerAtkHeight(PlayerPawn(self)), 
+			ToM_UtilsP.GetPlayerAtkHeight(PlayerPawn(self)), 
 			data: hit
 		);
 		

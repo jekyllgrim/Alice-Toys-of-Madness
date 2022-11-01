@@ -1,8 +1,7 @@
 class ToM_InventoryToken : Inventory abstract 
 {
-	mixin ToM_Math;
+	mixin ToM_CheckParticles;
 	int age;
-	protected transient CVar s_particles;
 	
 	Default 
 	{
@@ -426,6 +425,7 @@ class ToM_Health : Health abstract
 	mixin ToM_PickupFlashProperties;
 	mixin ToM_PickupSound;
 	mixin ToM_ComplexPickupmessage;
+	mixin ToM_CheckParticles;
 }
 
 class ToM_HealthPickup : ToM_Health
@@ -634,6 +634,7 @@ class ToM_Ammo : Ammo
 	mixin ToM_PickupFlashProperties;
 	mixin ToM_PickupSound;
 	mixin ToM_ComplexPickupmessage;
+	mixin ToM_CheckParticles;
 	
 	Default 
 	{

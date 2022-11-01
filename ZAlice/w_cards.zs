@@ -77,7 +77,7 @@ class ToM_Cards : ToM_BaseWeapon
 		double ang = ANGLESTEP * Clamp(invoker.handVertStep, 1, CARDSTEPS);
 		vector2 coords = (cos(ang) * CARDRAD, sin(ang) * CARDRAD);
 		A_WeaponOffset(coords.x, WEAPONTOP + coords.y);
-		double sc = LinearMap(coords.y, -CARDRAD, CARDRAD, 1, 1.06);
+		double sc = ToM_UtilsP.LinearMap(coords.y, -CARDRAD, CARDRAD, 1, 1.06);
 		A_OverlayScale(OverlayID(), sc, sc, WOF_INTERPOLATE);
 	}
 	
@@ -214,7 +214,7 @@ class ToM_Cards : ToM_BaseWeapon
 		bool ret = super.TryPickup(toucher);
 		if (ret)
 		{
-			vector3 catpos = FindRandomPosAround(toucher.pos, gridrad: 512, mindist: 80, fovlimit: 45, viewangle: toucher.angle);
+			vector3 catpos = ToM_UtilsP.FindRandomPosAround(toucher.pos, gridrad: 512, mindist: 80, fovlimit: 45, viewangle: toucher.angle);
 			if (Level.IsPointInLevel(catpos))
 			{
 				let cat = Spawn("ToM_CheshireCat_Talk", catpos);

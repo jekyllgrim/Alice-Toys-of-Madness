@@ -13,6 +13,9 @@ class ToM_Cards : ToM_BaseWeapon
 	const CARDANGLEDIFF = ANGLESTEP * 1.5;
 	const CARDRAD = 4.;
 	
+	const FANSTARTANGLE = 15;
+	const FANANGLESTEP = 5;
+	
 	static const int cardLayerNum[] = { APSP_Card1, APSP_Card3, APSP_Card2 };
 	protected int curCardLayer;
 	protected int cardLayerID;
@@ -329,6 +332,14 @@ class ToM_Cards : ToM_BaseWeapon
 				psp.y *= 0.8;
 				psp.scale.x = Clamp(psp.scale.x * 0.8, 1, 10);
 				psp.scale.y = Clamp(psp.scale.y * 0.8, 1, 10);
+				// If this happens during altfire, also move
+				// the cards to the right and down, to match
+				// the movement of the arm:
+				if (invoker.bAltFire)
+				{
+					psp.x -= 22;
+					psp.y += 7;
+				}
 			}
 		}
 		stop;
@@ -366,27 +377,28 @@ class ToM_Cards : ToM_BaseWeapon
 		APCR A 4 A_WeaponReady(WRF_NOBOB); 
 		goto Ready;
 	AltFire:
-		APCR A 5 A_RemoveCardLayers();
+		APCR A 1 A_RemoveCardLayers();
 	AltHold:
-		APCR AIJK 2;
-		APCR LLLLLL 1
+		APCR AIIJJKK 1;
+		APCR LLLL 1
 		{
-			invoker.cardFanAngle = 25;
+			invoker.cardFanAngle = FANSTARTANGLE;
 			invoker.cardXpos = -1;
-			A_OverlayOffset(OverlayID(), -1.5, 0, WOF_ADD);
+			A_OverlayOffset(OverlayID(), -2, 0, WOF_ADD);
 		}
-		APCR MMNNOO 1 
+		APCR MMNNOOO 1 
 		{
-			A_OverlayOffset(OverlayID(), 1.5, 0, WOF_ADD);
-			let s = A_PickCard();
+			A_OverlayOffset(OverlayID(), 2, 0, WOF_ADD);
+			//let s = A_PickCard();
+			double Yspread = 2;
 			let proj = A_FireCard(
 				invoker.cardFanAngle, 
-				frandom[firecard](-1.5, 1.5), 
+				frandom[firecard](-Yspread, Yspread), 
 				xofs: invoker.cardXpos, 
 				yofs: -14, 
 				explicitangle: true
 			);
-			invoker.cardFanAngle -= 10;
+			invoker.cardFanAngle -= FANANGLESTEP;
 			invoker.cardXpos += 2;
 		}
 		APCR OOOO 1 A_OverlayOffset(OverlayID(), 2, 0, WOF_ADD);

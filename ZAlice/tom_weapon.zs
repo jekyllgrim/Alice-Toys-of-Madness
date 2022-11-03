@@ -1012,6 +1012,9 @@ Class ToM_StakeProjectile : ToM_Projectile
 	//this function is called when the projectile dies and checks if it hit something
 	virtual void StickToWall() 
 	{
+		if (bHITTRACER && tracer)
+			return;
+		
 		string myclass = GetClassName();
 		bTHRUACTORS = true;
 		bNOGRAVITY = true;

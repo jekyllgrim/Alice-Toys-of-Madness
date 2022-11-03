@@ -1,0 +1,244 @@
+Model ToM_AlicePlayer
+{
+	Model 0 "models/AlicePlayer/knife/alice_aim_knife.md3"
+	Model 1 "models/AlicePlayer/knife/alice_aim_knife_weapon.md3"
+	
+	SurfaceSkin 0 0 "models/AlicePlayer/body.png"//upper body
+	SurfaceSkin 0 3 "models/AlicePlayer/body3.png"//face
+	SurfaceSkin 0 16 "models/AlicePlayer/bowstraps.png"//neck cap
+	SurfaceSkin 0 18 "models/AlicePlayer/hair.png"//hair
+	SurfaceSkin 0 6 "models/AlicePlayer/body.png"//right shoulder
+	SurfaceSkin 0 7 "models/AlicePlayer/r_arm.png"//rarm
+	SurfaceSkin 0 8 "models/AlicePlayer/body.png"//left shoulder
+	SurfaceSkin 0 9 "models/AlicePlayer/r_arm.png"//left arm
+	SurfaceSkin 0 10 "models/AlicePlayer/r_arm.png"//left arm
+	SurfaceSkin 0 11 "models/AlicePlayer/r_arm.png"//left hand
+	//SurfaceSkin 0 12 "models/AlicePlayer/body.png"//bowtie
+	//SurfaceSkin 0 4 "models/AlicePlayer/body2.png"//lower body
+	//SurfaceSkin 0 1 "models/AlicePlayer/body.png"//lower right leg
+	//SurfaceSkin 0 2 "models/AlicePlayer/body.png"//upper right leg
+	//SurfaceSkin 0 5 "models/AlicePlayer/body.png"//lower left leg
+	//SurfaceSkin 0 17 "models/AlicePlayer/body.png"//right leg cap
+	//SurfaceSkin 0 13 "models/AlicePlayer/bowstraps.png"//bowstraps
+	//SurfaceSkin 0 14 "models/AlicePlayer/skull.png"//skull
+	//SurfaceSkin 0 15 "models/number2"//???
+	
+	SurfaceSkin 1 0 "models/weapons/knife/knife.png"
+	//Scale 0.65 0.65 0.65  
+
+	//idle
+	FrameIndex F120 A 0 0
+	FrameIndex F120 A 1 0
+	
+	//walk_knife
+	Model 0 "models/AlicePlayer/alice_walk_smallwep.md3"
+	Model 1 "models/AlicePlayer/knife/alice_walk_smallwep_knife.md3"
+	FrameIndex F121 A 0 0
+	FrameIndex F121 A 1 0
+	FrameIndex F121 B 0 1
+	FrameIndex F121 B 1 1
+	FrameIndex F121 C 0 2
+	FrameIndex F121 C 1 2
+	FrameIndex F121 D 0 3
+	FrameIndex F121 D 1 3
+	FrameIndex F121 E 0 4//step
+	FrameIndex F121 E 1 4
+	FrameIndex F121 F 0 5
+	FrameIndex F121 F 1 5
+	FrameIndex F121 G 0 6
+	FrameIndex F121 G 1 6
+	FrameIndex F121 H 0 7
+	FrameIndex F121 H 1 7
+	FrameIndex F121 I 0 8
+	FrameIndex F121 I 1 8
+	FrameIndex F121 J 0 9
+	FrameIndex F121 J 1 9
+	FrameIndex F121 K 0 10
+	FrameIndex F121 K 1 10
+	FrameIndex F121 L 0 11
+	FrameIndex F121 L 1 11
+	FrameIndex F121 M 0 12
+	FrameIndex F121 M 1 12
+	FrameIndex F121 N 0 13//step
+	FrameIndex F121 N 1 13
+	FrameIndex F121 O 0 14
+	FrameIndex F121 O 1 14
+	FrameIndex F121 P 0 15
+	FrameIndex F121 P 1 15
+	FrameIndex F121 Q 0 16
+	FrameIndex F121 Q 1 16
+	FrameIndex F121 R 0 17
+	FrameIndex F121 R 1 17
+	FrameIndex F121 S 0 18
+	FrameIndex F121 S 1 18
+	FrameIndex F121 T 0 19
+	FrameIndex F121 T 1 19
+	//run_knife
+	Model 0 "models/AlicePlayer/alice_run_smallwep.md3"
+	Model 1 "models/AlicePlayer/knife/alice_run_smallwep_knife.md3"
+	FrameIndex F122 A 0 0
+	FrameIndex F122 A 1 0
+	FrameIndex F122 B 0 1
+	FrameIndex F122 B 1 1
+	FrameIndex F122 C 0 2
+	FrameIndex F122 C 1 2
+	FrameIndex F122 D 0 3//step
+	FrameIndex F122 D 1 3
+	FrameIndex F122 E 0 4
+	FrameIndex F122 E 1 4
+	FrameIndex F122 F 0 5
+	FrameIndex F122 F 1 5
+	FrameIndex F122 G 0 6
+	FrameIndex F122 G 1 6
+	FrameIndex F122 H 0 7
+	FrameIndex F122 H 1 7
+	FrameIndex F122 I 0 8
+	FrameIndex F122 I 1 8
+	FrameIndex F122 J 0 9//step
+	FrameIndex F122 J 1 9
+	FrameIndex F122 K 0 10
+	FrameIndex F122 K 1 10
+	FrameIndex F122 L 0 11
+	FrameIndex F122 L 1 11
+	//attack_knife
+	Model 0 "models/AlicePlayer/knife/alice_attack_knife.md3"
+	Model 1 "models/AlicePlayer/knife/alice_attack_knife_weapon.md3"
+	FrameIndex F123 A 0 0
+	FrameIndex F123 A 1 0
+	FrameIndex F123 B 0 1
+	FrameIndex F123 B 1 1
+	FrameIndex F123 C 0 2
+	FrameIndex F123 C 1 2
+	FrameIndex F123 D 0 3
+	FrameIndex F123 D 1 3
+	FrameIndex F123 E 0 4
+	FrameIndex F123 E 1 4
+	FrameIndex F123 F 0 5
+	FrameIndex F123 F 1 5
+	FrameIndex F123 G 0 6
+	FrameIndex F123 G 1 6
+	FrameIndex F123 H 0 7
+	FrameIndex F123 H 1 7
+	FrameIndex F123 I 0 8
+	FrameIndex F123 I 1 8
+	FrameIndex F123 J 0 9
+	FrameIndex F123 J 1 9
+	FrameIndex F123 K 0 10
+	FrameIndex F123 K 1 10
+	FrameIndex F123 L 0 11
+	FrameIndex F123 L 1 11
+	FrameIndex F123 M 0 12
+	FrameIndex F123 M 1 12
+	FrameIndex F123 N 0 13
+	FrameIndex F123 N 1 13
+	FrameIndex F123 O 0 14
+	FrameIndex F123 O 1 14
+	FrameIndex F123 P 0 15
+	FrameIndex F123 P 1 15
+	FrameIndex F123 Q 0 16
+	FrameIndex F123 Q 1 16
+	FrameIndex F123 R 0 17
+	FrameIndex F123 R 1 17
+	FrameIndex F123 S 0 18
+	FrameIndex F123 S 1 18
+	FrameIndex F123 T 0 19
+	FrameIndex F123 T 1 19
+	FrameIndex F123 U 0 20
+	FrameIndex F123 U 1 20
+		
+	//pain
+	Model 0 "models/AlicePlayer/alice_pain_front.md3"
+	Model 1 "models/AlicePlayer/knife/alice_pain_front_knife.md3"
+	FrameIndex F126 A 0 0
+	FrameIndex F126 A 1 0
+	FrameIndex F126 B 0 1
+	FrameIndex F126 B 1 1
+	FrameIndex F126 C 0 2
+	FrameIndex F126 C 1 2
+	FrameIndex F126 D 0 3
+	FrameIndex F126 D 1 3
+	FrameIndex F126 E 0 4
+	FrameIndex F126 E 1 4
+	FrameIndex F126 F 0 5
+	FrameIndex F126 F 1 5
+	FrameIndex F126 G 0 6
+	FrameIndex F126 G 1 6
+	FrameIndex F126 H 0 7
+	FrameIndex F126 H 1 7
+	FrameIndex F126 I 0 8
+	FrameIndex F126 I 1 8
+	FrameIndex F126 J 0 9
+	FrameIndex F126 J 1 9
+	FrameIndex F126 K 0 10
+	FrameIndex F126 K 1 10
+	FrameIndex F126 L 0 11
+	FrameIndex F126 L 1 11
+	FrameIndex F126 M 0 12
+	FrameIndex F126 M 1 12
+}
+
+Model ToM_PlayerLegs
+{
+	Model 0 "models/AlicePlayer/knife/alice_aim_knife.md3"
+	
+	SurfaceSkin 0 12 "models/AlicePlayer/body.png"//bowtie
+	SurfaceSkin 0 4 "models/AlicePlayer/body2.png"//lower body
+	SurfaceSkin 0 1 "models/AlicePlayer/body.png"//lower right leg
+	SurfaceSkin 0 2 "models/AlicePlayer/body.png"//upper right leg
+	SurfaceSkin 0 5 "models/AlicePlayer/body.png"//lower left leg
+	SurfaceSkin 0 17 "models/AlicePlayer/body.png"//right leg cap
+	SurfaceSkin 0 13 "models/AlicePlayer/bowstraps.png"//bowstraps
+	SurfaceSkin 0 14 "models/AlicePlayer/skull.png"//skull
+
+	//idle
+	FrameIndex F120 A 0 0
+	
+	//walk
+	Model 0 "models/AlicePlayer/alice_walk_smallwep.md3"
+	FrameIndex F121 A 0 0
+	FrameIndex F121 B 0 1
+	FrameIndex F121 C 0 2
+	FrameIndex F121 D 0 3
+	FrameIndex F121 E 0 4//step
+	FrameIndex F121 F 0 5
+	FrameIndex F121 G 0 6
+	FrameIndex F121 H 0 7
+	FrameIndex F121 I 0 8
+	FrameIndex F121 J 0 9
+	FrameIndex F121 K 0 10
+	FrameIndex F121 K 1 10
+	FrameIndex F121 L 0 11
+	FrameIndex F121 L 1 11
+	FrameIndex F121 M 0 12
+	FrameIndex F121 M 1 12
+	FrameIndex F121 N 0 13//step
+	FrameIndex F121 N 1 13
+	FrameIndex F121 O 0 14
+	FrameIndex F121 O 1 14
+	FrameIndex F121 P 0 15
+	FrameIndex F121 P 1 15
+	FrameIndex F121 Q 0 16
+	FrameIndex F121 Q 1 16
+	FrameIndex F121 R 0 17
+	FrameIndex F121 R 1 17
+	FrameIndex F121 S 0 18
+	FrameIndex F121 S 1 18
+	FrameIndex F121 T 0 19
+	FrameIndex F121 T 1 19
+	//run
+	Model 0 "models/AlicePlayer/alice_run_smallwep.md3"
+	FrameIndex F122 A 0 0
+	FrameIndex F122 B 0 1
+	FrameIndex F122 C 0 2
+	FrameIndex F122 D 0 3//step
+	FrameIndex F122 E 0 4
+	FrameIndex F122 F 0 5
+	FrameIndex F122 G 0 6
+	FrameIndex F122 H 0 7
+	FrameIndex F122 I 0 8
+	FrameIndex F122 J 0 9//step
+	FrameIndex F122 K 0 10
+	FrameIndex F122 K 1 10
+	FrameIndex F122 L 0 11
+	FrameIndex F122 L 1 11
+}

@@ -1,3 +1,7 @@
+//#include "Models/AlicePlayer/MODELDEF.aliceplayer"
+#include "Models/AlicePlayer/MODELDEF.aliceplayer.knife"
+
+
 Model "ToM_LaserBeam"
 {
 	Path "Models/GZBeam"

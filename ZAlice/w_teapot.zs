@@ -703,7 +703,7 @@ class ToM_TeaPool : ToM_SmallDebris
 	States
 	{
 	Spawn:
-		AMRK A 1 
+		M000 A 1 
 		{
 			A_FadeOut(0.012);
 			scale *= (1 + wscale);

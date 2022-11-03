@@ -198,7 +198,7 @@ class ToM_LaserBeam : Actor
 	States
 	{
 		Spawn:
-			MODL A -1 Bright;
+			M000 A -1 Bright;
 		stop;
 	}
 }

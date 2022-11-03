@@ -518,3 +518,7 @@ sprite "M000W0", 1, 1 { Patch "TNT1A0", 0,0 }
 sprite "M000X0", 1, 1 { Patch "TNT1A0", 0,0 }
 sprite "M000Y0", 1, 1 { Patch "TNT1A0", 0,0 }
 sprite "M000Z0", 1, 1 { Patch "TNT1A0", 0,0 }
+Sprite "NULLZ0", 1, 1
+{
+	Patch "TNT1A0", 0, 0
+}

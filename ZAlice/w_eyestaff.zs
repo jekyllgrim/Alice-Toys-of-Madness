@@ -539,7 +539,7 @@ class ToM_EyestaffProjectile : ToM_Projectile
 	States
 	{
 	Spawn:
-		AMRK A 1 
+		M000 A 1 
 		{
 			double svel = 2;
 			let smk = ToM_WhiteSmoke.Spawn(

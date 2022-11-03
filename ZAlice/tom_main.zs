@@ -1069,7 +1069,7 @@ class ToM_SphereFX : ToM_SmallDebris
 	States 
 	{
 	Spawn:
-		AMRK A -1;
+		M000 A -1;
 		stop;
 	}
 }

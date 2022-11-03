@@ -11,10 +11,10 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		Weapon.slotnumber 4;
 		Tag "Pepper Grinder";
 		weapon.ammotype1 "ToM_YellowMana";
-		weapon.ammouse1 2;
+		weapon.ammouse1 1;
 		weapon.ammogive1 100;
 		weapon.ammotype2 "ToM_YellowMana";
-		weapon.ammouse2 18;
+		weapon.ammouse2 10;
 	}
 	
 	action void A_PepperFlash()

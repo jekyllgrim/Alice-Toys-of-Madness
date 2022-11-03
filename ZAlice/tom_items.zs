@@ -95,16 +95,23 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 		"ToM_Blunderbuss"
 	};
 	
-	
 	static const Class<Inventory> vanillaItems[] = {
 		"GreenArmor",
 		"BlueArmor"
-		//"BasicArmorPickup"
 	};
 	static const Class<Inventory> modItems[] = {
 		"ToM_SilverArmor",
 		"ToM_GoldArmor"
-		//"ToM_GoldArmor"
+	};
+	
+	static const Class<Inventory> extraItems[] =
+	{
+		"FWeapFist"
+	};
+	
+	static const Class<Inventory> modExtraItems[] =
+	{
+		"ToM_Knife"
 	};
 	
 	//here we make sure that the player will never have vanilla weapons in their inventory:
@@ -190,6 +197,18 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 				if (modItems[i] && oldItemClass == vanillaItems[i]) 
 				{
 					replacement = modItems[i];
+					break;
+				}
+			}
+		}
+		// handle extra cases:
+		if (!replacement)
+		{
+			for (int i = 0; i < ExtraItems.Size(); i++) 
+			{
+				if (modExtraItems[i] && oldItemClass == ExtraItems[i]) 
+				{
+					replacement = modExtraItems[i];
 					break;
 				}
 			}

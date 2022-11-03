@@ -1,6 +1,6 @@
 Model ToM_CheshireCat_Talk
 {
-	Path "Models/Cheshire"	
+	Path "Models/Characters/Cheshire"	
 	Model 0 "cheshire_idle_body.md3"
 	Skin 0 "cheshire_skin_body.png"
 	Model 1 "cheshire_idle_face.md3"

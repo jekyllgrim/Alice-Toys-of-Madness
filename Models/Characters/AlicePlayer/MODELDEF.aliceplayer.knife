@@ -1,26 +1,28 @@
 Model ToM_AlicePlayer
 {
-	Model 0 "models/AlicePlayer/knife/alice_aim_knife.md3"
-	Model 1 "models/AlicePlayer/knife/alice_aim_knife_weapon.md3"
+	Path "models/Characters/AlicePlayer"
 	
-	SurfaceSkin 0 0 "models/AlicePlayer/body.png"//upper body
-	SurfaceSkin 0 3 "models/AlicePlayer/body3.png"//face
-	SurfaceSkin 0 16 "models/AlicePlayer/bowstraps.png"//neck cap
-	SurfaceSkin 0 18 "models/AlicePlayer/hair.png"//hair
-	SurfaceSkin 0 6 "models/AlicePlayer/body.png"//right shoulder
-	SurfaceSkin 0 7 "models/AlicePlayer/r_arm.png"//rarm
-	SurfaceSkin 0 8 "models/AlicePlayer/body.png"//left shoulder
-	SurfaceSkin 0 9 "models/AlicePlayer/r_arm.png"//left arm
-	SurfaceSkin 0 10 "models/AlicePlayer/r_arm.png"//left arm
-	SurfaceSkin 0 11 "models/AlicePlayer/r_arm.png"//left hand
-	//SurfaceSkin 0 12 "models/AlicePlayer/body.png"//bowtie
-	//SurfaceSkin 0 4 "models/AlicePlayer/body2.png"//lower body
-	//SurfaceSkin 0 1 "models/AlicePlayer/body.png"//lower right leg
-	//SurfaceSkin 0 2 "models/AlicePlayer/body.png"//upper right leg
-	//SurfaceSkin 0 5 "models/AlicePlayer/body.png"//lower left leg
-	//SurfaceSkin 0 17 "models/AlicePlayer/body.png"//right leg cap
-	//SurfaceSkin 0 13 "models/AlicePlayer/bowstraps.png"//bowstraps
-	//SurfaceSkin 0 14 "models/AlicePlayer/skull.png"//skull
+	Model 0 "knife/alice_aim_knife.md3"
+	Model 1 "knife/alice_aim_knife_weapon.md3"
+	
+	SurfaceSkin 0 0 "body.png"//upper body
+	SurfaceSkin 0 3 "body3.png"//face
+	SurfaceSkin 0 16 "bowstraps.png"//neck cap
+	SurfaceSkin 0 18 "hair.png"//hair
+	SurfaceSkin 0 6 "body.png"//right shoulder
+	SurfaceSkin 0 7 "r_arm.png"//rarm
+	SurfaceSkin 0 8 "body.png"//left shoulder
+	SurfaceSkin 0 9 "r_arm.png"//left arm
+	SurfaceSkin 0 10 "r_arm.png"//left arm
+	SurfaceSkin 0 11 "r_arm.png"//left hand
+	//SurfaceSkin 0 12 "body.png"//bowtie
+	//SurfaceSkin 0 4 "body2.png"//lower body
+	//SurfaceSkin 0 1 "body.png"//lower right leg
+	//SurfaceSkin 0 2 "body.png"//upper right leg
+	//SurfaceSkin 0 5 "body.png"//lower left leg
+	//SurfaceSkin 0 17 "body.png"//right leg cap
+	//SurfaceSkin 0 13 "bowstraps.png"//bowstraps
+	//SurfaceSkin 0 14 "skull.png"//skull
 	//SurfaceSkin 0 15 "models/number2"//???
 	
 	SurfaceSkin 1 0 "models/weapons/knife/knife.png"
@@ -31,8 +33,8 @@ Model ToM_AlicePlayer
 	FrameIndex F120 A 1 0
 	
 	//walk_knife
-	Model 0 "models/AlicePlayer/alice_walk_smallwep.md3"
-	Model 1 "models/AlicePlayer/knife/alice_walk_smallwep_knife.md3"
+	Model 0 "alice_walk_smallwep.md3"
+	Model 1 "knife/alice_walk_smallwep_knife.md3"
 	FrameIndex F121 A 0 0
 	FrameIndex F121 A 1 0
 	FrameIndex F121 B 0 1
@@ -74,8 +76,8 @@ Model ToM_AlicePlayer
 	FrameIndex F121 T 0 19
 	FrameIndex F121 T 1 19
 	//run_knife
-	Model 0 "models/AlicePlayer/alice_run_smallwep.md3"
-	Model 1 "models/AlicePlayer/knife/alice_run_smallwep_knife.md3"
+	Model 0 "alice_run_smallwep.md3"
+	Model 1 "knife/alice_run_smallwep_knife.md3"
 	FrameIndex F122 A 0 0
 	FrameIndex F122 A 1 0
 	FrameIndex F122 B 0 1
@@ -101,8 +103,8 @@ Model ToM_AlicePlayer
 	FrameIndex F122 L 0 11
 	FrameIndex F122 L 1 11
 	//attack_knife
-	Model 0 "models/AlicePlayer/knife/alice_attack_knife.md3"
-	Model 1 "models/AlicePlayer/knife/alice_attack_knife_weapon.md3"
+	Model 0 "knife/alice_attack_knife.md3"
+	Model 1 "knife/alice_attack_knife_weapon.md3"
 	FrameIndex F123 A 0 0
 	FrameIndex F123 A 1 0
 	FrameIndex F123 B 0 1
@@ -147,8 +149,8 @@ Model ToM_AlicePlayer
 	FrameIndex F123 U 1 20
 		
 	//pain
-	Model 0 "models/AlicePlayer/alice_pain_front.md3"
-	Model 1 "models/AlicePlayer/knife/alice_pain_front_knife.md3"
+	Model 0 "alice_pain_front.md3"
+	Model 1 "knife/alice_pain_front_knife.md3"
 	FrameIndex F126 A 0 0
 	FrameIndex F126 A 1 0
 	FrameIndex F126 B 0 1
@@ -179,22 +181,24 @@ Model ToM_AlicePlayer
 
 Model ToM_PlayerLegs
 {
-	Model 0 "models/AlicePlayer/knife/alice_aim_knife.md3"
+	Path "models/Characters/AlicePlayer"
 	
-	SurfaceSkin 0 12 "models/AlicePlayer/body.png"//bowtie
-	SurfaceSkin 0 4 "models/AlicePlayer/body2.png"//lower body
-	SurfaceSkin 0 1 "models/AlicePlayer/body.png"//lower right leg
-	SurfaceSkin 0 2 "models/AlicePlayer/body.png"//upper right leg
-	SurfaceSkin 0 5 "models/AlicePlayer/body.png"//lower left leg
-	SurfaceSkin 0 17 "models/AlicePlayer/body.png"//right leg cap
-	SurfaceSkin 0 13 "models/AlicePlayer/bowstraps.png"//bowstraps
-	SurfaceSkin 0 14 "models/AlicePlayer/skull.png"//skull
+	Model 0 "knife/alice_aim_knife.md3"
+	
+	SurfaceSkin 0 12 "body.png"//bowtie
+	SurfaceSkin 0 4 "body2.png"//lower body
+	SurfaceSkin 0 1 "body.png"//lower right leg
+	SurfaceSkin 0 2 "body.png"//upper right leg
+	SurfaceSkin 0 5 "body.png"//lower left leg
+	SurfaceSkin 0 17 "body.png"//right leg cap
+	SurfaceSkin 0 13 "bowstraps.png"//bowstraps
+	SurfaceSkin 0 14 "skull.png"//skull
 
 	//idle
 	FrameIndex F120 A 0 0
 	
 	//walk
-	Model 0 "models/AlicePlayer/alice_walk_smallwep.md3"
+	Model 0 "alice_walk_smallwep.md3"
 	FrameIndex F121 A 0 0
 	FrameIndex F121 B 0 1
 	FrameIndex F121 C 0 2
@@ -226,7 +230,7 @@ Model ToM_PlayerLegs
 	FrameIndex F121 T 0 19
 	FrameIndex F121 T 1 19
 	//run
-	Model 0 "models/AlicePlayer/alice_run_smallwep.md3"
+	Model 0 "alice_run_smallwep.md3"
 	FrameIndex F122 A 0 0
 	FrameIndex F122 B 0 1
 	FrameIndex F122 C 0 2

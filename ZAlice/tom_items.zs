@@ -433,8 +433,8 @@ class ToM_HealthPickup : ToM_Health
 	Default
 	{
 		ToM_Health.PickupNote "$TOM_UNIT_HP";
-		xscale 0.4;
-		yscale 0.33334;
+		xscale 0.5;
+		yscale 0.415;
 	}
 	
 	override string GetPickupNote()
@@ -453,6 +453,8 @@ class ToM_HealthBonus : ToM_HealthPickup
 		Inventory.amount 1;
 		Inventory.maxamount 200;
 		Inventory.Pickupsound "pickups/health/petal";
+		xscale 0.6;
+		yscale 0.5;
 	}
 	
 	States {
@@ -638,10 +640,11 @@ class ToM_Ammo : Ammo
 	
 	Default 
 	{
-		xscale 0.5;
-		yscale 0.4167;
+		xscale 0.4;
+		yscale 0.3336;
 		+BRIGHT
 		+RANDOMIZE
+		FloatBobStrength 0.65;
 		Inventory.pickupsound "pickups/ammo";
 	}
 
@@ -654,6 +657,21 @@ class ToM_Ammo : Ammo
 			type = type.GetParentClass();
 		}
 		return (class<Ammo>)(type);
+	}
+	
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		A_SpriteOffset (0, -24);
+	}
+	
+	override void Tick()
+	{
+		super.Tick();
+		if (owner || isFrozen())
+			return;
+		
+		WorldOffset.z = BobSin(FloatBobPhase + 0.85 * level.maptime) * FloatBobStrength;
 	}
 }
 

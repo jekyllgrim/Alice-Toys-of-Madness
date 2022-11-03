@@ -328,6 +328,9 @@ pickups/health/magicflower "sounds/pickups/health/pickups_bottle_large_magic.ogg
 
 pickups/ammo	"sounds/pickups/shrinkflower_pop.ogg"
 
+ragebox/activate "sounds/pickups/ragebox_pickup.wav"
+ragebox/scream "sounds/pickups/ragebox_power.wav"
+ragebox/end "sounds/pickups/rage_end.wav"
 
 
 //// CHARACTERS

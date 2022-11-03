@@ -13,8 +13,8 @@ class ToM_Cards : ToM_BaseWeapon
 	const CARDANGLEDIFF = ANGLESTEP * 1.5;
 	const CARDRAD = 4.;
 	
-	const FANSTARTANGLE = 15;
-	const FANANGLESTEP = 5;
+	const FANSTARTANGLE = 9;
+	const FANANGLESTEP = 3;
 	
 	static const int cardLayerNum[] = { APSP_Card1, APSP_Card3, APSP_Card2 };
 	protected int curCardLayer;
@@ -28,7 +28,7 @@ class ToM_Cards : ToM_BaseWeapon
 		weapon.ammouse1 2;
 		weapon.ammogive1 100;
 		weapon.ammotype2 "ToM_RedMana";
-		weapon.ammouse2 2;
+		weapon.ammouse2 1;
 	}
 	
 	action void A_CreateCardLayers()
@@ -383,7 +383,7 @@ class ToM_Cards : ToM_BaseWeapon
 		APCR LLLL 1
 		{
 			invoker.cardFanAngle = FANSTARTANGLE;
-			invoker.cardXpos = -1;
+			invoker.cardXpos = -2;
 			A_OverlayOffset(OverlayID(), -2, 0, WOF_ADD);
 		}
 		APCR MMNNOOO 1 
@@ -399,11 +399,11 @@ class ToM_Cards : ToM_BaseWeapon
 				explicitangle: true
 			);
 			invoker.cardFanAngle -= FANANGLESTEP;
-			invoker.cardXpos += 2;
+			invoker.cardXpos += 1;
 		}
-		APCR OOOO 1 A_OverlayOffset(OverlayID(), 2, 0, WOF_ADD);
-		TNT1 A 0 A_ResetPSprite(OverlayID(), 4);
-		APCR PPQA 1;
+		APCR OOOOO 1 A_OverlayOffset(OverlayID(), 2, 0, WOF_ADD);
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 5);
+		APCR PPQAA 1;
 		TNT1 A 0 A_ReFire();
 		APCR A 6 A_CreateCardLayers();
 		goto ready;
@@ -456,7 +456,6 @@ class ToM_CardProjectile : ToM_StakeProjectile
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
-		//A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
 		//console.printf("card damage: %d", damage);
 		if (target && (angleCurve > 0 || pitchCurve > 0))
 		{

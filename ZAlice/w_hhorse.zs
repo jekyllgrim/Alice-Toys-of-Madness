@@ -145,12 +145,12 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 	RightSwing:
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.1, 0.6);
-		HHRS AAAAABBBBB 1 
+		HHRS AAABBBB 1 
 		{
-			A_WeaponOffset(5, 0, WOF_ADD);
-			A_RotatePSprite(OverlayID(), -1, WOF_ADD);
+			A_WeaponOffset(6, 0, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -1.2, WOF_ADD);
 		}		
-		HHRS CCCCC 1 
+		HHRS CCCC 1 
 		{
 			A_WeaponOffset(3, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -0.5, WOF_ADD);
@@ -182,12 +182,12 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		goto AttackEnd;
 	LeftSwing:			
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 1);
-		HHRS AAAAAEEEEE 1 
+		HHRS AAAEEEE 1 
 		{
-			A_WeaponOffset(-5, 0, WOF_ADD);
-			A_RotatePSprite(OverlayID(), 1, WOF_ADD);
+			A_WeaponOffset(-6, 0, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 1.2, WOF_ADD);
 		}
-		HHRS GGGGG 1 
+		HHRS GGGG 1 
 		{
 			A_WeaponOffset(-3, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.5, WOF_ADD);
@@ -225,9 +225,9 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), -0.3, WOF_ADD);
 			A_ScalePSprite(OverlayID(), 0.0025, 0.0025,WOF_ADD);
 		}
-		HHRS MMMMMMMMMM 1 
+		HHRS MMMMMMMM 1 
 		{
-			A_WeaponOffset(0.5, -1, WOF_ADD);
+			A_WeaponOffset(0.6, -1.2, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -0.3, WOF_ADD);
 			A_ScalePSprite(OverlayID(), 0.0025, 0.0025,WOF_ADD);
 		}

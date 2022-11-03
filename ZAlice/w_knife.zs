@@ -7,7 +7,7 @@ class ToM_Knife : ToM_BaseWeapon
 	
 	enum knifeconsts
 	{
-		KNIFE_RELOAD_TIME = 88,
+		KNIFE_RELOAD_TIME = 75,
 		KNIFE_PARTIAL_RELOAD_TIME = 6,
 		KNIFE_RELOAD_FRAME = 11,
 		KNIFE_READY_FRAME = 0,
@@ -56,6 +56,11 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayFlags(OverlayID(), PSPF_FORCEALPHA, false);
 			A_OverlayAlpha(OverlayID(), 1.0);
 		}
+	}
+	
+	action void A_KnifeSlash(double distance = 10)
+	{
+		A_CustomPunch(distance, true, CPF_NOTURN, "ToM_KnifePuff");
 	}
 	
 	override void DoEffect()
@@ -162,7 +167,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayPivot(OverlayID(), 0.5, 0.5);
 			A_RotatePSprite(OverlayID(), frandom[wrot](-15,0), WOF_INTERPOLATE);
 		}
-		VKNF AAABB 1
+		VKNF AABB 1
 		{
 			A_WeaponOffset(16, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5.5, WOF_ADD);
@@ -173,10 +178,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_WeaponOffset(-60, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
 		}
-		TNT1 C 0
-		{
-			A_CustomPunch(15, true, CPF_NOTURN, "ToM_KnifePuff");
-		}
+		TNT1 C 0 A_KnifeSlash(25);
 		VKNS CCC 1
 		{
 			A_WeaponOffset(-44, 0, WOF_ADD);
@@ -191,7 +193,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayPivot(OverlayID(), 0.9, 0.7);
 			A_RotatePSprite(OverlayID(), frandom[wrot](0,15), WOF_INTERPOLATE);
 		}
-		VKNF ADDEE 1
+		VKNF DDEE 1
 		{
 			A_WeaponOffset(-20, -4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
@@ -202,10 +204,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_WeaponOffset(80, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5, WOF_ADD);
 		}		
-		TNT1 E 0 
-		{
-			A_CustomPunch(15, true, CPF_NOTURN, "ToM_KnifePuff");
-		}
+		TNT1 E 0 A_KnifeSlash(25);
 		VKNS FFF 1
 		{
 			A_WeaponOffset(65, 4, WOF_ADD);
@@ -220,10 +219,10 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayPivot(OverlayID(), 0.5, 1);
 			A_RotatePSprite(OverlayID(), frandom[wrot](-5,15), WOF_INTERPOLATE);
 		}
-		VKNF GGGG 1 A_WeaponOffset(5, -4, WOF_ADD);
+		VKNF GGG 1 A_WeaponOffset(5, -4, WOF_ADD);
 		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);		
 		VKNF GGH 1 A_WeaponOffset(-12, 35, WOF_ADD);
-		TNT1 H 0  A_CustomPunch(25, true, CPF_NOTURN, "ToM_KnifePuff");
+		TNT1 H 0  A_KnifeSlash(35);
 		VKNS HHHH 1 A_WeaponOffset(-18, 25, WOF_ADD);
 		TNT1 A 0 A_ResetPSprite(OverlayID(), 9);
 		VKNF HHHHZZZZZ 1 A_WeaponReady(WRF_NOBOB);
@@ -327,6 +326,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		speed 25;
 		damage (40);
 		-NOGRAVITY
+		+HITTRACER
 		gravity 0.2;
 		radius 10;
 		height 6;
@@ -339,7 +339,8 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		A_StartSound("weapons/knife/throw", CHAN_AUTO, startTime: 0.25);
 		knifemodel = Spawn("ToM_KnifeProjectileModel", pos);
 		knifemodel.angle = angle;
-		knifemodel.pitch = pitch;			
+		knifemodel.pitch = pitch;
+		knifemodel.master = self;
 	}
 	
 	override void Tick()
@@ -400,7 +401,16 @@ class ToM_KnifeProjectileModel : Actor
 	Default
 	{
 		+NOINTERACTION
+		+NOBLOCKMAP
 	}
+	
+	override void Tick()
+	{
+		super.Tick();
+		if (!master)
+			Destroy();
+	}
+	
 	States
 	{
 	Spawn:

@@ -144,6 +144,7 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		DrawLeftCorner();
 		DrawRightcorner();
+		DrawKeys();
 		DrawTeapotIcon(pos: (128, -69), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_TOP);
 	}
 	
@@ -406,6 +407,57 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		// highlights go on top:
 		ToM_DrawImage("graphics/HUD/vessel_highlights.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
+	}
+
+	//Roughly copied from AltHUD but returns the texture, not a bool:
+	protected TextureID GetKeyTexture(Key inv) 
+	{		
+		TextureID icon;	
+		if (!inv) 
+			return icon;
+			
+		TextureID AltIcon = inv.AltHUDIcon;
+		if (!AltIcon.Exists()) 
+			return icon;	// Setting a non-existent AltIcon hides this key.
+
+		if (AltIcon.isValid()) 
+			icon = AltIcon;
+		else if (inv.SpawnState && inv.SpawnState.sprite) 
+		{
+			let state = inv.SpawnState;
+			if (state) 
+				icon = state.GetSpriteTexture(0);
+			else 
+				icon.SetNull();
+		}
+		// missing sprites map to TNT1A0. So if that gets encountered, use the default icon instead.
+		if (icon.isNull() || TexMan.GetName(icon) == 'tnt1a0') 
+			icon = inv.Icon; 
+
+		return icon;
+	}
+	
+	// Draws keys in a horizontal bar, similarly to how AltHUD
+	// does it, but does NOT ignore HUD scale:
+	void DrawKeys() 
+	{
+		if (deathmatch)
+			return;		
+		int hofs = 1;
+		vector2 iconpos = (-2, 2);
+		double iscale = 1;
+		
+		int count = Key.GetKeyTypeCount();			
+		for(int i = 0; i < count; i++)
+		{
+			Key inv = Key(CPlayer.mo.FindInventory(Key.GetKeyType(i)));
+			TextureID icon = GetKeyTexture(inv);
+			if (icon.IsNull()) 
+				continue;
+			vector2 iconsize = TexMan.GetScaledSize(icon) * iscale;
+			ToM_DrawTexture(icon, iconpos, flags: DI_SCREEN_RIGHT_TOP|DI_ITEM_RIGHT_TOP, scale: (iscale, iscale));
+			iconpos.x -= (iconsize.x + hofs);
+		}
 	}
 	
 	void DrawTeapotIcon(double height = 68, vector2 pos = (0,0), int fflags = DI_SCREEN_LEFT_TOP|DI_ITEM_LEFT_TOP)

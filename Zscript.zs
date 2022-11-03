@@ -1,4 +1,4 @@
-version "4.7.1"
+version "4.8.2"
 
 #include "ZAlice/tom_main.zs"
 #include "ZAlice/tom_events.zs"

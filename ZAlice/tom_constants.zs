@@ -4,7 +4,7 @@ enum ToMChannels
 	CH_TPOTCHARGE = 11,
 }
 
-enum ToMParticlesQuality
+enum ToM_ParticlesQuality
 {
 	TOMPART_MIN = 0,
 	TOMPART_MED = 1,

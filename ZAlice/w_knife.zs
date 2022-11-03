@@ -132,7 +132,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_KnifeReady();
 		}
 		wait;
-	IdleAnim:
+	/*IdleAnim:
 		VKNI AABC 2 A_WeaponReady(WRF_NOBOB);
 		VKNI DDEEFFGGHHIIJJKK 1 
 		{
@@ -145,7 +145,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_WeaponReady(WRF_NOBOB);
 		}
 		VKNI BAA 2 A_WeaponReady(WRF_NOBOB);
-		goto Ready;
+		goto Ready;*/
 	Fire:
 		TNT1 A 0 
 		{

@@ -201,6 +201,8 @@ class ToM_Cannonball : ToM_Projectile
 		TNT1 A 0
 		{
 			A_StartSound("weapons/blunderbuss/explode", CHAN_BODY, attenuation: 1);
+			
+			ToM_SphereFX.SpawnExplosion(pos, size: 128, alpha: 0.5, col1: "4f026e", col2: "d10841", boomfactor: 2);
 			A_Explode(512, 512, XF_THRUSTZ, fulldamagedistance: 256);
 			let exp = ToM_GenericExplosion.Create(
 				pos, scale: 1.5, tics: 2,

@@ -1023,7 +1023,20 @@ class ToM_SphereFX : ToM_SmallDebris
 		scale 64;
 	}
 	
-	static ToM_SphereFX Spawn(vector3 pos, double size = 1, double alpha = 1, double grow = 0, double fade = 0)
+	static ToM_SphereFX SpawnExplosion(vector3 pos, double size = 48, double alpha = 0.6, double grow = 1.15, double fade = 0.05, color col1 = color("FFFF00"), color col2 = color("fcb126"), double boomfactor = 3.)
+	{
+		let sphere1 = ToM_SphereFX(ToM_SphereFX.Spawn(pos, size, alpha, grow, fade, col1));
+		if (sphere1)
+			sphere1.bBRIGHT = true;
+		
+		let sphere2 = ToM_SphereFX(ToM_SphereFX.Spawn(pos, size / boomfactor, alpha, grow, fade, col2));
+		if (sphere2)
+			sphere2.bBRIGHT = true;
+		
+		return sphere1;
+	}
+	
+	static ToM_SphereFX Spawn(vector3 pos, double size = 1, double alpha = 1, double grow = 0, double fade = 0, color col = 0)
 	{
 		let sphere = ToM_SphereFX(Actor.Spawn("ToM_SphereFX", pos));
 		if (!sphere)
@@ -1034,6 +1047,8 @@ class ToM_SphereFX : ToM_SmallDebris
 		sphere.alpha = alpha;
 		sphere.grow = grow;
 		sphere.fade = fade;
+		if (col)
+			sphere.SetShade(col);
 		return sphere;
 	}
 	

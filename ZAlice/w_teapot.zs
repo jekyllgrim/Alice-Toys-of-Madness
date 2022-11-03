@@ -561,6 +561,8 @@ class ToM_TeaProjectile : ToM_Projectile
 			bNOGRAVITY = true;
 			A_Explode();
 			
+			ToM_SphereFX.SpawnExplosion(pos, size: 42, alpha: 0.5, col1: "32a856", boomfactor: 2);
+			
 			double fz = CurSector.floorplane.ZAtPoint(pos.xy);
 			bool onFloor = (pos.z <= fz + 32 && waterlevel <= 0);			
 			if (onFloor && (!CheckLandingSize(32) || !(CurSector.FloorPlane.Normal == (0,0,1))))

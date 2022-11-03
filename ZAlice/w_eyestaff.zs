@@ -567,18 +567,7 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		TNT1 A 1 
 		{
 			A_Explode(80, 128);
-			let s = ToM_SphereFX.Spawn(pos, size: 48, alpha: 0.6, grow: 1.15, fade: 0.05);
-			if (s)
-			{
-				s.SetShade(flarecolor);
-				s.bBRIGHT = true;
-			}
-			let s2 = ToM_SphereFX.Spawn(pos, size: 16, alpha: 0.8, grow: 1.15, fade: 0.05);
-			if (s2)
-			{
-				s2.SetShade("fcb126");
-				s2.bBRIGHT = true;
-			}
+			ToM_SphereFX.SpawnExplosion(pos, col1: flarecolor, col2: "fcb126");
 			double svel = 4;
 			for (int i = 8; i > 0; i--)
 			{

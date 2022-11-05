@@ -26,26 +26,22 @@ class ToM_Knife : ToM_BaseWeapon
 	
 	action void A_KnifeReady(int flags = 0)
 	{
-		SetKnifeFrame();
 		if (invoker.knifeReload > 0)
 		{
 			flags |= WRF_NOFIRE;
 		}
-		/*else
+		
+		if (CountInv("ToM_RageBoxInitEffect"))
 		{
-			player.SetPSprite(APSP_TopFX, ResolveState("Null"));
-			player.SetPSprite(APSP_Overlayer, ResolveState("Null"));
-			//A_DoIdleAnimation(4, 60);
-		}*/
+			A_Overlay(APSP_UnderLayer, "LeftHandClaw", true);
+			flags |= WRF_NOSWITCH;
+		}
+		
 		A_WeaponReady(flags);
 	}
 	
-	action void SetKnifeFrame()
+	action void A_KnifeReloadVisuals()
 	{
-		//let psp = player.FindPSprite(PSP_Weapon);
-		//if (!psp) return;
-		//psp.frame = (invoker.knifeReload > 0) ? KNIFE_RELOAD_FRAME :  KNIFE_READY_FRAME;
-		//psp.sprite = GetSpriteIndex( (invoker.knifeReload > 0) ? KNIFE_RELOAD_SPRITE : KNIFE_READY_SPRITE );
 		if (invoker.knifeReload > 0)
 		{
 			A_OverlayFlags(OverlayID(), PSPF_FORCEALPHA, true);
@@ -58,6 +54,15 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 	}
 	
+	action void A_SetKnifeSprite(name defsprite, name ragesprite)
+	{
+		let psp = player.FindPSprite(OverlayID());
+		if (HasRageBox())
+			psp.sprite = GetSpriteIndex(ragesprite);
+		else
+			psp.sprite = GetSpriteIndex(defsprite);
+	}
+	
 	action void A_KnifeSlash(double distance = 10)
 	{
 		A_CustomPunch(distance, true, CPF_NOTURN, "ToM_KnifePuff");
@@ -66,8 +71,9 @@ class ToM_Knife : ToM_BaseWeapon
 	override void DoEffect()
 	{
 		super.DoEffect();
-		if (!owner || !owner.player || owner.health <= 0 || owner.isFrozen())
+		if (!owner || !owner.player || owner.health <= 0)
 			return;
+			
 		if (knifeReload > 0)
 		{
 			knifeReload--;
@@ -75,8 +81,8 @@ class ToM_Knife : ToM_BaseWeapon
 				owner.A_StartSound("weapons/knife/restore", CHAN_AUTO);
 			else
 			{
-				let weap = owner.player.readyweapon;
 				let plr = owner.player;
+				let weap = owner.player.readyweapon;
 				if (plr && weap && weap == self)
 				{
 					let psp = plr.FindPSprite(APSP_Overlayer);
@@ -85,6 +91,14 @@ class ToM_Knife : ToM_BaseWeapon
 				}
 			}
 		}
+		
+		/*let weap = owner.player.readyweapon;
+		if (weap && weap == self)
+		{
+			let psp = owner.player.FindPSprite(PSP_WEAPON);
+			if (psp)
+				console.printf("Current frame: %d", psp.frame);
+		}*/
 	}
 	
 	States
@@ -92,27 +106,77 @@ class ToM_Knife : ToM_BaseWeapon
 	Spawn:
 		ALVB A -1;
 		stop;
+	SelectRage:
+		TNT1 A 0 
+		{
+			A_WeaponOffset(0, WEAPONTOP);
+			vector2 piv = (0.2, 0.3);
+			A_OverlayPivot(OverlayID(), piv.x, piv.y);
+			A_Overlay(APSP_Underlayer, "SelectRageLeftHand");
+			A_OverlayFlags(APSP_Underlayer, PSPF_FLIP|PSPF_MIRROR, true);
+			A_OverlayFlags(APSP_Underlayer, PSPF_ADDWEAPON, false);
+			A_OverlayPivot(APSP_Underlayer, piv.x, piv.y);
+			A_OverlayOffset(APSP_Underlayer, 10, WEAPONTOP + 10);
+		}
+		VRAG ABCDEF 2 { player.viewheight -= 2; }
+		VRAG FFFGGGHHHIIIIIIIIIIIIIIIIIIIIIIIIII 5 A_OverlayOffset(OverlayID(), frandom[sfx](-1,1), frandom[sfx](-1,1), WOF_ADD);
+		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 0.6);
+		VRAG JKLMNO 2 A_RotatePSprite(OverlayID(), 3, WOF_ADD);
+		TNT1 A 0 A_RotatePSPrite(OverlayID(), 0, WOF_ADD);
+		VKRR BCDEFG 1 { player.viewheight += 2; }
+		stop;
+		goto ready;
+	SelectRageLeftHand:
+		VRAG ABCDEF 2;
+		VRAG FFFGGGHHHIIIIIIIIIIIIIIIIIIIIIIIIII 5 A_OverlayOffset(OverlayID(), frandom[sfx](-1,1), frandom[sfx](-1,1), WOF_ADD);
+		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 0.6);
+		VRAG JKL 2;
+		VRAG M 5;
+		VCLW Z 10 A_OverlayScale(OverlayID(), 1.2, 1.2);
+		VCLW A 7 A_ResetPSprite(OverlayID(), 7);
+		goto LeftHandClaw;
+	LeftHandClaw:
+		VCLW A 1 
+		{
+			if (!HasRageBox())
+				return ResolveState("Null");
+			return ResolveState(null);
+		}
+		loop;
+		/*VCLW AAAAAAAAAAAAAAAAAAAAAAAA 1 
+		{
+			A_OverlayOffset(OverlayID(), 0.1, 0.1, WOF_ADD);
+			A_OverlayRotate(OverlayID(), -0.03, WOF_ADD);
+		}
+		VCLW A 40 A_ResetPSprite(OverlayID(), 40);*/
+		loop;
 	Select:
 		TNT1 A 0 
 		{
+			if (CountInv("ToM_RageBoxInitEffect"))
+			{
+				return ResolveState("SelectRage");
+			}
 			A_WeaponOffset(-24, 86);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
 			A_RotatePSprite(OverlayID(), 30);		
-			SetKnifeFrame();
+			A_KnifeReloadVisuals();
+			return ResolveState(null);
 		}
 		VKNF ###### 1
 		{
 			A_WeaponOffset(4, -9, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5, WOF_ADD);
-			A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
+			A_KnifeReady(WRF_NOFIRE|WRF_NOBOB);
 		}
 		goto Ready;
 	Deselect:
 		TNT1 A 0 
 		{
+			A_SetKnifeSprite("VKNF", "VKRF");
 			A_OverlayPivot(OverlayID(), 1, 1);	
 			let psp = player.FindPSprite(PSP_Weapon);
-			SetKnifeFrame();
+			A_KnifeReloadVisuals();
 		}
 		VKNF ###### 1
 		{
@@ -127,24 +191,26 @@ class ToM_Knife : ToM_BaseWeapon
 			invoker.rightSlash = false;
 			invoker.combo = 0;
 		}
-		VKNF A 1 
+		#### A 1 
 		{
+			A_SetKnifeSprite("VKNF", "VKRF");
+			A_KnifeReloadVisuals();
 			A_KnifeReady();
 		}
 		wait;
 	/*IdleAnim:
-		VKNI AABC 2 A_WeaponReady(WRF_NOBOB);
+		VKNI AABC 2 A_KnifeReady(WRF_NOBOB);
 		VKNI DDEEFFGGHHIIJJKK 1 
 		{
 			A_RotatePSprite(OverlayID(), 2);
-			A_WeaponReady(WRF_NOBOB);
+			A_KnifeReady(WRF_NOBOB);
 		}
 		VKNI LLMMNNOO 1 
 		{
 			A_RotatePSprite(OverlayID(), -4);
-			A_WeaponReady(WRF_NOBOB);
+			A_KnifeReady(WRF_NOBOB);
 		}
-		VKNI BAA 2 A_WeaponReady(WRF_NOBOB);
+		VKNI BAA 2 A_KnifeReady(WRF_NOBOB);
 		goto Ready;*/
 	Fire:
 		TNT1 A 0 
@@ -164,111 +230,140 @@ class ToM_Knife : ToM_BaseWeapon
 	RightSlash:
 		TNT1 A 0 
 		{
+			A_SetKnifeSprite("VKNF", "VKRF");
 			A_OverlayPivot(OverlayID(), 0.5, 0.5);
 			A_RotatePSprite(OverlayID(), frandom[wrot](-15,0), WOF_INTERPOLATE);
 		}
-		VKNF AABB 1
+		#### AABB 1
 		{
 			A_WeaponOffset(16, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5.5, WOF_ADD);
 		}
-		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
-		VKNF BBB 1
+		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
+		#### BBB 1
 		{
 			A_WeaponOffset(-60, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
 		}
-		TNT1 C 0 A_KnifeSlash(25);
+		#### A 0 
+		{
+			A_KnifeSlash(25);
+			A_SetKnifeSprite("VKNS", "VKRS");
+		}
 		VKNS CCC 1
 		{
 			A_WeaponOffset(-44, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
-		TNT1 A 0 A_ResetPSprite(OverlayID(), 10);
-		VKNF CCCHHHHAAA 1 A_WeaponReady(WRF_NOBOB);
+		TNT1 A 0 
+		{
+			A_ResetPSprite(OverlayID(), 10);
+			A_SetKnifeSprite("VKNF", "VKRF");
+		}
+		#### CCCHHHHAAA 1 A_KnifeReady(WRF_NOBOB);
 		goto ready;
 	LeftSlash:
 		TNT1 A 0 
 		{
+			A_SetKnifeSprite("VKNF", "VKRF");
 			A_OverlayPivot(OverlayID(), 0.9, 0.7);
 			A_RotatePSprite(OverlayID(), frandom[wrot](0,15), WOF_INTERPOLATE);
 		}
-		VKNF DDEE 1
+		#### DDEE 1
 		{
 			A_WeaponOffset(-20, -4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
-		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
-		VKNF EEE 1
+		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
+		#### EEE 1
 		{
 			A_WeaponOffset(80, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5, WOF_ADD);
 		}		
-		TNT1 E 0 A_KnifeSlash(25);
-		VKNS FFF 1
+		TNT1 E 0 
+		{
+			A_KnifeSlash(25);
+			A_SetKnifeSprite("VKNS", "VKRS");
+		}
+		#### FFF 1
 		{
 			A_WeaponOffset(65, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
-		TNT1 A 0 A_ResetPSprite(OverlayID(), 10);
-		VKNF FFFEEEDDAA 1 A_WeaponReady(WRF_NOBOB);
+		TNT1 A 0 
+		{
+			A_ResetPSprite(OverlayID(), 10);
+			A_SetKnifeSprite("VKNF", "VKRF");
+		}
+		#### FFFEEEDDAA 1 A_KnifeReady(WRF_NOBOB);
 		goto ready;
 	DownSlash:
 		TNT1 A 0 
 		{
+			A_SetKnifeSprite("VKNF", "VKRF");
 			A_OverlayPivot(OverlayID(), 0.5, 1);
 			A_RotatePSprite(OverlayID(), frandom[wrot](-5,15), WOF_INTERPOLATE);
 		}
-		VKNF GGG 1 A_WeaponOffset(5, -4, WOF_ADD);
-		TNT1 A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);		
-		VKNF GGH 1 A_WeaponOffset(-12, 35, WOF_ADD);
-		TNT1 H 0  A_KnifeSlash(35);
-		VKNS HHHH 1 A_WeaponOffset(-18, 25, WOF_ADD);
-		TNT1 A 0 A_ResetPSprite(OverlayID(), 9);
-		VKNF HHHHZZZZZ 1 A_WeaponReady(WRF_NOBOB);
+		#### GGG 1 A_WeaponOffset(5, -4, WOF_ADD);
+		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);		
+		#### GGH 1 A_WeaponOffset(-12, 35, WOF_ADD);
+		TNT1 A 0  
+		{
+			A_KnifeSlash(35);
+			A_SetKnifeSprite("VKNS", "VKRS");
+		}
+		#### HHHH 1 A_WeaponOffset(-18, 25, WOF_ADD);
+		TNT1 A 0 
+		{
+			A_ResetPSprite(OverlayID(), 9);
+			A_SetKnifeSprite("VKNF", "VKRF");
+		}
+		#### HHHHZZZZZ 1 A_KnifeReady(WRF_NOBOB);
 		goto ready;
 	AltFire:
-		TNT1 A 0 A_ResetPSprite(OverlayID());
-		VKNF HHH 1
+		TNT1 A 0 
+		{
+			A_ResetPSprite(OverlayID());
+			A_SetKnifeSprite("VKNF", "VKRF");
+		}
+		#### HHH 1
 		{
 			A_WeaponOffset(4, -3, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -1.5, WOF_ADD);
 		}
-		TNT1 A 0 A_StartSound("weapons/knife/throw", CHAN_WEAPON);
-		VKNF IIII 1
+		#### A 0 A_StartSound("weapons/knife/throw", CHAN_WEAPON);
+		#### IIII 1
 		{
 			A_WeaponOffset(3, -1.5, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -1, WOF_ADD);
 		}
-		VKNF JJJ 1 
+		#### JJJ 1 
 		{
 			A_WeaponOffset(-5, 15, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 4, WOF_ADD);
 		}
-		TNT1 A 0 
+		#### A 0 
 		{
 			A_StopSound(CHAN_WEAPON);
 			A_FireProjectile("ToM_KnifeProjectile");
 		}
-		VKNF KKK 1 
+		#### KKK 1 
 		{
 			A_WeaponOffset(-5, 8, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
-		VKNF KKK 1 A_WeaponOffset(-1.6, 2, WOF_ADD);
-		VKNF KK 1 A_WeaponOffset(-0.5, 1, WOF_ADD);
+		#### KKK 1 A_WeaponOffset(-1.6, 2, WOF_ADD);
+		#### KK 1 A_WeaponOffset(-0.5, 1, WOF_ADD);
 		TNT1 A 0
 		{
 			invoker.knifeReload = KNIFE_RELOAD_TIME;
 		}
 		TNT1 A 0 A_ResetPSprite(OverlayID(), 8);
-		TNT1 AAAAAAAA 1 
-		{
-			A_WeaponReady(WRF_NOBOB|WRF_NOFIRE);
-		}
+		TNT1 AAAAAAAA 1 A_KnifeReady(WRF_NOBOB|WRF_NOFIRE);
 		goto Ready;
 	RestoreKnife:
-		VKNR A 1
+		TNT1 A 0 A_SetKnifeSprite("VKNR", "VKRR");
+		#### A 1
 		{
 			A_SpawnPSParticle("RestoreKnifeParticle", density: 4, xofs: 80, yofs: 80);
 			
@@ -278,19 +373,22 @@ class ToM_Knife : ToM_BaseWeapon
 			}
 			return ResolveState(null);
 		}
-		loop;
+		wait;
 	RestoreKnifeEnd:
-		VKNR BCDEFG 1;
+		TNT1 A 0 A_SetKnifeSprite("VKNR", "VKRR");
+		#### BCDEFG 1;
 		stop;
 	RestoreKnifeParticle:
-		TNT1 A 0 {
+		TNT1 A 0 
+		{
 			A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);
 			A_OverlayFlags(OverlayID(),PSPF_RENDERSTYLE|PSPF_FORCEALPHA,true);
 			A_OverlayRenderstyle(OverlayID(),Style_Add);
 			A_OverlayAlpha(OverlayID(),0);
 			A_OverlayScale(OverlayID(),0.05,0.05);
 		}
-		VKNP AAAAAAAAAAAAAA 1 bright {
+		VKNP AAAAAAAAAAAAAA 1 bright 
+		{
 			A_OverlayScale(OverlayID(),0.05,0.05,WOF_ADD);
 			let psp = player.FindPSprite(OverlayID());
 			if (psp) {
@@ -299,6 +397,11 @@ class ToM_Knife : ToM_BaseWeapon
 			}
 		}
 		stop;
+	Cache:
+		VKNF A 0;
+		VKNR A 0;
+		VKRF A 0;
+		VKRR A 0;
 	}
 }
 

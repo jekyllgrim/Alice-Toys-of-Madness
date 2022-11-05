@@ -438,6 +438,7 @@ class ToM_CardProjectile : ToM_StakeProjectile
 	
 	Default
 	{
+		ToM_Projectile.ShouldActivateLines true;
 		ToM_Projectile.trailcolor "f4f4f4";
 		ToM_Projectile.trailscale 0.013;
 		ToM_Projectile.trailfade 0.024;

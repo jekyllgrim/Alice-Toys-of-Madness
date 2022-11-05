@@ -134,6 +134,14 @@ class ToM_BaseWeapon : Weapon abstract
 		}
 	}
 	
+	action bool HasRageBox()
+	{
+		if (CountInv("ToM_RageBoxInitEffect") || CountInv("ToM_RageBoxMainEffect"))
+			return true;
+			
+		return false;
+	}
+	
 	/*	Function by Lewisk3 using Gutamatics to fire 3D projectiles
 		with proper 3D offsets and optional crosshair converging.
 		(Adapted from a static version to an action function by me.)

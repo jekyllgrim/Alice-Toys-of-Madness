@@ -1,12 +1,14 @@
 version "4.8.2"
 
+#include "ZAlice/tom_constants.zs"
 #include "ZAlice/tom_main.zs"
 #include "ZAlice/tom_events.zs"
 #include "ZAlice/tom_items.zs"
-#include "ZAlice/tom_constants.zs"
+#include "ZAlice/tom_artifacts.zs"
 #include "ZAlice/tom_player.zs"
 #include "ZAlice/tom_weapon.zs"
 #include "ZAlice/tom_hud.zs"
+
 #include "ZAlice/w_knife.zs"
 #include "ZAlice/w_hhorse.zs"
 #include "ZAlice/w_cards.zs"

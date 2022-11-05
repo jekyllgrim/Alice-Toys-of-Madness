@@ -1,0 +1,4 @@
+brightmap texture "models/ragebox/ragebox_lit.png"
+{
+   map "brightmaps/ragebox_lit.png"
+}

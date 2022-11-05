@@ -177,8 +177,14 @@ Model ToM_EyestaffProjectile
 	FrameIndex M000 A 0 0
 }
 
-Model ToM_CheshireCat_Talk
+Model ToM_RageBox
 {
+	Path "Models/RageBox"
+	Model 0 "ragebox.md3"
 	
+	Skin 0 "ragebox_lit.png"
 	FrameIndex M000 A 0 0
+	
+	Skin 0 "ragebox_unlit.png"
+	FrameIndex M000 B 0 0
 }

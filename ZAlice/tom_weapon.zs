@@ -374,9 +374,21 @@ class ToM_BaseWeapon : Weapon abstract
 		// If using default value, interpret as calling layer
 		int tlayer = layer == 0 ? OverlayID() : layer;
 		
-		// If this is main layer (PSP_WEAPON), base offsets
-		// are (0, 32) aka (0, WEAPONTOP). Otherwise it's (0,0):
-		vector2 tofs = (0, (tlayer == PSP_WEAPON ? WEAPONTOP : 0));
+		let psp = player.FindPSprite(tlayer);
+		if (!psp)
+		{
+			if (ToM_debugmessages)
+				console.printf("Error: PSprite %d doesn't exist", tlayer);
+			return;
+		}
+		
+		// If this is main layer (PSP_WEAPON), or an
+		// overlay that doesn't have bADDWEAPON,
+		// the target offsets are (0, 32).
+		// Otherwise they're (0,0):
+		vector2 tofs = (0, 0);
+		if (tlayer == PSP_WEAPON || !psp.bAddWeapon)
+			tofs = (0, WEAPONTOP);
 		
 		// If stagger tics is 1 or fewer, simply reset everything:
 		if (staggertics <= 1)
@@ -390,14 +402,6 @@ class ToM_BaseWeapon : Weapon abstract
 		
 		// Otherwise create a ToM_PspResetController and pass
 		// the current PSPrite and target values to it:
-		
-		let psp = player.FindPSprite(tlayer);
-		if (!psp)
-		{
-			if (ToM_debugmessages)
-				console.printf("Error: PSprite %d doesn't exist", tlayer);
-			return;
-		}
 		
 		let cont = ToM_PspResetController(ToM_PspResetController.Create(psp, staggertics, tofs));
 		if (!cont)
@@ -767,6 +771,18 @@ class ToM_BasePuff : ToM_BaseActor
 	}
 }
 
+class ToM_NullPuff : ToM_NullActor
+{
+	Default
+	{
+		+PUFFGETSOWNER
+		+BLOODLESSIMPACT
+		+DONTSPLASH
+		+NODECAL
+	}
+}
+	
+
 //Base projectile class that can produce relatively solid trails:
 Class ToM_Projectile : ToM_BaseActor abstract 
 {
@@ -869,10 +885,13 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		if (lact.HitLine)
 		{
 			let lineact = lact.HitLine;
-			lineact.Activate(target, lact.LineSide, SPAC_Impact|SPAC_MCross);
+			lineact.Activate(self, lact.LineSide, SPAC_Impact);
 			return true;
 		}
-		return false;
+		
+		return true;
+		
+		//LineAttack(angle, 4096, pitch, 0, 'Normal', debug ?"ToM_DebugSpot" : "ToM_NullPuff", LAF_TARGETISSOURCE, offsetforward: radius);
 	}
 	
 	override void PostBeginPlay() 
@@ -902,11 +921,17 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		Vector3 oldPos = self.pos;		
 		Super.Tick();
 		
-		if (ShouldActivateLines && !dead && ( InStateSequence(curstate, s_death) || InStateSequence(curstate, s_crash)))
+		if (ShouldActivateLines)
 		{
-			dead = true;
-			FireLineActivator();
+			FireLineActivator(true);
 		}
+		
+		/*if (ShouldActivateLines && !dead && ( InStateSequence(curstate, s_death) || InStateSequence(curstate, s_crash)))
+		{
+			console.printf("%s dies", GetClassName());
+			dead = true;
+			FireLineActivator(true);
+		}*/
 		
 		// Continue only if either a color is specified
 		// ir the trailactor is a custom actor:
@@ -1482,7 +1507,7 @@ class ToM_PspResetController : Object play
 			return;
 		}
 		psp.x += ofs_step.x;
-		psp.y + ofs_step.y;
+		psp.y += ofs_step.y;
 		psp.scale += scale_step;
 		psp.rotation += rotation_step;
 		if (tom_debugmessages > 1)

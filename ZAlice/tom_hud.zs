@@ -652,6 +652,7 @@ class ToM_HUDFaceController : Actor
 		+NOBLOCKMAP
 		+NOSECTOR
 		+SYNCHRONIZED
+		+NOTIMEFREEZE
 		Renderstyle 'None';
 		FloatBobPhase 0;
 	}

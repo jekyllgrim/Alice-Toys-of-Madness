@@ -123,6 +123,7 @@ class ToM_PlayerLegs : ToM_SmallDebris
 	protected state s_walk;
 	protected state s_run;
 	protected int curMoveState;
+	protected bool isConsole;
 	
 	enum ELegsState
 	{
@@ -135,6 +136,7 @@ class ToM_PlayerLegs : ToM_SmallDebris
 	Default
 	{
 		+NOINTERACTION
+		+NOTIMEFREEZE
 		renderstyle 'Normal';
 	}
 	
@@ -142,6 +144,7 @@ class ToM_PlayerLegs : ToM_SmallDebris
 	{
 		super.PostBeginPlay();
 		bONLYVISIBLEINMIRRORS = (ppawn && ppawn.player && ppawn.player == players[consoleplayer] && !ToM_Mainhandler.IsVoodooDoll(ppawn));
+		isConsole = bONLYVISIBLEINMIRRORS;
 		
 		s_walk = FindState("SeeWalk");
 		s_run = FindState("SeeRun");
@@ -179,6 +182,11 @@ class ToM_PlayerLegs : ToM_SmallDebris
 		
 		SetOrigin(ppawn.pos, true);
 		angle = ppawn.angle;
+		
+		if (isConsole)
+		{
+			bONLYVISIBLEINMIRRORS = !(ppawn.player.cheats & CF_CHASECAM);
+		}
 		
 		if (curMoveState == PL_DEAD)
 			return;

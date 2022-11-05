@@ -350,16 +350,18 @@ mixin class ToM_PickupFlashProperties
 {
 	color flashColor;
 	int flashDuration;
+	double flashAlpha;
 	//protected int flashTimer;
 	property flashColor : flashColor;
 	property flashDuration : flashDuration;
+	property flashAlpha : flashAlpha;
 
 	override bool TryPickup (in out Actor toucher)
 	{
 		let ret = super.TryPickup(toucher);
 		if (ret && toucher)
 		{
-			toucher.A_SetBlend(flashColor, 0.5, flashDuration);
+			toucher.A_SetBlend(flashColor, flashAlpha, flashDuration);
 		}
 		return ret;
 	}
@@ -401,9 +403,20 @@ mixin class ToM_ComplexPickupmessage
 	}
 }
 
+class ToM_Inventory : Inventory
+{
+	mixin ToM_CheckParticles;
+	mixin ToM_PickupFlashProperties;
+	mixin ToM_PickupSound;
+	mixin ToM_ComplexPickupmessage;
+}
+
 class ToM_SilverArmor : GreenArmor
 {
+	mixin ToM_CheckParticles;
+	mixin ToM_PickupFlashProperties;
 	mixin ToM_PickupSound;
+	mixin ToM_ComplexPickupmessage;
 	
 	Default
 	{
@@ -423,6 +436,11 @@ class ToM_SilverArmor : GreenArmor
 
 class ToM_GoldArmor : BlueArmor
 {
+	mixin ToM_CheckParticles;
+	mixin ToM_PickupFlashProperties;
+	mixin ToM_PickupSound;
+	mixin ToM_ComplexPickupmessage;
+	
 	Default
 	{
 		Inventory.icon "ACARM_2";
@@ -441,10 +459,17 @@ class ToM_GoldArmor : BlueArmor
 
 class ToM_Health : Health abstract
 {
+	mixin ToM_CheckParticles;
 	mixin ToM_PickupFlashProperties;
 	mixin ToM_PickupSound;
 	mixin ToM_ComplexPickupmessage;
-	mixin ToM_CheckParticles;
+	
+	Default
+	{
+		ToM_Health.flashcolor "f55d5d";
+		ToM_Health.flashDuration 20;
+		ToM_Health.flashAlpha 0.5;
+	}
 }
 
 class ToM_HealthPickup : ToM_Health
@@ -544,6 +569,8 @@ class ToM_Soulsphere : ToM_HealthPickup
 		Inventory.maxamount 200;
 		Inventory.Pickupsound "pickups/health/magicbud";
 		FloatBobStrength 0.65;
+		ToM_Health.flashDuration 30;
+		ToM_Health.flashAlpha 0.7;
 	}
 
 	override void Tick()
@@ -598,6 +625,9 @@ class ToM_Megasphere : ToM_HealthPickup
 		Inventory.amount 200;
 		Inventory.maxamount 200;
 		Inventory.Pickupsound "pickups/health/magicflower";
+		FloatBobStrength 0.65;
+		ToM_Health.flashDuration 35;
+		ToM_Health.flashAlpha 0.7;
 	}
 	
 	override bool TryPickup(in out Actor toucher)
@@ -652,10 +682,10 @@ class ToM_Megasphere : ToM_HealthPickup
 
 class ToM_Ammo : Ammo
 {
+	mixin ToM_CheckParticles;
 	mixin ToM_PickupFlashProperties;
 	mixin ToM_PickupSound;
 	mixin ToM_ComplexPickupmessage;
-	mixin ToM_CheckParticles;
 	
 	Default 
 	{

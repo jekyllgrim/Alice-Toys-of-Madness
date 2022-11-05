@@ -172,8 +172,8 @@ class ToM_NullActor : Actor
 		+NOBLOCKMAP
 		+SYNCHRONIZED
 		+DONTBLAST
-		radius 1;
-		height 1;
+		radius 0;
+		height 0;
 		FloatBobPhase 0;
 	}
 	override void PostBeginPlay() 
@@ -1142,6 +1142,7 @@ Class ToM_BaseFlare : ToM_SmallDebris
 	property fadefactor : fade;
 	double shrink;
 	property shrinkfactor : shrink;
+	
 	Default 
 	{
 		+BRIGHT
@@ -1151,6 +1152,21 @@ Class ToM_BaseFlare : ToM_SmallDebris
 		scale 0.4;
 		gravity 0;
 	}
+	
+	static ToM_BaseFlare Spawn(vector3 pos, double scale = 0.4, double alpha = 0.5, double fade = 0, double shrink = 0, color col = color("FF0000"))
+	{
+		let flare = ToM_BaseFlare(Actor.Spawn("ToM_BaseFlare", pos));
+		if (flare)
+		{
+			flare.falpha = alpha;
+			flare.fscale = scale;
+			flare.fade = fade;
+			flare.shrink = shrink;
+			flare.fcolor = col;
+		}
+		return flare;
+	}
+	
 	override void PostBeginPlay() 
 	{
 		super.PostBeginPlay();
@@ -1161,6 +1177,7 @@ Class ToM_BaseFlare : ToM_SmallDebris
 		}
 		SetColor();
 	}
+	
 	virtual void SetColor() { //fcolor is meant to be set by the actor that spawns the flare
 		if (GetRenderstyle() == Style_AddShaded || GetRenderstyle() == Style_Shaded) 
 		{
@@ -1174,12 +1191,12 @@ Class ToM_BaseFlare : ToM_SmallDebris
 				SetShade(fcolor);
 			}
 		}
-		//frame = style;
 		if (fscale != 0)
 			A_SetScale(fscale);
 		if (falpha != 0)
 			alpha = falpha;
 	}
+	
 	states 
 	{
 	Spawn:

@@ -232,9 +232,10 @@ class ToM_JackProjectile : ToM_Projectile
 {
 	enum JACKPFLAGS
 	{
-		//JACKDAMAGE = 30, // the damage to deal (see SpecialMissileHit)
-		RIPDELAY = 8, // can't damage the same actor more than once this many tics
+		RIPDELAY = 8,
+		JLIFETIME = 35 * 3,
 	}
+	
 	double rollstep; // roll change per tic (visual)
 	double angstep; // angle change per tic (visual)
 	protected Actor ripvictim;
@@ -320,7 +321,7 @@ class ToM_JackProjectile : ToM_Projectile
 	Spawn:
 		AMRK A 1
 		{
-			if (vel.length() < 3) 
+			if (vel.length() < 3 || age >= JLIFETIME)
 			{
 				bMISSILE = false;	//stop bouncing and start sliding
 				return ResolveState("Death");
@@ -329,7 +330,7 @@ class ToM_JackProjectile : ToM_Projectile
 		}
 		loop;
 	Death:
-		AMRK A 60;
+		AMRK A 35;
 		AMRK A 1 
 		{
 			// Scale out of existence:
@@ -347,9 +348,9 @@ class ToM_JackProjectile : ToM_Projectile
 // it's more powerful and harder to use):
 class ToM_RealSeeker : ToM_JackProjectile
 {
-	enum JACKSFLAGS
+	enum JVALUES
 	{
-		JLIFETIME = 35 * 6,
+		JSLIFETIME = 35 * 6,
 		JRETURNSPEED = 35,
 		JRETURNTIME = 20,
 		JMAXSEEKDIST = 800,
@@ -373,15 +374,25 @@ class ToM_RealSeeker : ToM_JackProjectile
 	override void Tick()
 	{
 		super.Tick();
+	
 		if (tracer)
 		{
 			bouncefactor = 0;
 		}
 		else
 			bouncefactor = default.bouncefactor;
+			
 		if (vel.length () < 3 && !tracer)
 		{
 			bMISSILE = false;
+		}
+		
+		// Reduce duration faster if the jack
+		// is resting and still haven't found
+		// a suitable target:
+		if (!isFrozen() && !tracer && !bMISSILE)
+		{
+			age += 2;
 		}
 	}
 	
@@ -486,7 +497,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 		AMRK A 1
 		{
 			// If time's up, return to the shooter:
-			if (age >= JLIFETIME /*|| (!bMISSILE && !tracer)*/)
+			if (age >= JSLIFETIME /*|| (!bMISSILE && !tracer)*/)
 			{
 				return ResolveState("ReturnToShooter");
 			}

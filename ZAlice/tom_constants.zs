@@ -17,6 +17,7 @@ enum ToM_PSprite_Layers
 	APSP_Kick = -500,
 	APSP_BottomParticle = -300,
 	APSP_UnderLayer = -10,
+	APSP_LeftHand = 3,
 	APSP_Overlayer = 5,
 	APSP_CARD1 = 21,
 	APSP_CARD2 = 22,

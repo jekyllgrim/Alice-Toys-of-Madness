@@ -875,8 +875,11 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	}
 	
 	bool FireLineActivator(bool debug = false)
-	{	
-		FLineTraceData lact;
+	{
+		if (!target)
+			return false;
+			
+		/*FLineTraceData lact;
 		LineTrace(angle, 4096, pitch, data: lact);
 		if (debug)
 		{
@@ -885,13 +888,13 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		if (lact.HitLine)
 		{
 			let lineact = lact.HitLine;
-			lineact.Activate(self, lact.LineSide, SPAC_Impact);
+			lineact.Activate(target, lact.LineSide, SPAC_Impact);
 			return true;
-		}
+		}*/
+		
+		LineAttack(angle, PLAYERMISSILERANGE, pitch, 0, 'Normal', debug ? "ToM_DebugSpot" : "ToM_NullPuff", LAF_TARGETISSOURCE, offsetforward: radius);
 		
 		return true;
-		
-		//LineAttack(angle, 4096, pitch, 0, 'Normal', debug ?"ToM_DebugSpot" : "ToM_NullPuff", LAF_TARGETISSOURCE, offsetforward: radius);
 	}
 	
 	override void PostBeginPlay() 
@@ -921,17 +924,11 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		Vector3 oldPos = self.pos;		
 		Super.Tick();
 		
-		if (ShouldActivateLines)
+		if (ShouldActivateLines && !dead && ( InStateSequence(curstate, s_death) || InStateSequence(curstate, s_crash)))
 		{
-			FireLineActivator(true);
-		}
-		
-		/*if (ShouldActivateLines && !dead && ( InStateSequence(curstate, s_death) || InStateSequence(curstate, s_crash)))
-		{
-			console.printf("%s dies", GetClassName());
 			dead = true;
 			FireLineActivator(true);
-		}*/
+		}
 		
 		// Continue only if either a color is specified
 		// ir the trailactor is a custom actor:

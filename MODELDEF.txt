@@ -9,8 +9,9 @@ Model ToM_KnifeProjectileModel
 	Scale 1 1 1
 	Offset 12 0 0
 	USEACTORPITCH
+	USEACTORROLL
 	
-	FrameIndex MODL A 0 0
+	FrameIndex M000 A 0 0
 }
 
 Model ToM_CardProjectile 

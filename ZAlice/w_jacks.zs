@@ -16,11 +16,11 @@ class ToM_Jacks : ToM_BaseWeapon
 	{
 		Tag "Jacks";
 		weapon.slotnumber 3;
-		weapon.ammotype1 "ToM_RedMana";
-		weapon.ammouse1 12;
+		weapon.ammotype1 "ToM_YellowMana";
+		weapon.ammouse1 6;
 		weapon.ammogive1 60;
-		weapon.ammotype2 "ToM_RedMana";
-		weapon.ammouse2 15;
+		weapon.ammotype2 "ToM_YellowMana";
+		weapon.ammouse2 12;
 	}
 	
 	// Set frame based on jacksTossed value:

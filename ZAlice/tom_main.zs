@@ -94,20 +94,24 @@ class ToM_UtilsP : Actor abstract
 		return (p1==p2)?p1:-1;
 	}
 	
-	static vector3 FindRandomPosAround(vector3 actorpos, double gridrad = 512, double mindist = 16, double fovlimit = 0, double viewangle = 0)
+	static vector3 FindRandomPosAround(vector3 actorpos, double rad = 512, double mindist = 16, double fovlimit = 0, double viewangle = 0, bool checkheight = false)
 	{
 		if (!level.IsPointInLevel(actorpos))
 			return actorpos;
 		
 		vector3 finalpos = actorpos;
-		double ofs = gridrad * 0.5;
+		double ofs = rad * 0.5;
+		// 64 iterations should be enough...
 		for (int i = 64; i > 0; i--)
 		{
+			// Pick a random position:
 			vector3 ppos = actorpos + (frandom[frpa](-ofs, ofs), frandom[frpa](-ofs, ofs), 0);
+			// Get the sector and distance to the point:
 			let sec = Level.PointinSector(ppos.xy);
 			double secfz = sec.NextLowestFloorAt(ppos.x, ppos.y, ppos.z);
 			let diff = LevelLocals.Vec2Diff(actorpos.xy, ppos.xy);
 			
+			// Check FOV, if necessary:
 			bool inFOV = true;
 			if (fovlimit > 0)
 			{
@@ -116,9 +120,14 @@ class ToM_UtilsP : Actor abstract
 					inFOV = false;
 			}			
 			
-			if (inFOV && Level.IsPointInLevel(ppos) && secfz == actorpos.z && (mindist <= 0 || diff.Length() >= mindist))
+			// We found suitable position if it's in the map,
+			// in view (optionally), on the same elevation
+			// (optionally) and not closer than necessary
+			// (optionally):
+			if (inFOV && Level.IsPointInLevel(ppos) && (!checkheight || secfz == actorpos.z) && (mindist <= 0 || diff.Length() >= mindist))
 			{
 				finalpos = ppos;
+				//console.printf("Final pos: %.1f,%.1f,%.1f", finalpos.x,finalpos.y,finalpos.z);
 				break;
 			}
 		}

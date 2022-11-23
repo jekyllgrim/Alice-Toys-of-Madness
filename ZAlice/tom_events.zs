@@ -1,6 +1,7 @@
 class ToM_Mainhandler : EventHandler
 {
 	ToM_HUDFaceController HUDfaces[MAXPLAYERS];
+	array < Class<Weapon> > mapweapons;
 	
 	static bool IsVoodooDoll(PlayerPawn mo) 
 	{
@@ -19,6 +20,16 @@ class ToM_Mainhandler : EventHandler
 		plr.GiveInventory("ToM_CrosshairSpawner", 1);
 		plr.GiveInventory("ToM_InvReplacementControl", 1);
 		plr.GiveInventory("ToM_KickWeapon", 1);
+	}
+	
+	override void WorldThingSpawned(worldEvent e)
+	{
+		let weap = Weapon(e.thing);
+		if (weap)
+		{
+			if (mapweapons.Find(weap) == mapweapons.Size())
+				mapweapons.Push(weap);
+		}
 	}
 	
 	override void WorldThingDamaged(worldEvent e)
@@ -79,31 +90,77 @@ class ToM_Mainhandler : EventHandler
 		let clsname = e.Replacee.GetClassName();
 		switch (clsname)
 		{
-		case 'Chainsaw':			e.Replacement = "ToM_HobbyHorse"; break;
-		case 'Pistol':				e.Replacement = "ToM_Cards"; break;
-		case 'Shotgun':			e.Replacement = "ToM_Cards"; break;
-		case 'SuperShotgun':		e.Replacement = "ToM_Cards"; break;
-		case 'Chaingun':			e.Replacement = "ToM_PepperGrinder"; break;
-		case 'RocketLauncher':	e.Replacement = "ToM_Teapot"; break;
-		case 'PlasmaRifle':		e.Replacement = "ToM_Eyestaff"; break;
-		case 'BFG9000':			e.Replacement = "ToM_Blunderbuss"; break;
-		case 'GreenArmor':			e.Replacement = "ToM_SilverArmor"; break;
-		case 'BlueArmor':			e.Replacement = "ToM_GoldArmor"; break;
-		
-		case 'HealthBonus':	e.Replacement = "ToM_HealthBonus"; break;
-		case 'Stimpack':		e.Replacement = "ToM_Stimpack"; break;
-		case 'Medikit':		e.Replacement = "ToM_Medikit"; break;
-		case 'Soulsphere':		e.Replacement = "ToM_Soulsphere"; break;
-		case 'Megasphere':		e.Replacement = "ToM_Megasphere"; break;
-		
-		case 'Clip':		e.Replacement = "ToM_SmallRedMana"; break;
-		case 'ClipBox':	e.Replacement = "ToM_YellowMana"; break;
-		case 'Shell':	e.Replacement = "ToM_SmallRedMana"; break;
-		case 'ShellBox':	e.Replacement = "ToM_RedMana"; break;
-		case 'RocketAmmo':	e.Replacement = "ToM_SmallYellowMana"; break;
-		case 'RocketBox':	e.Replacement = "ToM_YellowMana"; break;
-		case 'Cell':	e.Replacement = "ToM_SmallPurpleMana"; break;
-		case 'CellPack':	e.Replacement = "ToM_PurpleMana"; break;
+		case 'Chainsaw':
+			e.Replacement = "ToM_HobbyHorse"; 
+			break;
+		case 'Pistol':
+			e.Replacement = "ToM_Cards"; 
+			break;
+		case 'Shotgun':
+			e.Replacement = "ToM_Cards"; 
+			break;
+		case 'SuperShotgun':
+			e.Replacement = "ToM_Jacks"; 
+			break;
+		case 'Chaingun':
+			e.Replacement = "ToM_PepperGrinder"; 
+			break;
+		case 'RocketLauncher':
+			e.Replacement = "ToM_Teapot"; 
+			break;
+		case 'PlasmaRifle':
+			e.Replacement = "ToM_Eyestaff"; 
+			break;
+		case 'BFG9000':
+			e.Replacement = "ToM_Blunderbuss"; 
+			break;
+			
+		case 'GreenArmor':
+			e.Replacement = "ToM_SilverArmor"; 
+			break;
+		case 'BlueArmor':
+			e.Replacement = "ToM_GoldArmor"; 
+			break;
+		case 'HealthBonus':
+			e.Replacement = "ToM_HealthBonus"; 
+			break;
+		case 'Stimpack':
+			e.Replacement = "ToM_Stimpack"; 
+			break;
+		case 'Medikit':
+			e.Replacement = "ToM_Medikit"; 
+			break;
+		case 'Soulsphere':
+			e.Replacement = "ToM_Soulsphere"; 
+			break;
+		case 'Megasphere':
+			e.Replacement = "ToM_Megasphere"; 
+			break;
+
+		case 'Clip':
+			e.Replacement = "ToM_EquipmentSpawner_Clip"; 
+			break;
+		case 'ClipBox':
+			e.Replacement = "ToM_EquipmentSpawner_ClipBox"; 
+			break;
+		case 'Shell':
+			e.Replacement = "ToM_EquipmentSpawner_Shell"; 
+			break;
+		case 'ShellBox':
+			e.Replacement = "ToM_EquipmentSpawner_ShellBox"; 
+			break;
+		case 'RocketAmmo':
+			e.Replacement = "ToM_YellowMana"; 
+			break;
+		case 'RocketBox':
+			e.Replacement = "ToM_YellowManaBig"; 
+			break;
+		case 'Cell':
+			e.Replacement = "ToM_PurpleMana"; 
+			break;
+		case 'CellPack':
+			e.Replacement = "ToM_PurpleManaBig"; 
+			break;
 		}
 	}
 }

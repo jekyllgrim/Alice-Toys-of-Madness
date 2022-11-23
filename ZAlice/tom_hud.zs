@@ -126,7 +126,8 @@ class ToM_AliceHUD : BaseStatusBar
 				FaceController = handler.HUDFaces[CPlayer.mo.PlayerNumber()];
 			}
 		}
-		
+		if (!FaceController)
+			return;
 		HUDFace = FaceController.GetFaceTexture();
 		UpdateManaFrames();
 	}

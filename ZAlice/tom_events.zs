@@ -24,11 +24,14 @@ class ToM_Mainhandler : EventHandler
 	
 	override void WorldThingSpawned(worldEvent e)
 	{
-		let weap = Weapon(e.thing);
-		if (weap)
+		if (e.thing && (e.thing is 'Weapon'))
 		{
-			if (mapweapons.Find(weap) == mapweapons.Size())
-				mapweapons.Push(weap);
+			let weap = (class<Weapon>)(e.thing.GetClass());
+			if (weap)
+			{
+				if (mapweapons.Find(weap) == mapweapons.Size())
+					mapweapons.Push(weap);
+			}
 		}
 	}
 	

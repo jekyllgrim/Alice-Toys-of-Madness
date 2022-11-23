@@ -91,6 +91,11 @@ class ToM_BaseWeapon : Weapon abstract
 				return;
 			}
 		}
+		let handler = ToM_MainHandler(EvetHandler.Find("ToM_MainHandler"));
+		if (handler && handler.mapweapons.Find(GetClass()) == handler.mapweapons.Size())
+		{
+			handler.mapweapons.Push(GetClass());
+		}
 	}
 	
 	override void DoEffect()

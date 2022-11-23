@@ -4,6 +4,39 @@ class ToM_UtilsP : Actor abstract
 	{
 		return (i >= 0) ? 1 : -1;
 	}
+
+	//By default returns true if ANY of the players has the item.
+	//If 'checkall' argument is true, the function returns true if ALL players have the item.
+	static bool CheckPlayersHave(Class<Inventory> itm, bool checkall = false) 
+	{
+		if (!itm)
+			return false;
+			
+		for (int pn = 0; pn < MAXPLAYERS; pn++) 
+		{
+			if (!playerInGame[pn])
+				continue;
+			PlayerInfo plr = players[pn];
+			if (!plr || !plr.mo)
+				continue;
+			bool found = plr.mo.CountInv(itm);
+			if (checkall && !found) 
+			{
+				if (tom_debugmessages > 1)
+					console.printf("Player %d doesn't have %s",plr.mo.PlayerNumber(),itm.GetClassName());
+				return false;
+				break;
+			}
+			else if (found) {
+				if (tom_debugmessages > 1)
+					console.printf("Player %d has %s",plr.mo.PlayerNumber(),itm.GetClassName());
+				return true;
+				break;
+			}
+		}
+		
+		return false;
+	}
 	
 	static clearscope double LinearMap(double val, double source_min, double source_max, double out_min, double out_max) 
 	{

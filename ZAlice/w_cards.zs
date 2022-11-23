@@ -7,6 +7,7 @@ class ToM_Cards : ToM_BaseWeapon
 	
 	protected int cardVertStep[3];
 	protected int handVertStep;
+
 	const CARDSTEPS = 32;
 	const HANDSTEPS = CARDSTEPS;
 	const ANGLESTEP = 360. / CARDSTEPS;
@@ -45,7 +46,11 @@ class ToM_Cards : ToM_BaseWeapon
 	action void A_FireCardLayer()
 	{
 		invoker.curCardLayer = invoker.cardLayernum[invoker.cardLayerID];
-		player.SetPSPrite(invoker.curCardLayer, ResolveState("FireCard"));
+		let psp = player.FindPSprite(invoker.curCardLayer);
+		if (psp)
+		{
+			player.SetPSPrite(invoker.curCardLayer, ResolveState("FireCard"));
+		}
 		invoker.cardLayerID++;
 		if (invoker.cardLayerID >= invoker.cardLayerNum.Size())
 			invoker.cardLayerID = 0;
@@ -109,10 +114,11 @@ class ToM_Cards : ToM_BaseWeapon
 		player.SetPSPrite(APSP_Card3, ResolveState("RemoveCard"));
 	}
 	
-	action Actor A_FireCard(double xspread = 0, double yspread = 0, double xofs = 0, double yofs = 0, bool explicitangle = false)
+	action Actor A_FireCard(double xspread = 0, double yspread = 0, double xofs = 0, double yofs = 0, bool altmode = false)
 	{
-		double horspread = explicitangle ? xspread : frandom[firecard](-xspread, xspread);
-		double vertspread = explicitangle ? yspread : frandom[firecard](-yspread, yspread);
+		double horspread = altmode ? xspread : frandom[firecard](-xspread, xspread);
+		double vertspread = altmode ? yspread : frandom[firecard](-yspread, yspread);
+		
 		//console.printf("firing a card at an angle of %1.f", horspread);
 		let proj = ToM_CardProjectile(A_Fire3DProjectile(
 			"ToM_CardProjectile",
@@ -122,30 +128,44 @@ class ToM_Cards : ToM_BaseWeapon
 			angleoffs: horspread, 
 			pitchoffs: vertspread
 		));
-		int cardId = 0;
-		switch (invoker.curCardLayer)
-		{
-		//case APSP_Card1: cardId = 0; break;
-		case APSP_Card2: cardId = 1; break;
-		case APSP_Card3: cardId = 2; break;
-		}
+		
 		if (proj)
 		{
 			proj.A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
-			let spritename = invoker.cardSpriteName[cardId];
+			
+			int dmg;
+			name spritename; 
+			
+			if (altmode)
+			{
+				[dmg, spritename] = invoker.PickRandomCard();
+			}
+			
+			else 
+			{
+				int cardId = 0;
+				switch (invoker.curCardLayer)
+				{
+				case APSP_Card1: cardId = 0; break;
+				case APSP_Card2: cardId = 1; break;
+				case APSP_Card3: cardId = 2; break;
+				}
+				
+				dmg = Clamp(invoker.cardDamage[cardId], 1, 10);
+				spritename = invoker.cardSpriteName[cardId];
+			}
+			
 			let sprt = GetSpriteIndex(spritename);
-			if (sprt)
+			if (sprt > 0)
 			{
 				proj.sprite = sprt;
-				if (tom_debugmessages)
-					console.printf("setting projectile sprite to %s", spritename);
 			}
-			else if (tom_debugmessages)
-				console.printf("Couldn't set proj sprite; %s is an invalid sprite", spritename);
-			proj.SetDamage(Clamp(invoker.cardDamage[cardId], 1, 10));
+			
+			proj.SetDamage(dmg);
 			proj.broll = frandom[card](-2,2);
 			return proj;
 		}
+		
 		return null;
 	}
 	
@@ -162,7 +182,7 @@ class ToM_Cards : ToM_BaseWeapon
 			{
 				string spritename = String.Format("%s%s%s", prefix, CardSuits[suit], CardValues[val]);
 				SpriteID csprite = GetSpriteIndex(spritename);
-				if (csprite && csprite > 0)
+				if (csprite > 0)
 				{
 					let ct = ToM_CardData.Create(name(spritename), val);
 					if (ct)
@@ -172,44 +192,70 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 	}
 	
-	// Picks the next card:
-	action SpriteID A_PickCard()
+	int, name PickRandomCard()
 	{
-		let nullsprite = GetSpriteIndex("TNT1A0");
-		if (!player || health <= 0)
-			return nullsprite;
-		if (tom_debugmessages)
-			console.printf("Attemping to pick a card");
-		
-		if (invoker.Cards.Size() <= 0)
+		int cardValue = 0;
+		name cardSpriteName = '';
+	
+		if (Cards.Size() <= 0)
 		{
 			if (tom_debugmessages)
 				console.printf("Cards array empty: filling");
-			invoker.FillCardsArray();
+			FillCardsArray();
 		}
+		
+		int id = random[pickcard](0, Cards.Size() - 1);
+		let ct = Cards[id];
+		if (ct)
+		{
+			cardValue = ct.cardValue;
+			cardSpriteName = ct.cardSpriteName;
+			Cards.Delete(id);
+		}
+		
+		if (tom_debugmessages)
+			console.printf("Selected card sprite: %s | value: %d",cardSpriteName, cardValue);
+		
+		return cardValue, cardSpriteName;
+	}
+	
+	// Picks the next card:
+	action SpriteID A_SetLayerCard()
+	{
+		//let nullsprite = GetSpriteIndex("TNT1A0");
+		if (!player || health <= 0)
+			return -1;
 		
 		int cardId = 0;
 		switch (invoker.curCardLayer)
 		{
-		//case APSP_Card1: cardId = 0; break;
+		case APSP_Card1: cardId = 0; break;
 		case APSP_Card2: cardId = 1; break;
 		case APSP_Card3: cardId = 2; break;
 		}
 		if (tom_debugmessages)
-			console.printf("Current layer is %d", invoker.curCardLayer);
+			console.printf("Attempting to set card for layer%d", invoker.curCardLayer);
+			
+		int dmg; name spriteName;
+		[dmg, spriteName] = invoker.PickRandomCard();
 		
-		int id = random[pickcard](0, invoker.Cards.Size() - 1);
-		let ct = invoker.Cards[id];
-		if (ct)
-		{
-			invoker.cardDamage[cardId] = ct.cardValue;
-			invoker.cardSpriteName[cardId] = ct.cardSpriteName;
-			invoker.Cards.Delete(id);
-			if (tom_debugmessages)
-				console.printf("Selected card sprite: %s",invoker.cardSpriteName[cardID]);
-		}
+		invoker.cardDamage[cardId] = dmg;
+		invoker.cardSpriteName[cardId] = spriteName;
+				
 		let s = GetSpriteIndex(invoker.cardSpriteName[cardId]);
-		return s;
+		if (s > 0)
+		{
+			//if (tom_debugmessages)
+				//console.printf("Selected card sprite: %s",invoker.cardSpriteName[cardID]);
+			return s;
+		}
+		
+		if (tom_debugmessages)
+		{
+			console.printf("%s couldn't resolve a valid sprite index, returning -1", invoker.cardSpriteName[cardID]);
+		}
+		
+		return -1;
 	}
 	
 	/*override bool TryPickup(in out Actor toucher)
@@ -297,7 +343,7 @@ class ToM_Cards : ToM_BaseWeapon
 	ReadyCardIdle:
 		TNT1 A 0 
 		{
-			let s = A_PickCard();
+			let s = A_SetLayerCard();
 			let psp = player.FindPSprite(OverlayID());
 			if (psp && s)
 			{
@@ -389,14 +435,14 @@ class ToM_Cards : ToM_BaseWeapon
 		APCR MMNNOOO 1 
 		{
 			A_OverlayOffset(OverlayID(), 2, 0, WOF_ADD);
-			//let s = A_PickCard();
+			//let s = A_SetLayerCard();
 			double Yspread = 2;
 			let proj = A_FireCard(
 				invoker.cardFanAngle, 
 				frandom[firecard](-Yspread, Yspread), 
 				xofs: invoker.cardXpos, 
 				yofs: -14, 
-				explicitangle: true
+				altmode: true
 			);
 			invoker.cardFanAngle -= FANANGLESTEP;
 			invoker.cardXpos += 1;
@@ -408,7 +454,10 @@ class ToM_Cards : ToM_BaseWeapon
 		APCR A 6 A_CreateCardLayers();
 		goto ready;
 	Cache:
-		ACC1 A 0; ACC2 A 0; ACC3 A 0; ACC4 A 0; ACC5 A 0; ACC6 A 0; ACC7 A 0; ACC8 A 0; ACC9 A 0; ACCT A 0; ACCJ A 0; ACCQ A 0; ACCK A 0; ACD1 A 0; ACD2 A 0; ACD3 A 0; ACD4 A 0; ACD5 A 0; ACD6 A 0; ACD7 A 0; ACD8 A 0; ACD9 A 0; ACDT A 0; ACDJ A 0; ACDQ A 0; ACDK A 0; ACH1 A 0; ACH2 A 0; ACH3 A 0; ACH4 A 0; ACH5 A 0; ACH6 A 0; ACH7 A 0; ACH8 A 0; ACH9 A 0; ACHT A 0; ACHJ A 0; ACHQ A 0; ACHK A 0; ACS1 A 0; ACS2 A 0; ACS3 A 0; ACS4 A 0; ACS5 A 0; ACS6 A 0; ACS7 A 0; ACS8 A 0; ACS9 A 0; ACST A 0; ACSJ A 0; ACSQ A 0; ACSK A 0;
+		ACC1 A 0; ACC2 A 0; ACC3 A 0; ACC4 A 0; ACC5 A 0; ACC6 A 0; ACC7 A 0; ACC8 A 0; ACC9 A 0; ACCT A 0; ACCJ A 0; ACCQ A 0; ACCK A 0; 
+		ACD1 A 0; ACD2 A 0; ACD3 A 0; ACD4 A 0; ACD5 A 0; ACD6 A 0; ACD7 A 0; ACD8 A 0; ACD9 A 0; ACDT A 0; ACDJ A 0; ACDQ A 0; ACDK A 0; 
+		ACH1 A 0; ACH2 A 0; ACH3 A 0; ACH4 A 0; ACH5 A 0; ACH6 A 0; ACH7 A 0; ACH8 A 0; ACH9 A 0; ACHT A 0; ACHJ A 0; ACHQ A 0; ACHK A 0; 
+		ACS1 A 0; ACS2 A 0; ACS3 A 0; ACS4 A 0; ACS5 A 0; ACS6 A 0; ACS7 A 0; ACS8 A 0; ACS9 A 0; ACST A 0; ACSJ A 0; ACSQ A 0; ACSK A 0;
 	}
 }
 

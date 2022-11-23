@@ -67,6 +67,32 @@ class ToM_BaseWeapon : Weapon abstract
 		s_idle = FindState("IdleAnim");
 	}
 	
+	// I don't want weapon pickups to be too common due to their
+	// somewhat dramatic appearance. If all players already have 
+	// this weapon, and this weapon uses ammo, we'll destroy it 
+	// and spawn ammo for it instead.
+	// If it doesn't use ammo, we'll just destroy it directly,
+	// since there's no need to spawn duplicates of weapons 
+	// that don't consume ammo.
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		if (bTOSSED && ToM_UtilsP.CheckPlayersHave(self.GetClass(), checkAll: true))
+		{
+			if (ammotype1)
+			{
+				let am = Ammo(Spawn(ammotype1, pos));
+				if (am)
+				{
+					am.bTOSSED = true;
+					am.vel = vel;
+				}
+				Destroy();
+				return;
+			}
+		}
+	}
+	
 	override void DoEffect()
 	{
 		super.DoEffect();

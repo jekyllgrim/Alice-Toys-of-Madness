@@ -22,30 +22,24 @@ class ToM_Mainhandler : EventHandler
 		plr.GiveInventory("ToM_KickWeapon", 1);
 	}
 	
-	override void WorldThingSpawned(worldEvent e)
-	{
-		if (e.thing && (e.thing is 'Weapon'))
-		{
-			let weap = (class<Weapon>)(e.thing.GetClass());
-			if (weap)
-			{
-				if (mapweapons.Find(weap) == mapweapons.Size())
-					mapweapons.Push(weap);
-			}
-		}
-	}
-	
 	override void WorldThingDamaged(worldEvent e)
 	{
-		if (e.thing && e.Inflictor && e.Inflictor.GetClass() == 'ToM_TeaProjectile')
+		// Handle DoT from Teapot Cannon projectiles
+		// (has to be done here, since that's the only
+		// way to make sure the DoT is triggered by
+		// explosions, not just a direct hit of the 
+		// projectile):
+		if (e.thing && e.Inflictor && e.Inflictor.GetClass() == 'ToM_TeaProjectile' && e.Inflictor.target)
 		{
-			let cont = ToM_TeaBurnControl(e.thing.FindInventory("ToM_TeaBurnControl"));
+			let act = e.thing;
+			if (!act.CountInv("ToM_TeaBurnControl"))
+				act.GiveInventory("ToM_TeaBurnControl", 1);
+			let cont = ToM_TeaBurnControl(act.FindInventory("ToM_TeaBurnControl"));
 			if (cont)
+			{
 				cont.ResetTimer();
-			else
-				e.thing.GiveInventory("ToM_TeaBurnControl", 1);
-			//if (tom_debugmessages > 0)
-				//console.printf("%s is damaged by %s", e.thing.GetClassName(), e.inflictor.GetClassName());
+				cont.target = e.Inflictor.target;
+			}
 		}
 	}
 	

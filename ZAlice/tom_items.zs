@@ -30,12 +30,15 @@ class ToM_InventoryToken : Inventory abstract
 class ToM_ControlToken : ToM_InventoryToken abstract
 {
 	protected int timer;
+	protected int effectFreq;
 	protected int duration;
 	property duration : duration;
+	property EffectFrequency : effectFreq;
 	
 	Default
 	{
 		ToM_ControlToken.duration 35;
+		ToM_ControlToken.EffectFrequency 35;
 	}
 	
 	void ResetTimer()
@@ -48,12 +51,21 @@ class ToM_ControlToken : ToM_InventoryToken abstract
 		return timer;
 	}
 	
+	virtual void DoControlEffect()
+	{}
+	
 	override void DoEffect()
 	{
 		super.DoEffect();
 		if (self && owner && !owner.isFrozen())
 		{
 			timer++;
+			
+			if (effectFreq > 0 && (timer % effectFreq == 0))
+			{
+				DoControlEffect();
+			}
+			
 			if (timer >= duration)
 			{
 				Destroy();

@@ -453,6 +453,7 @@ class ToM_TeaBurnControl : ToM_ControlToken
 	Default
 	{
 		ToM_ControlToken.duration 175;
+		ToM_ControlToken.EffectFrequency 35;
 	}
 	
 	override void AttachToOwner(actor other) 
@@ -465,20 +466,23 @@ class ToM_TeaBurnControl : ToM_ControlToken
 		owner.A_SetTranslation("GreenTea");
 	}
 	
+	override void DoControlEffect()
+	{
+		if (owner && target)
+		{
+			int fl = (random[tsfx](1,3) == 1) ? 0 : DMG_NO_PAIN;
+			owner.DamageMobj(self,target,4,"Normal",flags:DMG_THRUSTLESS|fl);
+		}
+	}
+	
 	override void DoEffect() 
 	{
 		super.DoEffect();
 		
-		if (!owner)
+		if (!owner || !target)
 		{
 			Destroy();
 			return;
-		}
-
-		if (timer % 35 == 0 && owner.target) 
-		{
-			int fl = (random[tsfx](1,3) == 1) ? 0 : DMG_NO_PAIN;
-			owner.DamageMobj(self,owner.target,4,"Normal",flags:DMG_THRUSTLESS|fl);
 		}
 
 		if (timer % 4 == 0)

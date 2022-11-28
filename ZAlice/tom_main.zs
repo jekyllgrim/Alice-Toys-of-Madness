@@ -419,6 +419,8 @@ Class ToM_BaseActor : Actor abstract
 		}
 	}
 	
+	// Copies appearance of one actor to another in all 
+	// the ways I could think of:
 	static void CopyAppearance(Actor to, Actor from, bool style = true, bool size = false) 
 	{
 		if (!to || !from)
@@ -439,12 +441,11 @@ Class ToM_BaseActor : Actor abstract
 		}
 	}
 	
-	/*	Make the given actor invisible, have it drop its items
-		and call A_BossDeath if necessary.
-		If 'remove' is true, also destroy it; otherwise it's implied
-		that it's queued for destruction to be destroyed later by
-		the caller.
-	*/	
+	// Make the given actor invisible, have it drop its items
+	// and call A_BossDeath if necessary.
+	// If 'remove' is true, also destroy it; otherwise it's implied
+	// that it's queued for destruction to be destroyed later by
+	// the caller.
 	static void KillActorSilent(actor victim, bool remove = true) 
 	{
 		if (!victim)
@@ -831,7 +832,14 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 	}
 }
 
-class ToM_ActorLayer : ToM_SmallDebris
+// This creates a visual colored layer on top of
+// an actor by spawning a non-intereactive actor
+// that copies the origina actor's appearance
+// and position. With default sprite snorting
+// this actor will be placed on top of the
+// original one, and with renderstyles, color
+// and alpha applied, it creates a "layer."
+class ToM_ActorLayer : ToM_SmallDebris abstract
 {
 	double fade;
 	property fade : fade;

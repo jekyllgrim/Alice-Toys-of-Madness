@@ -1,17 +1,12 @@
 class ToM_Knife : ToM_BaseWeapon
-{
-	bool rightSlash;
-	int combo;
-	int trailFrame;
-	int knifeReload;
+{	
+	bool rightSlash; //right slash or left slash?
+	int combo; //combo counter
 	
-	enum knifeconsts
-	{
-		KNIFE_RELOAD_TIME = 75,
-		KNIFE_PARTIAL_RELOAD_TIME = 6,
-		KNIFE_RELOAD_FRAME = 11,
-		KNIFE_READY_FRAME = 0,
-	}
+	const MAXRECALLTIME = 35 * 7; //recall knife after this wait time
+	ToM_KnifeProjectile knife; //pointer to thrown knife
+	protected bool knifeWasThrown; //true if thrown
+	protected int recallWait; //recall timer
 	
 	Default 
 	{
@@ -26,12 +21,15 @@ class ToM_Knife : ToM_BaseWeapon
 	
 	action void A_KnifeReady(int flags = 0)
 	{
-		if (invoker.knifeReload > 0)
+		if (!player)
+			return;
+		
+		if (invoker.knifeWasThrown)
 		{
-			flags |= WRF_NOFIRE;
+			flags |= WRF_NOPRIMARY;
 		}
 		
-		if (CountInv("ToM_RageBoxInitEffect"))
+		if (HasRageBox())
 		{
 			A_Overlay(APSP_UnderLayer, "LeftHandClaw", true);
 			flags |= WRF_NOSWITCH;
@@ -40,65 +38,119 @@ class ToM_Knife : ToM_BaseWeapon
 		A_WeaponReady(flags);
 	}
 	
-	action void A_KnifeReloadVisuals()
+	action void A_SetKnifeSprite(name defsprite, name ragesprite = '')
 	{
-		if (invoker.knifeReload > 0)
-		{
-			A_OverlayFlags(OverlayID(), PSPF_FORCEALPHA, true);
-			A_OverlayAlpha(OverlayID(), 0);
-		}
-		else 
-		{
-			A_OverlayFlags(OverlayID(), PSPF_FORCEALPHA, false);
-			A_OverlayAlpha(OverlayID(), 1.0);
-		}
-	}
-	
-	action void A_SetKnifeSprite(name defsprite, name ragesprite)
-	{
+		if (!player)
+			return;
+		
 		let psp = player.FindPSprite(OverlayID());
-		if (HasRageBox())
+		if (!psp)
+			return;
+		
+		if (ragesprite && HasRageBox())
 			psp.sprite = GetSpriteIndex(ragesprite);
+		
 		else
 			psp.sprite = GetSpriteIndex(defsprite);
 	}
 	
-	action void A_KnifeSlash(double distance = 10)
+	action void A_KnifeSlash(double damage = 10)
 	{
-		A_CustomPunch(distance, true, CPF_NOTURN, "ToM_KnifePuff");
+		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_KnifePuff");
 	}
+	
+	// Throws the knife and saves a pointer to it:
+	action void A_ThrowKnife()
+	{
+		A_StopSound(CHAN_WEAPON);
+		Actor a, b;
+		[a, b] = A_FireProjectile("ToM_KnifeProjectile");
+		if (b)
+		{
+			invoker.knife = ToM_KnifeProjectile(b);
+			invoker.knifeWasThrown = true;
+			invoker.recallWait = MAXRECALLTIME;
+		}
+	}	
+	
+	// Calls the knife projectile to begin recalling
+	// and activates the "recall particles" if not
+	// yet active:
+	action void A_RecallKnife()
+	{
+		if (invoker.knife && player)
+		{
+			invoker.knife.BeginRecall();
+			
+			if (player.readyweapon && player.readyweapon == invoker)
+			{
+				A_Overlay(APSP_Overlayer, "SpawnRecallParticles", true);
+			}
+		}
+	}
+	
+	void CatchKnife()
+	{
+		if (!owner || !owner.player)
+			return;
+		
+		knife = null;
+		owner.A_StartSound("weapons/knife/restore", CHAN_AUTO);
+		
+		let weap = owner.player.readyweapon;
+		if (weap && weap == self)
+		{
+			let psp = owner.player.FindPSprite(PSP_WEAPON);
+			if (psp && !InStateSequence(psp.curstate, ResolveState("CatchKnife")))
+				psp.SetState(ResolveState("CatchKnife"));
+		}
+		knifeWasThrown = false;
+		
+		console.printf("Knife successfully recalled");
+	}
+		
 	
 	override void DoEffect()
 	{
 		super.DoEffect();
 		if (!owner || !owner.player || owner.health <= 0)
 			return;
-			
-		if (knifeReload > 0)
+		
+		// Safety-check: if the bool says the knife was 
+		// thrown but we don't have a valid pointer 
+		// to the knife, just restore it by setting
+		// the bool to false:
+		if (knifeWasThrown && !knife)
 		{
-			knifeReload--;
-			if (knifeReload <= 0)
-				owner.A_StartSound("weapons/knife/restore", CHAN_AUTO);
-			else
+			knifeWasThrown = false;
+		}
+		
+		// Automatic recall handling:
+		if (recallWait > 0)
+		{
+			// Decrement timer:
+			recallWait--;
+			
+			// If we're out of time and knife was 
+			// actually thrown:
+			if (recallWait <= 0 && knifeWasThrown)
 			{
-				let plr = owner.player;
-				let weap = owner.player.readyweapon;
-				if (plr && weap && weap == self)
+				// If the knife pointer is still valid,
+				// initate the recall:
+				if (knife)
 				{
-					let psp = plr.FindPSprite(APSP_Overlayer);
-					if (!psp)
-						plr.SetPSprite(APSP_Overlayer, ResolveState("RestoreKnife"));
+					knife.BeginRecall();
+				}
+				// Otherwise do the recall anyway
+				// and restore the knife in our hand:
+				else
+				{
+					if (tom_debugmessages)
+						console.printf("Lost pointer to thrown knife; restoring automatically");
+					CatchKnife();
 				}
 			}
 		}
-		
-		/*let weap = owner.player.readyweapon;
-		if (weap && weap == self)
-		{
-			let psp = owner.player.FindPSprite(PSP_WEAPON);
-			if (psp)
-				console.printf("Current frame: %d", psp.frame);
-		}*/
 	}
 	
 	States
@@ -124,7 +176,6 @@ class ToM_Knife : ToM_BaseWeapon
 		VRAG JKLMNO 2 A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		TNT1 A 0 A_RotatePSPrite(OverlayID(), 0, WOF_ADD);
 		VKRR BCDEFG 1 { player.viewheight += 2; }
-		stop;
 		goto ready;
 	SelectRageLeftHand:
 		VRAG ABCDEF 2;
@@ -145,19 +196,22 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		loop;
 	Select:
-		TNT1 A 0 
+		VKNF A 0 
 		{
-			if (CountInv("ToM_RageBoxInitEffect"))
+			if (HasRageBox())
 			{
 				return ResolveState("SelectRage");
 			}
+			
+			if (invoker.knifeWasThrown)
+				A_SetKnifeSprite("VKNR");
+				
 			A_WeaponOffset(-24, 86);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
-			A_RotatePSprite(OverlayID(), 30);		
-			A_KnifeReloadVisuals();
+			A_RotatePSprite(OverlayID(), 30);
 			return ResolveState(null);
 		}
-		VKNF ###### 1
+		#### ###### 1
 		{
 			A_WeaponOffset(4, -9, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5, WOF_ADD);
@@ -165,14 +219,15 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		goto Ready;
 	Deselect:
-		TNT1 A 0 
+		VKNF A 0 
 		{
-			A_SetKnifeSprite("VKNF", "VKRF");
+			if (invoker.knifeWasThrown)
+				A_SetKnifeSprite("VKNR");
+
 			A_OverlayPivot(OverlayID(), 1, 1);	
 			let psp = player.FindPSprite(PSP_Weapon);
-			A_KnifeReloadVisuals();
 		}
-		VKNF ###### 1
+		#### ###### 1
 		{
 			A_WeaponOffset(-4, 9, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
@@ -187,30 +242,19 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		#### A 1 
 		{
-			A_SetKnifeSprite("VKNF", "VKRF");
-			A_KnifeReloadVisuals();
+			if (invoker.knifeWasThrown)
+				A_SetKnifeSprite("VKNR", "VKRR");
+			else
+				A_SetKnifeSprite("VKNF", "VKRF");
+			
 			A_KnifeReady();
+			return ResolveState(null);
 		}
 		wait;
-	/*IdleAnim:
-		VKNI AABC 2 A_KnifeReady(WRF_NOBOB);
-		VKNI DDEEFFGGHHIIJJKK 1 
-		{
-			A_RotatePSprite(OverlayID(), 2);
-			A_KnifeReady(WRF_NOBOB);
-		}
-		VKNI LLMMNNOO 1 
-		{
-			A_RotatePSprite(OverlayID(), -4);
-			A_KnifeReady(WRF_NOBOB);
-		}
-		VKNI BAA 2 A_KnifeReady(WRF_NOBOB);
-		goto Ready;*/
 	Fire:
 		TNT1 A 0 
 		{
 			A_StopPSpriteReset();
-			invoker.trailFrame = 0;
 			invoker.combo++;
 			if (invoker.combo >= 5)
 			{
@@ -218,8 +262,7 @@ class ToM_Knife : ToM_BaseWeapon
 				return ResolveState("DownSlash");
 			}
 			invoker.rightSlash = !invoker.rightSlash;
-			let st = invoker.rightSlash ? ResolveState("RightSlash") : ResolveState("LeftSlash");			
-			return st;
+			return invoker.rightSlash ? ResolveState("RightSlash") : ResolveState("LeftSlash");
 		}
 	RightSlash:
 		TNT1 A 0 
@@ -325,11 +368,19 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		#### HHHHZZZZZ 1 A_KnifeReady(WRF_NOBOB);
 		goto ready;
+	RecallKnife:
+		#### # 1 A_RecallKnife();
+		goto ready;
 	AltFire:
-		TNT1 A 0 
+		#### # 0 
 		{
+			if (invoker.knifeWasThrown)
+			{
+				return ResolveState("RecallKnife");
+			}
 			A_ResetPSprite(OverlayID());
 			A_SetKnifeSprite("VKNF", "VKRF");
+			return ResolveState(null);
 		}
 		#### HHH 1
 		{
@@ -347,11 +398,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_WeaponOffset(-5, 15, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 4, WOF_ADD);
 		}
-		#### A 0 
-		{
-			A_StopSound(CHAN_WEAPON);
-			A_FireProjectile("ToM_KnifeProjectile");
-		}
+		#### A 0 A_ThrowKnife();
 		#### KKK 1 
 		{
 			A_WeaponOffset(-5, 8, WOF_ADD);
@@ -359,31 +406,35 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		#### KKK 1 A_WeaponOffset(-1.6, 2, WOF_ADD);
 		#### KK 1 A_WeaponOffset(-0.5, 1, WOF_ADD);
-		TNT1 A 0
+		TNT1 A 0 
 		{
-			invoker.knifeReload = KNIFE_RELOAD_TIME;
+			A_SetKnifeSprite("VKNR", "VKRR");
+			A_ResetPSprite(OverlayID(), 8);
 		}
-		TNT1 A 0 A_ResetPSprite(OverlayID(), 8);
-		TNT1 AAAAAAAA 1 A_KnifeReady(WRF_NOBOB|WRF_NOFIRE);
+		#### AAAAAAAA 1 A_KnifeReady(WRF_NOBOB|WRF_NOFIRE);
 		goto Ready;
-	RestoreKnife:
-		TNT1 A 0 A_SetKnifeSprite("VKNR", "VKRR");
-		#### A 1
+	CatchKnife:
+		TNT1 A 0 
 		{
-			A_SpawnPSParticle("RestoreKnifeParticle", density: 4, xofs: 80, yofs: 80);
+			A_SetKnifeSprite("VKNR", "VKRR");
+			A_WeaponOffset(15, 20);
+			A_OverlayRotate(OverlayID(), -10);
+			invoker.knifeWasThrown = false;
+			A_ResetPSprite(OverlayID(), 6);
+		}
+		#### BCDEFG 1;
+		goto Ready;
+	SpawnRecallParticles:
+		TNT1 A 1
+		{
+			A_SpawnPSParticle("RecallKnifeParticle", density: 4, xofs: 80, yofs: 80);
+			if (!invoker.knifeWasThrown)
+				return ResolveState("Null");
 			
-			if (invoker.knifeReload <= KNIFE_PARTIAL_RELOAD_TIME)
-			{
-				return ResolveState("RestoreKnifeEnd");
-			}
 			return ResolveState(null);
 		}
 		wait;
-	RestoreKnifeEnd:
-		TNT1 A 0 A_SetKnifeSprite("VKNR", "VKRR");
-		#### BCDEFG 1;
-		stop;
-	RestoreKnifeParticle:
+	RecallKnifeParticle:
 		TNT1 A 0 
 		{
 			A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);
@@ -422,23 +473,89 @@ class ToM_KnifePuff : ToM_BasePuff
 	}
 }
 
+// The actual knife projectile with all the logic
+// and behavior. The 3D model is NOT attached to
+// it; see ToM_KnifeProjectileModel for that.
 class ToM_KnifeProjectile : ToM_StakeProjectile
 {
-	actor knifemodel;
+	Actor knifemodel; //the actor that the 3d model is attached to
+	int bleedDelay;
+	int deathDelay;
+	
+	enum EKnifeValues
+	{
+		KV_RECALLSPEED = 34,
+		KV_BLEEDELAYMIN = 15,
+		KV_BLEEDELAYMAX = 40,
+		KV_BLEEDDAMAGE = 5,
+		KV_DEATHRECALLTIME = 35 * 2,
+	}		
+	
+	static const color RecallColors[] =
+	{
+		"c6c3ff",
+		"b5a7ff",
+		"9275ff",
+		"4d42ff"
+	};
 	
 	Default
 	{
-		seesound "";
-		//deathsound "weapons/knife/throwwall";
+		seesound ""; //Called from the weapon, not here
+		deathsound "";
 		renderstyle "Translucent";
 		speed 25;
-		damage (40);
+		damage (20);
 		-NOGRAVITY
 		+HITTRACER
 		gravity 0.2;
 		radius 10;
 		height 6;
 		ToM_Projectile.ShouldActivateLines true;
+	}
+	
+	// Called from the weapon to start recalling the knife:
+	void BeginRecall()
+	{
+		// If NOCLIP is true, the knife is already
+		// being recalled; do nothing:
+		if (bNOCLIP)
+		{
+			if (tom_debugmessages)
+				console.printf("Knife is already being recalled");
+			return;
+		}
+
+		if (tom_debugmessages)
+			console.printf("Recalling knife");		
+		
+		if (tracer && tracer.bISMONSTER && tracer.health <= 0 && !tracer.bNOBLOOD)
+		{
+			for (int i = 4; i > 0; i--)
+			{
+				tracer.SpawnBlood(pos, tracer.AngleTo(self) + frandom[knifebleed](-15,15), 40);
+			}
+		}
+		
+		A_Stop();
+		tracer = null;
+		// Disable sticking-to-wall behavior - see StickToWall()
+		// Without this the knife's pos.z would be forcefully
+		// attached to a plane if it hit a 2-sided wall.
+		// That behavior checks for bTHRUACTORS, so by disabling
+		// it we disable the sticking behavior.
+		// See ToM_StakeProjectile for details.
+		bTHRUACTORS = false;
+		bNOCLIP = true;
+		SetStateLabel("Recall");
+	}	
+	
+	// When run into a floor/ceiling by a moving wall,
+	// recall it instead of destroying.
+	// See ToM_StakeProjectile for details.
+	override void StakeBreak()
+	{
+		BeginRecall();
 	}
 	
 	override void PostBeginPlay()
@@ -449,13 +566,72 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		knifemodel.angle = angle;
 		knifemodel.pitch = pitch;
 		knifemodel.master = self;
+		bleedDelay = random[knifebleed](KV_BLEEDELAYMIN, KV_BLEEDELAYMAX);
 	}
 	
 	override void Tick()
 	{
 		super.Tick();
+		if (isFrozen())
+			return;
+		
 		if (knifemodel)
+		{
 			knifemodel.SetOrigin(pos, true);
+			// If the knife is already stuck but not recalling,
+			// adjust the model's angle and pitch to match it:
+			if (bTHRUACTORS && !bNOCLIP)
+			{
+				knifemodel.angle = angle;
+				knifemodel.pitch = pitch;
+			}
+		}
+		
+		// Auto-recall the knife after a delay if the victim
+		// has already died:
+		if (!bNOCLIP && tracer && tracer.bISMONSTER && tracer.health <= 0)
+		{
+			deathDelay++;
+			if (deathDelay >= KV_DEATHRECALLTIME)
+			{
+				if (tom_debugmessages)
+					console.printf("Victim has been dead for %d tics, recalling knife", deathDelay);
+				BeginRecall();
+			}
+		}
+		
+		if (!tracer || tracer.health <= 0 || tracer.bNOBLOOD || !target)
+			return;
+			
+		// Do the bleed damage to the enemy the knife is stuck into.
+		// Rather than employing a control item, I do it from the 
+		// knife itself. It keeps things simpler and makes sure
+		// the effect persists as long as the knife is stuck in
+		// the victim:
+		if (bleedDelay > 0)
+		{
+			bleedDelay--;
+			if (bleedDelay <= 0)
+			{
+				bleedDelay = random[knifebleed](KV_BLEEDELAYMIN,KV_BLEEDELAYMAX);
+				// 66% chance to not cause pain:
+				int fflags = DMG_THRUSTLESS;
+				if (random[knifebleed](1,3) != 1)
+					fflags |= DMG_NO_PAIN;
+				
+				// do the damage:
+				let dmg = tracer.DamageMobj(self,target,KV_BLEEDDAMAGE,"Bleed",flags:fflags);
+				
+				// If damage is > 0, spawn blood and the visuals:
+				if (dmg > 0)
+				{
+					let al = Spawn("ToM_BleedLayer", tracer.pos);
+					if (al)
+						al.master = tracer;
+					tracer.SpawnBlood(pos, tracer.AngleTo(self), dmg);
+				}
+			}
+		}
 	}			
 	
 	States
@@ -472,15 +648,14 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		}
 		wait;
 	XDeath:
-		TNT1 A 1
+		TNT1 A -1
 		{
+			StickToWall();
 			A_StartSound("weapons/knife/throwflesh");
-			if (knifemodel)
-				knifemodel.Destroy();
 		}
 		stop;
 	Death:
-		TNT1 A 50
+		TNT1 A -1
 		{
 			A_StopSound(CHAN_BODY);
 			A_StartSound("weapons/knife/throwwall");
@@ -488,7 +663,8 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 				knifemodel.A_SetPitch(pitch);
 			StickToWall();
 		}
-		TNT1 A 0
+		stop;
+		/*TNT1 A 0
 		{
 			if (knifemodel)
 				knifemodel.A_SetRenderstyle(alpha, Style_Translucent);
@@ -499,10 +675,71 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 				knifemodel.A_FadeOut(0.1);
 			A_FadeOut(0.1);
 		}
-		wait;
+		wait;*/
+	Recall:
+		TNT1 A 1
+		{
+			if (target) 
+			{
+				vector3 vec = Vec3To(target) + (0,0,target.height * 0.75);
+				vel = vec.Unit() * KV_RECALLSPEED;
+				
+				if (knifemodel)
+				{
+					A_FaceTarget(flags:FAF_MIDDLE);
+					knifemodel.angle = angle + 180;
+					knifemodel.pitch -= 10;
+					for (int i = 8; i > 0; i--)
+					{
+						int c = random[eyec](0, RecallColors.Size() - 1);
+						let col = RecallColors[c];
+						A_SpawnParticle(
+							col,
+							SPF_FULLBRIGHT,
+							lifetime: 20,
+							size: 6,
+							xoff: frandom[knifepart](-16,16),
+							yoff: frandom[knifepart](-16,16),
+							zoff: frandom[knifepart](-16,16),
+							sizestep: -0.1
+						);
+					}
+				}
+				
+				if (Distance3D(target) <= 64) 
+				{
+					let kn = ToM_Knife(target.FindInventory("ToM_Knife"));
+					if (kn)
+					{
+						kn.CatchKnife();
+					}
+					
+					if (knifemodel)
+					{
+						knifemodel.Destroy();
+					}
+					
+					Destroy();
+				}
+			}
+		}
+		loop;
 	}
 }
 
+class ToM_BleedLayer : ToM_ActorLayer
+{
+	Default
+	{
+		Renderstyle 'Stencil';
+		stencilcolor "EE0000";
+		alpha 0.8;
+		ToM_ActorLayer.Fade 0.05;
+	}
+}
+
+// The visual actor that the 3D model of the knife
+// is attached to:
 class ToM_KnifeProjectileModel : Actor
 {
 	Default

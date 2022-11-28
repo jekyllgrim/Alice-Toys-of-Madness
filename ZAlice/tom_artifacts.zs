@@ -143,6 +143,7 @@ class ToM_RageBoxInitEffect : Powerup
 class ToM_RageBoxMainEffect : PowerRegeneration 
 {
 	const PROTFACTOR = 0.15;
+	const DMGFACTOR = 4;
 
 	Default
 	{
@@ -151,13 +152,26 @@ class ToM_RageBoxMainEffect : PowerRegeneration
 		Powerup.Color "FF0000", 0.12;
 	}
 	
+	override void InitEffect()
+	{
+		Super.InitEffect();
+		owner.bNOPAIN = true;
+	}
 
 	override void ModifyDamage(int damage, Name damageType, out int newdamage, bool passive, Actor inflictor, Actor source, int flags)
 	{
-		if (passive && damage > 0)
+		if (damage > 0)
 		{
-			newdamage = max(0, ApplyDamageFactors(GetClass(), damageType, damage, damage  * PROTFACTOR));
-			if (Owner != null && newdamage < damage) Owner.A_StartSound(ActiveSound, CHAN_AUTO, CHANF_DEFAULT, 1.0, ATTN_NONE);
+			if (passive)
+			{
+				newdamage = max(0, ApplyDamageFactors(GetClass(), damageType, damage, int(damage  * PROTFACTOR)));
+			}
+			else
+			{
+				newdamage = max(1, ApplyDamageFactors(GetClass(), damageType, damage, damage * DMGFACTOR));
+				if (owner && newdamage > damage) 
+					owner.A_StartSound(ActiveSound, CHAN_AUTO, CHANF_DEFAULT, 1.0, ATTN_NONE);
+			}
 		}
 	}
 }

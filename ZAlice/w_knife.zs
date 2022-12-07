@@ -8,6 +8,8 @@ class ToM_Knife : ToM_BaseWeapon
 	protected bool knifeWasThrown; //true if thrown
 	protected int recallWait; //recall timer
 	
+	protected int clawResetWait;
+	
 	Default 
 	{
 		+WEAPON.MELEEWEAPON;
@@ -31,7 +33,7 @@ class ToM_Knife : ToM_BaseWeapon
 		
 		if (HasRageBox())
 		{
-			A_Overlay(APSP_UnderLayer, "LeftHandClaw", true);
+			A_Overlay(APSP_LeftHand, "LeftHandClaw", true);
 			flags |= WRF_NOSWITCH;
 		}
 		
@@ -56,7 +58,7 @@ class ToM_Knife : ToM_BaseWeapon
 	
 	action void A_KnifeSlash(double damage = 10)
 	{
-		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_KnifePuff");
+		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_KnifePuff", range: 80);
 	}
 	
 	// Throws the knife and saves a pointer to it:
@@ -88,6 +90,24 @@ class ToM_Knife : ToM_BaseWeapon
 			}
 		}
 	}
+	
+	action void A_MoveLeftHandAside(vector2 step = (8, 8), vector2 limit = (40, 40))
+	{
+		/*if (!player)
+			return;
+		
+		let psp = player.FindPSprite(APSP_LeftHand);
+		if (!psp)
+			return;
+		
+		A_StopPSpriteReset(APSP_LeftHand);
+		//invoker.clawResetWait = 35 * 2;
+		psp.x = Clamp(psp.x + step.x, step.x, limit.x);
+		psp.y = Clamp(psp.y + step.y, step.y, limit.y);
+		
+		console.printf("Left hand ofs: %.1f, %.1f", psp.x, psp.y);*/
+	}
+		
 	
 	void CatchKnife()
 	{
@@ -165,10 +185,7 @@ class ToM_Knife : ToM_BaseWeapon
 			vector2 piv = (0.2, 0.3);
 			A_OverlayPivot(OverlayID(), piv.x, piv.y);
 			A_Overlay(APSP_LeftHand, "SelectRageLeftHand");
-			A_OverlayFlags(APSP_LeftHand, PSPF_FLIP|PSPF_MIRROR, true);
-			A_OverlayFlags(APSP_LeftHand, PSPF_ADDWEAPON, false);
 			A_OverlayPivot(APSP_LeftHand, piv.x, piv.y);
-			A_OverlayOffset(APSP_LeftHand, 10, WEAPONTOP + 10);
 		}
 		VRAG ABCDEF 2 { player.viewheight -= 2; }
 		VRAG FFFGGGHHHIIIIIIIIIIIIIIIIIIIIIIIIII 5 A_OverlayOffset(OverlayID(), frandom[sfx](-1,1), frandom[sfx](-1,1), WOF_ADD);
@@ -188,13 +205,20 @@ class ToM_Knife : ToM_BaseWeapon
 		VCLS D 3;
 		goto LeftHandClaw;
 	LeftHandClaw:
+		TNT1 A 0
+		{
+			A_OverlayPivot(OverlayID(), 0.2, 0.3);
+			A_OverlayFlags(OverlayID(), PSPF_FLIP|PSPF_MIRROR, true);
+			A_OverlayFlags(OverlayID(), PSPF_ADDWEAPON, false);
+			A_OverlayOffset(OverlayID(), 0, WEAPONTOP);
+		}
 		VCLW A 1 
 		{
 			if (!HasRageBox())
 				return ResolveState("Null");
 			return ResolveState(null);
 		}
-		loop;
+		wait;
 	Select:
 		VKNF A 0 
 		{
@@ -238,15 +262,24 @@ class ToM_Knife : ToM_BaseWeapon
 		TNT1 A 0 
 		{
 			invoker.rightSlash = false;
-			invoker.combo = 0;
+			A_ResetPSprite(APSP_LeftHand, 20);
 		}
 		#### A 1 
 		{
-			if (invoker.knifeWasThrown)
+			if (invoker.knifeWasThrown) {
 				A_SetKnifeSprite("VKNR", "VKRR");
+				//if ((player.cmd.buttons & BT_ALTATTACK) && (player.oldbuttons & BT_ALTATTACK))
+					//return ResolveState("AltFire");
+			}
 			else
 				A_SetKnifeSprite("VKNF", "VKRF");
 			
+			if (invoker.combo > 0 && level.maptime % 5 == 0)
+			{
+				invoker.combo -= 1;
+				if (tom_debugmessages > 1)
+					console.printf("Knife combo counter: %d", invoker.combo);
+			}
 			A_KnifeReady();
 			return ResolveState(null);
 		}
@@ -256,9 +289,8 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_StopPSpriteReset();
 			invoker.combo++;
-			if (invoker.combo >= 5)
+			if (invoker.combo % 5 == 0)
 			{
-				invoker.combo = 0;
 				return ResolveState("DownSlash");
 			}
 			invoker.rightSlash = !invoker.rightSlash;
@@ -269,12 +301,13 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_SetKnifeSprite("VKNF", "VKRF");
 			A_OverlayPivot(OverlayID(), 0.5, 0.5);
-			A_RotatePSprite(OverlayID(), frandom[wrot](-15,0), WOF_INTERPOLATE);
+			A_RotatePSprite(OverlayID(), frandom[psprot](-20,0), WOF_INTERPOLATE);
 		}
-		#### AABB 1
+		#### BBB 1
 		{
-			A_WeaponOffset(16, 0, WOF_ADD);
+			A_WeaponOffset(20, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5.5, WOF_ADD);
+			A_MoveLeftHandAside();
 		}
 		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
 		#### BBB 1
@@ -283,7 +316,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayOffset(APSP_LeftHand, 8, 8, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
 		}
-		#### A 0 
+		TNT1 A 0 
 		{
 			A_KnifeSlash(25);
 			A_SetKnifeSprite("VKNS", "VKRS");
@@ -294,10 +327,9 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayOffset(APSP_LeftHand, 4, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
-		#### A 0 
+		TNT1 A 0 
 		{
 			A_ResetPSprite(OverlayID(), 10);
-			A_ResetPSprite(APSP_LeftHand, 10);
 			A_SetKnifeSprite("VKNF", "VKRF");
 		}
 		#### CCCHHHHAAA 1 A_KnifeReady(WRF_NOBOB);
@@ -307,12 +339,13 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_SetKnifeSprite("VKNF", "VKRF");
 			A_OverlayPivot(OverlayID(), 0.9, 0.7);
-			A_RotatePSprite(OverlayID(), frandom[wrot](0,15), WOF_INTERPOLATE);
+			A_RotatePSprite(OverlayID(), frandom[psprot](0,20), WOF_INTERPOLATE);
 		}
-		#### DDEE 1
+		#### EEE 1
 		{
-			A_WeaponOffset(-20, -4, WOF_ADD);
+			A_WeaponOffset(-24, -4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
+			A_MoveLeftHandAside();
 		}
 		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
 		#### EEE 1
@@ -335,7 +368,6 @@ class ToM_Knife : ToM_BaseWeapon
 		#### A 0 
 		{
 			A_ResetPSprite(OverlayID(), 10);
-			A_ResetPSprite(APSP_LeftHand, 10);
 			A_SetKnifeSprite("VKNF", "VKRF");
 		}
 		#### FFFEEEDDAA 1 A_KnifeReady(WRF_NOBOB);
@@ -345,11 +377,15 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_SetKnifeSprite("VKNF", "VKRF");
 			A_OverlayPivot(OverlayID(), 0.5, 1);
-			A_RotatePSprite(OverlayID(), frandom[wrot](-5,15), WOF_INTERPOLATE);
+			A_RotatePSprite(OverlayID(), frandom[wrot](-5,25), WOF_INTERPOLATE);
 		}
-		#### GGG 1 A_WeaponOffset(5, -4, WOF_ADD);
+		#### GG 1 A_WeaponOffset(6, -5, WOF_ADD);
 		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);		
-		#### GGH 1 A_WeaponOffset(-12, 35, WOF_ADD);
+		#### GGH 1 
+		{
+			A_WeaponOffset(-12, 35, WOF_ADD);
+			A_MoveLeftHandAside((11, 8));
+		}
 		TNT1 A 0  
 		{
 			A_KnifeSlash(35);
@@ -363,7 +399,6 @@ class ToM_Knife : ToM_BaseWeapon
 		TNT1 A 0 
 		{
 			A_ResetPSprite(OverlayID(), 9);
-			A_ResetPSprite(APSP_LeftHand, 9);
 			A_SetKnifeSprite("VKNF", "VKRF");
 		}
 		#### HHHHZZZZZ 1 A_KnifeReady(WRF_NOBOB);
@@ -409,9 +444,10 @@ class ToM_Knife : ToM_BaseWeapon
 		TNT1 A 0 
 		{
 			A_SetKnifeSprite("VKNR", "VKRR");
-			A_ResetPSprite(OverlayID(), 8);
+			A_ResetPSprite(OverlayID(), 6);
+			A_RotatePSprite(OverlayID(), 10, WOF_ADD);
 		}
-		#### AAAAAAAA 1 A_KnifeReady(WRF_NOBOB|WRF_NOFIRE);
+		#### AAAAAA 1 A_KnifeReady(WRF_NOBOB|WRF_NOFIRE);
 		goto Ready;
 	CatchKnife:
 		TNT1 A 0 
@@ -455,8 +491,10 @@ class ToM_Knife : ToM_BaseWeapon
 		stop;
 	Cache:
 		VKNF A 0;
+		VKNS A 0;
 		VKNR A 0;
 		VKRF A 0;
+		VKRS A 0;
 		VKRR A 0;
 	}
 }
@@ -470,6 +508,20 @@ class ToM_KnifePuff : ToM_BasePuff
 		+PUFFONACTORS
 		seesound "weapons/knife/hitflesh";
 		attacksound "weapons/knife/hitwall";
+	}
+	
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		if (target && target.player)
+		{
+			let weap = ToM_Knife(target.player.readyweapon);
+			if (weap)
+			{
+				int forcePainChance = ToM_UtilsP.LinearMap(weap.combo, 0, 5, 15, 80);
+				bFORCEPAIN = (random[knifepain](0, 100) <= forcePainChance);
+			}
+		}
 	}
 }
 
@@ -509,8 +561,8 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		-NOGRAVITY
 		+HITTRACER
 		gravity 0.2;
-		radius 10;
-		height 6;
+		radius 4;
+		height 20;
 		ToM_Projectile.ShouldActivateLines true;
 	}
 	
@@ -578,6 +630,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		if (knifemodel)
 		{
 			knifemodel.SetOrigin(pos, true);
+			
 			// If the knife is already stuck but not recalling,
 			// adjust the model's angle and pitch to match it:
 			if (bTHRUACTORS && !bNOCLIP)
@@ -585,11 +638,22 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 				knifemodel.angle = angle;
 				knifemodel.pitch = pitch;
 			}
+			
+			// Spawn the trail:
+			if (!bTHRUACTORS)
+			{
+				let tr = Spawn("ToM_KnifeProjectileModel", pos);
+				if (tr)
+				{
+					tr.angle = knifemodel.angle;
+					tr.pitch = knifemodel.pitch;
+				}
+			}
 		}
 		
 		// Auto-recall the knife after a delay if the victim
 		// has already died:
-		if (!bNOCLIP && tracer && tracer.bISMONSTER && tracer.health <= 0)
+		if (!bNOCLIP && tracer && tracer.bSHOOTABLE && tracer.health <= 0)
 		{
 			deathDelay++;
 			if (deathDelay >= KV_DEATHRECALLTIME)
@@ -600,7 +664,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 			}
 		}
 		
-		if (!tracer || tracer.health <= 0 || tracer.bNOBLOOD || !target)
+		if (!target || !tracer || !tracer.bSHOOTABLE || tracer.health <= 0 || tracer.bNOBLOOD)
 			return;
 			
 		// Do the bleed damage to the enemy the knife is stuck into.
@@ -617,7 +681,9 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 				// 66% chance to not cause pain:
 				int fflags = DMG_THRUSTLESS;
 				if (random[knifebleed](1,3) != 1)
+				{
 					fflags |= DMG_NO_PAIN;
+				}
 				
 				// do the damage:
 				let dmg = tracer.DamageMobj(self,target,KV_BLEEDDAMAGE,"Bleed",flags:fflags);
@@ -664,18 +730,6 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 			StickToWall();
 		}
 		stop;
-		/*TNT1 A 0
-		{
-			if (knifemodel)
-				knifemodel.A_SetRenderstyle(alpha, Style_Translucent);
-		}
-		TNT1 A 1 
-		{
-			if (knifemodel)
-				knifemodel.A_FadeOut(0.1);
-			A_FadeOut(0.1);
-		}
-		wait;*/
 	Recall:
 		TNT1 A 1
 		{
@@ -739,8 +793,9 @@ class ToM_BleedLayer : ToM_ActorLayer
 }
 
 // The visual actor that the 3D model of the knife
-// is attached to:
-class ToM_KnifeProjectileModel : Actor
+// is attached to.
+// If it has no master, it's used as a trail.
+class ToM_KnifeProjectileModel : ToM_SmallDebris
 {
 	Default
 	{
@@ -748,11 +803,25 @@ class ToM_KnifeProjectileModel : Actor
 		+NOBLOCKMAP
 	}
 	
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		// If it has no master, apply trail visuals:
+		if (!master)
+		{
+			A_SetRenderstyle(0.85, STYLE_Stencil);
+			SetShade("BBBBBB");
+		}
+	}
+	
 	override void Tick()
 	{
 		super.Tick();
-		if (!master)
-			Destroy();
+		// If it's a trail, fade it out:
+		if (!master && !isFrozen())
+		{
+			A_FadeOut(0.045);
+		}
 	}
 	
 	States

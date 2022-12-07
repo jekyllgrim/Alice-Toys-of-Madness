@@ -172,6 +172,7 @@ class ToM_BaseWeapon : Weapon abstract
 			
 		return false;
 	}
+
 	
 	/*	Function by Lewisk3 using Gutamatics to fire 3D projectiles
 		with proper 3D offsets and optional crosshair converging.
@@ -179,6 +180,9 @@ class ToM_BaseWeapon : Weapon abstract
 	*/
 	action Actor A_Fire3DProjectile(class<Actor> proj, bool useammo = true, double forward = 0, double leftright = 0, double updown = 0, bool crosshairConverge = false, double angleoffs = 0, double pitchoffs = 0)
 	{
+		if (!player || !player.mo)
+			return null;
+			
 		let weapon = player.ReadyWeapon;
 		if (useammo && weapon && stateinfo && stateinfo.mStateType == STATE_Psprite)
 		{
@@ -192,16 +196,15 @@ class ToM_BaseWeapon : Weapon abstract
 		mat = mat.multiplyVector3((forward, -leftright, updown));
 		vector3 offsetPos = mat.asVector3(false);
 		
-		vector3 shooterPos = (pos.xy, pos.z + height * 0.5);
-		if(player) shooterPos.z = player.viewz;
+		vector3 shooterPos = (pos.xy, ToM_UtilsP.GetPlayerAtkHeight(player.mo, absolute:true));
 		offsetPos = level.vec3offset(offsetPos, shooterPos);
 		
 		// Get velocity
 		vector3 aimpos;
-		if(player && crosshairConverge)
+		if(crosshairConverge)
 		{
 			FLineTraceData lt;
-			LineTrace(a, 1024*1024, p, 0, ToM_UtilsP.GetPlayerAtkHeight(player.mo), 0, data:lt);
+			LineTrace(a, PLAYERMISSILERANGE, p, 0, ToM_UtilsP.GetPlayerAtkHeight(player.mo), 0, data:lt);
 			double projrad = GetDefaultByType(proj).radius;			
 			aimPos = (lt.HitLocation.xy - lt.HitDir.xy*projrad, lt.HitLocation.z);
 			
@@ -408,8 +411,8 @@ class ToM_BaseWeapon : Weapon abstract
 		let psp = player.FindPSprite(tlayer);
 		if (!psp)
 		{
-			if (ToM_debugmessages)
-				console.printf("Error: PSprite %d doesn't exist", tlayer);
+			if (ToM_debugmessages > 1)
+				console.printf("PSprite %d doesn't exist", tlayer);
 			return;
 		}
 		
@@ -462,7 +465,7 @@ class ToM_BaseWeapon : Weapon abstract
 		
 		if (!psp)
 		{
-			if (ToM_debugmessages)
+			if (ToM_debugmessages > 1)
 				console.printf("PSprite %d doesn't exist", tlayer);
 			return;
 		}
@@ -955,11 +958,11 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		Vector3 oldPos = self.pos;		
 		Super.Tick();
 		
-		if (ShouldActivateLines && !dead && ( InStateSequence(curstate, s_death) || InStateSequence(curstate, s_crash)))
+		/*if (ShouldActivateLines && !dead && ( InStateSequence(curstate, s_death) || InStateSequence(curstate, s_crash)))
 		{
 			dead = true;
 			FireLineActivator();
-		}
+		}*/
 		
 		// Continue only if either a color is specified
 		// ir the trailactor is a custom actor:
@@ -1103,8 +1106,17 @@ Class ToM_StakeProjectile : ToM_Projectile
 	// This function is called when the projectile 
 	// dies and checks if it hit something:
 	virtual void StickToWall() 
-	{		
+	{
+	
 		string myclass = GetClassName();
+		
+		if (ShouldActivateLines)
+		{
+			FireLineActivator();
+			if (tom_debugmessages)
+				console.printf("%s is firing a line activator", myclass);
+		}
+		
 		// Disable actor collision upon sticking into a wall.
 		// Checking for this flag is this actor's primary
 		// way to check if it has hit a wall yet or not:

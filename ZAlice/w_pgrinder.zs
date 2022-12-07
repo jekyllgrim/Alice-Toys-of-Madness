@@ -235,25 +235,16 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		{
 			A_ResetPSprite(OverlayID(), 10);
 		}
-		PPGR Y 10 A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
-		PPGR Y 10 A_WeaponReady(WRF_NOFIRE);
+		PPGR Y 8 A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
+		PPGR Y 8 A_WeaponReady(WRF_NOSECONDARY);
 		goto Ready;
 	Right.Chargealt:
 		TNT1 A 0 A_StartSound("weapons/pgrinder/crunch");
 		PPGR JIHGFE 1 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
-		PPGR DCB 3 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
-		PPGR AAAAAAAA 1 A_Weaponoffset(frandom(-2,2), WEAPONTOP + frandom(0, 2.5));
-		/*TNT1 A 0 A_StartSound("weapons/pgrinder/crunch");
-		PPGR JIHGFE 2 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
-		PPGR DCB 4 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
-		PPGR A 8;
-		TNT1 A 0 A_StartSound("weapons/pgrinder/crunch");
-		PPGR JIHGFE 3 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
-		PPGR DCB 4 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
-		PPGR A 10;*/
+		PPGR DCB 2 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
+		PPGR AAA 1 A_Weaponoffset(frandom(-2,2), WEAPONTOP + frandom(0, 2.5));
 		TNT1 A 0 
 		{
-			//A_StopSound(CHAN_7);
 			player.SetPSprite(PSP_Weapon, ResolveState("AltFireDo"));
 		}
 		stop;

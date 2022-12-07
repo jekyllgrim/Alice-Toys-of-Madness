@@ -134,14 +134,20 @@ class ToM_UtilsP : Actor abstract
 		return finalpos;
 	}
 	
-	static clearscope double GetPlayerAtkHeight(PlayerPawn ppawn)
+	static double GetPlayerAtkHeight(PlayerPawn ppawn, bool absolute = false)
 	{
 		if (!ppawn)
 			return 0;
+		
 		let player = ppawn.player;
 		if (!player)
 			return 0;
-		return ppawn.height * 0.5 - ppawn.floorclip + ppawn.AttackZOffset*player.crouchFactor;
+		
+		double h = ppawn.height * 0.5 - ppawn.floorclip + ppawn.AttackZOffset*player.crouchFactor;
+		if (absolute)
+			h += ppawn.pos.z;
+		
+		return h;
 	}
 	
 	static vector3 GetRelativePosition(actor mo, vector3 offset)
@@ -790,12 +796,13 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 				destroy();
 				return;
 			}
-			/*
-			if it's a flat (non-3d-floor) liquid, we'll visually sink the object into it a bit
-			either by 50% of its height or by the value of its liquidheight property
-			*/
+			
+			// If it's a flat (non-3d-floor) liquid, we'll visually
+			// sink the object into it a bit either by 50% of its 
+			// height or by the value of its liquidheight property:
 			floorclip = (liquidheight == 0) ? (height * 0.5) : liquidheight;
-			//enter "DeathLiquid" state if present, otherwise enter "Death"
+			
+			// Enter "DeathLiquid" state if present, otherwise enter "Death":
 			if (d_liquid)
 				SetState(d_liquid);
 			else if (d_death)

@@ -352,17 +352,17 @@ class ToM_EquipmentSpawner : Inventory
 	}
 }
 
-class ToM_EquipmentSpawner_Clip : ToM_EquipmentSpawner 
+class ToM_AmmoSpawner_RedYellow : ToM_EquipmentSpawner 
 {
 	Default 
 	{
 		ToM_EquipmentSpawner.weapon1 "ToM_Cards";
 		ToM_EquipmentSpawner.weapon2 "ToM_Jacks";
-		ToM_EquipmentSpawner.otherPickupChance 30;
+		ToM_EquipmentSpawner.otherPickupChance 25;
 	}
 }
 
-class ToM_EquipmentSpawner_ClipBox : ToM_EquipmentSpawner_Clip 
+class ToM_AmmoSpawner_RedYellow_Big : ToM_AmmoSpawner_RedYellow 
 {
 	Default 
 	{
@@ -371,21 +371,12 @@ class ToM_EquipmentSpawner_ClipBox : ToM_EquipmentSpawner_Clip
 	}
 }
 
-class ToM_EquipmentSpawner_Shell : ToM_EquipmentSpawner 
-{
-	Default 
-	{
-		ToM_EquipmentSpawner.weapon1 "ToM_Jacks";
-		ToM_EquipmentSpawner.weapon2 "ToM_Teapot";
-		ToM_EquipmentSpawner.twoPickupsChance 20;
-	}
-}
-
-class ToM_EquipmentSpawner_ShellBox : ToM_EquipmentSpawner_Shell 
+class ToM_AmmoSpawner_RedYellow_BigOther : ToM_AmmoSpawner_RedYellow 
 {
 	Default 
 	{
 		ToM_EquipmentSpawner.twoPickupsChance 40;
 		ToM_EquipmentSpawner.bigPickupChance 100;
+		ToM_EquipmentSpawner.otherPickupChance 50;
 	}
 }

@@ -135,16 +135,16 @@ class ToM_Mainhandler : EventHandler
 			break;
 
 		case 'Clip':
-			e.Replacement = "ToM_EquipmentSpawner_Clip"; 
+			e.Replacement = "ToM_AmmoSpawner_RedYellow"; 
 			break;
 		case 'ClipBox':
-			e.Replacement = "ToM_EquipmentSpawner_ClipBox"; 
+			e.Replacement = "ToM_AmmoSpawner_RedYellow_Big"; 
 			break;
 		case 'Shell':
-			e.Replacement = "ToM_EquipmentSpawner_Shell"; 
+			e.Replacement = "ToM_AmmoSpawner_RedYellow"; 
 			break;
 		case 'ShellBox':
-			e.Replacement = "ToM_EquipmentSpawner_ShellBox"; 
+			e.Replacement = "ToM_AmmoSpawner_RedYellow_BigOther"; 
 			break;
 		case 'RocketAmmo':
 			e.Replacement = "ToM_YellowMana"; 

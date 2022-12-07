@@ -232,6 +232,7 @@ $limit weapons/jacks/ricochet 0
 
 weapons/pgrinder/windup		"sounds/pgrinder/pepperg_windup.ogg"
 weapons/pgrinder/spray		"sounds/pgrinder/PepperSmoke.mp3"
+$limit weapons/pgrinder/spray 0
 $random weapons/pgrinder/fire { grinderfire1 grinderfire2 grinderfire3 grinderfire4 grinderfire5 grinderfire6 }
 $limit weapons/pgrinder/fire 0
 grinderfire1		"sounds/pgrinder/pepperg_fire01.ogg"
@@ -292,11 +293,12 @@ $limit weapons/eyestaff/boom1 0
 weapons/eyestaff/boom1			"sounds/Eyestaff/explode1.wav"
 $limit weapons/eyestaff/boom2 0
 weapons/eyestaff/boom2			"sounds/Eyestaff/explode2.wav"
-$limit weapons/eyestaff/fireProjectile 0
+$limit weapons/eyestaff/fireProjectile 5
 weapons/eyestaff/fireProjectile "sounds/Eyestaff/liftoff.wav"
 
 // BLUNDERBUSS
 
+$limit weapons/blunderbuss/explode	4
 weapons/blunderbuss/explode	"Sounds/blunderbuss/bb_explode.wav"
 weapons/blunderbuss/fire		"Sounds/blunderbuss/bb_fire.ogg"
 weapons/blunderbuss/pull		"Sounds/blunderbuss/bb_pull.ogg"

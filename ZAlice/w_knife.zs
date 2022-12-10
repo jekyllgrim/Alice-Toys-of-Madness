@@ -9,6 +9,7 @@ class ToM_Knife : ToM_BaseWeapon
 	protected int recallWait; //recall timer
 	
 	protected int clawResetWait;
+	const CLAWRESETTIME = 40;
 	
 	Default 
 	{
@@ -91,21 +92,23 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 	}
 	
-	action void A_MoveLeftHandAside(vector2 step = (8, 8), vector2 limit = (40, 40))
+	action void A_MoveLeftHandAside(double sstep = 0.05, double slimit = 1.15, double ostep = 5, vector2 olimit = (-20, 20))
 	{
-		/*if (!player)
+		if (!player)
 			return;
 		
-		let psp = player.FindPSprite(APSP_LeftHand);
+		invoker.clawResetWait = CLAWRESETTIME;
+		A_StopPSpriteReset(OverlayID(), droprightthere: true);
+		
+		let psp = player.FindPSprite(OverlayID());
 		if (!psp)
 			return;
 		
-		A_StopPSpriteReset(APSP_LeftHand);
-		//invoker.clawResetWait = 35 * 2;
-		psp.x = Clamp(psp.x + step.x, step.x, limit.x);
-		psp.y = Clamp(psp.y + step.y, step.y, limit.y);
+		double tscale = Clamp(psp.scale.x + sstep, 1, slimit);
+		psp.scale = (tscale, tscale);
 		
-		console.printf("Left hand ofs: %.1f, %.1f", psp.x, psp.y);*/
+		psp.x = Clamp(psp.x - ostep, psp.x, olimit.x);
+		psp.y = Clamp(psp.y + ostep, psp.y, olimit.y);
 	}
 		
 	
@@ -185,7 +188,7 @@ class ToM_Knife : ToM_BaseWeapon
 			vector2 piv = (0.2, 0.3);
 			A_OverlayPivot(OverlayID(), piv.x, piv.y);
 			A_Overlay(APSP_LeftHand, "SelectRageLeftHand");
-			A_OverlayPivot(APSP_LeftHand, piv.x, piv.y);
+			A_OverlayPivot(APSP_LeftHand, -piv.x, piv.y);
 		}
 		VRAG ABCDEF 2 { player.viewheight -= 2; }
 		VRAG FFFGGGHHHIIIIIIIIIIIIIIIIIIIIIIIIII 5 A_OverlayOffset(OverlayID(), frandom[sfx](-1,1), frandom[sfx](-1,1), WOF_ADD);
@@ -195,11 +198,13 @@ class ToM_Knife : ToM_BaseWeapon
 		VKRR BCDEFG 1 { player.viewheight += 2; }
 		goto ready;
 	SelectRageLeftHand:
+		TNT1 A 0 A_OverlayFlags(OverlayID(), PSPF_FLIP|PSPF_MIRROR, true);
 		VRAG ABCDEF 2;
 		VRAG FFFGGGHHHIIIIIIIIIIIIIIIIIIIIIIIIII 5 A_OverlayOffset(OverlayID(), frandom[sfx](-1,1), frandom[sfx](-1,1), WOF_ADD);
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 0.6);
 		VRAG JKL 2;
 		VRAG M 5;
+		TNT1 A 0 A_OverlayFlags(OverlayID(), PSPF_FLIP|PSPF_MIRROR, false);
 		VCLS AB 2;
 		VCLS C 10;
 		VCLS D 3;
@@ -207,8 +212,7 @@ class ToM_Knife : ToM_BaseWeapon
 	LeftHandClaw:
 		TNT1 A 0
 		{
-			A_OverlayPivot(OverlayID(), 0.2, 0.3);
-			A_OverlayFlags(OverlayID(), PSPF_FLIP|PSPF_MIRROR, true);
+			A_OverlayPivot(OverlayID(), 0.2, 0.75);
 			A_OverlayFlags(OverlayID(), PSPF_ADDWEAPON, false);
 			A_OverlayOffset(OverlayID(), 0, WEAPONTOP);
 		}
@@ -216,6 +220,30 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			if (!HasRageBox())
 				return ResolveState("Null");
+			
+			let psp = player.FindPSprite(PSP_WEAPON);
+			let ps1 = player.FindPSprite(OverlayID());
+			//console.printf("%d scale: (%.1f, %.1f)", OverlayID(), ps1.scale.x, ps1.scale.y);
+			if (InStateSequence(psp.curstate, ResolveState("Fire")))
+			{
+				A_MoveLeftHandAside();
+				invoker.clawResetWait = CLAWRESETTIME;
+			}
+			else if (invoker.clawResetWait > 0)
+			{
+					invoker.clawResetWait--;
+				if (invoker.clawResetWait <= 0)
+				{
+					A_ResetPSprite(OverlayID(), 8);
+					//A_OverlayScale(OverlayID(), 1, 1, WOF_INTERPOLATE);
+				}
+			}
+				
+			/*if (psp)
+			{
+				A_OverlayOffset(OverlayID(), psp.y * -0.1, abs(psp.x * 0.1), WOF_INTERPOLATE);
+			}*/
+			
 			return ResolveState(null);
 		}
 		wait;
@@ -262,7 +290,6 @@ class ToM_Knife : ToM_BaseWeapon
 		TNT1 A 0 
 		{
 			invoker.rightSlash = false;
-			A_ResetPSprite(APSP_LeftHand, 20);
 		}
 		#### A 1 
 		{
@@ -280,6 +307,7 @@ class ToM_Knife : ToM_BaseWeapon
 				if (tom_debugmessages > 1)
 					console.printf("Knife combo counter: %d", invoker.combo);
 			}
+			
 			A_KnifeReady();
 			return ResolveState(null);
 		}
@@ -307,13 +335,12 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_WeaponOffset(20, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5.5, WOF_ADD);
-			A_MoveLeftHandAside();
+			//A_MoveLeftHandAside();
 		}
 		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
 		#### BBB 1
 		{
 			A_WeaponOffset(-60, 0, WOF_ADD);
-			A_OverlayOffset(APSP_LeftHand, 8, 8, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
 		}
 		TNT1 A 0 
@@ -324,7 +351,6 @@ class ToM_Knife : ToM_BaseWeapon
 		#### CCC 1
 		{
 			A_WeaponOffset(-44, 0, WOF_ADD);
-			A_OverlayOffset(APSP_LeftHand, 4, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		TNT1 A 0 
@@ -345,13 +371,12 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_WeaponOffset(-24, -4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
-			A_MoveLeftHandAside();
+			//A_MoveLeftHandAside();
 		}
 		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
 		#### EEE 1
 		{
 			A_WeaponOffset(80, 4, WOF_ADD);
-			A_OverlayOffset(APSP_LeftHand, 8, 10, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5, WOF_ADD);
 		}		
 		#### E 0 
@@ -362,7 +387,6 @@ class ToM_Knife : ToM_BaseWeapon
 		#### FFF 1
 		{
 			A_WeaponOffset(65, 4, WOF_ADD);
-			A_OverlayOffset(APSP_LeftHand, 5, 7, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		#### A 0 
@@ -384,7 +408,7 @@ class ToM_Knife : ToM_BaseWeapon
 		#### GGH 1 
 		{
 			A_WeaponOffset(-12, 35, WOF_ADD);
-			A_MoveLeftHandAside((11, 8));
+			//A_MoveLeftHandAside((6, 3));
 		}
 		TNT1 A 0  
 		{
@@ -394,7 +418,6 @@ class ToM_Knife : ToM_BaseWeapon
 		#### HHHH 1 
 		{
 			A_WeaponOffset(-18, 25, WOF_ADD);
-			A_OverlayOffset(APSP_LeftHand, 8, 4, WOF_ADD);
 		}
 		TNT1 A 0 
 		{
@@ -743,9 +766,44 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 					A_FaceTarget(flags:FAF_MIDDLE);
 					knifemodel.angle = angle + 180;
 					knifemodel.pitch -= 10;
-					for (int i = 8; i > 0; i--)
+					double psize = 8; //particle size
+					// make it larger for consoleplayer if it's their knife
+					// and it's far away:
+					if (target.player && target.player == players[consoleplayer])
 					{
-						int c = random[eyec](0, RecallColors.Size() - 1);
+						psize = ToM_UtilsP.LinearMap(Distance3D(target), target.radius, 1024, 10, 40);
+						psize = Clamp(psize, 8, 40);
+					}
+					for (int i = 3; i > 0; i--)
+					{
+						TextureID tex = TexMan.CheckForTexture("SPRKC0", TexMan.Type_Any);
+						if (tex)
+						{
+							double v = 1.5;
+							vector3 pvel = (frandom[knifepart](-v,v),frandom[knifepart](-v,v),frandom[knifepart](-v,v));
+							vector3 paccel = pvel * -0.05;
+							A_SpawnParticleEx(
+								"FFFFFF",
+								tex,
+								style: Style_ADD,
+								flags:SPF_FULLBRIGHT,
+								lifetime: 64,
+								size: psize,
+								xoff: frandom[knifepart](-16,16),
+								yoff: frandom[knifepart](-16,16),
+								zoff: frandom[knifepart](-16,16),
+								velx: pvel.x,
+								vely: pvel.y,
+								velz: pvel.z,
+								accelx: paccel.x,
+								accely: paccel.y,
+								accelz: paccel.z,
+								startalphaf: 0.5,
+								sizestep: psize * -0.05
+							);
+						}
+						
+						/*int c = random[eyec](0, RecallColors.Size() - 1);
 						let col = RecallColors[c];
 						A_SpawnParticle(
 							col,
@@ -756,7 +814,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 							yoff: frandom[knifepart](-16,16),
 							zoff: frandom[knifepart](-16,16),
 							sizestep: -0.1
-						);
+						);*/
 					}
 				}
 				

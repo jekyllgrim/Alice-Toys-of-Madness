@@ -23,14 +23,6 @@ Sprite "AMCRX0", 64, 64
 	Patch "PATCHES/AMACROSSH.PNG", 0, 0
 }
 
-Sprite "VKNPA0", 128, 128
-{
-	XScale 6.000
-	YScale 7.300
-	Offset -1231, -827
-	Patch "SPRKC0", 0, 0
-}
-
 Sprite "APCRA0", 344, 228
 {
 	YScale 1.200

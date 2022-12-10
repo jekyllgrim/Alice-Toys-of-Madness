@@ -334,6 +334,11 @@ ragebox/activate "sounds/pickups/ragebox_pickup.wav"
 ragebox/scream "sounds/pickups/ragebox_power.wav"
 ragebox/end "sounds/pickups/rage_end.wav"
 
+$random growpotion/giantstep { giantstep1 giantstep2 giantstep3 }
+giantstep1	"sounds/player/giant_step01.ogg"
+giantstep2	"sounds/player/giant_step02.ogg"
+giantstep3	"sounds/player/giant_step03.ogg"
+
 
 //// CHARACTERS
 

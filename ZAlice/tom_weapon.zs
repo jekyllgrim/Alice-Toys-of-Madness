@@ -236,15 +236,22 @@ class ToM_BaseWeapon : Weapon abstract
 		return proj;
 	}
 	
+	double GetBaseZoom()
+	{
+		return owner.CountInv("ToM_GrowControl") ? ToM_GrowControl.GROWZOOM : 1;
+	}
+	
 	action void A_AttackZoom(double step = 0.001, double limit = 0.03, double jitter = 0.002)
 	{
 		if (invoker.atkzoom < limit)
 		{
 			invoker.atkzoom += step;
-			A_ZoomFactor(1 - invoker.atkzoom,ZOOM_NOSCALETURNING);
+			A_ZoomFactor(invoker.GetBaseZoom() - invoker.atkzoom,ZOOM_NOSCALETURNING);
 		}
 		else
-			A_ZoomFactor(1 - invoker.atkzoom + frandom[atkzoom](-jitter, jitter),ZOOM_NOSCALETURNING);
+		{
+			A_ZoomFactor(invoker.GetBaseZoom() - invoker.atkzoom + frandom[atkzoom](-jitter, jitter),ZOOM_NOSCALETURNING);
+		}
 	}
 	
 	action void A_ResetZoom(double step = 0.005)
@@ -421,8 +428,8 @@ class ToM_BaseWeapon : Weapon abstract
 		// the target offsets are (0, 32).
 		// Otherwise they're (0,0):
 		vector2 tofs = (0, 0);
-		if (tlayer == PSP_WEAPON || !psp.bAddWeapon)
-			tofs = (0, WEAPONTOP);
+		if (tlayer == PSP_WEAPON || psp.bAddWeapon == false)
+			tofs.y = WEAPONTOP;
 		
 		// If stagger tics is 1 or fewer, simply reset everything:
 		if (staggertics <= 1)
@@ -458,7 +465,7 @@ class ToM_BaseWeapon : Weapon abstract
 	// This stops the process of the calling layer
 	// being reset, so that new offsets could be easily
 	// applied on top.
-	action void A_StopPSpriteReset(int layer = 0)
+	action void A_StopPSpriteReset(int layer = 0, bool dropRightThere = false)
 	{
 		int tlayer = layer == 0 ? OverlayID() : layer;
 		let psp = player.FindPSprite(tlayer);
@@ -476,7 +483,10 @@ class ToM_BaseWeapon : Weapon abstract
 			{
 				if (ToM_debugmessages > 1)
 					console.printf("Removing psp controller for PSprite %d", tlayer);
-				invoker.pspcontrols[i].Destroy();
+				if (dropRightThere)
+					invoker.pspcontrols[i].StopReset();
+				else
+					invoker.pspcontrols[i].Destroy();
 				invoker.pspcontrols.Delete(i);
 				return;
 			}
@@ -1598,6 +1608,14 @@ class ToM_PspResetController : Object play
 	PSprite GetPSprite()
 	{
 		return psp;
+	}
+	
+	void StopReset()
+	{
+		if (psp)
+			psp = null;
+	
+		Destroy();
 	}
 	
 	override void OnDestroy()

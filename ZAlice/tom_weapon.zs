@@ -167,10 +167,7 @@ class ToM_BaseWeapon : Weapon abstract
 	
 	action bool HasRageBox()
 	{
-		if (CountInv("ToM_RageBoxInitEffect") || CountInv("ToM_RageBoxMainEffect"))
-			return true;
-			
-		return false;
+		return (CountInv("ToM_RageBoxInitEffect") || CountInv("ToM_RageBoxMainEffect"));
 	}
 
 	
@@ -555,7 +552,7 @@ class ToM_BaseWeapon : Weapon abstract
 		to.frame = from.frame;
 	}
 	
-	action void A_SpawnPSParticle(stateLabel statename, bool bottom = false, int density = 1, double xofs = 0, double yofs = 0, int chance = 100)
+	action void A_SpawnPSParticle(stateLabel statename, bool bottom = false, int density = 1, double xofs = 0, double yofs = 0, int chance = 100, int maxlayers = 50)
 	{
 		if (random[pspart](0, 100) > chance)
 			return;
@@ -569,7 +566,7 @@ class ToM_BaseWeapon : Weapon abstract
 			player.SetPSprite(layer, tstate);
 			A_OverlayOffset(layer,frandom[pspart](-xofs,xofs),frandom[pspart](-yofs, yofs), WOF_ADD);
 			invoker.particleLayer++;
-			if (invoker.particleLayer >= 50)
+			if (invoker.particleLayer >= maxlayers)
 				invoker.particleLayer = 0;
 		}
 	}
@@ -589,7 +586,9 @@ class ToM_BaseWeapon : Weapon abstract
 		{
 			psp.alpha -= factor;
 			if (psp.alpha <= 0)
-				player.SetPSprite(OverlayID(), ResolveState("Null"));
+			{
+				psp.Destroy();
+			}
 		}
 	}
 	

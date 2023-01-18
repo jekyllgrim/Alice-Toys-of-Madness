@@ -238,7 +238,7 @@ class ToM_EquipmentSpawner : Inventory
 			
 			// this is important to make sure that the weapon 
 			// that wasn't dropped doesn't get DROPPED flag 
-			// (and this can't be crushed by moving ceilings)
+			// (and thus can't be crushed by moving ceilings)
 			else
 				inv.bDROPPED = false;
 		}

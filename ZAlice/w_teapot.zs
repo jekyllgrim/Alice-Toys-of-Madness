@@ -41,10 +41,10 @@ class ToM_Teapot : ToM_BaseWeapon
 		if (!weap)
 			return;
 		
-		if (tom_debugmessages > 1 && weap == self)
+		/*if (tom_debugmessages > 1 && weap == self)
 		{
 			console.midprint(smallfont, String.Format("Heat : %1.f. Overheated: %d", heat, overheated));
-		}
+		}*/
 		
 		// Highest priority: determine overheated state,
 		// doesn't matter if the owner is alive or dead,

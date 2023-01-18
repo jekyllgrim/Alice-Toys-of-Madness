@@ -574,6 +574,12 @@ class ToM_BaseWeapon : Weapon abstract
 		}
 	}
 	
+	action void A_ClearPSParticles(bool bottom = false, int maxlayers = 50)
+	{
+		int startlayer = bottom ? APSP_BottomParticle : APSP_TopParticle;
+		A_ClearOverlays(startlayer, startlayer + maxlayers);
+	}
+	
 	action void A_PSPFadeOut(double factor)
 	{
 		if (!player)

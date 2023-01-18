@@ -18,6 +18,7 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 	
 	action void A_FireBlunderbuss()
 	{
+		A_ClearPSParticles(bottom:false);
 		A_Overlay(APSP_UnderLayer, "MuzzleSmoke");
 		//A_Overlay(APSP_TopFX, "Flash");
 		A_FireProjectile("ToM_Cannonball");

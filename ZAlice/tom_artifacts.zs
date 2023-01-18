@@ -101,7 +101,12 @@ class ToM_RageBox : Actor replaces Berserk
 		{
 			SpawnRageSmoke();
 			if (target)
-				target.A_SetBlend("a80a0a", 0.75, 250);
+			{
+				if  (!target.CountInv("ToM_RageBoxInitEffect") && !target.CountInv("ToM_RageBoxMainEffect"))
+					target.A_SetBlend("a80a0a", 0.75, 250);
+				else
+					target.A_SetBlend("a80a0a", 0.35, 100);
+			}
 		}
 		M000 AAAAAAAAAAAAAAAAAAAAA 2 SpawnRageSmoke();
 		TNT1 A 0 A_SetRenderstyle(1, Style_Translucent);

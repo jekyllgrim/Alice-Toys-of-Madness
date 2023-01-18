@@ -295,10 +295,7 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 		goto Ready;
 	Deselect:
-		APCR A 0 
-		{
-			A_RemoveCardLayers();
-		}
+		APCR A 0 A_RemoveCardLayers();
 		#### ###### 1
 		{
 			A_WeaponOffset(4, 9, WOF_ADD);
@@ -376,15 +373,16 @@ class ToM_Cards : ToM_BaseWeapon
 			{
 				psp.x *= 0.8;
 				psp.y *= 0.8;
+				psp.y += 12;
 				psp.scale.x = Clamp(psp.scale.x * 0.8, 1, 10);
 				psp.scale.y = Clamp(psp.scale.y * 0.8, 1, 10);
 				// If this happens during altfire, also move
 				// the cards to the right and down, to match
 				// the movement of the arm:
-				if (invoker.bAltFire)
+				let psw = player.FindPSprite(PSP_WEAPON);
+				if (psw && InStateSequence(psw.curstate, ResolveState("AltFire")))
 				{
 					psp.x -= 22;
-					psp.y += 7;
 				}
 			}
 		}

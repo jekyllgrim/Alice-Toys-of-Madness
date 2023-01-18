@@ -116,10 +116,16 @@ weapons/knife/fly	"sounds/knife/knife_spin.wav"
 //weapons/knife/throw	"sounds/knife/knife_throw.wav"
 weapons/knife/restore "sounds/knife/vorpal_spin_end.ogg"
 
-//$random weapons/knife/swing { knswing1 knswing2 knswing3 }
+$random weapons/knife/swingold { knswing1 knswing2 knswing3 }
 knswing1 "sounds/knife/knife_swing1.wav"
 knswing2 "sounds/knife/knife_swing2.wav"
 knswing3 "sounds/knife/knife_swing3.wav"
+
+$random weapons/claw/swing { clawswing1 clawswing2 clawswing3 clawswing4 }
+clawswing1 "sounds/knife/worker_pickaxe_whip01.ogg"
+clawswing2 "sounds/knife/worker_pickaxe_whip02.ogg"
+clawswing3 "sounds/knife/worker_pickaxe_whip03.ogg"
+clawswing4 "sounds/knife/worker_pickaxe_whip04.ogg"
 
 $random weapons/knife/swing { vorpalslash1 vorpalslash2 vorpalslash3 vorpalslash4 vorpalslash5 vorpalslash6 vorpalslash7 }
 vorpalslash1 "sounds/knife/vorpal_slash01.ogg"

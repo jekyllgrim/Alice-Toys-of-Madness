@@ -2,14 +2,14 @@ class ToM_Knife : ToM_BaseWeapon
 {	
 	bool rightSlash; //right slash or left slash?
 	int combo; //combo counter
+	int clawCombo; //claw combo counter
 	
 	const MAXRECALLTIME = 35 * 7; //recall knife after this wait time
 	ToM_KnifeProjectile knife; //pointer to thrown knife
 	protected bool knifeWasThrown; //true if thrown
 	protected int recallWait; //recall timer
 	
-	protected int clawResetWait;
-	const CLAWRESETTIME = 40;
+	protected int otherHandWait;
 	
 	Default 
 	{
@@ -34,12 +34,39 @@ class ToM_Knife : ToM_BaseWeapon
 		
 		if (HasRageBox())
 		{
-			A_Overlay(APSP_LeftHand, "LeftHandClaw", true);
+			A_Overlay(APSP_LeftHand, "ClawHandReady", true);
 			flags |= WRF_NOSWITCH;
+		}
+		
+		// Don't bob the weapon if the main layer is currently
+		// in the process of being reset (offsets aren't equal default):
+		let pss = player.FindPSprite(PSP_WEAPON);
+		if ( pss && (pss.x != 0 || pss.y != WEAPONTOP) )
+		{
+			flags |= WRF_NOBOB;
 		}
 		
 		A_WeaponReady(flags);
 	}
+	
+	action void A_ClawReady()
+	{
+		if (!player)
+			return;
+		
+		if (!invoker.knifeWasThrown)
+			return;
+		
+		if (!HasRageBox())
+			return;
+		
+		if (player.cmd.buttons & BT_ATTACK && !(player.oldbuttons & BT_ATTACK))
+		{
+			let psp = player.FindPSprite(APSP_LeftHand);
+			if (psp)
+				player.SetPSprite(APSP_LeftHand, ResolveState("ClawRightSlash"));
+		}
+	}	
 	
 	action void A_SetKnifeSprite(name defsprite, name ragesprite = '')
 	{
@@ -58,6 +85,11 @@ class ToM_Knife : ToM_BaseWeapon
 	}
 	
 	action void A_KnifeSlash(double damage = 10)
+	{
+		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_KnifePuff", range: 80);
+	}
+	
+	action void A_ClawSlash(double damage = 10)
 	{
 		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_KnifePuff", range: 80);
 	}
@@ -92,23 +124,31 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 	}
 	
-	action void A_MoveLeftHandAside(double sstep = 0.05, double slimit = 1.15, double ostep = 5, vector2 olimit = (-20, 20))
+	// Moves the calling layer away if the other layer is attacking
+	// (moves the knife hand away while the claw is attacking
+	// or vice versa):
+	action void A_MoveHandAway( double scaleStep = 0.04, 
+								double scaleLimit = 1.18, 
+								vector2 offsetStep = (-10, 20),
+								vector2 offsetLimit = (-50, 140),
+								int resetTime = 35 )
 	{
 		if (!player)
 			return;
 		
-		invoker.clawResetWait = CLAWRESETTIME;
+		invoker.otherHandWait = resetTime;
 		A_StopPSpriteReset(OverlayID(), droprightthere: true);
 		
 		let psp = player.FindPSprite(OverlayID());
 		if (!psp)
 			return;
 		
-		double tscale = Clamp(psp.scale.x + sstep, 1, slimit);
+		A_OverlayPivot(OverlayID(), 1, 0);
+		double tscale = Clamp(psp.scale.x + scaleStep, 1, scaleLimit);
 		psp.scale = (tscale, tscale);
 		
-		psp.x = Clamp(psp.x - ostep, psp.x, olimit.x);
-		psp.y = Clamp(psp.y + ostep, psp.y, olimit.y);
+		psp.x = Clamp(psp.x + offsetStep.x, psp.x, offsetLimit.x);
+		psp.y = Clamp(psp.y + offsetStep.y, psp.y, offsetLimit.y);
 	}
 		
 	
@@ -129,7 +169,8 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		knifeWasThrown = false;
 		
-		console.printf("Knife successfully recalled");
+		if (tom_debugmessages)
+			console.printf("Knife successfully recalled");
 	}
 		
 	
@@ -208,8 +249,8 @@ class ToM_Knife : ToM_BaseWeapon
 		VCLS AB 2;
 		VCLS C 10;
 		VCLS D 3;
-		goto LeftHandClaw;
-	LeftHandClaw:
+		goto ClawHandReady;
+	ClawHandReady:
 		TNT1 A 0
 		{
 			A_OverlayPivot(OverlayID(), 0.2, 0.75);
@@ -219,34 +260,133 @@ class ToM_Knife : ToM_BaseWeapon
 		VCLW A 1 
 		{
 			if (!HasRageBox())
-				return ResolveState("Null");
-			
-			let psp = player.FindPSprite(PSP_WEAPON);
-			let ps1 = player.FindPSprite(OverlayID());
-			//console.printf("%d scale: (%.1f, %.1f)", OverlayID(), ps1.scale.x, ps1.scale.y);
-			if (InStateSequence(psp.curstate, ResolveState("Fire")))
 			{
-				A_MoveLeftHandAside();
-				invoker.clawResetWait = CLAWRESETTIME;
+				return ResolveState("ClawHandReadyLower");
 			}
-			else if (invoker.clawResetWait > 0)
+			
+			let psw = player.FindPSprite(PSP_WEAPON);
+			let psp = player.FindPSprite(OverlayID());
+			if (psp && psw)
 			{
-					invoker.clawResetWait--;
-				if (invoker.clawResetWait <= 0)
+				if (psw && InStateSequence(psw.curstate, ResolveState("Fire")))
 				{
-					A_ResetPSprite(OverlayID(), 8);
-					//A_OverlayScale(OverlayID(), 1, 1, WOF_INTERPOLATE);
+					A_MoveHandAway();
+				}
+				else if (invoker.otherHandWait > 0)
+				{
+					invoker.otherHandWait--;
+					if (invoker.otherHandWait <= 0)
+					{
+						A_ResetPSprite(OverlayID(), 10);
+					}
 				}
 			}
-				
-			/*if (psp)
-			{
-				A_OverlayOffset(OverlayID(), psp.y * -0.1, abs(psp.x * 0.1), WOF_INTERPOLATE);
-			}*/
 			
+			if (invoker.clawCombo > 0 && level.maptime % 5 == 0)
+			{
+				invoker.clawCombo -= 1;
+			}
+			
+			A_ClawReady();
 			return ResolveState(null);
 		}
 		wait;
+	ClawHandReadyLower:
+		TNT1 A 0 
+		{
+			A_StopPSpriteReset();
+			A_OverlayFlags(OverlayID(), PSPF_ADDBOB, false);
+			if (tom_debugmessages)
+				console.printf("Rage Mode over: deselecting claw");
+		}
+		VCLW AAAAA 1 
+		{
+			// For some reason A_OverlayOffset isn't working out
+			// for me in this state sequence:
+			//A_OverlayOffset(OverlayID(), -5, 20);
+			let psp = player.FindPSprite(OverlayID());
+			if (psp)
+			{
+				psp.x -= 5;
+				psp.y += 20;
+			}
+		}
+		stop;
+	ClawRightSlash:
+		VCLW A 0 
+		{
+			A_StopPSpriteReset();
+			invoker.clawCombo++;
+			if (invoker.rightSlash)
+			{
+				invoker.rightSlash = false;
+				return ResolveState("ClawDownSlash");
+			}
+			invoker.rightSlash = true;
+			
+			A_OverlayPivot(OverlayID(), 0.5, 0.5);
+			A_RotatePSprite(OverlayID(), frandom[psprot](-20,0), WOF_INTERPOLATE);
+			return ResolveState(null);
+		}
+		VCLW BBB 1
+		{
+			A_OverlayOffset(OverlayID(), -20, 0, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 5.5, WOF_ADD);
+		}
+		VCLW CCCC 1
+		{
+			A_OverlayOffset(OverlayID(), -8, 0, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 2.5, WOF_ADD);
+		}
+		TNT1 A 0 A_StartSound("weapons/knife/swingold", CHAN_AUTO, pitch: 0.9);
+		VCLW DDD 1
+		{
+			A_OverlayOffset(OverlayID(), 35, 0, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -5, WOF_ADD);
+		}
+		TNT1 A 0 A_ClawSlash(25);
+		VCLW EEEE 1
+		{
+			A_OverlayOffset(OverlayID(), 20, 0, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
+		}
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 8);
+		VCLW FFFF 1;
+		VCLW AAAA 1 A_ClawReady();
+		goto ClawHandReady;
+	ClawDownSlash:
+		VCLW A 0 
+		{
+			A_StopPSpriteReset();
+			A_OverlayPivot(OverlayID(), 0.5, 0.5);
+			A_RotatePSprite(OverlayID(), frandom[psprot](-20,0), WOF_INTERPOLATE);
+		}
+		VCLW GGH 1
+		{
+			A_OverlayOffset(OverlayID(), -5, -10, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 5.5, WOF_ADD);
+		}
+		VCLW HIII 1
+		{
+			A_OverlayOffset(OverlayID(), -3, -3.5, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 2.5, WOF_ADD);
+		}
+		TNT1 A 0 A_StartSound("weapons/claw/swing", CHAN_AUTO, pitch: 0.9);
+		VCLW JJJ 1
+		{
+			A_OverlayOffset(OverlayID(), 50, 50, WOF_ADD);
+			//A_RotatePSprite(OverlayID(), -5, WOF_ADD);
+		}
+		TNT1 A 0 A_ClawSlash(25);
+		VCLW KKKK 1
+		{
+			A_OverlayOffset(OverlayID(), 20, 25, WOF_ADD);
+			//A_RotatePSprite(OverlayID(), -3, WOF_ADD);
+		}
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 8);
+		VCLW LLLL 1;
+		VCLW AAAA 1 A_ClawReady();
+		goto ClawHandReady;
 	Select:
 		VKNF A 0 
 		{
@@ -293,10 +433,9 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		#### A 1 
 		{
-			if (invoker.knifeWasThrown) {
+			if (invoker.knifeWasThrown) 
+			{
 				A_SetKnifeSprite("VKNR", "VKRR");
-				//if ((player.cmd.buttons & BT_ALTATTACK) && (player.oldbuttons & BT_ALTATTACK))
-					//return ResolveState("AltFire");
 			}
 			else
 				A_SetKnifeSprite("VKNF", "VKRF");
@@ -308,6 +447,28 @@ class ToM_Knife : ToM_BaseWeapon
 					console.printf("Knife combo counter: %d", invoker.combo);
 			}
 			
+			// Move this hand away if the claw is currently attacking:
+			if (HasRageBox() && invoker.knifeWasThrown)
+			{
+				let psl = player.FindPSprite(APSP_LeftHand);
+				if ( psl && 
+					(InStateSequence(psl.curstate, ResolveState("ClawRightSlash")) ||
+					InStateSequence(psl.curstate, ResolveState("ClawDownSlash")) ) )
+				{
+					A_MoveHandAway(offsetStep: (10, 20), offsetLimit: (50, 140), resetTime: 20);
+				}
+				else if (invoker.otherHandWait > 0)
+				{
+					invoker.otherHandWait--;
+					if (invoker.otherHandWait <= 0)
+					{
+						A_ResetPSprite(OverlayID(), 8);
+					}
+				}
+			}
+			else
+				A_ResetPSprite(OverlayID());
+			
 			A_KnifeReady();
 			return ResolveState(null);
 		}
@@ -315,7 +476,7 @@ class ToM_Knife : ToM_BaseWeapon
 	Fire:
 		TNT1 A 0 
 		{
-			A_StopPSpriteReset();
+			A_StopPSpriteReset();	
 			invoker.combo++;
 			if (invoker.combo % 5 == 0)
 			{
@@ -335,7 +496,6 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_WeaponOffset(20, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5.5, WOF_ADD);
-			//A_MoveLeftHandAside();
 		}
 		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
 		#### BBB 1
@@ -371,7 +531,6 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_WeaponOffset(-24, -4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
-			//A_MoveLeftHandAside();
 		}
 		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
 		#### EEE 1
@@ -408,7 +567,6 @@ class ToM_Knife : ToM_BaseWeapon
 		#### GGH 1 
 		{
 			A_WeaponOffset(-12, 35, WOF_ADD);
-			//A_MoveLeftHandAside((6, 3));
 		}
 		TNT1 A 0  
 		{
@@ -438,6 +596,7 @@ class ToM_Knife : ToM_BaseWeapon
 			}
 			A_ResetPSprite(OverlayID());
 			A_SetKnifeSprite("VKNF", "VKRF");
+			A_OverlayPivot(OverlayID(), 0.9, 0.9);
 			return ResolveState(null);
 		}
 		#### HHH 1
@@ -448,17 +607,20 @@ class ToM_Knife : ToM_BaseWeapon
 		#### A 0 A_StartSound("weapons/knife/throw", CHAN_WEAPON);
 		#### IIII 1
 		{
+			A_OverlayScale(OverlayID(), 0.15, 0.15, WOF_ADD);
 			A_WeaponOffset(3, -1.5, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -1, WOF_ADD);
 		}
 		#### JJJ 1 
 		{
+			A_OverlayScale(OverlayID(), -0.1, -0.1, WOF_ADD);
 			A_WeaponOffset(-5, 15, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 4, WOF_ADD);
 		}
 		#### A 0 A_ThrowKnife();
 		#### KKK 1 
 		{
+			A_OverlayScale(OverlayID(), -0.015, -0.015, WOF_ADD);
 			A_WeaponOffset(-5, 8, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
@@ -548,6 +710,14 @@ class ToM_KnifePuff : ToM_BasePuff
 	}
 }
 
+class ToM_ClawPuff : ToM_KnifePuff
+{
+	Default
+	{
+		attacksound "weapons/knife/clawwall";
+	}
+}
+
 // The actual knife projectile with all the logic
 // and behavior. The 3D model is NOT attached to
 // it; see ToM_KnifeProjectileModel for that.
@@ -573,6 +743,11 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		"9275ff",
 		"4d42ff"
 	};
+	
+	bool ShooterHasRageBox()
+	{
+		return target && (target.CountInv("ToM_RageBoxInitEffect") || target.CountInv("ToM_RageBoxMainEffect"));
+	}
 	
 	Default
 	{
@@ -670,6 +845,8 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 				{
 					tr.angle = knifemodel.angle;
 					tr.pitch = knifemodel.pitch;
+					tr.A_SetRenderstyle(0.85, STYLE_Stencil);
+					tr.SetShade(ShooterHasRageBox() ? "FF0000" : "BBBBBB");
 				}
 			}
 		}
@@ -701,8 +878,8 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 			if (bleedDelay <= 0)
 			{
 				bleedDelay = random[knifebleed](KV_BLEEDELAYMIN,KV_BLEEDELAYMAX);
-				// 66% chance to not cause pain:
 				int fflags = DMG_THRUSTLESS;
+				// 66% chance to not cause pain:
 				if (random[knifebleed](1,3) != 1)
 				{
 					fflags |= DMG_NO_PAIN;
@@ -761,7 +938,8 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 				vector3 vec = Vec3To(target) + (0,0,target.height * 0.75);
 				vel = vec.Unit() * KV_RECALLSPEED;
 				
-				if (knifemodel)
+				TextureID tex = TexMan.CheckForTexture("SPRKC0", TexMan.Type_Any);
+				if (tex && knifemodel)
 				{
 					A_FaceTarget(flags:FAF_MIDDLE);
 					knifemodel.angle = angle + 180;
@@ -776,45 +954,28 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 					}
 					for (int i = 3; i > 0; i--)
 					{
-						TextureID tex = TexMan.CheckForTexture("SPRKC0", TexMan.Type_Any);
-						if (tex)
-						{
-							double v = 1.5;
-							vector3 pvel = (frandom[knifepart](-v,v),frandom[knifepart](-v,v),frandom[knifepart](-v,v));
-							vector3 paccel = pvel * -0.05;
-							A_SpawnParticleEx(
-								"FFFFFF",
-								tex,
-								style: Style_ADD,
-								flags:SPF_FULLBRIGHT,
-								lifetime: 64,
-								size: psize,
-								xoff: frandom[knifepart](-16,16),
-								yoff: frandom[knifepart](-16,16),
-								zoff: frandom[knifepart](-16,16),
-								velx: pvel.x,
-								vely: pvel.y,
-								velz: pvel.z,
-								accelx: paccel.x,
-								accely: paccel.y,
-								accelz: paccel.z,
-								startalphaf: 0.5,
-								sizestep: psize * -0.05
-							);
-						}
-						
-						/*int c = random[eyec](0, RecallColors.Size() - 1);
-						let col = RecallColors[c];
-						A_SpawnParticle(
-							col,
-							SPF_FULLBRIGHT,
-							lifetime: 20,
-							size: 6,
+						double v = 1.5;
+						vector3 pvel = (frandom[knifepart](-v,v),frandom[knifepart](-v,v),frandom[knifepart](-v,v));
+						vector3 paccel = pvel * -0.05;
+						A_SpawnParticleEx(
+							"FFFFFF",
+							tex,
+							style: Style_ADD,
+							flags:SPF_FULLBRIGHT,
+							lifetime: 64,
+							size: psize,
 							xoff: frandom[knifepart](-16,16),
 							yoff: frandom[knifepart](-16,16),
 							zoff: frandom[knifepart](-16,16),
-							sizestep: -0.1
-						);*/
+							velx: pvel.x,
+							vely: pvel.y,
+							velz: pvel.z,
+							accelx: paccel.x,
+							accely: paccel.y,
+							accelz: paccel.z,
+							startalphaf: 0.5,
+							sizestep: psize * -0.05
+						);
 					}
 				}
 				
@@ -861,21 +1022,12 @@ class ToM_KnifeProjectileModel : ToM_SmallDebris
 		+NOBLOCKMAP
 	}
 	
-	override void PostBeginPlay()
-	{
-		super.PostBeginPlay();
-		// If it has no master, apply trail visuals:
-		if (!master)
-		{
-			A_SetRenderstyle(0.85, STYLE_Stencil);
-			SetShade("BBBBBB");
-		}
-	}
-	
 	override void Tick()
 	{
 		super.Tick();
-		// If it's a trail, fade it out:
+		// If it has no master, it's being used as 
+		// a trail, not the actual knife model,
+		// so we'll fade it out:
 		if (!master && !isFrozen())
 		{
 			A_FadeOut(0.045);

@@ -7,35 +7,46 @@ class ToM_UtilsP : Actor abstract
 
 	//By default returns true if ANY of the players has the item.
 	//If 'checkall' argument is true, the function returns true if ALL players have the item.
-	static bool CheckPlayersHave(Class<Inventory> itm, bool checkall = false) 
-	{
-		if (!itm)
+	static bool CheckPlayersHave(Class<Inventory> itm, bool checkall = false) {
+		if(!itm)
 			return false;
-			
-		for (int pn = 0; pn < MAXPLAYERS; pn++) 
-		{
+		
+		// Check all: start with a TRUE; as soon as somebody is found
+		// to NOT have the item, flip to false and break.
+		// Otherwise: start with FALSE; as soon as somebody is found
+		// to HAVE the item, flip to true and break.
+		bool found = checkall;
+		for (int pn = 0; pn < MAXPLAYERS; pn++) {
 			if (!playerInGame[pn])
 				continue;
+			
 			PlayerInfo plr = players[pn];
 			if (!plr || !plr.mo)
 				continue;
-			bool found = plr.mo.CountInv(itm);
-			if (checkall && !found) 
-			{
-				if (tom_debugmessages > 1)
-					console.printf("Player %d doesn't have %s",plr.mo.PlayerNumber(),itm.GetClassName());
-				return false;
-				break;
+				
+			bool hasItem = plr.mo.CountInv(itm);
+			
+			// If we're checking anyone, as soon as somebody is found
+			// to have the item, return true:
+			if (!checkall) {
+				if (hasItem) {
+					if (tom_debugmessages > 1)
+						console.printf("Player %d has %s",plr.mo.PlayerNumber(),itm.GetClassName());
+					found = true;
+					break;
+				}
 			}
-			else if (found) {
+			
+			// If we're checking everyone, as soon as somebody is found
+			// to NOT have the item, return false:
+			else if (!hasItem) {
 				if (tom_debugmessages > 1)
-					console.printf("Player %d has %s",plr.mo.PlayerNumber(),itm.GetClassName());
-				return true;
+					console.printf("Player %d doesn't have %s.",plr.mo.PlayerNumber(),itm.GetClassName());
+				found = false;
 				break;
 			}
 		}
-		
-		return false;
+		return found;
 	}
 	
 	static clearscope double LinearMap(double val, double source_min, double source_max, double out_min, double out_max) 
@@ -197,8 +208,6 @@ mixin class ToM_PlayerSightCheck
 	}
 }
 
-
-
 mixin class ToM_CheckParticles
 {
 	protected transient CVar s_particles;
@@ -277,7 +286,7 @@ Class ToM_BaseActor : Actor abstract
 	}
 	
     bool CheckClippingLines(double size) 
-{
+	{
 		BlockLinesIterator it = BlockLinesIterator.Create(self, size);
 		double tbox[4];
 		// top, bottom, left, right

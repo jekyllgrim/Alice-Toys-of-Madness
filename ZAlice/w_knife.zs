@@ -372,15 +372,15 @@ class ToM_Knife : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), 2.5, WOF_ADD);
 		}
 		TNT1 A 0 A_StartSound("weapons/claw/swing", CHAN_AUTO, pitch: 0.9);
-		VCLW JJJ 1
+		VCLW JJK 1
 		{
-			A_OverlayOffset(OverlayID(), 50, 50, WOF_ADD);
+			A_OverlayOffset(OverlayID(), 30, 20, WOF_ADD);
 			//A_RotatePSprite(OverlayID(), -5, WOF_ADD);
 		}
 		TNT1 A 0 A_ClawSlash(25);
 		VCLW KKKK 1
 		{
-			A_OverlayOffset(OverlayID(), 20, 25, WOF_ADD);
+			A_OverlayOffset(OverlayID(), 30, 30, WOF_ADD);
 			//A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		TNT1 A 0 A_ResetPSprite(OverlayID(), 8);

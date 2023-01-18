@@ -12,6 +12,9 @@ class ToM_AliceHUD : BaseStatusBar
 	protected int YellowAmmoFrame;
 	protected int BlueAmmoFrame;
 	
+	protected transient CVar userHudScale;
+	protected transient CVar userOldHudScale;
+	
 	vector2 GetSbarOffsets(bool right = false, int shiftX = 32, int shiftY = 24)
 	{
 		vector2 ofs = (0, 0);
@@ -141,7 +144,32 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		hudstate = state;
 		
-		BeginHUD(1., false, 320, 200);
+		vector2 hudres = (640, 400);
+		
+		// Workaround for fullscreen HUD scaling when the user
+		// has 'hud_olscale' CVAR set to true. 
+		// With oldscale, HUD scaling options are broken for huds
+		// that aren't 320x200: the scale slider doesn't apply
+		// the changes at every increment.
+		// For some reason, drawing a forcescaled HUD and then
+		// manually scaling it with a CVAR check seems to work.
+		
+		if (!userOldHudScale)
+			userOldHudScale = CVar.GetCVar('hud_oldscale', CPlayer);
+		
+		// If 'hud_oldscale' is false, we'll rely on normal scaling.
+		if (userOldHudScale.GetBool() == true)
+		{
+			if (!userHudScale)
+				userHudScale = CVar.GetCVar('hud_scale', CPlayer);
+			int userscale = Clamp(userHudScale.GetInt(), -1., 8.);
+			// -1 = adapt to screen scale, 0 = use default scale
+			// apply manual scaling only if it's over 0:
+			if (userscale > 0.)
+				hudres /= userscale;
+		}
+				
+		BeginHUD(1., userOldHudScale.GetBool(), int(hudres.x), int(hudres.y));
 		
 		DrawLeftCorner();
 		DrawRightcorner();
@@ -152,13 +180,15 @@ class ToM_AliceHUD : BaseStatusBar
 	// Red at 25% or less, white otherwise:
 	int GetHealthColor()
 	{
-		int hmax = CPlayer.mo.maxhealth;
+		int hmax = CPlayer.mo.GetMaxHealth(true);
 		int health = CPlayer.health;
 		if (health <= (hmax * 0.25))
 			return Font.CR_Red;
 		return Font.CR_White;
 	}
 	
+	// White if the armor absorbs less than 50% damage,
+	// gold otherwise:
 	int GetArmorColor(BasicArmor armor)
 	{
 		if (!armor)
@@ -282,9 +312,10 @@ class ToM_AliceHUD : BaseStatusBar
 		// clear the rectangle:
 		ClearClipRect();
 		
-		// The top of the liquid is a separate, fake-3D texture.
+		// The top of the liquid is a separate, fake-3D texture that
+		// represents the top surface of the liquid.
 		// We need to scale it dynamically, so that it matches the
-		// width of the bubble. Here we need a bit of geometry:
+		// width of the bubble. We'll utilize a bit of basic geometry:
 		// the bubble is a circle with a diameter of 43, and the top
 		// line of the mana texture is that circle's chord.
 		// (https://www.cuemath.com/geometry/Chords-of-a-circle/)
@@ -334,7 +365,7 @@ class ToM_AliceHUD : BaseStatusBar
 				// The Pythagorean theorem is: hypotenuse squared equals 
 				// the sum of its squared catheti (c2 = a2 + b2).
 				// Since the chord (or rather, half of it) is a cathetus 
-				// here,and radius is the hypotenuse, restructure the 
+				// here, and the radius is the hypotenuse, restructure the 
 				// formula:
 				// cathetus squared = hypotenuse squared minus the 
 				// other cathetus squared:
@@ -342,7 +373,7 @@ class ToM_AliceHUD : BaseStatusBar
 				
 				// To get the full chord, take a square root of the value
 				// calculated above (that's half of the length of the chord)
-				// and multiply the result by 2 (that's full length);
+				// and multiply the result by 2 (that's full length):
 				double chord = sqrt(halfChordSquared) * 2;
 				
 				// Make it a bit smaller so that it doesn't stick out of

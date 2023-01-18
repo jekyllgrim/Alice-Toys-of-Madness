@@ -389,9 +389,9 @@ class ToM_Health : Health abstract
 	
 	Default
 	{
-		ToM_Health.flashcolor "f55d5d";
+		ToM_Health.flashcolor "ed9090";
 		ToM_Health.flashDuration 20;
-		ToM_Health.flashAlpha 0.5;
+		ToM_Health.flashAlpha 0.15;
 	}
 }
 
@@ -493,7 +493,7 @@ class ToM_Soulsphere : ToM_HealthPickup
 		Inventory.Pickupsound "pickups/health/magicbud";
 		FloatBobStrength 0.65;
 		ToM_Health.flashDuration 30;
-		ToM_Health.flashAlpha 0.7;
+		ToM_Health.flashAlpha 0.4;
 	}
 
 	override void Tick()
@@ -550,7 +550,7 @@ class ToM_Megasphere : ToM_HealthPickup
 		Inventory.Pickupsound "pickups/health/magicflower";
 		FloatBobStrength 0.65;
 		ToM_Health.flashDuration 35;
-		ToM_Health.flashAlpha 0.7;
+		ToM_Health.flashAlpha 0.4;
 	}
 	
 	override bool TryPickup(in out Actor toucher)

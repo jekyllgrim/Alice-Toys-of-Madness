@@ -547,7 +547,7 @@ class ToM_PepperDOT : ToM_InventoryToken
 			// set next interval:
 			nexttic = random[dotc](30, 70);
 			// Calculate chance for effect based on painchance:
-			int dotchance = random[dotc](0, 180);
+			int dotchance = random[dotc](0, 140);
 			
 			// do the sneeze:
 			if (dotchance <= owner.painchance)
@@ -577,6 +577,7 @@ class ToM_PepperDOT : ToM_InventoryToken
 					);
 				}
 				owner.SetState(owner.FindState("See"));
+				owner.movecount = 25;
 				owner.A_SetTics(SNEEZEDUR);
 				double pstrength = ToM_UtilsP.LinearMap(owner.mass, 300, 1000, 5, 1.5);
 				owner.A_Recoil(Clamp(pstrength, 1.5 ,5));

@@ -127,6 +127,11 @@ clawswing2 "sounds/knife/worker_pickaxe_whip02.ogg"
 clawswing3 "sounds/knife/worker_pickaxe_whip03.ogg"
 clawswing4 "sounds/knife/worker_pickaxe_whip04.ogg"
 
+$random weapons/claw/scrape { clawscrape1 clawscrape2 }
+$pitchshift weapons/claw/scrape 1
+clawscrape1 "sounds/knife/claw_scrape1.ogg"
+clawscrape2 "sounds/knife/claw_scrape2.ogg"
+
 $random weapons/knife/swing { vorpalslash1 vorpalslash2 vorpalslash3 vorpalslash4 vorpalslash5 vorpalslash6 vorpalslash7 }
 vorpalslash1 "sounds/knife/vorpal_slash01.ogg"
 vorpalslash2 "sounds/knife/vorpal_slash02.ogg"

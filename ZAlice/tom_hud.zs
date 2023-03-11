@@ -121,17 +121,6 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	override void Tick()
 	{
-		if (!FaceController)
-		{
-			let handler = ToM_Mainhandler(Eventhandler.Find("ToM_Mainhandler"));
-			if (handler)
-			{
-				FaceController = handler.HUDFaces[CPlayer.mo.PlayerNumber()];
-			}
-		}
-		if (!FaceController)
-			return;
-		HUDFace = FaceController.GetFaceTexture();
 		UpdateManaFrames();
 	}
 	
@@ -548,10 +537,26 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	void DrawAliceFace(vector2 pos)
 	{
-		if (!HUDFace || CPlayer.health <= 0)
+		if (CPlayer.health <= 0)
 			return;
 		
-		ToM_DrawTexture(HUDFace, pos, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
+		ToM_DrawTexture(GetMugShot(5), pos,  DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
+		
+		/*
+		if (!FaceController)
+		{
+			let handler = ToM_Mainhandler(Eventhandler.Find("ToM_Mainhandler"));
+			if (handler)
+			{
+				FaceController = handler.HUDFaces[CPlayer.mo.PlayerNumber()];
+				HUDFace = FaceController.GetFaceTexture();
+			}
+		}
+		
+		if (HUDFace.isValid())
+		{
+			ToM_DrawTexture(HUDFace, pos, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
+		}*/
 	}
 	
 	void DrawMirrorCracks(vector2 pos)
@@ -685,8 +690,9 @@ class ToM_HUDFaceController : Actor
 		+NOSECTOR
 		+SYNCHRONIZED
 		+NOTIMEFREEZE
-		Renderstyle 'None';
 		FloatBobPhase 0;
+		Renderstyle 'None';
+		//YScale 0.834;
 	}
 	
 	clearscope TextureID GetFaceTexture()
@@ -708,6 +714,7 @@ class ToM_HUDFaceController : Actor
 	override void BeginPlay()
 	{
 		super.BeginPlay();
+		//A_SpriteOffset(-32, -64);
 		s_front_calm = FindState("FrontCalm");
 		s_front_angry = FindState("FrontAngry");
 		s_front_smile = FindState("FrontSmile");
@@ -725,6 +732,7 @@ class ToM_HUDFaceController : Actor
 	{
 		if (!HPlayer)
 			return;
+			
 		super.Tick();
 		
 		if (HPlayerPawn.FindInventory("PowerStrength", true))

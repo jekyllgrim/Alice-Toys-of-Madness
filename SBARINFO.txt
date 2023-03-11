@@ -1,0 +1,73 @@
+Mugshot "Normal"
+{
+	AF1A 35;
+	AF1B 3;
+	AF1C 3;
+	
+	AF1A 90;
+	AF1B 3;
+	AF1C 3;
+	
+	AF1A 65;
+	AF1B 3;
+	AF1C 3;
+	
+	AF1A 40;
+	AF1B 3;
+	AF1C 3;
+	
+	AF1A 120;
+	AF1B 3;
+	AF1C 3;
+	
+	AF1A 70;
+	AF1B 3;
+	AF1C 3;
+	
+	AF1A 100;
+	AF1B 3;
+	AF1C 3;
+	
+	AF1A 60;
+	AF1B 3;
+	AF1C 3;
+}
+
+Mugshot "Rampage"
+{
+	AF1D 25;
+}
+
+Mugshot "Pain", directional
+{
+	{ AF2E, AF1D, AF2A } 3;
+	{ AF2F, AF1D, AF2B } 3;
+	{ AF2G, AF1D, AF2C } 3;
+	{ AF2H, AF1D, AF2D } 20;
+	
+	{ AF4F, AF1D, AF4B } 4;
+	{ AF4G, AF1D, AF4C } 4;
+	{ AF4H, AF1D, AF4D } 4;
+}
+
+Mugshot "Ouch"
+{
+	AF1F 3;
+	AF1G 3;
+	AF1H 60;
+}
+
+Mugshot "Grin"
+{
+	AF1E 35;
+}
+
+Mugshot "God"
+{
+	AF5A 4;
+	AF5B 4;
+	AF5C 4;
+	AF5D 4;
+	AF5C 5;
+	AF5B 5;
+}

@@ -91,7 +91,7 @@ class ToM_Knife : ToM_BaseWeapon
 	
 	action void A_ClawSlash(double damage = 10)
 	{
-		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_KnifePuff", range: 80);
+		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_ClawPuff", range: 80);
 	}
 	
 	// Throws the knife and saves a pointer to it:
@@ -325,7 +325,6 @@ class ToM_Knife : ToM_BaseWeapon
 			invoker.rightSlash = true;
 			
 			A_OverlayPivot(OverlayID(), 0.5, 0.5);
-			A_RotatePSprite(OverlayID(), frandom[psprot](-20,0), WOF_INTERPOLATE);
 			return ResolveState(null);
 		}
 		VCLW BBB 1
@@ -714,7 +713,7 @@ class ToM_ClawPuff : ToM_KnifePuff
 {
 	Default
 	{
-		attacksound "weapons/knife/clawwall";
+		attacksound "weapons/claw/scrape";
 	}
 }
 

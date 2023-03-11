@@ -81,174 +81,175 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 	//string latestPickupName; //the tag of the latest pickup
 	//bool codexOpened;
 
-	static const Class<Weapon> vanillaWeapons[] = 
-	{
-		"Fist",
-		"Chainsaw",
-		"Pistol",
-		"Shotgun",
-		"SuperShotgun",
-		"Chaingun",
-		"RocketLauncher",
-		"PlasmaRifle",
-		"BFG9000"
+static const name ReplacementPairs[] = {
+		// DOOM
+		// weapons:
+		"Fist:ToM_Knife",
+		"Chainsaw:ToM_HobbyHorse",
+		"Pistol:ToM_Cards",
+		"Shotgun:ToM_Cards",
+		"SuperShotgun:ToM_Jacks",
+		"Chaingun:ToM_PepperGrinder",
+		"RocketLauncher:ToM_Teapot",
+		"PlasmaRifle:ToM_Eyestaff",
+		"BFG9000:ToM_Blunderbuss",
+		// ammo:
+		"Clip:ToM_RedMana",
+		"ClipBox:ToM_RedManaBig",
+		"Shell:ToM_YellowMana",
+		"ShellBox:ToM_YellowManaBig",
+		"RocketAmmo:ToM_YellowMana",
+		"RocketBox:ToM_YellowManaBig",
+		"Cell:ToM_PurpleMana",
+		"CellPack:ToM_PurpleManaBig",
+		// items:
+		"GreenArmor:ToM_SilverArmor",
+		"BlueArmor:ToM_GoldArmor",
+		"Berserk:ToM_RageBoxMainEffect",
+		/*"InvulnerabilitySphere:PK_Pentagram",
+		"Backpack:PK_AmmoPack",
+		"AllMap:PK_AllMap",
+		"RadSuit:PK_AntiRadArmor",*/
+		
+		/*
+		// HERETIC
+		//weapons:
+		"Staff:PK_Painkiller", //fist
+		"Gauntlets:PK_Painkiller", //chainsaw
+		"Goldwand:PK_Painkiller", //pistol
+		"Crossbow:PK_Shotgun", //shotgun
+		"Blaster:PK_Chaingun", //chaingun
+		"PhoenixRod:PK_Stakegun", //rocket launcher
+		"SkullRod:PK_Rifle", // plasma rifle
+		"Mace:PK_ElectroDriver" //bfg
+		//ammo:
+		"BlasterAmmo:PK_Shells",
+		"BlasterHefty:PK_BulletAmmo",
+		"CrossbowAmmo:PK_StakeAmmo",
+		"CrossbowHefty:PK_BoltAmmo",
+		"PhoenixRodAmmo:PK_GrenadeAmmo",
+		"PhoenixRodHefty:PK_RifleBullets",
+		"SkullRodAmmo:PK_ShurikenAmmo",
+		"SkullRodHefty:PK_CellAmmo",
+		"MaceAmmo:PK_ShurikenAmmo",
+		"MaceHefty:PK_CellAmmo",
+		// items:
+		"SilverShield:PK_SilverArmor",
+		"EnchantedShield:PK_GoldArmor",
+		"ArtiTomeOfPower:PK_WeaponModifierGiver",
+		"InvulnerabilitySphere:PK_Pentagram",
+		"BagOfHolding:PK_AmmoPack",
+		"SuperMap:PK_AllMap"*/
+		
+		// VOID:
+		"FWeapFist:ToM_Knife",
+		"PhoenixRod:ToM_Cards"
 	};
-	
-	static const Class<Weapon> modWeapons[] = 
-	{
-		"ToM_Knife",
-		"ToM_HobbyHorse",
-		"ToM_Cards",
-		"ToM_Cards",
-		"ToM_Jacks",
-		"ToM_PepperGrinder",
-		"ToM_Teapot",
-		"ToM_Eyestaff",
-		"ToM_Blunderbuss"
-	};
-	
-	static const Class<Inventory> vanillaItems[] = {
-		"GreenArmor",
-		"BlueArmor"
-	};
-	static const Class<Inventory> modItems[] = {
-		"ToM_SilverArmor",
-		"ToM_GoldArmor"
-	};
-	
-	static const Class<Inventory> extraItems[] =
-	{
-		"FWeapFist"
-	};
-	
-	static const Class<Inventory> modExtraItems[] =
-	{
-		"ToM_Knife"
-	};
-	
-	//here we make sure that the player will never have vanilla weapons in their inventory:
-	override void DoEffect() 
-	{
+
+	// This checks the player's inventory for illegal (vanilla) weapons
+	// continuously. This helps to account for starting items too,
+	// in case Painslayer is played with a project that overrides the 
+	// player class, so they don't start with a pistol.
+	// It also makes sure to select the replacement weapon that matches
+	// the vanilla weapon that was selected:
+	override void DoEffect() {
 		super.DoEffect();
 		if (!owner || !owner.player)
 			return;
-	
+		
 		let plr = owner.player;
-		array < int > changeweapons; //stores all weapons that need to be exchanged
-		int selweap = -1; //will store readyweapon
 		
-		//record all weapons that need to be replaced
-		for (int i = 0; i < vanillaWeapons.Size(); i++) 
-		{
-			//if a weapon is found, cache its position in the array:
-			Class<Weapon> oldweap = vanillaWeapons[i];
-			if (owner.CountInv(oldweap) >= 1) 
-			{
-				if (tom_debugmessages)  console.printf("found %s that shouldn't be here",oldweap.GetClassName());
-				changeweapons.Push(i);
-			}
-			//also, if it was seleted, cache its number separately:
-			if (owner.player.readyweapon && owner.player.readyweapon.GetClass() == oldweap)
-				selweap = i;
-		}
+		// We'll store the weapon that the player should switch to here:
+		class<Weapon> toSwitch;
+		Weapon readyweapon = owner.player.readyweapon;
 		
-		//if no old weapons were found, do nothing else:
-		if (changeweapons.Size() <= 0)
-			return;
-		
-		for (int i = 0; i < vanillaWeapons.Size(); i++) 
-		{
-			//do nothing if this weapon wasn't cached:
-			if (changeweapons.Find(i) == changeweapons.Size())
+		for (int i = 0; i < ReplacementPairs.Size(); i++) {
+			// Split the entry to get the replacement
+			// an the replacee:
+			array<string> classes;
+			string str = ReplacementPairs[i];
+			str.Split(classes, ":");
+			
+			// If the split didn't work for some reason,
+			// skip this one:
+			if (classes.Size() < 2)
 				continue;
-			Class<Weapon> oldweap = vanillaWeapons[i];
-			Class<Weapon> newweap = modWeapons[i];
-			//remove old weapon
-			owner.A_TakeInventory(oldweap);
-			if (tom_debugmessages) console.printf("Exchanging %s for %s",oldweap.GetClassName(),newweap.GetClassName());
-			if (!owner.CountInv(newweap)) 
+			
+			// Check the class is valid and is a weapon:
+			class<Weapon> oldweapon = classes[0];
+			if (!oldweapon)
+				continue;
+			
+			// Check the player has it:
+			if (owner.CountInv(oldweapon))
 			{
-				owner.A_GiveInventory(newweap,1);
+				// Remove the original and give the replacement:
+				owner.TakeInventory(oldweapon, owner.CountInv(oldweapon));
+				owner.GiveInventory(classes[1], 1);
+				// If the original weapon was selected, tell the player 
+				// to switch to the replacement:
+				if (readyweapon && readyweapon.GetClass() == oldweapon)
+				{
+					toSwitch = classes[1];
+				}
 			}
-		}		
-		
-		//select the corresponding new weapon if an old weapon was selected:
-		if (selweap != -1) 
-		{
-			Class<Weapon> newsel = modWeapons[selweap];
-			let wp = Weapon(owner.FindInventory(newsel));
-			if (wp) 
+			
+			// Switch to the new weapon:
+			if (toSwitch)
 			{
-				if (tom_debugmessages) console.printf("Selecting %s", wp.GetClassName());
-				owner.player.pendingweapon = wp;
+				owner.player.pendingweapon = Weapon(owner.FindInventory(toSwitch));
 			}
 		}
-		changeweapons.Clear();
 	}
 	
-    override bool HandlePickup (Inventory item) 
-	{
-		bool ret = false;
+	// This overrides the player's ability to receive vanilla weapons
+	// to account for cheats and GiveInventory ACS scripts:
+    override bool HandlePickup (Inventory item) {	
 		let oldItemClass = item.GetClassName();
-        Class<Inventory> replacement =  null;
+        Class<Inventory> replacement = null;
 		
-		// handle weapons:
-		for (int i = 0; i < vanillaWeapons.Size(); i++) 
-		{
-			if (modWeapons[i] && oldItemClass == vanillaWeapons[i]) 
-			{
-				replacement = modWeapons[i];
+		// Iterate through the array:
+		for (int i = 0; i < ReplacementPairs.Size(); i++) {
+			// Split the entry to get the replacement
+			// an the replacee:
+			array<string> classes;
+			string str = ReplacementPairs[i];
+			str.Split(classes, ":");
+			
+			// If the split didn't work for some reason,
+			// skip this one:
+			if (classes.Size() < 2)
+				continue;
+			
+			// Otherwise, check against the original class name,
+			// and if it matches, replace with the new one:
+			if (oldItemClass == classes[0]) {
+				replacement = classes[1];
 				break;
 			}
 		}
-		// handle items:
-		if (!replacement)
-		{
-			for (int i = 0; i < vanillaItems.Size(); i++) 
-			{
-				if (modItems[i] && oldItemClass == vanillaItems[i]) 
-				{
-					replacement = modItems[i];
-					break;
-				}
-			}
-		}
-		// handle extra cases:
-		if (!replacement)
-		{
-			for (int i = 0; i < ExtraItems.Size(); i++) 
-			{
-				if (modExtraItems[i] && oldItemClass == ExtraItems[i]) 
-				{
-					replacement = modExtraItems[i];
-					break;
-				}
-			}
-		}
 		
-		// nothing found, giving as is:
-        if (!replacement) 
-		{
+		// If the item class is not in the replacement array,
+		// give it as is:
+		if (!replacement) {
 			if (tom_debugmessages > 1)
 				console.printf("%s doesn't need replacing, giving as is",oldItemClass);
-			ret = super.HandlePickup(item);
+			return false;
 		}
 		
-		// otherwise give the found replacement:
-		else 
-		{
+		// Otherwise give the replacement instead:
+		else {
 			int r_amount = GetDefaultByType(replacement).amount;
 			item.bPickupGood = true;
 			owner.A_GiveInventory(replacement,r_amount);
-			if (tom_debugmessages) 
-			{
+			if (tom_debugmessages) {
 				console.printf("Replacing %s with %s (amount: %d)",oldItemClass,replacement.GetClassName(),r_amount);
 			}
-			ret = true;
-		}
+			//RecordLastPickup(replacement ? replacement : item.GetClass());
+			return true;
+		}		
 		
-		//RecordLastPickup(replacement ? replacement : item.GetClass());
-        return ret;
+        return false;
     }
 }
 

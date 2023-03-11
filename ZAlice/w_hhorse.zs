@@ -167,19 +167,32 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_WeaponOffset(-35, 12, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
+		TNT1 A 0 A_Overlay(APSP_Overlayer, "RightSwingTrail");
 		HHRS DD 1 
 		{
 			A_SwingAttack(30);
-			A_WeaponOffset(-45, 18, WOF_ADD);
+			A_WeaponOffset(-50, 22, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		HHRS DDD 1 
 		{
 			A_SwingAttack(30);
-			A_WeaponOffset(-45, 18, WOF_ADD);
-			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
+			A_WeaponOffset(-50, 22, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 4, WOF_ADD);
 		}
 		goto AttackEnd;
+	RightSwingTrail:
+		HHRR ABCDA 1 bright
+		{
+			let from = player.FindPSprite(PSP_WEAPON);
+			let to = player.FindPSprite(OverlayID());
+			if (from && to)
+			{
+				to.pivot = from.pivot;
+				to.rotation = from.rotation;
+			}
+		}
+		stop;
 	LeftSwing:			
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 1);
 		HHRS AAAEEEE 1 
@@ -204,6 +217,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_WeaponOffset(35, 12, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
+		TNT1 A 0 A_Overlay(APSP_Overlayer, "LeftSwingTrail");
 		HHRS HH 1 
 		{
 			A_SwingAttack(30);
@@ -217,6 +231,18 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		goto AttackEnd;
+	LeftSwingTrail:
+		HHRL ABCDA 1 bright
+		{
+			let from = player.FindPSprite(PSP_WEAPON);
+			let to = player.FindPSprite(OverlayID());
+			if (from && to)
+			{
+				to.pivot = from.pivot;
+				to.rotation = from.rotation;
+			}
+		}
+		stop;
 	Overhead:				
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.2, 0.8);
 		HHRS KKKKLLLL 1 
@@ -236,6 +262,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_PrepareSwing(-5, -30, 1.5, 16);
 			A_StartSound("weapons/hhorse/heavyswing", CHAN_AUTO);
 			A_CameraSway(0, 5, 7);
+			A_Overlay(APSP_Overlayer, "OverheadTrail");
 		}
 		HHRS NOO 1 
 		{
@@ -253,6 +280,19 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 { invoker.combo = 0; }
 		goto AttackEnd;
+	OverheadTrail:
+		TNT1 A 1;
+		HHRO ABCD 1 bright
+		{
+			let from = player.FindPSprite(PSP_WEAPON);
+			let to = player.FindPSprite(OverlayID());
+			if (from && to)
+			{
+				to.pivot = from.pivot;
+				to.rotation = from.rotation;
+			}
+		}
+		stop;
 	AttackEnd:
 		TNT1 A 5
 		{

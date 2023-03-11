@@ -2,6 +2,33 @@ texture ACTPPUFF
 	pic ACTPPUFF tics 8
 	pic TNT1A0 tics 8
 
+texture HHRSA0 notrim
+texture HHRSB0 notrim
+texture HHRSC0 notrim
+texture HHRSD0 notrim
+texture HHRSE0 notrim
+texture HHRSF0 notrim
+texture HHRSG0 notrim
+texture HHRSH0 notrim
+texture HHRSJ0 notrim
+texture HHRSK0 notrim
+texture HHRSL0 notrim
+texture HHRSM0 notrim
+texture HHRSN0 notrim
+texture HHRSO0 notrim
+texture HHRRA0 notrim
+texture HHRRB0 notrim
+texture HHRRC0 notrim
+texture HHRRD0 notrim
+texture HHRLA0 notrim
+texture HHRLB0 notrim
+texture HHRLC0 notrim
+texture HHRLD0 notrim
+texture HHROA0 notrim
+texture HHROB0 notrim
+texture HHROC0 notrim
+texture HHROD0 notrim
+
 texture JEYCF0 NoTrim
 texture JEYCA0 NoTrim
 texture JEYCB0 NoTrim

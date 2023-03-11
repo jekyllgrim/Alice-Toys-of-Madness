@@ -54,7 +54,7 @@ class ToM_Mainhandler : EventHandler
 		let pmo = players[pn].mo;
 		if (!pmo)
 			return;
-		let fc = ToM_HUDFaceController(Actor.Spawn("ToM_HUDFaceController", (0,0,0)));
+		let fc = ToM_HUDFaceController(Actor.Spawn("ToM_HUDFaceController", pmo.pos));
 		if (fc)
 		{
 			HUDfaces[e.PlayerNumber] = fc;

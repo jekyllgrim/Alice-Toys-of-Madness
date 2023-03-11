@@ -452,7 +452,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 		}
 	}
 	
-	// Every time the jack bounces of a surface,
+	// Every time the jack bounces off a surface,
 	// it'll aim at its victim (tracer) and
 	// jump at them:
 	void AimAtTracer()

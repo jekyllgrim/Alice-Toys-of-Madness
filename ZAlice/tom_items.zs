@@ -80,8 +80,11 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 	//Class<Inventory> latestPickup; //keep track of the latest pickup
 	//string latestPickupName; //the tag of the latest pickup
 	//bool codexOpened;
+	
+	Weapon prevWeapon;
+	Weapon prevWeaponToSwitch;
 
-static const name ReplacementPairs[] = {
+	static const name ReplacementPairs[] = {
 		// DOOM
 		// weapons:
 		"Fist:ToM_Knife",
@@ -145,6 +148,34 @@ static const name ReplacementPairs[] = {
 		"FWeapFist:ToM_Knife",
 		"PhoenixRod:ToM_Cards"
 	};
+	
+	void ReadyForQuickSwitch(Weapon readyweapon, PlayerInfo player)
+	{
+		if (readyweapon)
+		{
+			if (!prevWeapon)
+				prevWeapon = readyweapon;
+			if (!prevWeaponToSwitch)
+				prevWeaponToSwitch = readyweapon;
+			
+			if (readyweapon != prevWeapon)
+			{
+				prevWeaponToSwitch = prevWeapon;
+				prevWeapon = readyweapon;
+			}
+	
+			if (readyweapon && 
+				player.WeaponState & WF_WEAPONSWITCHOK &&
+				prevWeaponToSwitch && 
+				readyweapon != prevWeaponToSwitch && 
+				player.cmd.buttons & BT_USER3 && 
+				!(player.oldbuttons & BT_USER3)
+			)
+			{
+				player.pendingweapon = prevWeaponToSwitch;
+			}
+		}
+	}
 
 	// This checks the player's inventory for illegal (vanilla) weapons
 	// continuously. This helps to account for starting items too,
@@ -152,7 +183,8 @@ static const name ReplacementPairs[] = {
 	// player class, so they don't start with a pistol.
 	// It also makes sure to select the replacement weapon that matches
 	// the vanilla weapon that was selected:
-	override void DoEffect() {
+	override void DoEffect()
+	{
 		super.DoEffect();
 		if (!owner || !owner.player)
 			return;
@@ -163,7 +195,10 @@ static const name ReplacementPairs[] = {
 		class<Weapon> toSwitch;
 		Weapon readyweapon = owner.player.readyweapon;
 		
-		for (int i = 0; i < ReplacementPairs.Size(); i++) {
+		//ReadyForQuickSwitch(readyweapon, plr);
+		
+		for (int i = 0; i < ReplacementPairs.Size(); i++)
+		{
 			// Split the entry to get the replacement
 			// an the replacee:
 			array<string> classes;

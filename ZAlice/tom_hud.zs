@@ -537,10 +537,10 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	void DrawAliceFace(vector2 pos)
 	{
-		if (CPlayer.health <= 0)
+		if (CPlayer.health <= 0 || !CPlayer.mo)
 			return;
 		
-		ToM_DrawTexture(GetMugShot(5), pos,  DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
+		ToM_DrawTexture(GetMugShot(5), pos,  DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER, alpha: CPlayer.mo.alpha);
 		
 		/*
 		if (!FaceController)

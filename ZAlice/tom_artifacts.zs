@@ -202,6 +202,11 @@ class ToM_GrowthPotion : PowerupGiver
 class ToM_GrowthPotionEffect : PowerInvulnerable
 {
 	ToM_GrowControl growcontrol;
+	
+	Default
+	{
+		Powerup.duration -40;
+	}
 
 	override void InitEffect()
 	{
@@ -234,17 +239,21 @@ class ToM_GrowControl : ToM_InventoryToken
 	protected double prevSpeed;
 	protected double prevViewHeight;
 	protected vector2 prevWeaponScale;
+	protected double prevZoom;
 	
 	protected double targetSpeed;
 	protected double targetHeight;
 	protected double targetViewHeight;
 	protected vector2 targetScale;
 	protected vector2 targetWeaponScale;
+	protected vector2 curWeaponScale;
 	
 	protected double viewHeightStep;
 	protected vector2 scaleStep;
 	protected vector2 weaponScaleStep;
+	
 	protected double zoomStep;
+	protected double targetZoom;	
 	
 	protected int stepCycle;
 	
@@ -264,6 +273,7 @@ class ToM_GrowControl : ToM_InventoryToken
 			{
 				let dweap = GetDefaultByType(weap.GetClass());
 				prevWeaponScale = (dweap.WeaponScaleX, dweap.WeaponScaleY);
+				curWeaponScale = prevWeaponScale;
 			}
 		
 			// record current values:
@@ -293,7 +303,9 @@ class ToM_GrowControl : ToM_InventoryToken
 			viewHeightStep = (targetViewHeight - prevViewHeight) / GROWTIME;
 			
 			// zoom step:
-			zoomStep = (GROWZOOM - 1) / GROWTIME;
+			prevZoom = owner.player.fov;
+			targetZoom = prevZoom * GROWZOOM;
+			zoomStep = (targetZoom - prevZoom) / GROWTIME;
 			
 			// speed is modified instantly:
 			owner.speed *= SPEEDFACTOR;
@@ -332,30 +344,29 @@ class ToM_GrowControl : ToM_InventoryToken
 		);
 	
 		// gradually modify zoom:
-		if (weap)
-		{
-			weap.fovscale = Clamp(
-				weap.fovscale + zoomStep * stepFactor,
-				1, 
-				GROWZOOM
-			);
-		}
+		owner.player.desiredFov = Clamp(
+			owner.player.fov + zoomStep * stepFactor,
+			1, 
+			targetZoom
+		);
+		console.printf("player fov: %.1f desired: %.1f", owner.player.fov, owner.player.desiredfov);
 		
 		// gradually modify weapon scale:
 		for(PSprite psp = player.psprites; psp; psp = psp.Next)
 		{
 			if (psp)
 			{
-				psp.baseScale.x = Clamp(
-					psp.baseScale.x + weaponScaleStep.x * stepFactor, 
+				curWeaponScale.x = Clamp(
+					curWeaponScale.x + weaponScaleStep.x * stepFactor, 
 					prevWeaponScale.x, 
 					targetWeaponScale.x
 				);
-				psp.baseScale.y = Clamp(
-					psp.baseScale.y + weaponScaleStep.y * stepFactor, 
+				curWeaponScale.y = Clamp(
+					curWeaponScale.y + weaponScaleStep.y * stepFactor, 
 					prevWeaponScale.y, 
 					targetWeaponScale.y
 				);
+				psp.baseScale = curWeaponScale;
 			}
 		}
 		
@@ -413,8 +424,7 @@ class ToM_GrowControl : ToM_InventoryToken
 			pmo.viewHeight = prevViewHeight;
 			//pmo.A_SetSize(pmo.radius, prevHeight);
 			pmo.scale = prevScale;
-			if (weap)
-				weap.fovscale = 1;
+			owner.player.desiredFov = prevZoom;
 			for(PSprite psp = player.psprites; psp; psp = psp.Next)
 			{
 				if (psp)
@@ -430,5 +440,248 @@ class ToM_GrowControl : ToM_InventoryToken
 	void StopEffect()
 	{
 		finishEffect = true;
+	}
+}
+
+class ToM_Invisibility : PowerupGiver
+{
+	Default
+	{
+		Inventory.pickupmessage "Looking-glass mirror";
+		Powerup.Type "ToM_InvisibilityEffect";
+		Powerup.Duration -40;
+		scale 0.25;
+		+FLOATBOB
+		+INVENTORY.AUTOACTIVATE
+	}
+	
+	States
+	{
+	Spawn:
+		LGMY ABCDEFGHIJKLMN 2;
+		loop;
+	}
+}
+
+class ToM_InvisibilityEffect : Powerup
+{
+	protected double prevAlpha;
+	protected int prevRenderstyle;
+	
+	Default
+	{
+		Powerup.duration -40;
+	}
+	
+	override void InitEffect()
+	{
+		if (owner && owner.player)
+		{
+			prevAlpha = owner.alpha;
+			prevRenderstyle = owner.GetRenderstyle();
+			
+			owner.GiveInventory("ToM_InvisibilitySelector", 1);
+			let invs = ToM_InvisibilitySelector(owner.FindInventory("ToM_InvisibilitySelector"));
+			if (invs)
+			{
+				invs.prevWeapon = owner.player.readyweapon;
+				owner.player.pendingweapon = invs;
+			}
+		}
+		super.InitEffect();
+	}
+	
+	
+	override void EndEffect()
+	{
+		if (owner && owner.player)
+		{
+			owner.A_SetRenderstyle(prevAlpha, prevRenderstyle);
+		}
+		super.EndEffect();
+	}
+}
+
+class ToM_InvisibilitySelector : ToM_BaseWeapon
+{
+	ToM_ReflectionCamera cam;
+	Weapon prevWeapon;
+	
+	enum TIPsprites
+	{
+		TIP_Mirror = -10,
+		TIP_Face = 10,
+		TIP_Frame = 20,
+		TIP_Arm = 30,
+	}
+
+	override void DoEffect()
+	{
+		super.DoEffect();
+		if (!owner || !owner.player)
+			return;
+		
+		owner.player.WeaponState |= WF_WEAPONBOBBING;
+		
+		if (!cam)
+		{
+			cam = ToM_ReflectionCamera(Spawn("ToM_ReflectionCamera", owner.pos));
+			cam.ppawn = PlayerPawn(owner);
+			TexMan.SetCameraToTexture(cam, "AliceWeapon.camtex", 60);
+		}
+	}
+	
+	override void DetachFromOwner()
+	{
+		if (cam)
+			cam.Destroy();
+		super.DetachFromOwner();
+	}
+	
+	Default
+	{
+		Inventory.maxamount 1;
+		+WEAPON.CHEATNOTWEAPON
+	}
+	
+	States
+	{
+	Select:
+		TNT1 A 0 A_Raise();
+		wait;
+	Deselect:
+		TNT1 A 0 A_Lower();
+		wait;
+	Mirror:
+		LGMR C -1
+		{
+			A_OverlayFlags(OverlayID(), PSPF_RenderStyle|PSPF_ForceStyle|PSPF_ForceAlpha, true);
+			A_OverlayRenderstyle(OverlayID(), Style_Translucent);
+		}
+		stop;
+	Arm:
+		LGMR A -1
+		{
+			A_OverlayFlags(OverlayID(), PSPF_RenderStyle|PSPF_ForceStyle|PSPF_ForceAlpha, true);
+			A_OverlayRenderstyle(OverlayID(), Style_Translucent);
+		}
+		stop;
+	Fire:
+	Ready:
+		TNT1 A 0
+		{
+			A_Overlay(TIP_Face, "Face");
+			A_Overlay(TIP_Frame, "Frame");
+			A_Overlay(TIP_Mirror, "Mirror");
+			A_Overlay(TIP_Arm, "Arm");
+			A_WeaponOffset(-22.5, 108+WEAPONTOP);
+		}
+		TNT1 AAAAAAAAA 1
+		{
+			A_WeaponOffset(2.5, -12, WOF_ADD);
+		}
+		TNT1 A 1
+		{
+			if (player.cmd.buttons & BT_ATTACK)
+				return A_Jump(256, 1);
+			return ResolveState(null);
+		}
+		wait;
+		TNT1 AAAAAAAAAAAAAAAAAAAA 1 
+		{
+			let psp = player.FindPSprite(TIP_Arm);
+			let psf = player.FindPSprite(TIP_Face);
+			if (psp && psf)
+			{
+				double fac = 0.0425;
+				psp.alpha = Clamp(psp.alpha - fac, 0.15, 1);
+				psf.alpha = Clamp(psp.alpha - fac, 0.15, 1);
+				A_SetRenderstyle(psp.alpha, Style_Translucent);
+			}
+		}		
+		TNT1 A 0
+		{
+			player.SetPSprite(TIP_Face, ResolveState("FaceBack"));
+			player.SetPSprite(TIP_Frame, ResolveState("FrameBack"));
+		}
+		TNT1 AAAAAAAAA 1
+		{
+			A_WeaponOffset(-3, 14, WOF_ADD);
+		}
+		TNT1 A 0
+		{
+			player.pendingweapon = invoker.prevWeapon;
+			A_TakeInventory(invoker.GetClass(), invoker.amount);
+		}
+		stop;
+	Face:
+		TNT1 A 1
+		{
+			A_OverlayFlags(OverlayID(), PSPF_RenderStyle|PSPF_ForceAlpha, true);
+			A_OverlayRenderstyle(OverlayID(), Style_Translucent);
+		}
+		//LGMT ABCDEFGH 1;
+		wait;
+	Frame:
+		TNT1 A 0
+		{
+			A_OverlayFlags(OverlayID(), PSPF_RenderStyle|PSPF_ForceStyle, true);
+			A_OverlayRenderstyle(OverlayID(), Style_Normal);
+		}
+		LGMS ABCDEFGHI 1;
+		wait;
+	FaceBack:
+		//LGMT HGFEDCBA 1;
+		TNT1 A 1;
+		stop;
+	FrameBack:
+		TNT1 A 0 
+		{
+			A_OverlayFlags(OverlayID(), PSPF_RenderStyle|PSPF_ForceStyle|PSPF_ForceAlpha, true);
+			A_OverlayRenderstyle(OverlayID(), Style_Translucent);
+		}
+		LGMS IHGFEDCBA 1  
+		{
+			let psp = player.FindPSprite(OverlayID());
+			let psm = player.FindPSprite(TIP_Mirror);
+			if (psp)
+				psp.alpha -= 0.125;
+			if (psm)
+				psm.alpha -= 0.125;
+		}
+		stop;
+	}
+}
+
+class ToM_ReflectionCamera : Actor 
+{
+	PlayerPawn ppawn;
+
+	Default	
+	{
+		+NOINTERACTION
+		+NOTIMEFREEZE
+		radius 1;
+		height 1;
+	}
+	
+	override void Tick() 
+	{
+		if (!ppawn) 
+		{
+			Destroy();
+			return;
+		}
+		
+		Warp(
+			ppawn, 
+			xofs: ppawn.radius + 16, 
+			yofs: -8,
+			zofs: ppawn.player.viewheight
+		);
+		
+		A_SetRoll(ppawn.roll, SPF_INTERPOLATE);
+		A_SetAngle(ppawn.angle + 180, SPF_INTERPOLATE);
+		A_SetPitch(-ppawn.pitch, SPF_INTERPOLATE);
 	}
 }

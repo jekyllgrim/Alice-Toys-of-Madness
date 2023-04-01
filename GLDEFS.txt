@@ -1,3 +1,10 @@
+Material Sprite "LGMRC0"
+{
+	Shader "shaders/Alice_CamTexWeapon.fp"
+	Texture camTex "AliceWeapon.camtex"
+	Texture maskTex "graphics/mirror_mask.png"
+}
+
 brightmap texture "models/ragebox/ragebox_lit.png"
 {
    map "brightmaps/ragebox_lit.png"

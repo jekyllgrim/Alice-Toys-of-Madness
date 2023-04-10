@@ -133,30 +133,20 @@ class ToM_AlicePlayer : DoomPlayer
 	}
 	
 	bool IsPlayerMoving()
-	{
-		/*double forwardmove, sidemove;
-		double friction, movefactor;
-
-		[friction, movefactor] = GetFriction();
-		if (!player.onground && !bNoGravity && !waterlevel)
-		{
-			movefactor *= level.aircontrol;
-		}
-
-		forwardmove = fm * movefactor * (35 / TICRATE);
-		sidemove = sm * movefactor * (35 / TICRATE);
-
-		return (!(player.cheats & CF_PREDICTING) && (forwardmove != 0 || sidemove != 0));*/
-		
+	{	
 		let buttons = player.cmd.buttons;
-		
+
 		return player.OnGround && (buttons & BT_FORWARD || buttons & BT_BACK || buttons & BT_MOVELEFT || buttons & BT_MOVERIGHT);
 	}
 	
-	state ShouldStopMovingLegs()
+	state ProgressMovement()
 	{
 		if (!IsPlayerMoving())
 			return SpawnState;
+		
+		state targetState = player.cmd.buttons & BT_RUN ? ResolveState("SeeRun") : ResolveState("See");
+		if (!InStateSequence(curstate, targetState))
+			return targetState;
 		
 		return ResolveState(null);
 	}
@@ -181,50 +171,62 @@ class ToM_AlicePlayer : DoomPlayer
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
+		A_ChangeModel("", "1", "models/alice/knife", "aliceplayer_knife.iqm");
 		
-		if (!legs)
+		/*if (!legs)
 		{
 			legs = ToM_PlayerLegs(Spawn("ToM_PlayerLegs", pos));
 			if (legs)
 			{
 				legs.ppawn = ToM_AlicePlayer(self);
 			}
-		}
+		}*/
 	}
+
+	/*override void Tick()
+	{
+		super.Tick();
+		if (player && player.readyweapon)
+		{
+			if (player.readyweapon is "ToM_Knife")
+			{
+				A_ChangeModel("", "1", "models/alice/knife", "aliceplayer_knife.iqm");
+			}
+		}
+	}*/
 	
 	States {
 	Spawn:
-		F120 A 1;
+		M100 A 320;
+		M100 A 30;
+	Idle:
+		M000 ABCDEFGHIJKLMLKJIHGFEDCB 2;
 		Loop;
-		
 	See:
-		F120 A 1;
-		loop;
-	SeeWalk:
-		F121 ABCDEFGHIJKLMNOPQRST 1
+		M001 ABCDEFGHIJKLMNOPQRST 1
 		{
-			return ShouldStopMovingLegs();
+			return ProgressMovement();
 		}
 		Loop;
 	SeeRun:
-		F122 ABCDEFGHIJKL 2
+		M002 ABCDEFGHIJKL 2
 		{
-			return ShouldStopMovingLegs();
+			return ProgressMovement();
 		}
 		Loop;
 	
 	Melee:
 	Missile:
 	Missile.VorpalBlade:
-		F123 ABCDEFGHIJKLMNOPQRSTU 1;
+		M009 ABCDEFGHIJKLMNOPQRSTU 1;
 		Goto Spawn;
 	
 	Pain:
-		F126 ABCDEFGHIJKLM 1;
+		M005 ABCDEFGHIJKLM 1;
 		Goto Spawn;
 		
 	Death:
-		F007 A 3
+		TNT1 A 0
 		{
 			if (legs)
 			{
@@ -233,9 +235,54 @@ class ToM_AlicePlayer : DoomPlayer
 			A_PlayerScream();
 			A_NoBlocking();
 		}
-		F007 BCDEFGHI 3;
-		F007 J -1;
+		M006 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
+		M007 ABCDEFGHIJ 1;
+		#### # -1;
 		Stop;
+	XDeath:
+		TNT1 A 0 A_PlayerScream();
+		M008 ABCDEFGHIJKLMNOPQRSTUV 1;
+		#### # -1;
+		Stop;
+	Melee.Horse:
+		M010 ABCDEFGHIJKLMNOP 1;
+		goto Spawn;
+	Missile.PGrinder:
+		M011 A 5;
+		goto Spawn;
+	}
+}
+
+class ToM_PlayerModelTest : Actor
+{
+	States
+	{
+	Spawn:
+ 		//idle   
+		TNT1 A 0 NoDelay A_ChangeModel("", "1", "models/alice/knife", "aliceplayer_knife.iqm");
+ 		M000 ABCDEFGHIJKLM 1;
+ 		// walk small weapon   
+ 		M001 ABCDEFGHIJKLMNOPQRST 1;
+ 		// run small weapon   
+ 		M002 ABCDEFGHIJKL 1;
+ 		// walk big weapon   
+ 		M003 ABCDEFGHIJKLMNOPQRST 1;
+ 		// run big weapon   
+ 		M004 ABCDEFGHIJKL 1;
+ 		// pain   
+ 		M005 ABCDEFGHIJKLM 1;
+ 		// death faint   
+ 		M006 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
+ 		M007 ABCDEFGHIJ 1;
+ 		// death extreme   
+ 		M008 ABCDEFGHIJKLMNOPQRSTUV 1;
+ 		// attack - knife   
+ 		M009 ABCDEFGHIJKLMNOPQRSTU 1;
+ 		// attack - horse   
+ 		M010 ABCDEFGHIJKLMNOP 1;
+ 		// attack - pepper grinder   
+ 		M011 A 1;
+		loop;
 	}
 }
 

@@ -291,6 +291,9 @@ class ToM_AlicePlayer : DoomPlayer
 	
 	override void PlayRunning()
 	{
+		if (player.playerstate == PST_DEAD)
+			return;
+
 		if (player.cmd.buttons & BT_ATTACK || player.cmd.buttons & BT_ALTATTACK)
 			return;
 
@@ -304,6 +307,9 @@ class ToM_AlicePlayer : DoomPlayer
 
 	override void PlayIdle()
 	{
+		if (player.playerstate == PST_DEAD)
+			return;
+
 		if (!InStateSequence(curstate, SpawnState))
 		{
 			SetState(SpawnState);
@@ -312,6 +318,8 @@ class ToM_AlicePlayer : DoomPlayer
 
 	override void PlayAttacking()
 	{
+		if (player.playerstate == PST_DEAD)
+			return;
 
 		if (curWeaponID < 0)
 			return;
@@ -458,7 +466,11 @@ class ToM_AlicePlayer : DoomPlayer
 		#### # -1;
 		Stop;
 	XDeath:
-		TNT1 A 0 A_PlayerScream();
+		TNT1 A 0
+		{
+			A_PlayerScream();
+			A_NoBlocking();
+		}
 		M008 ABCDEFGHIJKLMNOPQRSTUV 1;
 		#### # -1;
 		Stop;

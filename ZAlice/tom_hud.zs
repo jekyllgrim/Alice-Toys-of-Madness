@@ -121,6 +121,7 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	override void Tick()
 	{
+		super.Tick();
 		UpdateManaFrames();
 	}
 	

@@ -1,7 +1,6 @@
 class ToM_AlicePlayer : DoomPlayer
 {
 	state RunState;
-	ToM_PlayerLegs legs;
 
 	Default
 	{
@@ -167,21 +166,6 @@ class ToM_AlicePlayer : DoomPlayer
 			SetState (sstate);
 		}
 	}*/
-	
-	override void PostBeginPlay()
-	{
-		super.PostBeginPlay();
-		A_ChangeModel("", "1", "models/alice/knife", "aliceplayer_knife.iqm");
-		
-		/*if (!legs)
-		{
-			legs = ToM_PlayerLegs(Spawn("ToM_PlayerLegs", pos));
-			if (legs)
-			{
-				legs.ppawn = ToM_AlicePlayer(self);
-			}
-		}*/
-	}
 
 	/*override void Tick()
 	{
@@ -228,10 +212,6 @@ class ToM_AlicePlayer : DoomPlayer
 	Death:
 		TNT1 A 0
 		{
-			if (legs)
-			{
-				legs.SetState(legs.FindState("Death"));
-			}
 			A_PlayerScream();
 			A_NoBlocking();
 		}
@@ -261,149 +241,110 @@ class ToM_PlayerModelTest : Actor
  		//idle   
 		TNT1 A 0 NoDelay A_ChangeModel("", "1", "models/alice/knife", "aliceplayer_knife.iqm");
  		M000 ABCDEFGHIJKLM 1;
+ 		M000 ABCDEFGHIJKLM 1;
  		// walk small weapon   
  		M001 ABCDEFGHIJKLMNOPQRST 1;
+ 		M001 ABCDEFGHIJKLMNOPQRST 1;
  		// run small weapon   
+		TNT1 A 0 A_ChangeModel("", "1", "models/alice/teapot", "teapot.iqm");
+ 		M002 ABCDEFGHIJKL 1;
  		M002 ABCDEFGHIJKL 1;
  		// walk big weapon   
+		TNT1 A 0 A_ChangeModel("", "1", "models/alice/HobbyHorse", "aliceplayer_horse.iqm");
+ 		M003 ABCDEFGHIJKLMNOPQRST 1;
  		M003 ABCDEFGHIJKLMNOPQRST 1;
  		// run big weapon   
+		TNT1 A 0 A_ChangeModel("", "1", "models/alice/eyestaff", "eyestaff.iqm", 1, "models/alice/eyestaff", "eyestafftex.png");
  		M004 ABCDEFGHIJKL 1;
  		// pain   
  		M005 ABCDEFGHIJKLM 1;
  		// death faint   
  		M006 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
  		M007 ABCDEFGHIJ 1;
+ 		#### # 10;
  		// death extreme   
  		M008 ABCDEFGHIJKLMNOPQRSTUV 1;
- 		// attack - knife   
- 		M009 ABCDEFGHIJKLMNOPQRSTU 1;
- 		// attack - horse   
- 		M010 ABCDEFGHIJKLMNOP 1;
- 		// attack - pepper grinder   
- 		M011 A 1;
+ 		#### # 10;
+		// swim
+		M009 ABCDEFGHIJKLMNOPQRSTU 1;
+		M009 ABCDEFGHIJKLMNOPQRSTU 1;
+		// jump
+		M010 ABCDEFGHI 1;
+		#### # 20;
+		M010 HGFEDCBA 1;
+		#### # 15;
+		M010 ABCDEFGHI 1;
+		#### # 20;
+		M010 HGFEDCBA 1;
+		#### # 15;
+		// knife
+		TNT1 A 0 A_ChangeModel("", "1", "models/alice/knife", "aliceplayer_knife.iqm");
+		M011 ABCDEFGHIJKLMNOPQRSTU 1;
+		M011 ABCDEFGHIJKLMNOPQRSTU 1;
+		M011 ABCDEFGHIJKLMNOPQRSTU 1;
+		// cards 
+		TNT1 A 0 A_ChangeModel("", "1", "models/alice/cards", "aliceplayer_cards.iqm");
+		M014 A 20;
+		M014 ABCDEFGHIJKLMN 1;
+		M014 ABCDEFGHIJKLMN 1;
+		M014 ABCDEFGHIJKLMN 1;
+		// horse
+		TNT1 A 0 A_ChangeModel("", "1", "models/alice/HobbyHorse", "aliceplayer_horse.iqm");
+		M012 ABCDEFGHIJKLMNOP 1;
+		M012 ABCDEFGHIJKLMNOP 1;
+		M012 ABCDEFGHIJKLMNOP 1;
+		// pepper grinder
+		TNT1 A 0 A_ChangeModel("", "1", "models/alice/pgrinder", "pgrinder.iqm");
+		M013 AB 10;
+		// teapot
+		TNT1 A 0 A_ChangeModel("", "1", "models/alice/teapot", "teapot.iqm");
+		M015 ABCDEFGH 2;
+		M015 HGFEDCBA 4;
+		M015 ABCDEFGH 2;
+		M015 HGFEDCBA 4;
+		M015 ABCDEFGH 2;
+		M015 HGFEDCBA 4;
+		// eyestaff
+		TNT1 A 0 A_ChangeModel("", "1", "models/alice/eyestaff", "eyestaff.iqm", 1, "models/alice/eyestaff", "eyestafftex.png");
+		M016 AB 10;
+		// blunderbuss
+		TNT1 A 0 A_ChangeModel("", "1", "models/alice/blunderbuss", "blunderbuss.iqm");
+		M017 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
+		M018 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
+		M019 ABCDEFGHIJKLMNOPQRSTU 1;
 		loop;
 	}
 }
 
-class ToM_PlayerLegs : ToM_SmallDebris
+class ToM_PlayerModelTestWalkLarge : Actor
 {
-	ToM_AlicePlayer ppawn;
-	
-	protected state s_walk;
-	protected state s_run;
-	protected int curMoveState;
-	protected bool isConsole;
-	
-	enum ELegsState
-	{
-		PL_STANDING,
-		PL_WALKING,
-		PL_RUNNING,
-		PL_DEAD
-	}
-	
-	Default
-	{
-		+NOINTERACTION
-		+NOTIMEFREEZE
-		renderstyle 'Normal';
-	}
-	
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
-		bONLYVISIBLEINMIRRORS = (ppawn && ppawn.player && ppawn.player == players[consoleplayer] && !ToM_Mainhandler.IsVoodooDoll(ppawn));
-		isConsole = bONLYVISIBLEINMIRRORS;
-		
-		s_walk = FindState("SeeWalk");
-		s_run = FindState("SeeRun");
+		A_ChangeModel("", "1", "models/alice/HobbyHorse", "aliceplayer_horse.iqm", skinindex: 1, skin: "FIREBLU");
 	}
-	
-	int CheckPPawnmovement()
-	{
-		if (!ppawn || !ppawn.player)
-			return PL_STANDING;
-	
-		let player = ppawn.player;
-		
-		if (!player.OnGround)
-			return PL_STANDING;
-		
-		let buttons = player.cmd.buttons;
-		
-		if (!(buttons & BT_FORWARD || buttons & BT_BACK || buttons & BT_MOVELEFT || buttons & BT_MOVERIGHT))
-			return PL_STANDING;
-		
-		if (buttons & BT_RUN)
-			return PL_RUNNING;
-		
-		return PL_WALKING;
+
+	States {
+	Spawn:
+ 		M003 ABCDEFGHIJKLMNOPQRST 1;
+		loop;
 	}
-	
-	override void Tick()
+}
+
+class ToM_WeaponModelTest : Actor
+{
+	Default
 	{
-		Super.Tick();
-		
-		if (!ppawn)
-		{
-			return;
-		}
-		
-		SetOrigin(ppawn.pos, true);
-		angle = ppawn.angle;
-		
-		if (isConsole)
-		{
-			bONLYVISIBLEINMIRRORS = !(ppawn.player.cheats & CF_CHASECAM);
-		}
-		
-		if (curMoveState == PL_DEAD)
-			return;
-		
-		switch (CheckPPawnmovement())
-		{
-		case PL_STANDING:
-			if (curMoveState != PL_STANDING)
-			{
-				curMoveState = PL_STANDING;
-				SetState(SpawnState);
-			}
-			break;
-		case PL_WALKING:
-			if (curMoveState != PL_WALKING)
-			{
-				curMoveState = PL_WALKING;
-				SetState(s_walk);
-			}
-			break;
-		case PL_RUNNING:
-			if (curMoveState != PL_RUNNING)
-			{
-				curMoveState = PL_RUNNING;
-				SetState(s_run);
-			}
-			break;
-		}
+		+NOINTERACTION
+		+NOBLOCKMAP
 	}
 	
 	States {
 	Spawn:
-		F120 A 1;
-		Loop;
-		
-	SeeWalk:
-		F121 ABCDEFGHIJKLMNOPQRST 1;
-		Loop;
-		
-	SeeRun:
-		F122 ABCDEFGHIJKL 2;
-		Loop;
-		
-	Death:
-		TNT1 A 0 { curMoveState = PL_DEAD; }
-		F007 ABCDEFGHI 3;
-		F007 J -1;
-		Stop;
+		M000 A -1 NoDelay 
+		{
+			Spawn("ToM_DebugSpot", pos);
+		}
+		stop;
 	}
 }

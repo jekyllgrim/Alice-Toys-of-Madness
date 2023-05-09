@@ -1,5 +1,4 @@
 #include "Models/Alice/MODELDEF.aliceplayer"
-//#include "Models/Characters/AlicePlayer/MODELDEF.aliceplayer.knife"
 #include "Models/Characters/Cheshire/Modeldef.CheshireCat"
 
 Model ToM_KnifeProjectileModel 

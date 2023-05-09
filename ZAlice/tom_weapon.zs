@@ -1059,7 +1059,7 @@ class ToM_PiercingProjectile : ToM_Projectile
 
 // A base projectile class that can stick into walls and planes.
 // It'll move with the sector if it hit a moving one (e.g. door/platform).
-// Ported from Painslayer, used by thrown Vorpal Knife.
+// Ported from Painslayer, used by thrown Vorpal Knife and Playing Cards.
 Class ToM_StakeProjectile : ToM_Projectile 
 {
 	// Pos where the flight ended:
@@ -1237,7 +1237,7 @@ Class ToM_StakeProjectile : ToM_Projectile
 	// runs into if there is one:
 	override int SpecialMissileHit (Actor victim) 
 	{
-		if (victim.bSOLID || victim.bSHOOTABLE)
+		if (victim != target && (victim.bSOLID || victim.bSHOOTABLE))
 		{
 			stickobject = victim;
 			stickoffset = pos.z - stickobject.pos.z;

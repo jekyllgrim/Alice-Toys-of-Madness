@@ -49,9 +49,16 @@ class ToM_UtilsP : Actor abstract
 		return found;
 	}
 	
-	static clearscope double LinearMap(double val, double source_min, double source_max, double out_min, double out_max) 
+	static clearscope double LinearMap(double val, double source_min, double source_max, double out_min, double out_max, bool clampit = false) 
 	{
-		return (val - source_min) * (out_max - out_min) / (source_max - source_min) + out_min;
+		double d = (val - source_min) * (out_max - out_min) / (source_max - source_min) + out_min;
+		if (clampit)
+		{
+			double truemax = out_max > out_min ? out_max : out_min;
+			double truemin = out_max > out_min ? out_min : out_max;
+			d = Clamp(d, truemin, truemax);
+		}
+		return d;
 	}
 	
 	//Utility functions by Marisa Kirisame

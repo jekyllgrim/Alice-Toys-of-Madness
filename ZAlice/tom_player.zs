@@ -1,11 +1,65 @@
 class ToM_AlicePlayer : DoomPlayer
 {
-	state RunState;
+	static const name modelpaths[] =
+	{
+		"models/alice/knife",
+		"models/alice/HobbyHorse",
+		"models/alice/cards",
+		"models/alice/jacks",
+		"models/alice/pgrinder",
+		"models/alice/teapot",
+		"models/alice/eyestaff",
+		"models/alice/blunderbuss"
+	};
+
+	static const name modelnames[] =
+	{
+		"aliceplayer_knife.iqm",
+		"aliceplayer_horse.iqm",
+		"aliceplayer_cards.iqm",
+		"jacks.iqm",
+		"pgrinder.iqm",
+		"teapot.iqm",
+		"eyestaff.iqm",
+		"blunderbuss.iqm"
+	};
+
+	enum EWModels
+	{
+		AW_Knife,
+		AW_Horse,
+		AW_Cards,
+		AW_Jacks,
+		AW_PGrinder,
+		AW_Teapot,
+		AW_Eyestaff,
+		AW_Blunderbuss,
+	}
+
+	state s_idle;
+	state s_walk_smallweapon;
+	state s_run_smallweapon;
+	state s_walk_bigweapon;
+	state s_run_bigweapon;
+	state s_atk_knife;
+	state s_atk_horse;
+	state s_atk_cards;
+	state s_atk_jacks; //same as cards
+	state s_atk_pgrinder;
+	state s_atk_teapot;
+	state s_atk_eyestaff;
+	state s_atk_blunderbuss;
+	state s_swim;
+	state s_jump;
+
+	private int curWeaponID;
 
 	Default
 	{
+		+INTERPOLATEANGLES
 		player.StartItem "ToM_Knife", 1;
-		//scale 1.2;
+		player.Viewheight 51;
+		player.AttackZOffset 18;
 	}
 	
 	double GetCameraBobSpeed()
@@ -22,15 +76,6 @@ class ToM_AlicePlayer : DoomPlayer
 		double angle;
 		double bob;
 		bool still = false;
-
-		// Regular movement bobbing
-		// (needs to be calculated for gun swing even if not on ground)
-
-		// killough 10/98: Make bobbing depend only on player-applied motion.
-		//
-		// Note: don't reduce bobbing here if on ice: if you reduce bobbing here,
-		// it causes bobbing jerkiness when the player moves from ice to non-ice,
-		// and vice-versa.
 
 		if (player.cheats & CF_NOCLIP2)
 		{
@@ -135,75 +180,268 @@ class ToM_AlicePlayer : DoomPlayer
 	{	
 		let buttons = player.cmd.buttons;
 
-		return player.OnGround && (buttons & BT_FORWARD || buttons & BT_BACK || buttons & BT_MOVELEFT || buttons & BT_MOVERIGHT);
+		/*console.printf(
+			"maptime: %d | "
+			"FW %d | "
+			"BK %d | "
+			"LL %d | "
+			"RR %d | "
+			"sidemove: %d | "
+			"forwardmove: %d",
+			level.maptime,
+			buttons & BT_FORWARD,
+			buttons & BT_BACK,
+			buttons & BT_MOVELEFT,
+			buttons & BT_MOVERIGHT,
+			player.cmd.sidemove,
+			player.cmd.forwardmove
+		);*/
+		return (player.OnGround || waterlevel >= 2) && (buttons & BT_FORWARD || buttons & BT_BACK || buttons & BT_MOVELEFT || buttons & BT_MOVERIGHT);
 	}
-	
-	state ProgressMovement()
+
+	bool IsPlayerRunning()
+	{	
+		let buttons = player.cmd.buttons;
+
+		return IsPlayerMoving() && (buttons & BT_RUN);
+	}
+
+	state PickMovementState()
 	{
 		if (!IsPlayerMoving())
-			return SpawnState;
+		{
+			return spawnState;
+		}
 		
-		state targetState = player.cmd.buttons & BT_RUN ? ResolveState("SeeRun") : ResolveState("See");
-		if (!InStateSequence(curstate, targetState))
-			return targetState;
+		state targetstate;
+		if (waterlevel >= 2)
+			targetState = s_swim;
 		
-		return ResolveState(null);
+		else 
+		{
+			bool isRunning = IsPlayerRunning();
+			targetState = isRunning ? s_run_smallweapon : s_walk_smallweapon;
+			let weap = ToM_BaseWeapon(player.readyweapon);
+			if (weap && weap.IsTwoHanded)
+			{
+				targetState = isRunning ? s_run_bigweapon : s_walk_bigweapon;
+			}
+		}
+
+		return targetState;
+	}
+
+	void UpdateMovementSpeed()
+	{
+		//int targetTics = int(ToM_UtilsP.LinearMap(vel.length(), 0, 10, 5, 1, true));
+		//A_SetTics(targetTics);
+		PlayRunning();
+	}
+
+	void UpdateWeaponModel()
+	{
+		if (!player)
+			return;
+
+		let weap = ToM_BaseWeapon(player.readyweapon);
+		if (!weap || weap.wasThrown)
+		{
+			curWeaponID = -1;
+			A_ChangeModel("", 1, "", "");
+			return;
+		}
+
+		int newmodel = curWeaponID;
+		if (weap)
+		{
+			switch (weap.GetClassName()) {
+			case 'ToM_Knife':
+				newmodel = AW_Knife;
+				break;
+			case 'ToM_HobbyHorse':
+				newmodel = AW_Horse;
+				break;
+			case 'ToM_Cards':
+				newmodel = AW_Cards;
+				break;
+			case 'ToM_Jacks':
+				newmodel = AW_Jacks;
+				break;
+			case 'ToM_PepperGrinder':
+				newmodel = AW_PGrinder;
+				break;
+			case 'ToM_Teapot':
+				newmodel = AW_Teapot;
+				break;
+			case 'ToM_Eyestaff':
+				newmodel = AW_Eyestaff;
+				break;
+			case 'ToM_Blunderbuss':
+				newmodel = AW_Blunderbuss;
+				break;
+			}
+		}
+
+		if (newmodel != curWeaponID)
+		{
+			curWeaponID = newmodel;
+			A_ChangeModel("", 1, modelpaths[newmodel], modelnames[newmodel]);
+		}
 	}
 	
-	/*override void PlayRunning()
+	override void PlayRunning()
 	{
-		if (SeeState && InStateSequence(CurState, SpawnState))
-		{
-			let sstate = SeeState;
-			
-			if (player.cmd.buttons & BT_RUN)
-			{
-				if (!RunState)
-					RunState = ResolveState("SeeRun");
-				sstate = RunState;
-			}
-			
-			SetState (sstate);
-		}
-	}*/
+		if (player.cmd.buttons & BT_ATTACK || player.cmd.buttons & BT_ALTATTACK)
+			return;
 
-	/*override void Tick()
+		state targetstate = PickMovementState();
+
+		if (!InStateSequence(curstate, targetState))
+		{
+			SetState(targetState);
+		}
+	}
+
+	override void PlayIdle()
+	{
+		if (!InStateSequence(curstate, SpawnState))
+		{
+			SetState(SpawnState);
+		}
+	}
+
+	override void PlayAttacking()
+	{
+
+		if (curWeaponID < 0)
+			return;
+		
+		state targetstate;
+		switch (curWeaponID) {
+		case AW_Knife:
+			targetstate = s_atk_knife;
+			break;
+		case AW_Horse:
+			targetstate = s_atk_horse;
+			break;
+		case AW_Cards:
+			targetstate = s_atk_cards;
+			break;
+		case AW_Jacks:
+			targetstate = s_atk_jacks;
+			break;
+		case AW_PGrinder:
+			targetstate = s_atk_pgrinder;
+			break;
+		case AW_Teapot:
+			targetstate = s_atk_teapot;
+			break;
+		case AW_Eyestaff:
+			targetstate = s_atk_eyestaff;
+			break;
+		case AW_Blunderbuss:
+			targetstate = s_atk_blunderbuss;
+			break;
+		}
+
+		bool pressingAttack = (player.cmd.buttons & BT_ATTACK) || (player.cmd.buttons & BT_ALTATTACK);
+		// only play the attack animation if it's either not yet playing,
+		// or the player keeps pressing fire (for autofire weapons):
+		if (targetstate && (pressingAttack || !InStateSequence(curstate, targetState)))
+		{
+			SetState(targetstate);
+		}
+	}
+
+	override void PlayAttacking2 ()
+	{
+		PlayAttacking();
+	}
+
+	override void BeginPlay()
+	{
+		super.BeginPlay();
+
+		curWeaponID = -1;
+
+		s_idle = ResolveState("Idle");
+		s_walk_smallweapon = ResolveState("WalkSmall");
+		s_run_smallweapon = ResolveState("RunSmall");
+		s_walk_bigweapon = ResolveState("WalkBig");
+		s_run_bigweapon = ResolveState("RunBig");
+		s_atk_knife = ResolveState("Attack_Knife");
+		s_atk_horse = ResolveState("Attack_Horse");
+		s_atk_cards = ResolveState("Attack_Cards");
+		s_atk_jacks = ResolveState("Attack_Cards");
+		s_atk_pgrinder = ResolveState("Attack_PGrinder");
+		s_atk_teapot = ResolveState("Attack_Teapot");
+		s_atk_eyestaff = ResolveState("Attack_Eyestaff");
+		s_atk_blunderbuss = ResolveState("Attack_Blunderbuss");
+		s_swim = ResolveState("Swim");
+		s_jump = ResolveState("Jump");
+	}
+	
+	override void Tick()
 	{
 		super.Tick();
-		if (player && player.readyweapon)
-		{
-			if (player.readyweapon is "ToM_Knife")
-			{
-				A_ChangeModel("", "1", "models/alice/knife", "aliceplayer_knife.iqm");
-			}
-		}
-	}*/
+		UpdateWeaponModel();
+	}
 	
 	States {
 	Spawn:
 		M100 A 320;
-		M100 A 30;
-	Idle:
-		M000 ABCDEFGHIJKLMLKJIHGFEDCB 2;
+	//	M100 A 30;
+	//Idle:
+	//	M000 ABCDEFGHIJKLMLKJIHGFEDCB 2;
 		Loop;
-	See:
-		M001 ABCDEFGHIJKLMNOPQRST 1
-		{
-			return ProgressMovement();
-		}
+	WalkSmall:
+		M001 ABCDEFGHIJKLMNOPQRST 1 UpdateMovementSpeed();
 		Loop;
-	SeeRun:
-		M002 ABCDEFGHIJKL 2
-		{
-			return ProgressMovement();
-		}
+	RunSmall:
+		M002 ABCDEFGHIJKL 2 UpdateMovementSpeed();
 		Loop;
-	
+	WalkBig:
+		M003 ABCDEFGHIJKLMNOPQRST 1  UpdateMovementSpeed();
+		Loop;
+	RunBig:
+		M004 ABCDEFGHIJKL 2 UpdateMovementSpeed();
+		Loop;
+	Swim:
+		M009 ABCDEFGHIJKLMNOPQRSTU 1 UpdateMovementSpeed();
+		loop;
+
 	Melee:
+		stop;
 	Missile:
-	Missile.VorpalBlade:
-		M009 ABCDEFGHIJKLMNOPQRSTU 1;
+		stop;
+	
+	Attack_Knife:
+		M011 ABCDEFGHIJKLMNOPQRSTU 1;
 		Goto Spawn;
+	Attack_Horse:
+		M012 ABCDEFGHIJKLMNOP 2;
+		Goto Spawn;
+	Attack_Cards:
+		M014 ABCDEFGHIJKLMN 2;
+		Goto Spawn;
+	Attack_PGrinder:
+		M013 A 10;
+		M013 A 10;
+		Goto Spawn;
+	Attack_Teapot:
+		M015 ABCDEFGH 1;
+		M015 HGFEDCB 2;
+		M015 A 10;
+		Goto Spawn;
+	Attack_Eyestaff:
+		M016 A 10;
+		M016 A 10;
+		Goto Spawn;
+	Attack_Blunderbuss:
+		M017 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+		M018 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
+		M019 ABCDEFGHIJKLMNOPQRSTU 1;
+		goto Spawn;
 	
 	Pain:
 		M005 ABCDEFGHIJKLM 1;
@@ -224,11 +462,18 @@ class ToM_AlicePlayer : DoomPlayer
 		M008 ABCDEFGHIJKLMNOPQRSTUV 1;
 		#### # -1;
 		Stop;
-	Melee.Horse:
-		M010 ABCDEFGHIJKLMNOP 1;
-		goto Spawn;
-	Missile.PGrinder:
-		M011 A 5;
+	
+	Jump:
+		M010 ABCDEFGH 1;
+		M010 I 1
+		{
+			if (player.onGround)
+				return ResolveState("JumpEnd");
+			return ResolveState(null);
+		}
+		wait;
+	JumpEnd:
+		M010 HGFEDCBA 1;
 		goto Spawn;
 	}
 }
@@ -298,14 +543,14 @@ class ToM_PlayerModelTest : Actor
 		M013 AB 10;
 		// teapot
 		TNT1 A 0 A_ChangeModel("", "1", "models/alice/teapot", "teapot.iqm");
-		M015 ABCDEFGH 2;
-		M015 HGFEDCBA 4;
-		M015 ABCDEFGH 2;
-		M015 HGFEDCBA 4;
-		M015 ABCDEFGH 2;
-		M015 HGFEDCBA 4;
+		M015 ABCDEFGH 1;
+		M015 GFEDCB 2;
+		M015 ABCDEFGH 1;
+		M015 GFEDCB 2;
+		M015 ABCDEFGH 1;
+		M015 GFEDCB 2;
 		// eyestaff
-		TNT1 A 0 A_ChangeModel("", "1", "models/alice/eyestaff", "eyestaff.iqm", 1, "models/alice/eyestaff", "eyestafftex.png");
+		TNT1 A 0 A_ChangeModel("", "1", "models/alice/eyestaff", "eyestaff.iqm");
 		M016 AB 10;
 		// blunderbuss
 		TNT1 A 0 A_ChangeModel("", "1", "models/alice/blunderbuss", "blunderbuss.iqm");
@@ -321,7 +566,7 @@ class ToM_PlayerModelTestWalkLarge : Actor
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
-		A_ChangeModel("", "1", "models/alice/HobbyHorse", "aliceplayer_horse.iqm", skinindex: 1, skin: "FIREBLU");
+		A_ChangeModel("", "1", "models/alice/jacks", "jacks.iqm");
 	}
 
 	States {

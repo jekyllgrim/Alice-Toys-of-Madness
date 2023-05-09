@@ -6,7 +6,6 @@ class ToM_Knife : ToM_BaseWeapon
 	
 	const MAXRECALLTIME = 35 * 7; //recall knife after this wait time
 	ToM_KnifeProjectile knife; //pointer to thrown knife
-	protected bool knifeWasThrown; //true if thrown
 	protected int recallWait; //recall timer
 	
 	protected int otherHandWait;
@@ -27,7 +26,7 @@ class ToM_Knife : ToM_BaseWeapon
 		if (!player)
 			return;
 		
-		if (invoker.knifeWasThrown)
+		if (invoker.wasThrown)
 		{
 			flags |= WRF_NOPRIMARY;
 		}
@@ -54,7 +53,7 @@ class ToM_Knife : ToM_BaseWeapon
 		if (!player)
 			return;
 		
-		if (!invoker.knifeWasThrown)
+		if (!invoker.wasThrown)
 			return;
 		
 		if (!HasRageBox())
@@ -103,7 +102,7 @@ class ToM_Knife : ToM_BaseWeapon
 		if (b)
 		{
 			invoker.knife = ToM_KnifeProjectile(b);
-			invoker.knifeWasThrown = true;
+			invoker.wasThrown = true;
 			invoker.recallWait = MAXRECALLTIME;
 		}
 	}	
@@ -167,7 +166,7 @@ class ToM_Knife : ToM_BaseWeapon
 			if (psp && !InStateSequence(psp.curstate, ResolveState("CatchKnife")))
 				psp.SetState(ResolveState("CatchKnife"));
 		}
-		knifeWasThrown = false;
+		wasThrown = false;
 		
 		if (tom_debugmessages)
 			console.printf("Knife successfully recalled");
@@ -184,9 +183,9 @@ class ToM_Knife : ToM_BaseWeapon
 		// thrown but we don't have a valid pointer 
 		// to the knife, just restore it by setting
 		// the bool to false:
-		if (knifeWasThrown && !knife)
+		if (wasThrown && !knife)
 		{
-			knifeWasThrown = false;
+			wasThrown = false;
 		}
 		
 		// Automatic recall handling:
@@ -197,7 +196,7 @@ class ToM_Knife : ToM_BaseWeapon
 			
 			// If we're out of time and knife was 
 			// actually thrown:
-			if (recallWait <= 0 && knifeWasThrown)
+			if (recallWait <= 0 && wasThrown)
 			{
 				// If the knife pointer is still valid,
 				// initate the recall:
@@ -394,7 +393,7 @@ class ToM_Knife : ToM_BaseWeapon
 				return ResolveState("SelectRage");
 			}
 			
-			if (invoker.knifeWasThrown)
+			if (invoker.wasThrown)
 				A_SetKnifeSprite("VKNR");
 				
 			A_WeaponOffset(-24, 86);
@@ -412,7 +411,7 @@ class ToM_Knife : ToM_BaseWeapon
 	Deselect:
 		VKNF A 0 
 		{
-			if (invoker.knifeWasThrown)
+			if (invoker.wasThrown)
 				A_SetKnifeSprite("VKNR");
 
 			A_OverlayPivot(OverlayID(), 1, 1);	
@@ -432,7 +431,7 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		#### A 1 
 		{
-			if (invoker.knifeWasThrown) 
+			if (invoker.wasThrown) 
 			{
 				A_SetKnifeSprite("VKNR", "VKRR");
 			}
@@ -447,7 +446,7 @@ class ToM_Knife : ToM_BaseWeapon
 			}
 			
 			// Move this hand away if the claw is currently attacking:
-			if (HasRageBox() && invoker.knifeWasThrown)
+			if (HasRageBox() && invoker.wasThrown)
 			{
 				let psl = player.FindPSprite(APSP_LeftHand);
 				if ( psl && 
@@ -589,7 +588,7 @@ class ToM_Knife : ToM_BaseWeapon
 	AltFire:
 		#### # 0 
 		{
-			if (invoker.knifeWasThrown)
+			if (invoker.wasThrown)
 			{
 				return ResolveState("RecallKnife");
 			}
@@ -639,7 +638,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_SetKnifeSprite("VKNR", "VKRR");
 			A_WeaponOffset(15, 20);
 			A_OverlayRotate(OverlayID(), -10);
-			invoker.knifeWasThrown = false;
+			invoker.wasThrown = false;
 			A_ResetPSprite(OverlayID(), 6);
 		}
 		#### BCDEFG 1;
@@ -648,7 +647,7 @@ class ToM_Knife : ToM_BaseWeapon
 		TNT1 A 1
 		{
 			A_SpawnPSParticle("RecallKnifeParticle", density: 4, xofs: 80, yofs: 80);
-			if (!invoker.knifeWasThrown)
+			if (!invoker.wasThrown)
 				return ResolveState("Null");
 			
 			return ResolveState(null);

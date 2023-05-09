@@ -13,6 +13,12 @@ class ToM_BaseWeapon : Weapon abstract
 	
 	color PickupParticleColor;
 	property PickupParticleColor : PickupParticleColor;
+	bool IsTwoHanded;
+	property IsTwoHanded : IsTwoHanded;
+	
+	// used by vorpal knife and jacks, to tell the player pawn
+	// that it shouldn't be rendering any weapon model:
+	bool wasThrown;
 	
 	protected int swayTics;
 	protected double maxSwayTics; // starting point for the timer

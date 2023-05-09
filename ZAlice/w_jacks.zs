@@ -9,7 +9,6 @@ class ToM_Jacks : ToM_BaseWeapon
 		// then automatically after x2 the regular DOT duration:
 		JSAFERELOAD = int(ToM_JackDOTControl.DOTTIME * 2),
 	}
-	bool jacksTossed; //true after using altfire until jacks return
 	int jackswait; //wait time for safe reload
 
 	Default
@@ -23,22 +22,22 @@ class ToM_Jacks : ToM_BaseWeapon
 		weapon.ammouse2 12;
 	}
 	
-	// Set frame based on jacksTossed value:
+	// Set frame based on wasThrown value:
 	action void A_SetJacksFrame()
 	{
 		let psp = player.FindPSprite(OverlayID());
 		if (!psp)
 			return;
 		
-		psp.frame = invoker.jacksTossed ? JWAITFRAME : JREADYFRAME;
-		//console.printf("tossed: %d", invoker.jacksTossed);
+		psp.frame = invoker.wasThrown ? JWAITFRAME : JREADYFRAME;
+		//console.printf("tossed: %d", invoker.wasThrown);
 	}
 	
 	action state A_JacksReady()
 	{
-		A_WeaponReady(invoker.jacksTossed ? WRF_NOFIRE : 0);
+		A_WeaponReady(invoker.wasThrown ? WRF_NOFIRE : 0);
 		let psp = player.FindPSprite(OverlayID());
-		if (psp && psp.frame == JWAITFRAME && !invoker.jacksTossed)
+		if (psp && psp.frame == JWAITFRAME && !invoker.wasThrown)
 			return ResolveState("JacksReload");
 		return ResolveState(null);
 	}
@@ -136,7 +135,7 @@ class ToM_Jacks : ToM_BaseWeapon
 		
 		// The weapon is no longer ready for firing:
 		invoker.jackswait = JSAFERELOAD;
-		invoker.jacksTossed = true;
+		invoker.wasThrown = true;
 	}
 	
 	// Safe reload for edge cases when jacks can't return:
@@ -146,8 +145,8 @@ class ToM_Jacks : ToM_BaseWeapon
 		if (jackswait > 0)
 		{
 			jackswait--;
-			if (jackswait <= 0 && jacksTossed)
-				jacksTossed = false;
+			if (jackswait <= 0 && wasThrown)
+				wasThrown = false;
 		}
 	}
 	
@@ -540,7 +539,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 				{
 					let weap = ToM_Jacks(target.FindInventory("ToM_Jacks"));
 					if (weap)
-						weap.jacksTossed = false;
+						weap.wasThrown = false;
 					Destroy();
 				}
 			}
@@ -727,7 +726,7 @@ class ToM_VisualSeeker : ToM_JackProjectile
 				{
 					let weap = ToM_Jacks(target.FindInventory("ToM_Jacks"));
 					if (weap)
-						weap.jacksTossed = false;
+						weap.wasThrown = false;
 					Destroy();
 				}
 			}
@@ -767,7 +766,7 @@ class ToM_JackDOTControl : ToM_InventoryToken
 				{
 					let weap = ToM_Jacks(target.FindInventory("ToM_Jacks"));
 					if (weap)
-						weap.jacksTossed = false;
+						weap.wasThrown = false;
 				}*/
 				Destroy();
 				return;

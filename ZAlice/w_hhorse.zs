@@ -9,11 +9,12 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	
 	Default
 	{
+		Tag "Hobby Horse";
+		ToM_BaseWeapon.IsTwoHanded true;
 		+WEAPON.MELEEWEAPON
 		+WEAPON.NOAUTOFIRE
 		Weapon.slotnumber 1;
 		Weapon.slotpriority 1;
-		Tag "Hobby Horse";
 	}
 	
 	// Set up the swing: initial coords and the step:

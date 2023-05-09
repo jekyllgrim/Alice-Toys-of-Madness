@@ -17,6 +17,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	Default
 	{
 		Tag "Jabbberwock's Eye Staff";
+		ToM_BaseWeapon.IsTwoHanded true;
 		Weapon.slotnumber 6;
 		weapon.ammotype1 "ToM_PurpleMana";
 		weapon.ammouse1 1;

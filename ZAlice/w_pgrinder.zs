@@ -8,8 +8,9 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	
 	Default
 	{
-		Weapon.slotnumber 4;
 		Tag "Pepper Grinder";
+		ToM_BaseWeapon.IsTwoHanded true;
+		Weapon.slotnumber 4;
 		weapon.ammotype1 "ToM_RedMana";
 		weapon.ammouse1 1;
 		weapon.ammogive1 100;

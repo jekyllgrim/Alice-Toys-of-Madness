@@ -162,7 +162,7 @@ Model ToM_AlicePlayer
 	FrameIndex	M008	T	0	145
 	FrameIndex	M008	U	0	146
 	FrameIndex	M008	V	0	147
-	// swip				
+	// swim				
 	FrameIndex	M009	A	0	148
 	FrameIndex	M009	B	0	149
 	FrameIndex	M009	C	0	150

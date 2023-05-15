@@ -1,8 +1,9 @@
 class ToM_Eyestaff : ToM_BaseWeapon
 {
 	int charge;
-	private ToM_LaserBeam beam1;	
-	private ToM_LaserBeam beam2;	
+	private ToM_EyestaffBeam beam1;	//outer beam (purple)
+	private ToM_EyestaffBeam beam2; //inner beam (yellow)
+	private ToM_EyestaffBeam outerBeam; //rendered for other players and mirrors
 	
 	const ES_FULLCHARGE = 42;
 	const ES_FULLALTCHARGE = 40;
@@ -40,20 +41,26 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			return;
 		if (!invoker.beam1)
 		{
-			invoker.beam1 = ToM_LaserBeam.Create(self, 10, 4.2, -1.4, type: "ToM_EyestaffBeam1");
+			invoker.beam1 = ToM_EyestaffBeam(ToM_LaserBeam.Create(self, 10, 4.2, -1.4, type: "ToM_EyestaffBeam"));
 		}
 		if (!invoker.beam2)
 		{
-			invoker.beam2 = ToM_LaserBeam.Create(self, 10, 4.2, -1.25, type: "ToM_EyestaffBeam2");
+			invoker.beam2 = ToM_EyestaffBeam(ToM_LaserBeam.Create(self, 10, 4.2, -1.25, type: "ToM_EyestaffBeam"));
+			invoker.beam2.alphadir = 0.05;
+			invoker.beam2.alpha = 0.5;
+			invoker.beam2.shade = "ffee00";
+			invoker.beam2.scale.x = 1.6;
 		}
-		if (invoker.beam1)
+		if (!invoker.outerBeam)
 		{
-			invoker.beam1.SetEnabled(true);
+			invoker.outerBeam = ToM_EyestaffBeam(ToM_LaserBeam.Create(self, 32, 4.2, 2, type: "ToM_EyestaffBeam"));
+			invoker.outerBeam.master = self;
+			invoker.outerBeam.bMASTERNOSEE = true;
 		}
-		if (invoker.beam2)
-		{
-			invoker.beam2.SetEnabled(true);
-		}
+		
+		invoker.beam1.SetEnabled(true);
+		invoker.beam2.SetEnabled(true);
+		invoker.outerBeam.SetEnabled(true);
 	}
 	
 	action void A_StopBeam()
@@ -65,6 +72,10 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		if (invoker.beam2)
 		{
 			invoker.beam2.SetEnabled(false);
+		}
+		if (invoker.outerBeam)
+		{
+			invoker.outerBeam.SetEnabled(false);
 		}
 	}
 	
@@ -421,7 +432,7 @@ class ToM_EyestaffPuff : ToM_BasePuff
 	}
 }
 
-class ToM_EyestaffBeam1 : ToM_LaserBeam
+class ToM_EyestaffBeam : ToM_LaserBeam
 {
 	double alphadir;
 	
@@ -435,30 +446,31 @@ class ToM_EyestaffBeam1 : ToM_LaserBeam
 	{
 		super.PostBeginPlay();
 		alphadir = -0.05;
+		if (!bMASTERNOSEE && source && source.player)
+		{
+			if (source.player == players[consoleplayer])
+				bINVISIBLEINMIRRORS = true;
+			else
+				A_SetRenderstyle(alpha, Style_None);
+		}
 	}
 	
-	override void Tick()
+	override void BeamTick()
 	{
-		super.Tick();
+		AimAtCrosshair();
 		alpha += alphadir;
 		if (alpha > 1 || alpha < 0.5)
 			alphadir *= -1;
 	}
-}
 
-class ToM_EyestaffBeam2 : ToM_EyestaffBeam1
-{
-	Default
+	override vector3 GetSourcePos()
 	{
-		ToM_LaserBeam.LaserColor "ffee00";
-		xscale 1.6;
-	}
-	
-	override void PostBeginPlay()
-	{
-		super.PostBeginPlay();
-		alphadir = 0.05;
-		alpha = 0.5;
+		vector3 srcPos = (source.pos.xy, source.pos.z + (source.height * 0.5));
+		// bob only first-person views:
+		if(source.player && !bMASTERNOSEE) 
+			srcPos.z = source.player.viewz;
+		
+		return srcPos;
 	}
 }
 
@@ -504,12 +516,15 @@ class ToM_EyestaffProjectile : ToM_Projectile
 			int life = 25;
 			int parts = 12;
 			double pangle = 360. / parts;
+			TextureID ptex = TexMan.CheckForTexture("JEYCP0");
 			for (int i = 0; i < parts; i++)
 			{
-				int r = random[eyec](0, ToM_EyestaffProjectile.SmokeColors.Size() - 1);
-				let col = ToM_EyestaffProjectile.SmokeColors[r];
-				A_SpawnParticle(
-					col,
+				//int r = random[eyec](0, ToM_EyestaffProjectile.SmokeColors.Size() - 1);
+				//let col = ToM_EyestaffProjectile.SmokeColors[r];
+				A_SpawnParticleEx(
+					"",//col,
+					ptex,
+					STYLE_Add,
 					SPF_FULLBRIGHT|SPF_RELATIVE,
 					lifetime: life,
 					size: 7,

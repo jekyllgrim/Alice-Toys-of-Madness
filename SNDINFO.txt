@@ -13,7 +13,7 @@ $playeralias		player	male	*land		alice/land
 $playeralias		player	male	*jump		alice/jump
 $playeralias		player	male	*grunt		alice/usefail
 $playeralias		player	male	*usefail	alice/usefail
-$playeralias		player	male	*falling	alice/falldeath
+//$playeralias		player	male	*falling	alice/falldeath
 
 $playeralias		player	female	*death		alice/death
 $playeralias		player	female	*xdeath	alice/xdeath
@@ -26,7 +26,7 @@ $playeralias		player	female	*land		alice/land
 $playeralias		player	female	*jump		alice/jump
 $playeralias		player	female	*grunt		alice/usefail
 $playeralias		player	female	*usefail	alice/usefail
-$playeralias		player	female	*falling	alice/falldeath
+//$playeralias		player	female	*falling	alice/falldeath
 
 $playeralias		player	other	*death		alice/death
 $playeralias		player	other	*xdeath	alice/xdeath
@@ -39,7 +39,7 @@ $playeralias		player	other	*land		alice/land
 $playeralias		player	other	*jump		alice/jump
 $playeralias		player	other	*grunt		alice/usefail
 $playeralias		player	other	*usefail	alice/usefail
-$playeralias		player	other	*falling	alice/falldeath
+//$playeralias		player	other	*falling	alice/falldeath
 
 alice/falldeath "sounds/player/death_fall.ogg"
 $random alice/jump { alice/jump1 alice/jump2 alice/jump3 alice/jump4 alice/jump5 alice/jump6 alice/jump7 }
@@ -199,6 +199,14 @@ hhhitwall3 "sounds/hhorse/hobby_imp_metal06.ogg"
 hhhitwall4 "sounds/hhorse/hobby_imp_metal07.ogg"
 hhhitwall5 "sounds/hhorse/hobby_imp_metal08.ogg"
 hhhitwall6 "sounds/hhorse/hobby_imp_metal09.ogg"
+
+$random weapons/hhorse/hitfloor { hhhitfloor1 hhhitfloor2 hhhitfloor3 hhhitfloor4 }
+hhhitfloor1 "sounds/hhorse/hobby_imp_rock01.ogg"
+hhhitfloor2 "sounds/hhorse/hobby_imp_rock02.ogg"
+hhhitfloor3 "sounds/hhorse/hobby_imp_rock03.ogg"
+hhhitfloor4 "sounds/hhorse/hobby_imp_rock04.ogg"
+
+weapons/hhorse/freefall "sounds/hhorse/Freefall_Loop.ogg"
 
 
 // CARDS 

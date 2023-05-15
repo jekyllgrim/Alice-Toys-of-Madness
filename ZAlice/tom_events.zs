@@ -29,7 +29,10 @@ class ToM_Mainhandler : EventHandler
 		// way to make sure the DoT is triggered by
 		// explosions, not just a direct hit of the 
 		// projectile):
-		if (e.thing && e.Inflictor && e.Inflictor.GetClass() == 'ToM_TeaProjectile' && e.Inflictor.target)
+		if (!e.thing)
+			return;
+
+		if (e.Inflictor && e.Inflictor.GetClass() == 'ToM_TeaProjectile' && e.Inflictor.target)
 		{
 			let act = e.thing;
 			if (!act.CountInv("ToM_TeaBurnControl"))
@@ -40,6 +43,23 @@ class ToM_Mainhandler : EventHandler
 				cont.ResetTimer();
 				cont.target = e.Inflictor.target;
 			}
+		}
+
+		if (e.Inflictor && e.DamageSource && e.DamageSource.player && e.DamageFlags & DMG_EXPLOSION)
+		{
+			let player = e.DamageSource.player;
+			if (!player)
+				return;
+			let weap = ToM_HobbyHorse(player.readyweapon);
+			if (!weap)
+				return;
+		
+			double ang = (e.thing.angle + e.thing.AngleTo(e.DamageSource)) + 180;
+			double distFac = ToM_UtilsP.LinearMap(e.thing.Distance3D(e.DamageSource), 128, 0, 0.5, 1.5);
+			double massFac = ToM_UtilsP.LinearMap(e.thing.mass, 300, 1000, 1.0, 0.0, true);
+			double forceFac = ToM_UtilsP.LinearMap(weap.fallAttackDuration, 1, 20, 1.0, 3.0);
+			double force = 10 * distFac * massFac * forceFac;
+			e.thing.Vel3DFromAngle(force, ang, -50);
 		}
 	}
 	

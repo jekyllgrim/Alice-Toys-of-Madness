@@ -1,11 +1,14 @@
 class ToM_HobbyHorse : ToM_BaseWeapon
 {
 	int combo;	
+
 	protected array < Actor > swingVictims; //actors hit by the attack
 	protected vector2 swingOfs;
 	protected vector2 swingStep;
-	protected int swingSndCounter; //delay the attack sound
-	const SWINGSTAGGER = 8; // by this much
+	protected int swingSndCounter; //delay the attack sound...
+	const SWINGSTAGGER = 8; // ...by this much
+
+	int fallAttackDuration;
 	
 	Default
 	{
@@ -89,6 +92,87 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		
 		// Add a step:
 		invoker.swingOfs += invoker.swingStep;
+	}
+
+	action void A_LandAttack()
+	{
+		A_StartSound("*land", CHAN_BODY);
+		A_CameraSway(0, 30, 4);
+		
+		int rad = 128 + invoker.fallAttackDuration;
+		vector3 ipos = (radius + 8, 0, 0);
+		let hi = ToM_HorseImpact(Spawn("ToM_HorseImpact", pos));
+		if (hi)
+		{
+			hi.target = self;
+			hi.Warp(self, ipos.x, ipos.y, ipos.z);
+			hi.scale.x = rad * 0.5;
+			hi.A_Explode(80 + invoker.fallAttackDuration, rad, 0);
+			hi.A_StartSound("weapons/hhorse/hitfloor", CHAN_7);
+			double qints = ToM_UtilsP.LinearMap(invoker.fallAttackDuration, 4, 32, 3, 8, true);
+			int qdur = ToM_UtilsP.LinearMap(invoker.fallAttackDuration, 4, 32, 15, 40, true);
+			hi.A_Quake(qints, qdur, 0, rad);
+			for (int i = random[sfx](12,16); i > 0; i--)
+			{
+				double randomDebrisVel = 5;
+				let debris = Spawn("ToM_RandomDebris", hi.pos + (frandom[sfx](-rad, rad),frandom[sfx](-rad, rad), 0));
+				if (debris) 
+				{
+					double zvel = (pos.z > floorz) ? frandom[sfx](-randomDebrisVel,randomDebrisVel) : frandom[sfx](randomDebrisVel * 0.5, randomDebrisVel);
+					debris.vel = (frandom[sfx](-randomDebrisVel,randomDebrisVel),frandom[sfx](-randomDebrisVel,randomDebrisVel),zvel);
+					debris.A_SetScale(frandom[sfx](0.5, 1.5));
+					debris.gravity *= 0.5;
+				}
+			}
+			TextureID ptex = TexMan.CheckForTexture("SPRKA0");
+			for (int i = random[sfx](30,40); i > 0; i--)
+			{
+				int life = random[psfx](40, 50);
+				double fwVel = frandom[psfx](0.5, 3);
+				double sideVel = frandom[psfx](-0.5, 0.5);
+				double upVel = frandom[psfx](0.5, 2);
+				double fwAccel = fwVel / life * 0.5;
+				double sideAccel = sideVel * -0.5;
+				double upAccel = upVel * 0.1;
+				double psize = random[psfx](10, 18);
+				double pSizeStep = psize / life * -0.5;
+				//double pRollVel = frandom[psfx](-8,8),
+				hi.A_SpawnParticleEx(
+					"",
+					ptex,
+					Style_Add,
+					SPF_FULLBRIGHT|SPF_RELATIVE|SPF_ROLL,
+					lifetime: life,
+					size: psize,
+					angle: random[psfx](0, 359),
+					xoff: random[psfx](0, rad),
+					velx: fwVel,
+					vely: sideVel,
+					velz: upVel,
+					accelx: fwAccel,
+					accely: sideAccel,
+					//accelz: upAccel,
+					sizestep: pSizeStep,
+					startroll: random[psfx](0, 359)/*,
+					rollvel: frandom[psfx](-8,8),
+					rollacc: */
+				);
+			}
+		}
+		if (invoker.fallAttackDuration >= 8)
+		{
+			int reps = ToM_UtilsP.LinearMap(invoker.fallAttackDuration, 0, 30, 1, 4, true);
+			for (reps; reps > 0; reps--)
+			{
+				hi = ToM_HorseImpact(Spawn("ToM_HorseImpact", pos));
+				hi.Warp(self, ipos.x, ipos.y, ipos.z);
+				double sfac = reps * 0.1;
+				console.printf("reps: %d | sfac: %.2f", reps, sfac);
+				hi.scale.x = rad * sfac;
+			}
+		}
+
+		vel.z = 5;
 	}
 	
 	override void DoEffect()
@@ -294,6 +378,72 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			}
 		}
 		stop;
+	Altfire:				
+		TNT1 A 0 
+		{
+			invoker.combo = 0;
+			invoker.fallAttackDuration = 0;
+			A_ResetPSprite();
+			A_OverlayPivot(OverlayID(), 0.2, 0.8);
+			A_StartSound("*jump", CHAN_BODY);
+			vector3 forwarddir = (cos(angle), sin(angle), 0);
+			double fwdvel = vel dot forwarddir;
+			VelFromAngle(fwdvel + 7);
+			if (player.onGround)
+			{
+				vel.z += 12;
+			}
+		}
+		HHRS KKKKLLLL 1 
+		{
+			A_WeaponOffset(1.2, -4, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -0.3, WOF_ADD);
+			A_ScalePSprite(OverlayID(), 0.0025, 0.0025,WOF_ADD);
+		}
+		HHRS MMMMMMMM 1 
+		{
+			A_WeaponOffset(0.6, -1.5, WOF_ADD);
+			A_RotatePSprite(OverlayID(), -0.3, WOF_ADD);
+			A_ScalePSprite(OverlayID(), 0.0025, 0.0025,WOF_ADD);
+		}
+		TNT1 A 0 
+		{
+			//A_PrepareSwing(-5, -30, 1.5, 16);
+			A_StartSound("weapons/hhorse/heavyswing", CHAN_AUTO);
+			A_CameraSway(0, 5, 7);
+			//A_Overlay(APSP_Overlayer, "OverheadTrail");
+		}
+		HHRS NNNOOOOOOO 1 
+		{
+			A_WeaponOffset(-4, 4, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 0.03, WOF_ADD);
+			A_ScalePSprite(OverlayID(), -0.001, -0.001, WOF_ADD);
+		}
+	FallLoop:
+		HHRS O 1
+		{
+			let psp = player.FindPSprite(OverlayID());
+			if (psp)
+			{
+				A_WeaponOffset(Clamp(psp.x-2, -80, 0), Clamp(psp.y+2, 32, 80), WOF_INTERPOLATE);
+			}
+			invoker.fallAttackDuration++;
+			if (invoker.fallAttackDuration > 4)
+				A_startSound("weapons/hhorse/freefall", CHAN_BODY, CHANF_LOOPING);
+			console.printf("fall attack duration: %d", invoker.fallAttackDuration);
+		}
+		TNT1 A 0 
+		{
+			if (!player.onGround)
+			{
+				return ResolveState("FallLoop");
+			}
+			return ResolveState(null);
+		}
+		TNT1 A 0 A_LandAttack();
+		HHRS OOOO 1 A_WeaponOffset(3, -6, WOF_ADD);
+		HHRS OOOOOOOOO 1 A_WeaponOffset(-6, 8, WOF_ADD);
+		goto AttackEnd;
 	AttackEnd:
 		TNT1 A 5
 		{
@@ -344,5 +494,50 @@ class ToM_HorsePuff : ToM_BasePuff
 	Spawn:
 		TNT1 A 10;
 		stop;
+	}
+}
+
+class ToM_HorseImpactDecal : ToM_BaseActor
+{
+	double fac;
+
+	Default
+	{
+		+NOBLOCKMAP
+		+NOINTERACTION
+		renderstyle 'Translucent';
+	}
+
+	override void Tick()
+	{
+		A_FadeOut(fac);
+	}
+
+	States {
+	Spawn:
+		M000 A -1;
+		stop;
+	}
+}
+
+class ToM_HorseImpact : ToM_SmallDebris
+{
+	int delay;
+	Default
+	{
+		+NOINTERACTION
+		+BRIGHT
+		renderstyle 'Add';
+	}
+
+	States {
+	Spawn:
+		TNT1 A 0 A_SetTics(delay);
+		M000 A 1
+		{
+			scale *= 1.1;
+			A_FadeOut(0.08);
+		}
+		wait;
 	}
 }

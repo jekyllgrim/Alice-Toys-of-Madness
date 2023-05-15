@@ -547,7 +547,7 @@ class ToM_InvisibilitySelector : ToM_BaseWeapon
 	States
 	{
 	Select:
-		TNT1 A 0 A_Raise();
+		TNT1 A 0 { return ResolveState("Ready"); }
 		wait;
 	Deselect:
 		TNT1 A 0 A_Lower();

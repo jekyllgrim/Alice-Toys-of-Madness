@@ -213,8 +213,8 @@ class ToM_Cannonball : ToM_Projectile
 				randomdebrisScale: 2,
 				smokingdebris: 0,
 				explosivedebris: 0,
-				explosivedebrisVel: 10,
-				explosivedebrisScale: 2,
+				//explosivedebrisVel: 10,
+				//explosivedebrisScale: 2,
 				quakeIntensity: 4,
 				quakeDuration: 20,
 				quakeradius: 512

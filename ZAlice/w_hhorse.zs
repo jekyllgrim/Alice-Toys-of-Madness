@@ -8,7 +8,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	protected int swingSndCounter; //delay the attack sound...
 	const SWINGSTAGGER = 8; // ...by this much
 
-	int fallAttackDuration;
+	int falLAttackForce;
 	
 	Default
 	{
@@ -98,20 +98,22 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	{
 		A_StartSound("*land", CHAN_BODY);
 		A_CameraSway(0, 30, 4);
+
+		int falLAttackForce = invoker.falLAttackForce;
+		//int falLAttackForce = (abs(vel.x) + abs(vel.y)) * 0.5 + abs(vel.z);
 		
-		int rad = 128 + invoker.fallAttackDuration;
+		int rad = 128 + falLAttackForce;
 		vector3 ipos = (radius + 8, 0, floorz);
-		let hi = ToM_HorseImpact(Spawn("ToM_HorseImpact", pos));
+		let hi = Spawn("ToM_HorseImpactSpot", pos);
 		if (hi)
 		{
 			hi.target = self;
 			hi.Warp(self, ipos.x, ipos.y, ipos.z);
-			hi.scale.x = rad * 0.5;
-			hi.A_Explode(80 + invoker.fallAttackDuration, rad, 0);
+			hi.A_Explode(80 + falLAttackForce, rad, 0);
 			hi.A_StartSound("weapons/hhorse/hitfloor", CHAN_7);
-			double qints = ToM_UtilsP.LinearMap(invoker.fallAttackDuration, 4, 32, 3, 8, true);
-			int qdur = ToM_UtilsP.LinearMap(invoker.fallAttackDuration, 4, 32, 15, 40, true);
-			hi.A_Quake(qints, qdur, 0, rad);
+			double qints = ToM_UtilsP.LinearMap(falLAttackForce, 4, 32, 3, 8, true);
+			int qdur = ToM_UtilsP.LinearMap(falLAttackForce, 4, 32, 15, 40, true);
+			hi.A_Quake(qints, qdur, 0, rad, sfx: "");
 			for (int i = random[sfx](12,16); i > 0; i--)
 			{
 				double randomDebrisVel = 5;
@@ -160,21 +162,22 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				);
 			}
 		}
-		if (invoker.fallAttackDuration >= 8)
+
+		int reps = ToM_UtilsP.LinearMap(falLAttackForce, 40, 1, 5, 1, true);
+		for (reps; reps > 0; reps--)
+		{
+			let iring = ToM_HorseImpact(Spawn("ToM_HorseImpact", pos));
+			iring.Warp(self, ipos.x, ipos.y, ipos.z);
+			double sfac = reps * 0.1;
+			//console.printf("reps: %d | sfac: %.2f", reps, sfac);
+			iring.scale.x = rad * sfac;
+		}
+
+		if (falLAttackForce >= 29 && pos.z <= floorz)
 		{
 			let hid = Spawn("ToM_HorseImpactDebris", pos);
 			if (hid)
 				hid.Warp(self, ipos.x, ipos.y, ipos.z);
-
-			int reps = ToM_UtilsP.LinearMap(invoker.fallAttackDuration, 0, 30, 1, 4, true);
-			for (reps; reps > 0; reps--)
-			{
-				hi = ToM_HorseImpact(Spawn("ToM_HorseImpact", pos));
-				hi.Warp(self, ipos.x, ipos.y, ipos.z);
-				double sfac = reps * 0.1;
-				console.printf("reps: %d | sfac: %.2f", reps, sfac);
-				hi.scale.x = rad * sfac;
-			}
 		}
 
 		vel.z = 5;
@@ -183,8 +186,27 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	override void DoEffect()
 	{
 		super.DoEffect();
+		if (!owner || !owner.player)
+			return;
+
 		if (swingSndCounter > 0)
 			swingSndCounter--;
+		
+		if (!owner.player.onGround)
+		{
+			let weap = owner.player.readyweapon;
+			if (weap && weap == self)
+			{
+				let psp = owner.player.FindPSprite(PSP_WEAPON);
+				if (!psp)
+					return;
+				
+				if (InStateSequence(psp.curstate, ResolveState("AltFire")))
+				{
+					falLAttackForce = ceil( (abs(owner.vel.x) + abs(owner.vel.y)) * 0.15 + abs(owner.vel.z) );
+				}
+			}
+		}
 	}
 	
 	States
@@ -387,10 +409,9 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		TNT1 A 0 
 		{
 			invoker.combo = 0;
-			invoker.fallAttackDuration = 0;
 			A_ResetPSprite();
 			A_OverlayPivot(OverlayID(), 0.2, 0.8);
-			A_StartSound("*jump", CHAN_BODY);
+			A_StartSound("weapons/hhorse/jumpattack", CHAN_BODY);
 			vector3 forwarddir = (cos(angle), sin(angle), 0);
 			double fwdvel = vel dot forwarddir;
 			VelFromAngle(fwdvel + 7);
@@ -414,7 +435,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		TNT1 A 0 
 		{
 			//A_PrepareSwing(-5, -30, 1.5, 16);
-			A_StartSound("weapons/hhorse/heavyswing", CHAN_AUTO);
+			A_StartSound("weapons/hhorse/altswing", CHAN_AUTO);
 			A_CameraSway(0, 5, 7);
 			//A_Overlay(APSP_Overlayer, "OverheadTrail");
 		}
@@ -432,15 +453,17 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			{
 				A_WeaponOffset(Clamp(psp.x-2, -68, 0), Clamp(psp.y+2, 32, 68), WOF_INTERPOLATE);
 			}
-			invoker.fallAttackDuration++;
-			if (invoker.fallAttackDuration > 4)
-				A_startSound("weapons/hhorse/freefall", CHAN_BODY, CHANF_LOOPING);
-			console.printf("fall attack duration: %d", invoker.fallAttackDuration);
+			//invoker.falLAttackForce++;
+			if (tom_debugmessages)
+				console.printf("fall attack force: %d", invoker.falLAttackForce);
+			if (invoker.falLAttackForce > 25)
+				A_StartSound("weapons/hhorse/freefall", CHAN_BODY, CHANF_LOOPING);
 		}
 		TNT1 A 0 
 		{
 			if (waterlevel >= 2)
 			{
+				A_StopSound(CHAN_BODY);
 				return ResolveState("AltAttackEnd");
 			}
 			if (!player.onGround)
@@ -511,6 +534,21 @@ class ToM_HorsePuff : ToM_BasePuff
 	}
 }
 
+class ToM_HorseImpactSpot : ToM_BaseActor
+{
+	Default
+	{
+		+NOBLOCKMAP
+		+NOINTERACTION
+	}
+
+	States {
+	Spawn:
+		TNT1 A 70;
+		stop;
+	}
+}
+
 class ToM_HorseImpact : ToM_SmallDebris
 {
 	int delay;
@@ -526,8 +564,8 @@ class ToM_HorseImpact : ToM_SmallDebris
 		TNT1 A 0 A_SetTics(delay);
 		M000 A 1
 		{
-			scale *= 1.1;
-			A_FadeOut(0.08);
+			scale *= 1.05;
+			A_FadeOut(0.05);
 		}
 		wait;
 	}
@@ -545,14 +583,14 @@ class ToM_HorseImpactDebris : ToM_BaseActor
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
-		if (waterlevel > 0 || ToM_Animated_Handler.isAnimated(floorpic))
+		A_StartSound("weapons/hhorse/hitfloor_heavy");
+		if (waterlevel > 0 || CheckLiquidFlat() || ToM_Animated_Handler.isAnimated(floorpic))
 		{
 			Destroy();
 			return;
 		}
 		name texname = TexMan.GetName(floorpic);
 		A_ChangeModel("", skinindex: 0, skin: texname, flags: CMDL_USESURFACESKIN);
-		//A_SpawnItemEx("ToM_ImpactPool", flags: SXF_IsTarget);
 	}
 
 	override void Tick()

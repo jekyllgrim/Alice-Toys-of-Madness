@@ -208,6 +208,10 @@ hhhitfloor4 "sounds/hhorse/hobby_imp_rock04.ogg"
 
 weapons/hhorse/freefall "sounds/hhorse/Freefall_Loop.ogg"
 
+weapons/hhorse/jumpattack "sounds/hhorse/hobbytest_at05_horse.ogg"
+weapons/hhorse/altswing "sounds/hhorse/hobbytest_at04_whip.ogg"
+weapons/hhorse/hitfloor_heavy "sounds/hhorse/hobbytest_at05_impact.ogg"
+
 
 // CARDS 
 

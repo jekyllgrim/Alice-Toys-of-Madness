@@ -386,8 +386,10 @@ Class ToM_BaseActor : Actor abstract
 	{
 		if (!self)
 			return false;
+
 		if (GetFloorTerrain().isLiquid == true)
 			return true;
+			
 		string tex = TexMan.GetName(floorpic);
 		for (int i = 0; i < ToM_LiquidFlats.Size(); i++) 
 		{

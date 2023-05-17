@@ -57,7 +57,7 @@ class ToM_Mainhandler : EventHandler
 			double ang = (e.thing.angle + e.thing.AngleTo(e.DamageSource)) + 180;
 			double distFac = ToM_UtilsP.LinearMap(e.thing.Distance3D(e.DamageSource), 128, 0, 0.5, 1.5);
 			double massFac = ToM_UtilsP.LinearMap(e.thing.mass, 300, 1000, 1.0, 0.0, true);
-			double forceFac = ToM_UtilsP.LinearMap(weap.fallAttackDuration, 1, 20, 1.0, 3.0);
+			double forceFac = ToM_UtilsP.LinearMap(weap.falLAttackForce, 1, 40, 1.0, 3.0);
 			double force = 10 * distFac * massFac * forceFac;
 			e.thing.Vel3DFromAngle(force, ang, -50);
 		}

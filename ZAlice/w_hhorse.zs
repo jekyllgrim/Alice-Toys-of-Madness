@@ -100,7 +100,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		A_CameraSway(0, 30, 4);
 		
 		int rad = 128 + invoker.fallAttackDuration;
-		vector3 ipos = (radius + 8, 0, 0);
+		vector3 ipos = (radius + 8, 0, floorz);
 		let hi = ToM_HorseImpact(Spawn("ToM_HorseImpact", pos));
 		if (hi)
 		{
@@ -124,6 +124,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 					debris.gravity *= 0.5;
 				}
 			}
+
 			TextureID ptex = TexMan.CheckForTexture("SPRKA0");
 			for (int i = random[sfx](30,40); i > 0; i--)
 			{
@@ -161,6 +162,10 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		if (invoker.fallAttackDuration >= 8)
 		{
+			let hid = Spawn("ToM_HorseImpactDebris", pos);
+			if (hid)
+				hid.Warp(self, ipos.x, ipos.y, ipos.z);
+
 			int reps = ToM_UtilsP.LinearMap(invoker.fallAttackDuration, 0, 30, 1, 4, true);
 			for (reps; reps > 0; reps--)
 			{
@@ -425,7 +430,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			let psp = player.FindPSprite(OverlayID());
 			if (psp)
 			{
-				A_WeaponOffset(Clamp(psp.x-2, -80, 0), Clamp(psp.y+2, 32, 80), WOF_INTERPOLATE);
+				A_WeaponOffset(Clamp(psp.x-2, -68, 0), Clamp(psp.y+2, 32, 68), WOF_INTERPOLATE);
 			}
 			invoker.fallAttackDuration++;
 			if (invoker.fallAttackDuration > 4)
@@ -434,6 +439,10 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
+			if (waterlevel >= 2)
+			{
+				return ResolveState("AltAttackEnd");
+			}
 			if (!player.onGround)
 			{
 				return ResolveState("FallLoop");
@@ -442,7 +451,12 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 A_LandAttack();
 		HHRS OOOO 1 A_WeaponOffset(3, -6, WOF_ADD);
-		HHRS OOOOOOOOO 1 A_WeaponOffset(-6, 8, WOF_ADD);
+	AltAttackEnd:
+		HHRS OOOOOOOOO 1 
+		{
+			A_WeaponOffset(-6, 20, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 2, WOF_ADD);
+		}
 		goto AttackEnd;
 	AttackEnd:
 		TNT1 A 5
@@ -497,29 +511,6 @@ class ToM_HorsePuff : ToM_BasePuff
 	}
 }
 
-class ToM_HorseImpactDecal : ToM_BaseActor
-{
-	double fac;
-
-	Default
-	{
-		+NOBLOCKMAP
-		+NOINTERACTION
-		renderstyle 'Translucent';
-	}
-
-	override void Tick()
-	{
-		A_FadeOut(fac);
-	}
-
-	States {
-	Spawn:
-		M000 A -1;
-		stop;
-	}
-}
-
 class ToM_HorseImpact : ToM_SmallDebris
 {
 	int delay;
@@ -538,6 +529,49 @@ class ToM_HorseImpact : ToM_SmallDebris
 			scale *= 1.1;
 			A_FadeOut(0.08);
 		}
+		wait;
+	}
+}
+
+class ToM_HorseImpactDebris : ToM_BaseActor
+{
+	Default
+	{
+		+NOINTERACTION
+		+NOBLOCKMAP
+		+MOVEWITHSECTOR
+	}
+
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		if (waterlevel > 0 || ToM_Animated_Handler.isAnimated(floorpic))
+		{
+			Destroy();
+			return;
+		}
+		name texname = TexMan.GetName(floorpic);
+		A_ChangeModel("", skinindex: 0, skin: texname, flags: CMDL_USESURFACESKIN);
+		//A_SpawnItemEx("ToM_ImpactPool", flags: SXF_IsTarget);
+	}
+
+	override void Tick()
+	{
+		super.Tick();
+		SetZ(floorz);
+		if (target)
+			target.SetZ(floorz + 0.5);
+	}
+
+	States {
+	Spawn:
+		M000 A 100;
+		TNT1 A 0 
+		{
+			if (target)
+				target.Destroy();
+		}
+		M000 A 1 A_FadeOut(0.05);
 		wait;
 	}
 }

@@ -14,20 +14,15 @@ Model ToM_KnifeProjectileModel
 	FrameIndex M000 A 0 0
 }
 
-Model ToM_HorseImpactDecal
+Model ToM_HorseImpactDebris
 {
-	CORRECTPIXELSTRETCH
-	UseActorRoll
-	UseActorPitch
-	Scale 10.0 10.0 1
+	Scale 32 32 32
+	
+	Model 0 "models/horseimpact/impactdebris.obj"
+	SurfaceSkin 0 0 "RROCK04"
+	SurfaceSkin 0 1 "CEIL5_1"
 
-	Model 0 "models/pool/pool.md3"
-
-	Skin 0 "models/horseimpact/horseimpact1.png"
-	FrameIndex M000 A 0 0	
-
-	Skin 0 "models/horseimpact/horseimpact2.png"
-	FrameIndex M000 B 0 0
+	FrameIndex M000 A 0 0
 }
 
 Model ToM_HorseImpact

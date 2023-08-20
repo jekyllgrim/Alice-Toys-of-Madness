@@ -1,524 +1,521 @@
-sprite "M019A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M019Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M018Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M017Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M016Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M015Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M014Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M013Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M012Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M011Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M010Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M009Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M008Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M007Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M006Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M005Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M004Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M003Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M002Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M001Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000A0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000B0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000C0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000D0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000E0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000F0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000G0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000H0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000I0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000J0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000K0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000L0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000M0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000N0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000O0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000P0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000Q0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000R0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000S0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000T0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000U0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000V0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000W0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000X0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000Y0", 1, 1 { Patch "TNT1A0", 0,0 }
-sprite "M000Z0", 1, 1 { Patch "TNT1A0", 0,0 }
-Sprite "NULLZ0", 1, 1
-{
-	Patch "TNT1A0", 0, 0
-}
+sprite "M019A0", 1, 1 {}
+sprite "M019B0", 1, 1 {}
+sprite "M019C0", 1, 1 {}
+sprite "M019D0", 1, 1 {}
+sprite "M019E0", 1, 1 {}
+sprite "M019F0", 1, 1 {}
+sprite "M019G0", 1, 1 {}
+sprite "M019H0", 1, 1 {}
+sprite "M019I0", 1, 1 {}
+sprite "M019J0", 1, 1 {}
+sprite "M019K0", 1, 1 {}
+sprite "M019L0", 1, 1 {}
+sprite "M019M0", 1, 1 {}
+sprite "M019N0", 1, 1 {}
+sprite "M019O0", 1, 1 {}
+sprite "M019P0", 1, 1 {}
+sprite "M019Q0", 1, 1 {}
+sprite "M019R0", 1, 1 {}
+sprite "M019S0", 1, 1 {}
+sprite "M019T0", 1, 1 {}
+sprite "M019U0", 1, 1 {}
+sprite "M019V0", 1, 1 {}
+sprite "M019W0", 1, 1 {}
+sprite "M019X0", 1, 1 {}
+sprite "M019Y0", 1, 1 {}
+sprite "M019Z0", 1, 1 {}
+sprite "M018A0", 1, 1 {}
+sprite "M018B0", 1, 1 {}
+sprite "M018C0", 1, 1 {}
+sprite "M018D0", 1, 1 {}
+sprite "M018E0", 1, 1 {}
+sprite "M018F0", 1, 1 {}
+sprite "M018G0", 1, 1 {}
+sprite "M018H0", 1, 1 {}
+sprite "M018I0", 1, 1 {}
+sprite "M018J0", 1, 1 {}
+sprite "M018K0", 1, 1 {}
+sprite "M018L0", 1, 1 {}
+sprite "M018M0", 1, 1 {}
+sprite "M018N0", 1, 1 {}
+sprite "M018O0", 1, 1 {}
+sprite "M018P0", 1, 1 {}
+sprite "M018Q0", 1, 1 {}
+sprite "M018R0", 1, 1 {}
+sprite "M018S0", 1, 1 {}
+sprite "M018T0", 1, 1 {}
+sprite "M018U0", 1, 1 {}
+sprite "M018V0", 1, 1 {}
+sprite "M018W0", 1, 1 {}
+sprite "M018X0", 1, 1 {}
+sprite "M018Y0", 1, 1 {}
+sprite "M018Z0", 1, 1 {}
+sprite "M017A0", 1, 1 {}
+sprite "M017B0", 1, 1 {}
+sprite "M017C0", 1, 1 {}
+sprite "M017D0", 1, 1 {}
+sprite "M017E0", 1, 1 {}
+sprite "M017F0", 1, 1 {}
+sprite "M017G0", 1, 1 {}
+sprite "M017H0", 1, 1 {}
+sprite "M017I0", 1, 1 {}
+sprite "M017J0", 1, 1 {}
+sprite "M017K0", 1, 1 {}
+sprite "M017L0", 1, 1 {}
+sprite "M017M0", 1, 1 {}
+sprite "M017N0", 1, 1 {}
+sprite "M017O0", 1, 1 {}
+sprite "M017P0", 1, 1 {}
+sprite "M017Q0", 1, 1 {}
+sprite "M017R0", 1, 1 {}
+sprite "M017S0", 1, 1 {}
+sprite "M017T0", 1, 1 {}
+sprite "M017U0", 1, 1 {}
+sprite "M017V0", 1, 1 {}
+sprite "M017W0", 1, 1 {}
+sprite "M017X0", 1, 1 {}
+sprite "M017Y0", 1, 1 {}
+sprite "M017Z0", 1, 1 {}
+sprite "M016A0", 1, 1 {}
+sprite "M016B0", 1, 1 {}
+sprite "M016C0", 1, 1 {}
+sprite "M016D0", 1, 1 {}
+sprite "M016E0", 1, 1 {}
+sprite "M016F0", 1, 1 {}
+sprite "M016G0", 1, 1 {}
+sprite "M016H0", 1, 1 {}
+sprite "M016I0", 1, 1 {}
+sprite "M016J0", 1, 1 {}
+sprite "M016K0", 1, 1 {}
+sprite "M016L0", 1, 1 {}
+sprite "M016M0", 1, 1 {}
+sprite "M016N0", 1, 1 {}
+sprite "M016O0", 1, 1 {}
+sprite "M016P0", 1, 1 {}
+sprite "M016Q0", 1, 1 {}
+sprite "M016R0", 1, 1 {}
+sprite "M016S0", 1, 1 {}
+sprite "M016T0", 1, 1 {}
+sprite "M016U0", 1, 1 {}
+sprite "M016V0", 1, 1 {}
+sprite "M016W0", 1, 1 {}
+sprite "M016X0", 1, 1 {}
+sprite "M016Y0", 1, 1 {}
+sprite "M016Z0", 1, 1 {}
+sprite "M015A0", 1, 1 {}
+sprite "M015B0", 1, 1 {}
+sprite "M015C0", 1, 1 {}
+sprite "M015D0", 1, 1 {}
+sprite "M015E0", 1, 1 {}
+sprite "M015F0", 1, 1 {}
+sprite "M015G0", 1, 1 {}
+sprite "M015H0", 1, 1 {}
+sprite "M015I0", 1, 1 {}
+sprite "M015J0", 1, 1 {}
+sprite "M015K0", 1, 1 {}
+sprite "M015L0", 1, 1 {}
+sprite "M015M0", 1, 1 {}
+sprite "M015N0", 1, 1 {}
+sprite "M015O0", 1, 1 {}
+sprite "M015P0", 1, 1 {}
+sprite "M015Q0", 1, 1 {}
+sprite "M015R0", 1, 1 {}
+sprite "M015S0", 1, 1 {}
+sprite "M015T0", 1, 1 {}
+sprite "M015U0", 1, 1 {}
+sprite "M015V0", 1, 1 {}
+sprite "M015W0", 1, 1 {}
+sprite "M015X0", 1, 1 {}
+sprite "M015Y0", 1, 1 {}
+sprite "M015Z0", 1, 1 {}
+sprite "M014A0", 1, 1 {}
+sprite "M014B0", 1, 1 {}
+sprite "M014C0", 1, 1 {}
+sprite "M014D0", 1, 1 {}
+sprite "M014E0", 1, 1 {}
+sprite "M014F0", 1, 1 {}
+sprite "M014G0", 1, 1 {}
+sprite "M014H0", 1, 1 {}
+sprite "M014I0", 1, 1 {}
+sprite "M014J0", 1, 1 {}
+sprite "M014K0", 1, 1 {}
+sprite "M014L0", 1, 1 {}
+sprite "M014M0", 1, 1 {}
+sprite "M014N0", 1, 1 {}
+sprite "M014O0", 1, 1 {}
+sprite "M014P0", 1, 1 {}
+sprite "M014Q0", 1, 1 {}
+sprite "M014R0", 1, 1 {}
+sprite "M014S0", 1, 1 {}
+sprite "M014T0", 1, 1 {}
+sprite "M014U0", 1, 1 {}
+sprite "M014V0", 1, 1 {}
+sprite "M014W0", 1, 1 {}
+sprite "M014X0", 1, 1 {}
+sprite "M014Y0", 1, 1 {}
+sprite "M014Z0", 1, 1 {}
+sprite "M013A0", 1, 1 {}
+sprite "M013B0", 1, 1 {}
+sprite "M013C0", 1, 1 {}
+sprite "M013D0", 1, 1 {}
+sprite "M013E0", 1, 1 {}
+sprite "M013F0", 1, 1 {}
+sprite "M013G0", 1, 1 {}
+sprite "M013H0", 1, 1 {}
+sprite "M013I0", 1, 1 {}
+sprite "M013J0", 1, 1 {}
+sprite "M013K0", 1, 1 {}
+sprite "M013L0", 1, 1 {}
+sprite "M013M0", 1, 1 {}
+sprite "M013N0", 1, 1 {}
+sprite "M013O0", 1, 1 {}
+sprite "M013P0", 1, 1 {}
+sprite "M013Q0", 1, 1 {}
+sprite "M013R0", 1, 1 {}
+sprite "M013S0", 1, 1 {}
+sprite "M013T0", 1, 1 {}
+sprite "M013U0", 1, 1 {}
+sprite "M013V0", 1, 1 {}
+sprite "M013W0", 1, 1 {}
+sprite "M013X0", 1, 1 {}
+sprite "M013Y0", 1, 1 {}
+sprite "M013Z0", 1, 1 {}
+sprite "M012A0", 1, 1 {}
+sprite "M012B0", 1, 1 {}
+sprite "M012C0", 1, 1 {}
+sprite "M012D0", 1, 1 {}
+sprite "M012E0", 1, 1 {}
+sprite "M012F0", 1, 1 {}
+sprite "M012G0", 1, 1 {}
+sprite "M012H0", 1, 1 {}
+sprite "M012I0", 1, 1 {}
+sprite "M012J0", 1, 1 {}
+sprite "M012K0", 1, 1 {}
+sprite "M012L0", 1, 1 {}
+sprite "M012M0", 1, 1 {}
+sprite "M012N0", 1, 1 {}
+sprite "M012O0", 1, 1 {}
+sprite "M012P0", 1, 1 {}
+sprite "M012Q0", 1, 1 {}
+sprite "M012R0", 1, 1 {}
+sprite "M012S0", 1, 1 {}
+sprite "M012T0", 1, 1 {}
+sprite "M012U0", 1, 1 {}
+sprite "M012V0", 1, 1 {}
+sprite "M012W0", 1, 1 {}
+sprite "M012X0", 1, 1 {}
+sprite "M012Y0", 1, 1 {}
+sprite "M012Z0", 1, 1 {}
+sprite "M011A0", 1, 1 {}
+sprite "M011B0", 1, 1 {}
+sprite "M011C0", 1, 1 {}
+sprite "M011D0", 1, 1 {}
+sprite "M011E0", 1, 1 {}
+sprite "M011F0", 1, 1 {}
+sprite "M011G0", 1, 1 {}
+sprite "M011H0", 1, 1 {}
+sprite "M011I0", 1, 1 {}
+sprite "M011J0", 1, 1 {}
+sprite "M011K0", 1, 1 {}
+sprite "M011L0", 1, 1 {}
+sprite "M011M0", 1, 1 {}
+sprite "M011N0", 1, 1 {}
+sprite "M011O0", 1, 1 {}
+sprite "M011P0", 1, 1 {}
+sprite "M011Q0", 1, 1 {}
+sprite "M011R0", 1, 1 {}
+sprite "M011S0", 1, 1 {}
+sprite "M011T0", 1, 1 {}
+sprite "M011U0", 1, 1 {}
+sprite "M011V0", 1, 1 {}
+sprite "M011W0", 1, 1 {}
+sprite "M011X0", 1, 1 {}
+sprite "M011Y0", 1, 1 {}
+sprite "M011Z0", 1, 1 {}
+sprite "M010A0", 1, 1 {}
+sprite "M010B0", 1, 1 {}
+sprite "M010C0", 1, 1 {}
+sprite "M010D0", 1, 1 {}
+sprite "M010E0", 1, 1 {}
+sprite "M010F0", 1, 1 {}
+sprite "M010G0", 1, 1 {}
+sprite "M010H0", 1, 1 {}
+sprite "M010I0", 1, 1 {}
+sprite "M010J0", 1, 1 {}
+sprite "M010K0", 1, 1 {}
+sprite "M010L0", 1, 1 {}
+sprite "M010M0", 1, 1 {}
+sprite "M010N0", 1, 1 {}
+sprite "M010O0", 1, 1 {}
+sprite "M010P0", 1, 1 {}
+sprite "M010Q0", 1, 1 {}
+sprite "M010R0", 1, 1 {}
+sprite "M010S0", 1, 1 {}
+sprite "M010T0", 1, 1 {}
+sprite "M010U0", 1, 1 {}
+sprite "M010V0", 1, 1 {}
+sprite "M010W0", 1, 1 {}
+sprite "M010X0", 1, 1 {}
+sprite "M010Y0", 1, 1 {}
+sprite "M010Z0", 1, 1 {}
+sprite "M009A0", 1, 1 {}
+sprite "M009B0", 1, 1 {}
+sprite "M009C0", 1, 1 {}
+sprite "M009D0", 1, 1 {}
+sprite "M009E0", 1, 1 {}
+sprite "M009F0", 1, 1 {}
+sprite "M009G0", 1, 1 {}
+sprite "M009H0", 1, 1 {}
+sprite "M009I0", 1, 1 {}
+sprite "M009J0", 1, 1 {}
+sprite "M009K0", 1, 1 {}
+sprite "M009L0", 1, 1 {}
+sprite "M009M0", 1, 1 {}
+sprite "M009N0", 1, 1 {}
+sprite "M009O0", 1, 1 {}
+sprite "M009P0", 1, 1 {}
+sprite "M009Q0", 1, 1 {}
+sprite "M009R0", 1, 1 {}
+sprite "M009S0", 1, 1 {}
+sprite "M009T0", 1, 1 {}
+sprite "M009U0", 1, 1 {}
+sprite "M009V0", 1, 1 {}
+sprite "M009W0", 1, 1 {}
+sprite "M009X0", 1, 1 {}
+sprite "M009Y0", 1, 1 {}
+sprite "M009Z0", 1, 1 {}
+sprite "M008A0", 1, 1 {}
+sprite "M008B0", 1, 1 {}
+sprite "M008C0", 1, 1 {}
+sprite "M008D0", 1, 1 {}
+sprite "M008E0", 1, 1 {}
+sprite "M008F0", 1, 1 {}
+sprite "M008G0", 1, 1 {}
+sprite "M008H0", 1, 1 {}
+sprite "M008I0", 1, 1 {}
+sprite "M008J0", 1, 1 {}
+sprite "M008K0", 1, 1 {}
+sprite "M008L0", 1, 1 {}
+sprite "M008M0", 1, 1 {}
+sprite "M008N0", 1, 1 {}
+sprite "M008O0", 1, 1 {}
+sprite "M008P0", 1, 1 {}
+sprite "M008Q0", 1, 1 {}
+sprite "M008R0", 1, 1 {}
+sprite "M008S0", 1, 1 {}
+sprite "M008T0", 1, 1 {}
+sprite "M008U0", 1, 1 {}
+sprite "M008V0", 1, 1 {}
+sprite "M008W0", 1, 1 {}
+sprite "M008X0", 1, 1 {}
+sprite "M008Y0", 1, 1 {}
+sprite "M008Z0", 1, 1 {}
+sprite "M007A0", 1, 1 {}
+sprite "M007B0", 1, 1 {}
+sprite "M007C0", 1, 1 {}
+sprite "M007D0", 1, 1 {}
+sprite "M007E0", 1, 1 {}
+sprite "M007F0", 1, 1 {}
+sprite "M007G0", 1, 1 {}
+sprite "M007H0", 1, 1 {}
+sprite "M007I0", 1, 1 {}
+sprite "M007J0", 1, 1 {}
+sprite "M007K0", 1, 1 {}
+sprite "M007L0", 1, 1 {}
+sprite "M007M0", 1, 1 {}
+sprite "M007N0", 1, 1 {}
+sprite "M007O0", 1, 1 {}
+sprite "M007P0", 1, 1 {}
+sprite "M007Q0", 1, 1 {}
+sprite "M007R0", 1, 1 {}
+sprite "M007S0", 1, 1 {}
+sprite "M007T0", 1, 1 {}
+sprite "M007U0", 1, 1 {}
+sprite "M007V0", 1, 1 {}
+sprite "M007W0", 1, 1 {}
+sprite "M007X0", 1, 1 {}
+sprite "M007Y0", 1, 1 {}
+sprite "M007Z0", 1, 1 {}
+sprite "M006A0", 1, 1 {}
+sprite "M006B0", 1, 1 {}
+sprite "M006C0", 1, 1 {}
+sprite "M006D0", 1, 1 {}
+sprite "M006E0", 1, 1 {}
+sprite "M006F0", 1, 1 {}
+sprite "M006G0", 1, 1 {}
+sprite "M006H0", 1, 1 {}
+sprite "M006I0", 1, 1 {}
+sprite "M006J0", 1, 1 {}
+sprite "M006K0", 1, 1 {}
+sprite "M006L0", 1, 1 {}
+sprite "M006M0", 1, 1 {}
+sprite "M006N0", 1, 1 {}
+sprite "M006O0", 1, 1 {}
+sprite "M006P0", 1, 1 {}
+sprite "M006Q0", 1, 1 {}
+sprite "M006R0", 1, 1 {}
+sprite "M006S0", 1, 1 {}
+sprite "M006T0", 1, 1 {}
+sprite "M006U0", 1, 1 {}
+sprite "M006V0", 1, 1 {}
+sprite "M006W0", 1, 1 {}
+sprite "M006X0", 1, 1 {}
+sprite "M006Y0", 1, 1 {}
+sprite "M006Z0", 1, 1 {}
+sprite "M005A0", 1, 1 {}
+sprite "M005B0", 1, 1 {}
+sprite "M005C0", 1, 1 {}
+sprite "M005D0", 1, 1 {}
+sprite "M005E0", 1, 1 {}
+sprite "M005F0", 1, 1 {}
+sprite "M005G0", 1, 1 {}
+sprite "M005H0", 1, 1 {}
+sprite "M005I0", 1, 1 {}
+sprite "M005J0", 1, 1 {}
+sprite "M005K0", 1, 1 {}
+sprite "M005L0", 1, 1 {}
+sprite "M005M0", 1, 1 {}
+sprite "M005N0", 1, 1 {}
+sprite "M005O0", 1, 1 {}
+sprite "M005P0", 1, 1 {}
+sprite "M005Q0", 1, 1 {}
+sprite "M005R0", 1, 1 {}
+sprite "M005S0", 1, 1 {}
+sprite "M005T0", 1, 1 {}
+sprite "M005U0", 1, 1 {}
+sprite "M005V0", 1, 1 {}
+sprite "M005W0", 1, 1 {}
+sprite "M005X0", 1, 1 {}
+sprite "M005Y0", 1, 1 {}
+sprite "M005Z0", 1, 1 {}
+sprite "M004A0", 1, 1 {}
+sprite "M004B0", 1, 1 {}
+sprite "M004C0", 1, 1 {}
+sprite "M004D0", 1, 1 {}
+sprite "M004E0", 1, 1 {}
+sprite "M004F0", 1, 1 {}
+sprite "M004G0", 1, 1 {}
+sprite "M004H0", 1, 1 {}
+sprite "M004I0", 1, 1 {}
+sprite "M004J0", 1, 1 {}
+sprite "M004K0", 1, 1 {}
+sprite "M004L0", 1, 1 {}
+sprite "M004M0", 1, 1 {}
+sprite "M004N0", 1, 1 {}
+sprite "M004O0", 1, 1 {}
+sprite "M004P0", 1, 1 {}
+sprite "M004Q0", 1, 1 {}
+sprite "M004R0", 1, 1 {}
+sprite "M004S0", 1, 1 {}
+sprite "M004T0", 1, 1 {}
+sprite "M004U0", 1, 1 {}
+sprite "M004V0", 1, 1 {}
+sprite "M004W0", 1, 1 {}
+sprite "M004X0", 1, 1 {}
+sprite "M004Y0", 1, 1 {}
+sprite "M004Z0", 1, 1 {}
+sprite "M003A0", 1, 1 {}
+sprite "M003B0", 1, 1 {}
+sprite "M003C0", 1, 1 {}
+sprite "M003D0", 1, 1 {}
+sprite "M003E0", 1, 1 {}
+sprite "M003F0", 1, 1 {}
+sprite "M003G0", 1, 1 {}
+sprite "M003H0", 1, 1 {}
+sprite "M003I0", 1, 1 {}
+sprite "M003J0", 1, 1 {}
+sprite "M003K0", 1, 1 {}
+sprite "M003L0", 1, 1 {}
+sprite "M003M0", 1, 1 {}
+sprite "M003N0", 1, 1 {}
+sprite "M003O0", 1, 1 {}
+sprite "M003P0", 1, 1 {}
+sprite "M003Q0", 1, 1 {}
+sprite "M003R0", 1, 1 {}
+sprite "M003S0", 1, 1 {}
+sprite "M003T0", 1, 1 {}
+sprite "M003U0", 1, 1 {}
+sprite "M003V0", 1, 1 {}
+sprite "M003W0", 1, 1 {}
+sprite "M003X0", 1, 1 {}
+sprite "M003Y0", 1, 1 {}
+sprite "M003Z0", 1, 1 {}
+sprite "M002A0", 1, 1 {}
+sprite "M002B0", 1, 1 {}
+sprite "M002C0", 1, 1 {}
+sprite "M002D0", 1, 1 {}
+sprite "M002E0", 1, 1 {}
+sprite "M002F0", 1, 1 {}
+sprite "M002G0", 1, 1 {}
+sprite "M002H0", 1, 1 {}
+sprite "M002I0", 1, 1 {}
+sprite "M002J0", 1, 1 {}
+sprite "M002K0", 1, 1 {}
+sprite "M002L0", 1, 1 {}
+sprite "M002M0", 1, 1 {}
+sprite "M002N0", 1, 1 {}
+sprite "M002O0", 1, 1 {}
+sprite "M002P0", 1, 1 {}
+sprite "M002Q0", 1, 1 {}
+sprite "M002R0", 1, 1 {}
+sprite "M002S0", 1, 1 {}
+sprite "M002T0", 1, 1 {}
+sprite "M002U0", 1, 1 {}
+sprite "M002V0", 1, 1 {}
+sprite "M002W0", 1, 1 {}
+sprite "M002X0", 1, 1 {}
+sprite "M002Y0", 1, 1 {}
+sprite "M002Z0", 1, 1 {}
+sprite "M001A0", 1, 1 {}
+sprite "M001B0", 1, 1 {}
+sprite "M001C0", 1, 1 {}
+sprite "M001D0", 1, 1 {}
+sprite "M001E0", 1, 1 {}
+sprite "M001F0", 1, 1 {}
+sprite "M001G0", 1, 1 {}
+sprite "M001H0", 1, 1 {}
+sprite "M001I0", 1, 1 {}
+sprite "M001J0", 1, 1 {}
+sprite "M001K0", 1, 1 {}
+sprite "M001L0", 1, 1 {}
+sprite "M001M0", 1, 1 {}
+sprite "M001N0", 1, 1 {}
+sprite "M001O0", 1, 1 {}
+sprite "M001P0", 1, 1 {}
+sprite "M001Q0", 1, 1 {}
+sprite "M001R0", 1, 1 {}
+sprite "M001S0", 1, 1 {}
+sprite "M001T0", 1, 1 {}
+sprite "M001U0", 1, 1 {}
+sprite "M001V0", 1, 1 {}
+sprite "M001W0", 1, 1 {}
+sprite "M001X0", 1, 1 {}
+sprite "M001Y0", 1, 1 {}
+sprite "M001Z0", 1, 1 {}
+sprite "M000A0", 1, 1 {}
+sprite "M000B0", 1, 1 {}
+sprite "M000C0", 1, 1 {}
+sprite "M000D0", 1, 1 {}
+sprite "M000E0", 1, 1 {}
+sprite "M000F0", 1, 1 {}
+sprite "M000G0", 1, 1 {}
+sprite "M000H0", 1, 1 {}
+sprite "M000I0", 1, 1 {}
+sprite "M000J0", 1, 1 {}
+sprite "M000K0", 1, 1 {}
+sprite "M000L0", 1, 1 {}
+sprite "M000M0", 1, 1 {}
+sprite "M000N0", 1, 1 {}
+sprite "M000O0", 1, 1 {}
+sprite "M000P0", 1, 1 {}
+sprite "M000Q0", 1, 1 {}
+sprite "M000R0", 1, 1 {}
+sprite "M000S0", 1, 1 {}
+sprite "M000T0", 1, 1 {}
+sprite "M000U0", 1, 1 {}
+sprite "M000V0", 1, 1 {}
+sprite "M000W0", 1, 1 {}
+sprite "M000X0", 1, 1 {}
+sprite "M000Y0", 1, 1 {}
+sprite "M000Z0", 1, 1 {}
+Sprite "NULLZ0", 1, 1 {}

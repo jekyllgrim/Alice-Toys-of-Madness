@@ -53,6 +53,12 @@ class ToM_AlicePlayer : DoomPlayer
 	state s_jump;
 
 	private int curWeaponID;
+	private int airJumps;
+	private int airJumpTics;
+	const MAXAIRJUMPTICS = 6;
+	const MAXAIRJUMPS = 1;
+	const AIRJUMPTICTHRESHOLD = -4;
+	const AIRJUMPFACTOR = 0.8;
 
 	Default
 	{
@@ -393,6 +399,264 @@ class ToM_AlicePlayer : DoomPlayer
 	{
 		super.Tick();
 		UpdateWeaponModel();
+	}
+
+	override void PlayerThink()
+	{
+		super.PlayerThink();
+
+		if (airJumpTics > 0)
+			airJumpTics--;
+
+		if (pos.z <= floorz || waterlevel > 0)
+			airJumps = 0;
+
+		if (pos.z > floorz && waterlevel == 0 && !bNOGRAVITY)
+		{
+			CheckAirJump();
+		}
+
+		double lim = -12;
+		double downlim = -4;
+		double downfac = 6;
+
+		int jumptics = player.jumptics;
+		if (jumptics < 0 && jumptics >= lim)
+		{
+			if (jumptics >= downlim)
+				player.viewz += jumptics * downfac;
+			
+			else
+				player.viewz += ToM_UtilsP.LinearMap(jumptics, downlim, lim, downlim * downfac, 0, true);
+
+			//double vz = player.viewz - pos.z;
+		}
+	}
+
+	override vector2 BobWeapon(double ticfrac)
+	{
+		let player = self.player;
+		if (!player) return (0, 0);
+		
+		let weapon = player.readyweapon;
+		if (!weapon || weapon.bDONTBOB)
+			return (0,0);
+
+		let bob = super.BobWeapon(ticfrac);
+
+		int lim = -12;
+		int downlim = -4;
+		double downfac = -1.85;
+		if (player && player.jumptics < 0 && player.jumptics >= lim)
+		{
+			double prevboby;
+			double boby;
+			if (player.jumptics >= downlim)
+			{
+				prevboby = (player.jumptics - 1) * downfac;
+				boby = player.jumptics * downfac;
+			}
+			else
+			{
+				prevboby = ToM_UtilsP.LinearMap(player.jumptics - 1, downlim, lim, downlim * downfac, 0, true);
+				boby = ToM_UtilsP.LinearMap(player.jumptics, downlim, lim, downlim * downfac, 0, true);
+			}				
+			
+			return (bob.x, boby * (1. - ticfrac) + prevboby * ticfrac);
+		}
+		
+		return bob;
+	}
+
+	static const name leaftex[] = { 'AIRLEAF1', 'AIRLEAF2', 'AIRLEAF3', 'AIRLEAF4', 'AIRLEAF5', 'AIRLEAF6', 'AIRLEAF7', 'AIRLEAF8' };
+
+	void CheckAirJump()
+	{
+		//console.printf("Jump button: %s, %s", 
+		//	player.cmd.buttons & BT_JUMP ? "pressed" : "not pressed",
+		//	player.oldbuttons & BT_JUMP ? "held" : "not held"
+		//);
+
+		if (player.jumptics < AIRJUMPTICTHRESHOLD && airJumps < MAXAIRJUMPS && player.cmd.buttons & BT_JUMP && !(player.oldbuttons & BT_JUMP))
+		{
+			A_StartSound("alice/jumpair", CHAN_BODY);
+			airJumps++;
+			airJumpTics = MAXAIRJUMPTICS;
+			player.jumpTics = -1;
+			bOnMobj = false;
+
+			A_Stop();
+			vel.z = jumpz * AIRJUMPFACTOR * 35 / TICRATE * GetGravity();
+			let player = self.player;
+			UserCmd cmd = player.cmd;
+			double fm = cmd.forwardmove;
+			double sm = cmd.sidemove;
+			[fm, sm] = TweakSpeeds (fm, sm);
+			fm *= Speed / 256;
+			sm *= Speed / 256;
+
+			double friction, movefactor;
+			[friction, movefactor] = GetFriction();
+			double forwardmove = fm * movefactor * (35 / TICRATE) * AIRJUMPFACTOR;
+			double sidemove = sm * movefactor * (35 / TICRATE) * AIRJUMPFACTOR;
+
+			if (forwardmove)
+			{
+				ForwardThrust(forwardmove, Angle);
+			}
+			if (sidemove)
+			{
+				let a = Angle - 90;
+				Thrust(sidemove, a);
+			}
+
+			//console.printf("doing jump %d", airJumps);
+
+			FSpawnParticleParams leaf;
+			leaf.flags = SPF_REPLACE|SPF_NOTIMEFREEZE|SPF_ROLL|SPF_FULLBRIGHT;
+			leaf.fadestep = -1;
+			leaf.color1 = "";
+			leaf.style = STYLE_Add;
+			for (int i = 40; i > 0; i--)
+			{
+				leaf.startalpha = frandom[sfx](0.35, 1);
+				double ang = frandom[sfx](0, 360);
+				leaf.pos.xy = Vec2Angle(radius * 2, ang);
+				leaf.pos.z = pos.z;
+				leaf.texture = TexMan.CheckForTexture(leaftex[random[sfx](0, leaftex.Size() - 1)]);
+				leaf.lifetime = random[sfx](20, 40);
+				leaf.size = frandom[sfx](16, 32);
+				leaf.sizestep = leaf.size / -leaf.lifetime;
+				double v = frandom[sfx](2, 5);
+				leaf.vel.xy = (v * cos(ang), v * sin(ang));
+				leaf.vel.z = frandom[sfx](-2, 2);
+				leaf.accel = leaf.vel / leaf.lifetime * -0.6;
+				leaf.startroll = frandom[sfx](0, 360);
+				leaf.rollvel = frandom[sfx](-15, 15);
+				Level.SpawnParticle(leaf);
+			}
+
+			FSpawnParticleParams smoke;
+			smoke.flags = SPF_REPLACE|SPF_NOTIMEFREEZE|SPF_ROLL;
+			smoke.fadestep = -1;
+			smoke.color1 = "";
+			smoke.style = Style_Add;
+			for (int ang = 0; ang < 360; ang += 15)
+			{
+				smoke.startalpha = frandom[sfx](0.4, 0.7);
+				smoke.pos.xy = Vec2Angle(radius * 2, ang);
+				smoke.pos.z = pos.z;
+				smoke.texture = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
+				smoke.lifetime = 26;
+				smoke.size = frandom[sfx](30, 40);
+				smoke.sizestep = 3;
+				double v = 1;
+				smoke.vel.xy = (v * cos(ang), v * sin(ang));
+				smoke.vel.z = 0;
+				smoke.accel = smoke.vel / -smoke.lifetime;
+				smoke.startroll = frandom[sfx](0, 360);
+				smoke.rollvel = frandom[sfx](-5, 5);
+				Level.SpawnParticle(smoke);
+			}
+		}
+	}
+
+	override void FallAndSink(double grav, double oldfloorz)
+	{
+		if (pos.z > floorz && waterlevel == 0 && !bNOGRAVITY)
+		{
+			// Default handling for crossing ledges:
+			if (vel.z == 0 && pos.z == oldfloorz && oldfloorz > floorz)
+				vel.z -= grav * 2;
+			// slowed-down falling:
+			else
+				vel.z -= grav * 0.5;
+			
+			return;
+		}
+		
+		// No falling in water (I've always hated it):
+		else if (waterlevel > 0)
+			return;
+
+		super.FallAndSink(grav, oldfloorz);
+	}
+
+	override void MovePlayer ()
+	{
+		let player = self.player;
+		UserCmd cmd = player.cmd;
+
+		// [RH] 180-degree turn overrides all other yaws
+		if (player.turnticks)
+		{
+			player.turnticks--;
+			Angle += (180. / TURN180_TICKS);
+		}
+		else
+		{
+			Angle += cmd.yaw * (360./65536.);
+		}
+
+		player.onground = (pos.z <= floorz) || bOnMobj || bMBFBouncer || (player.cheats & CF_NOCLIP2);
+
+		if (cmd.forwardmove | cmd.sidemove)
+		{
+			double forwardmove, sidemove;
+			double bobfactor;
+			double friction, movefactor;
+			double fm, sm;
+
+			[friction, movefactor] = GetFriction();
+			bobfactor = friction < ORIG_FRICTION ? movefactor : ORIG_FRICTION_FACTOR;
+			// [JGP] Only had to override this to add this feature:
+			if (!player.onground && !bNoGravity && !waterlevel && airJumpTics <= 0)
+			{
+				// [RH] allow very limited movement if not on ground.
+				movefactor *= level.aircontrol;
+				bobfactor*= level.aircontrol;
+			}
+
+			fm = cmd.forwardmove;
+			sm = cmd.sidemove;
+			[fm, sm] = TweakSpeeds (fm, sm);
+			fm *= Speed / 256;
+			sm *= Speed / 256;
+
+			// When crouching, speed and bobbing have to be reduced
+			if (CanCrouch() && player.crouchfactor != 1)
+			{
+				fm *= player.crouchfactor;
+				sm *= player.crouchfactor;
+				bobfactor *= player.crouchfactor;
+			}
+
+			forwardmove = fm * movefactor * (35 / TICRATE);
+			sidemove = sm * movefactor * (35 / TICRATE);
+
+			if (forwardmove)
+			{
+				Bob(Angle, cmd.forwardmove * bobfactor / 256., true);
+				ForwardThrust(forwardmove, Angle);
+			}
+			if (sidemove)
+			{
+				let a = Angle - 90;
+				Bob(a, cmd.sidemove * bobfactor / 256., false);
+				Thrust(sidemove, a);
+			}
+
+			if (!(player.cheats & CF_PREDICTING) && (forwardmove != 0 || sidemove != 0))
+			{
+				PlayRunning ();
+			}
+
+			if (player.cheats & CF_REVERTPLEASE)
+			{
+				player.cheats &= ~CF_REVERTPLEASE;
+				player.camera = player.mo;
+			}
+		}
 	}
 	
 	States {

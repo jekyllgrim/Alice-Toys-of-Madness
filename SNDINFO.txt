@@ -50,9 +50,11 @@ alice/jump4 "sounds/player/jump04.ogg"
 alice/jump5 "sounds/player/jump05.ogg"
 alice/jump6 "sounds/player/jump06.ogg"
 alice/jump7 "sounds/player/jump07.ogg"
-$random alice/land { alice/land1 alice/land2 }
-alice/land1 "sounds/player/jumpland01.ogg"
-alice/land2 "sounds/player/jumpland02.ogg"
+$random alice/land { alice/land1 alice/land2  alice/land3 alice/land4 }
+alice/land1 "sounds/player/brickjump01.ogg"
+alice/land2 "sounds/player/brickjump02.ogg"
+alice/land2 "sounds/player/brickjump03.ogg"
+alice/land2 "sounds/player/brickjump04.ogg"
 alice/lowhealth "sounds/player/lowhealth.ogg"
 $random alice/pain { alice/pain01 alice/pain02 alice/pain03 alice/pain04 alice/pain05 alice/pain06 alice/pain07 alice/pain08 alice/pain09 alice/pain10 }
 alice/pain01 "sounds/player/damaged01.ogg"
@@ -89,6 +91,14 @@ alice/xdeath1 "sounds/player/Guts_Spill_01.ogg"
 alice/xdeath2 "sounds/player/Guts_Spill_02.ogg"
 alice/xdeath3 "sounds/player/Guts_Spill_03.ogg"
 alice/xdeath4 "sounds/player/Guts_Spill_04.ogg"
+
+$random alice/jumpair { alice/jumpair1 alice/jumpair2 alice/jumpair3 alice/jumpair4 }
+alice/jumpair1 "sounds/player/jump_double01.ogg"
+alice/jumpair2 "sounds/player/jump_double02.ogg"
+alice/jumpair3 "sounds/player/jump_double03.ogg"
+alice/jumpair4 "sounds/player/jump_double04.ogg"
+
+alice/jumpfloat "sounds/player/jump_float.ogg"
 
 
 // KICK

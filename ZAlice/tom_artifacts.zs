@@ -206,6 +206,7 @@ class ToM_GrowthPotionEffect : PowerInvulnerable
 	Default
 	{
 		Powerup.duration -40;
+		Inventory.Icon "APOTZ0";
 	}
 
 	override void InitEffect()
@@ -683,5 +684,87 @@ class ToM_ReflectionCamera : Actor
 		A_SetRoll(ppawn.roll, SPF_INTERPOLATE);
 		A_SetAngle(ppawn.angle + 180, SPF_INTERPOLATE);
 		A_SetPitch(-ppawn.pitch, SPF_INTERPOLATE);
+	}
+}
+
+class ToM_TestPowerup1 : Powerup
+{
+	Default
+	{
+		Powerup.Duration -15;
+		Inventory.Icon "PTESA0";
+	}
+}
+
+class ToM_TestPowerup2 : Powerup
+{
+	Default
+	{
+		Powerup.Duration -20;
+		Inventory.Icon "PTESB0";
+	}
+}
+
+class ToM_TestPowerup3 : Powerup
+{
+	Default
+	{
+		Powerup.Duration -30;
+		Inventory.Icon "PTESC0";
+	}
+}
+
+class ToM_TestPowerupGiver : PowerupGiver
+{
+	Default
+	{		
+		+BRIGHT
+		+INVENTORY.AUTOACTIVATE
+		+INVENTORY.ALWAYSPICKUP
+	}
+}
+
+class ToM_TestPowerupGiver1 : ToM_TestPowerupGiver
+{
+	Default
+	{
+		Powerup.Type 'ToM_TestPowerup1';
+		Inventory.Pickupmessage "Giving test powerup #1";
+	}
+
+	States {
+	Spawn:
+		PTES A -1;
+		stop;
+	}
+}
+
+class ToM_TestPowerupGiver2 : ToM_TestPowerupGiver
+{
+	Default
+	{
+		Powerup.Type 'ToM_TestPowerup2';
+		Inventory.Pickupmessage "Giving test powerup #2";
+	}
+
+	States {
+	Spawn:
+		PTES B -1;
+		stop;
+	}
+}
+
+class ToM_TestPowerupGiver3 : ToM_TestPowerupGiver
+{
+	Default
+	{
+		Powerup.Type 'ToM_TestPowerup3';
+		Inventory.Pickupmessage "Giving test powerup #3";
+	}
+
+	States {
+	Spawn:
+		PTES C -1;
+		stop;
 	}
 }

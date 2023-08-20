@@ -63,6 +63,17 @@ class ToM_AliceHUD : BaseStatusBar
 		}
 		DrawTexture(texture, pos, flags, Alpha, box, scale);
 	}
+
+	void ToM_DrawImageRotated(String texid, Vector2 pos, int flags, double angle, double alpha = 1, Vector2 scale = (1, 1), ERenderStyle style = STYLE_Translucent, Color col = 0xffffffff, int translation = 0)
+	{
+		if (IsAspectCorrected()) 
+		{
+			scale.y *= noYStretch;
+			pos.y *= noYStretch;
+		}
+		DrawImageRotated(texid, pos, flags, angle, alpha, scale, style, col, translation);
+	}
+
 	
 	void ToM_DrawString(HUDFont font, String string, Vector2 pos, int flags = 0, int translation = Font.CR_UNTRANSLATED, double Alpha = 1., int wrapwidth = -1, int linespacing = 4, Vector2 scale = (1, 1)) 
 	{
@@ -165,6 +176,81 @@ class ToM_AliceHUD : BaseStatusBar
 		DrawRightcorner();
 		DrawKeys();
 		DrawTeapotIcon(pos: (128, -69), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_TOP);
+		DrawPowerupClock();
+	}
+
+	static const string clockhands[] =
+	{
+		"graphics/hud/timepiece/powerclock_hand1.png",
+		"graphics/hud/timepiece/powerclock_hand2.png",
+		"graphics/hud/timepiece/powerclock_hand3.png",
+		"graphics/hud/timepiece/powerclock_hand4.png",
+		"graphics/hud/timepiece/powerclock_hand5.png"
+	};
+
+	array <Powerup> powerups;
+
+	void DrawPowerupClock()
+	{
+		vector2 pos = (66, 71);
+		int fflags = DI_SCREEN_LEFT_TOP|DI_ITEM_CENTER;
+
+		bool found;
+		for (let item = CPlayer.mo.inv; item != null; item = item.inv)
+		{
+			let pwr = Powerup(item);
+			if (!pwr)
+				continue;
+
+			/*let icon = pwr.GetPowerupIcon();
+			if (!icon || !icon.IsValid())
+				continue;*/
+			
+			found = true;
+			if (powerups.Find(pwr) == powerups.Size())
+			{
+				powerups.Push(pwr);
+			}
+		}
+
+		if (!found)
+		{
+			powerups.Clear();
+			return;
+		}
+
+		ToM_DrawImage("graphics/hud/timepiece/powerclock.png", pos, fflags);
+
+		int texid;
+		for (int i = 0; i < powerups.Size(); i++)
+		{
+			let pwr = powerups[i];
+			if (!pwr)
+				continue;
+
+			int curSec = abs(pwr.EffectTics) / 35;
+			int handAng = curSec * -6;
+			ToM_DrawImageRotated(clockhands[texid], pos, fflags, handAng/*, style: STYLE_Shaded, col: pwr.blendColor*/); //hand
+			ToM_DrawImageRotated(clockhands[texid], pos - (2, 2), fflags, handAng, alpha: 0.2); //shadow
+			if (!pwr.IsBlinking())
+			{
+				let icon = pwr.GetPowerupIcon();
+				if (icon && icon.IsValid()) 
+				{
+					vector2 targetsize = (16, 16);
+					vector2 iconscale = TexMan.GetScaledSize(icon);
+					targetsize.x /= iconscale.x;
+					targetsize.y /= iconscale.y;
+					//console.printf("%s icon: %s", pwr.GetTag(), TexMan.GetName(icon));
+					ToM_DrawTexture(icon, pos + Actor.RotateVector((0, -32), -handAng), fflags, scale: targetsize);
+				}
+			}
+			texid++;
+			if (texid >= clockhands.Size())
+				texid = 0;
+		}
+
+		ToM_DrawImage("graphics/hud/timepiece/powerclock_glass.png", pos, fflags);
 	}
 	
 	// Red at 25% or less, white otherwise:
@@ -291,7 +377,10 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		vector2 tscale = (1, (IsAspectCorrected() ? noYStretch : 1));
 		// Draw the mana texture (properly clipped)
-		DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, scale: tscale);
+		double hue = CVar.GetCVar('tom_manacolor', players[consoleplayer]).GetInt();
+		hue = Clamp(hue, 0, 359);
+		double alph = 0.9999 + (hue * 0.00277777778 * 0.0001);
+		DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: alph, scale: tscale);
 		
 		// Dim if current weapon isn't using this mana type:
 		if (!isSelected)
@@ -377,7 +466,7 @@ class ToM_AliceHUD : BaseStatusBar
 			// to the position of the clip rectangle (which is the top
 			// end of the mana texture):
 			vector2 tpos = ( pos.x + rad, pos.y + gclip );
-			DrawImage(toptexture, tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, box: (width, -1), scale: tscale);
+			DrawImage(toptexture, tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, alpha: alph, box: (width, -1), scale: tscale);
 			
 			// Dim if current weapon isn't using this mana type:
 			if (!isSelected)

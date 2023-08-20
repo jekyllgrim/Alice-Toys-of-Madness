@@ -266,7 +266,22 @@ Class ToM_BaseActor : Actor abstract
 	protected int age;
 	mixin ToM_PlayerSightCheck;
 	mixin ToM_CheckParticles;
-	
+
+	static const name whiteSmokeTextures[] = 
+	{
+		"SMO2A0",
+		"SMO2B0",
+		"SMO2C0",
+		"SMO2D0",
+		"SMO2E0",
+		"SMO2F0"
+	};
+
+	static string GetRandomWhiteSmoke() 
+	{
+		return ToM_BaseActor.whiteSmokeTextures[random[smksfx](0, ToM_BaseActor.whiteSmokeTextures.Size() -1)];
+	}
+
 	bool CheckLandingSize (double cradius = 0, bool checkceiling = false) 
 	{
 		if (checkceiling) 

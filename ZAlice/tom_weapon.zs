@@ -853,10 +853,13 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	//protected bool mod; //affteced by Weapon Modifier
 	protected vector3 spawnpos;
 	protected bool farenough;	
+	TextureID trailtex;
+	vector3 prevvel;
 	color flarecolor;
 	double flarescale;
 	double flarealpha;
 	color trailcolor;
+	string trailTexture;
 	double trailscale;
 	double trailalpha;
 	double trailfade;
@@ -874,6 +877,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	property flarescale : flarescale;
 	property flarealpha : flarealpha;
 	property trailcolor : trailcolor;
+	property trailTexture : trailTexture;
 	property trailalpha : trailalpha;
 	property trailscale : trailscale;
 	property trailfade : trailfade;
@@ -893,7 +897,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		ToM_Projectile.trailalpha 0.4;
 		ToM_Projectile.trailfade 0.1;
 		ToM_Projectile.flareactor "ToM_ProjFlare";
-		ToM_Projectile.trailactor "ToM_BaseFlare";
+		ToM_Projectile.trailactor "";
 		ToM_Projectile.DelayTraceDist 80;
 	}
 	
@@ -933,20 +937,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	{
 		if (!target)
 			return false;
-			
-		/*FLineTraceData lact;
-		LineTrace(angle, 4096, pitch, data: lact);
-		if (debug)
-		{
-			Spawn("ToM_DebugSpot", lact.HitLocation);
-		}
-		if (lact.HitLine)
-		{
-			let lineact = lact.HitLine;
-			lineact.Activate(target, lact.LineSide, SPAC_Impact);
-			return true;
-		}*/
-		
+					
 		LineAttack(angle, PLAYERMISSILERANGE, pitch, 0, 'Normal', tom_debugmessages > 1 ? "ToM_DebugSpot" : "ToM_NullPuff", LAF_TARGETISSOURCE, offsetforward: radius);
 		
 		return true;
@@ -972,7 +963,118 @@ Class ToM_Projectile : ToM_BaseActor abstract
 			fl.falpha = flarealpha;
 		}
 	}
-	
+
+	// Spawns a particle or actor-based trail:
+	virtual void SpawnTrail(vector3 ppos) {
+		// Actor based:
+		if (trailactor) {
+			vector3 tvel;
+			if (trailvel != 0) {
+				tvel = (
+					frandom[trailfx](-trailvel,trailvel),
+					frandom[trailfx](-trailvel,trailvel),
+					frandom[trailfx](-trailvel,trailvel)
+				);
+			}
+			let trl = Spawn(trailactor,ppos+(0,0,trailz));
+			if (trl) {
+				trl.master = self;
+				let trlflr = ToM_BaseFlare(trl);
+				if (trlflr) {
+					trlflr.fcolor = trailcolor;
+					trlflr.fscale = trailscale;
+					trlflr.falpha = trailalpha;
+					if (trailactor == 'ToM_BaseFlare')
+						trlflr.A_SetRenderstyle(alpha,Style_Shaded);
+					if (trailfade != 0)
+						trlflr.fade = trailfade;
+					if (trailshrink != 0)
+						trlflr.shrink = trailshrink;
+				}
+				trl.vel = tvel;
+			}
+		}
+		// Particle based:
+		else {
+			FSpawnParticleParams trail;
+			CreateParticleTrail(trail, ppos, trailvel);
+			Level.SpawnParticle(trail);
+		}
+	}
+
+	// Spawns a particle-based trail. This uses the same
+	// projectile values as actor-based trails but adapts
+	// them so that they match the appearance of actor-based
+	// ones in terms of size and such:
+	virtual void CreateParticleTrail(out FSpawnParticleParams trail, vector3 ppos, double pvel, double velstep = 0) {
+		trail.flags = SPF_ROLL|SPF_REPLACE;
+
+		// determine if this is a textured particle
+		// update the texture if the trailTexture value changes
+		// (for projectiles that randomize the particle texture dynamically)
+		if (!trailtex || (trailTexture && trailTexture != default.trailTexture))
+			trailtex = TexMan.CheckForTexture(trailTexture);
+		trailtex = TexMan.CheckForTexture(trailTexture);
+		bool isTextured = trailtex.IsValid();
+
+		// if textured, apply the texture:
+		if (isTextured) {
+			trail.texture = trailtex;
+		}
+
+		// apply color if provided:
+		if (trailcolor) {
+			// MUST BE SHADED if we're using textured particles,
+			// otherwise the colors get weird for some reason:
+			trail.style = STYLE_Shaded;
+			trail.color1 = color(trailcolor);
+		}
+
+		// add vertical offset to position:
+		trail.pos = (ppos.x, ppos.y, ppos.z + trailz);
+		// lifetime is calculated based on alpha and fadefactor:
+		trail.lifetime = ceil(trailalpha / trailfade);
+		// apply random velocity if pvel is not 0:
+		if (pvel != 0) {
+			trail.vel = (
+				frandom[trailfx](-pvel,pvel),
+				frandom[trailfx](-pvel,pvel),
+				frandom[trailfx](-pvel,pvel)
+			);
+		}
+		// apply acceleration if provided:
+		if (velstep > 0)
+			trail.accel = trail.vel * velstep;
+
+		// apply trailalpha
+		trail.startalpha = trailalpha;
+		trail.fadestep = -1;
+
+		// scale the particle. Since particle size = pixel size,
+		// scale the texture accordingly:
+		if (isTextured)
+			trail.size = TexMan.GetSize(trailtex) * trailscale;
+		// if not textured, 256 is used as a base value for scaling,
+		// because the previously used default trail texture is 
+		// 256x256, so trailscale was historically defined in 
+		// projectiles with that in mind:
+		else
+			trail.size = 256. * trailscale;
+
+		// Add size step if trailshrink is defined. Since particle
+		// sizestep is a flat addition, I convert the float value
+		// of 'trainshrink' into a positive or negative value
+		// to convert it into a proper sizestep value:
+		if (trailshrink != 0) {
+			double sstep;
+			if (trailshrink > 1)
+				sstep = trail.size * (trailshrink - 1);
+			else
+				sstep = trail.size * -(1 - trailshrink);
+			trail.sizestep = sstep;
+		}
+	}
+
 	//An override initially by Arctangent that spawns trails like FastProjectile does it:
 	override void Tick () 
 	{
@@ -987,7 +1089,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		
 		// Continue only if either a color is specified
 		// ir the trailactor is a custom actor:
-		if ( !(trailactor && (trailcolor || trailactor != "ToM_BaseFlare")) )
+		if (!trailcolor && !trailactor)
 			return;		
 		
 		if (GetParticlesQuality() <= TOMPART_MIN)
@@ -999,34 +1101,18 @@ Class ToM_Projectile : ToM_BaseActor abstract
 				return;
 			farenough = true;
 		}
+
+		// Get difference between current position and position from
+		// previous tick, split it into chunks and spawn a particle
+		// at every inbetween positiong:
 		Vector3 path = level.vec3Diff( self.pos, oldPos );
-		double distance = path.length() / clamp(int(trailscale * 50),1,8); //this determines how far apart the particles are
+		// This determines how far apart the particles areL
+		double distance = path.length() / clamp(int(trailscale * 50),1,8); 
 		Vector3 direction = path / distance;
-		int steps = int( distance );
-		
+		int steps = int( distance );		
 		for( int i = 0; i < steps; i++ )  
 		{
-		
-			let trl = Spawn(trailactor,oldPos+(0,0,trailz));
-			if (trl) 
-			{
-				trl.master = self;
-				let trlflr = ToM_BaseFlare(trl);
-				if (trlflr) 
-				{
-					trlflr.fcolor = trailcolor;
-					trlflr.fscale = trailscale;
-					trlflr.falpha = trailalpha;
-					if (trailactor.GetClassName() == "ToM_BaseFlare")
-						trlflr.A_SetRenderstyle(alpha,Style_Shaded);
-					if (trailfade != 0)
-						trlflr.fade = trailfade;
-					if (trailshrink != 0)
-						trlflr.shrink = trailshrink;
-				}
-				if (trailvel != 0)
-					trl.vel = (frandom[trlvel](-trailvel,trailvel),frandom[trlvel](-trailvel,trailvel),frandom[trlvel](-trailvel,trailvel));
-			}
+			SpawnTrail(oldpos);
 			oldPos = level.vec3Offset( oldPos, direction );
 		}
 	}

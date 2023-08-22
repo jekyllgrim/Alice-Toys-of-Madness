@@ -12,7 +12,7 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 		+WEAPON.NOAUTOFIRE
 		+WEAPON.BFG
 		Weapon.slotnumber 7;
-		weapon.ammotype1 "ToM_PurpleMana";
+		weapon.ammotype1 "ToM_StrongMana";
 		weapon.ammouse1 100;
 		weapon.ammogive1 100;
 	}

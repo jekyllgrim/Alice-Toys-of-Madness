@@ -11,7 +11,7 @@ class ToM_Ammo : Ammo
 	Default 
 	{
 		xscale 0.4;
-		yscale 0.3336;
+		yscale 0.33334;
 		+BRIGHT
 		+RANDOMIZE
 		FloatBobStrength 0.65;
@@ -45,16 +45,16 @@ class ToM_Ammo : Ammo
 	}
 }
 
-class ToM_RedMana : ToM_Ammo
+class ToM_WeakMana : ToM_Ammo
 {
 	Default
 	{
-		Inventory.pickupmessage "$TOM_MANA_RED";
+		Inventory.pickupmessage "$TOM_MANA_WEAK";
 		inventory.amount 10;
 		inventory.maxamount 300;
 		ammo.backpackamount 100;
 		ammo.backpackmaxamount 300;
-		ToM_Ammo.bigPickupClass "ToM_RedManaBig";
+		ToM_Ammo.bigPickupClass "ToM_WeakManaBig";
 	}
 	
 	override string GetPickupNote()
@@ -64,13 +64,13 @@ class ToM_RedMana : ToM_Ammo
 	
 	States {
 	Spawn:
-		AAR2 A 15;
-		AAR2 BCDEFGHI 3;
+		AMWS A 15;
+		AMWS BCDEFGHI 3;
 		loop;
 	}
 }
 
-class ToM_RedManaBig : ToM_RedMana
+class ToM_WeakManaBig : ToM_WeakMana
 {
 	Default
 	{
@@ -80,22 +80,23 @@ class ToM_RedManaBig : ToM_RedMana
 	
 	States {
 	Spawn:
-		AAR1 A 15;
-		AAR1 BCDEFGHIJKLMN 2;
+		AMWB A 15;
+		AMWB BCDEFGHIJKL 2;
 		loop;
 	}
 }
 
-class ToM_YellowMana : ToM_Ammo
+// haha it's actually green by default
+class ToM_MediumMana : ToM_Ammo
 {
 	Default
 	{
-		Inventory.pickupmessage "$TOM_MANA_YELLOW";
+		Inventory.pickupmessage "$TOM_MANA_MEDIUM";
 		inventory.amount 25;
 		inventory.maxamount 300;
 		ammo.backpackamount 100;
 		ammo.backpackmaxamount 300;
-		ToM_Ammo.bigPickupClass "ToM_YellowManaBig";
+		ToM_Ammo.bigPickupClass "ToM_MediumManaBig";
 	}
 	
 	override string GetPickupNote()
@@ -105,13 +106,13 @@ class ToM_YellowMana : ToM_Ammo
 	
 	States {
 	Spawn:
-		AAY2 A 15;
-		AAY2 BCDEFG 3;
+		AMMS A 15;
+		AMMS BCDEFGHIJKL 2;
 		loop;
 	}
 }
 
-class ToM_YellowManaBig : ToM_YellowMana
+class ToM_MediumManaBig : ToM_MediumMana
 {
 	Default
 	{
@@ -121,22 +122,22 @@ class ToM_YellowManaBig : ToM_YellowMana
 	
 	States {
 	Spawn:
-		AAY1 A 15;
-		AAY1 BCDEFGHIJK 2;
+		AMMB A 15;
+		AMMB BCDEFGHIJKL 2;
 		loop;
 	}
 }
 
-class ToM_PurpleMana : ToM_Ammo
+class ToM_StrongMana : ToM_Ammo
 {
 	Default
 	{
-		Inventory.pickupmessage "$TOM_MANA_PURPLE";
+		Inventory.pickupmessage "$TOM_MANA_STRONG";
 		inventory.amount 10;
 		inventory.maxamount 300;
 		ammo.backpackamount 100;
 		ammo.backpackmaxamount 300;
-		ToM_Ammo.bigPickupClass "ToM_PurpleManaBig";
+		ToM_Ammo.bigPickupClass "ToM_StrongManaBig";
 	}
 	
 	override string GetPickupNote()
@@ -146,13 +147,13 @@ class ToM_PurpleMana : ToM_Ammo
 	
 	States {
 	Spawn:
-		AAB2 A 15;
-		AAB2 BCDEFGHI 3;
+		AMSS A 15;
+		AMSS BCDEFGHIJKL 3;
 		loop;
 	}
 }
 
-class ToM_PurpleManaBig : ToM_PurpleMana
+class ToM_StrongManaBig : ToM_StrongMana
 {
 	Default
 	{
@@ -162,8 +163,8 @@ class ToM_PurpleManaBig : ToM_PurpleMana
 	
 	States {
 	Spawn:
-		AAB1 A 15;
-		AAB1 BCDEFGHIJKL 2;
+		AMSB A 15;
+		AMSB BCDEFGHI 2;
 		loop;
 	}
 }

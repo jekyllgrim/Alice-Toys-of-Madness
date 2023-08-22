@@ -15,10 +15,10 @@ class ToM_Jacks : ToM_BaseWeapon
 	{
 		Tag "Jacks";
 		weapon.slotnumber 3;
-		weapon.ammotype1 "ToM_YellowMana";
+		weapon.ammotype1 "ToM_MediumMana";
 		weapon.ammouse1 6;
 		weapon.ammogive1 60;
-		weapon.ammotype2 "ToM_YellowMana";
+		weapon.ammotype2 "ToM_MediumMana";
 		weapon.ammouse2 12;
 	}
 	

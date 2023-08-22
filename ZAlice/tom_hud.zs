@@ -36,7 +36,7 @@ class ToM_AliceHUD : BaseStatusBar
 		if (!aspectScale)
 			aspectScale = CVar.GetCvar('hud_aspectscale',CPlayer);
 		
-		return (aspectScale && aspectScale.GetBool());
+		return (aspectScale.GetBool());
 	}
 
 	// Versions of the draw functions that respect
@@ -94,6 +94,9 @@ class ToM_AliceHUD : BaseStatusBar
 		}
 		DrawInventoryIcon(item, pos, flags, alpha, boxsize, scale);
 	}
+
+	override void DrawPowerups ()
+	{}
 	
 	void UpdateManaFrames()
 	{
@@ -104,18 +107,18 @@ class ToM_AliceHUD : BaseStatusBar
 		if (!am1)
 			return;
 		
-		if (am1.GetClass() == "ToM_RedMana")
+		if (am1.GetClass() == "ToM_WeakMana")
 		{
-			if (++redAmmoFrame >= RedManaFrames.Size())
+			if (++redAmmoFrame >= WeakManaFrames.Size())
 				redAmmoFrame = 0;
 		}
 			
-		else if (am1.GetClass() == "ToM_YellowMana")
+		else if (am1.GetClass() == "ToM_MediumMana")
 		{
-			if (++yellowAmmoFrame >= yellowManaFrames.Size())
+			if (++yellowAmmoFrame >= MediumManaFrames.Size())
 				yellowAmmoFrame = 0;
 		}
-		else if (am1.GetClass() == "ToM_PurpleMana")
+		else if (am1.GetClass() == "ToM_StrongMana")
 		{
 			if (++blueAmmoFrame >= blueManaFrames.Size())
 				blueAmmoFrame = 0;
@@ -170,7 +173,7 @@ class ToM_AliceHUD : BaseStatusBar
 				hudres /= userscale;
 		}
 				
-		BeginHUD(1., userOldHudScale.GetBool(), int(hudres.x), int(hudres.y));
+		BeginHUD(1., false /*userOldHudScale.GetBool()*/, int(hudres.x), int(hudres.y));
 		
 		DrawLeftCorner();
 		DrawRightcorner();
@@ -238,9 +241,9 @@ class ToM_AliceHUD : BaseStatusBar
 				if (icon && icon.IsValid()) 
 				{
 					vector2 targetsize = (16, 16);
-					vector2 iconscale = TexMan.GetScaledSize(icon);
-					targetsize.x /= iconscale.x;
-					targetsize.y /= iconscale.y;
+					vector2 iconsize = TexMan.GetScaledSize(icon);
+					targetsize.x /= iconsize.x;
+					targetsize.y /= iconsize.y;
 					//console.printf("%s icon: %s", pwr.GetTag(), TexMan.GetName(icon));
 					ToM_DrawTexture(icon, pos + Actor.RotateVector((0, -32), -handAng), fflags, scale: targetsize);
 				}
@@ -377,15 +380,15 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		vector2 tscale = (1, (IsAspectCorrected() ? noYStretch : 1));
 		// Draw the mana texture (properly clipped)
-		double hue = CVar.GetCVar('tom_manacolor', players[consoleplayer]).GetInt();
+		double hue = CVar.GetCVar('tom_manacolor', CPlayer).GetInt();
 		hue = Clamp(hue, 0, 359);
-		double alph = 0.9999 + (hue * 0.00277777778 * 0.0001);
-		DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: alph, scale: tscale);
+		double alph = TOM_MANACOLOR_ALPHA + (hue * TOM_MANACOLOR_FACTOR);
+		ToM_DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: alph, scale: tscale);
 		
 		// Dim if current weapon isn't using this mana type:
 		if (!isSelected)
 		{
-			DrawImage("graphics/HUD/vessel_black_liquid.png", pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: 0.7, scale: tscale);
+			ToM_DrawImage("graphics/HUD/vessel_black_liquid.png", pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: 0.7, scale: tscale);
 		}
 		// The rest shoudln't be clipped, don't forget to
 		// clear the rectangle:
@@ -481,11 +484,11 @@ class ToM_AliceHUD : BaseStatusBar
 		vector2 ofs = GetSbarOffsets(right: true);
 	
 		// red mana:
-		DrawManaVessel("ToM_RedMana", RedManaFrames[redAmmoFrame], (-134, -75) + ofs, 43, toptexture: "amanaRtp");
+		DrawManaVessel("ToM_WeakMana", WeakManaFrames[redAmmoFrame], (-134, -75) + ofs, 43, toptexture: "amanaRtp");
 		// yellow mana:
-		DrawManaVessel("ToM_YellowMana", yellowManaFrames[yellowAmmoFrame], (-106, -122) + ofs, 43, toptexture: "amanaYtp");
+		DrawManaVessel("ToM_MediumMana", MediumManaFrames[yellowAmmoFrame], (-106, -122) + ofs, 43, toptexture: "amanaYtp");
 		// purple mana:
-		DrawManaVessel("ToM_PurpleMana", blueManaFrames[blueAmmoFrame], (-78, -75) + ofs, 43, toptexture: "amanaBtp");
+		DrawManaVessel("ToM_StrongMana", blueManaFrames[blueAmmoFrame], (-78, -75) + ofs, 43, toptexture: "amanaBtp");
 	
 		// vessels:
 		ToM_DrawImage("graphics/HUD/vessels.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
@@ -505,11 +508,11 @@ class ToM_AliceHUD : BaseStatusBar
 		string amtex;
 		if (am1)
 		{
-			if (am1.GetClass() == "ToM_RedMana")
+			if (am1.GetClass() == "ToM_WeakMana")
 				amtex = "vessel_runes_red.png";
-			else if (am1.GetClass() == "ToM_YellowMana")
+			else if (am1.GetClass() == "ToM_MediumMana")
 				amtex = "vessel_runes_yellow.png";
-			else if (am1.GetClass() == "ToM_PurpleMana")
+			else if (am1.GetClass() == "ToM_StrongMana")
 				amtex = "vessel_runes_blue.png";
 			double amtAlpha = ToM_UtilsP.LinearMap(amt1, 0, am1.maxamount, 0.5, 1);
 			amtex = String.Format("graphics/HUD/%s", amtex);
@@ -695,7 +698,7 @@ class ToM_AliceHUD : BaseStatusBar
 		}
 	}
 	
-	static const name RedManaFrames[] = 
+	static const name WeakManaFrames[] = 
 	{
 		"amanaR01",
 		"amanaR02",
@@ -711,7 +714,7 @@ class ToM_AliceHUD : BaseStatusBar
 		"amanaR12"
 	};
 
-	static const name YellowManaFrames[] = 
+	static const name MediumManaFrames[] = 
 	{
 		"amanaY01",
 		"amanaY02",

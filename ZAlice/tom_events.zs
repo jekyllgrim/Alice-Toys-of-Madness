@@ -184,16 +184,16 @@ class ToM_Mainhandler : EventHandler
 			e.Replacement = "ToM_AmmoSpawner_RedYellow_BigOther"; 
 			break;
 		case 'RocketAmmo':
-			e.Replacement = "ToM_YellowMana"; 
+			e.Replacement = "ToM_MediumMana"; 
 			break;
 		case 'RocketBox':
-			e.Replacement = "ToM_YellowManaBig"; 
+			e.Replacement = "ToM_MediumManaBig"; 
 			break;
 		case 'Cell':
-			e.Replacement = "ToM_PurpleMana"; 
+			e.Replacement = "ToM_StrongMana"; 
 			break;
 		case 'CellPack':
-			e.Replacement = "ToM_PurpleManaBig"; 
+			e.Replacement = "ToM_StrongManaBig"; 
 			break;
 		}
 	}

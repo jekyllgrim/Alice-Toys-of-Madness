@@ -148,7 +148,7 @@ class ToM_StrongMana : ToM_Ammo
 	States {
 	Spawn:
 		AMSS A 15;
-		AMSS BCDEFGHIJKL 3;
+		AMSS BCDEFGHI 3;
 		loop;
 	}
 }
@@ -164,7 +164,7 @@ class ToM_StrongManaBig : ToM_StrongMana
 	States {
 	Spawn:
 		AMSB A 15;
-		AMSB BCDEFGHI 2;
+		AMSB BCDEFGHIJKL 2;
 		loop;
 	}
 }

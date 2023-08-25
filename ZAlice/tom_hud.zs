@@ -380,10 +380,7 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		vector2 tscale = (1, (IsAspectCorrected() ? noYStretch : 1));
 		// Draw the mana texture (properly clipped)
-		double hue = CVar.GetCVar('tom_manacolor', CPlayer).GetInt();
-		hue = Clamp(hue, 0, 359);
-		double alph = TOM_MANACOLOR_ALPHA + (hue * TOM_MANACOLOR_FACTOR);
-		ToM_DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: alph, scale: tscale);
+		ToM_DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, scale: tscale);
 		
 		// Dim if current weapon isn't using this mana type:
 		if (!isSelected)
@@ -469,7 +466,7 @@ class ToM_AliceHUD : BaseStatusBar
 			// to the position of the clip rectangle (which is the top
 			// end of the mana texture):
 			vector2 tpos = ( pos.x + rad, pos.y + gclip );
-			DrawImage(toptexture, tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, alpha: alph, box: (width, -1), scale: tscale);
+			DrawImage(toptexture, tpos, flags: DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_CENTER, box: (width, -1), scale: tscale);
 			
 			// Dim if current weapon isn't using this mana type:
 			if (!isSelected)

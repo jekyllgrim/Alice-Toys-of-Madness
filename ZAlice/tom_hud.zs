@@ -120,7 +120,7 @@ class ToM_AliceHUD : BaseStatusBar
 		}
 		else if (am1.GetClass() == "ToM_StrongMana")
 		{
-			if (++strongAmmoFrame >= strongManaFrames.Size())
+			if (++strongAmmoFrame >= StrongManaFrames.Size())
 				strongAmmoFrame = 0;
 		}
 	}
@@ -129,7 +129,7 @@ class ToM_AliceHUD : BaseStatusBar
 	override void Init() 
 	{
 		super.Init();
-		Font fnt = "INDEXFONT_DOOM";
+		Font fnt = "INDEXFONT";
 		mIndexFont = HUDFont.Create(fnt, fnt.GetCharWidth("0"), Mono_CellLeft, 1, 1);
 	}
 	
@@ -295,7 +295,7 @@ class ToM_AliceHUD : BaseStatusBar
 		if (armor && armor.amount > 0)
 		{
 			ToM_DrawInventoryIcon(armor, ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
-			ToM_DrawString(mIndexFont, String.Format("%d",GetArmorAmount()), (81, -144) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetArmorColor(armor));
+			ToM_DrawString(mIndexFont, String.Format("%d",GetArmorAmount()), (81, -147) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetArmorColor(armor), scale: (1.5, 1.5));
 		}
 		
 		// mirror's background:
@@ -314,7 +314,7 @@ class ToM_AliceHUD : BaseStatusBar
 		ToM_DrawImage("graphics/HUD/mirror_frame.png", ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		
 		// finally, health numbers:
-		ToM_DrawString(mIndexFont, String.Format("%d",CPlayer.health), (81, -44) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetHealthColor());
+		ToM_DrawString(mIndexFont, String.Format("%d",CPlayer.health), (81, -43) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetHealthColor(), scale: (1.55, 1.55));
 	}
 	
 	// Draws a single mana vessel (3 of them used in right corner)
@@ -485,7 +485,7 @@ class ToM_AliceHUD : BaseStatusBar
 		// medium mana:
 		DrawManaVessel("ToM_MediumMana", MediumManaFrames[mediumAmmoFrame], (-106, -122) + ofs, 43, toptexture: "amanaMtp");
 		// purple mana:
-		DrawManaVessel("ToM_StrongMana", strongManaFrames[strongAmmoFrame], (-78, -75) + ofs, 43, toptexture: "amanaStp");
+		DrawManaVessel("ToM_StrongMana", StrongManaFrames[strongAmmoFrame], (-78, -75) + ofs, 43, toptexture: "amanaStp");
 	
 		// vessels:
 		ToM_DrawImage("graphics/HUD/vessels.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);

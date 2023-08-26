@@ -8,9 +8,9 @@ class ToM_AliceHUD : BaseStatusBar
 	protected TextureID HUDFace;
 	protected int hudstate;
 	
-	protected int redAmmoFrame;
-	protected int YellowAmmoFrame;
-	protected int BlueAmmoFrame;
+	protected int weakAmmoFrame;
+	protected int mediumAmmoFrame;
+	protected int strongAmmoFrame;
 	
 	protected transient CVar userHudScale;
 	protected transient CVar userOldHudScale;
@@ -109,19 +109,19 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		if (am1.GetClass() == "ToM_WeakMana")
 		{
-			if (++redAmmoFrame >= WeakManaFrames.Size())
-				redAmmoFrame = 0;
+			if (++weakAmmoFrame >= WeakManaFrames.Size())
+				weakAmmoFrame = 0;
 		}
 			
 		else if (am1.GetClass() == "ToM_MediumMana")
 		{
-			if (++yellowAmmoFrame >= MediumManaFrames.Size())
-				yellowAmmoFrame = 0;
+			if (++mediumAmmoFrame >= MediumManaFrames.Size())
+				mediumAmmoFrame = 0;
 		}
 		else if (am1.GetClass() == "ToM_StrongMana")
 		{
-			if (++blueAmmoFrame >= blueManaFrames.Size())
-				blueAmmoFrame = 0;
+			if (++strongAmmoFrame >= strongManaFrames.Size())
+				strongAmmoFrame = 0;
 		}
 	}
 		
@@ -480,12 +480,12 @@ class ToM_AliceHUD : BaseStatusBar
 	{
 		vector2 ofs = GetSbarOffsets(right: true);
 	
-		// red mana:
-		DrawManaVessel("ToM_WeakMana", WeakManaFrames[redAmmoFrame], (-134, -75) + ofs, 43, toptexture: "amanaRtp");
-		// yellow mana:
-		DrawManaVessel("ToM_MediumMana", MediumManaFrames[yellowAmmoFrame], (-106, -122) + ofs, 43, toptexture: "amanaYtp");
+		// weak mana:
+		DrawManaVessel("ToM_WeakMana", WeakManaFrames[weakAmmoFrame], (-134, -75) + ofs, 43, toptexture: "amanaWtp");
+		// medium mana:
+		DrawManaVessel("ToM_MediumMana", MediumManaFrames[mediumAmmoFrame], (-106, -122) + ofs, 43, toptexture: "amanaMtp");
 		// purple mana:
-		DrawManaVessel("ToM_StrongMana", blueManaFrames[blueAmmoFrame], (-78, -75) + ofs, 43, toptexture: "amanaBtp");
+		DrawManaVessel("ToM_StrongMana", strongManaFrames[strongAmmoFrame], (-78, -75) + ofs, 43, toptexture: "amanaStp");
 	
 		// vessels:
 		ToM_DrawImage("graphics/HUD/vessels.png", ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM);
@@ -506,11 +506,11 @@ class ToM_AliceHUD : BaseStatusBar
 		if (am1)
 		{
 			if (am1.GetClass() == "ToM_WeakMana")
-				amtex = "vessel_runes_red.png";
+				amtex = "vessel_runes_weak.png";
 			else if (am1.GetClass() == "ToM_MediumMana")
-				amtex = "vessel_runes_yellow.png";
+				amtex = "vessel_runes_medium.png";
 			else if (am1.GetClass() == "ToM_StrongMana")
-				amtex = "vessel_runes_blue.png";
+				amtex = "vessel_runes_strong.png";
 			double amtAlpha = ToM_UtilsP.LinearMap(amt1, 0, am1.maxamount, 0.5, 1);
 			amtex = String.Format("graphics/HUD/%s", amtex);
 			ToM_DrawImage(amtex, ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM, alpha: amtAlpha);
@@ -697,50 +697,50 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	static const name WeakManaFrames[] = 
 	{
-		"amanaR01",
-		"amanaR02",
-		"amanaR03",
-		"amanaR04",
-		"amanaR05",
-		"amanaR06",
-		"amanaR07",
-		"amanaR08",
-		"amanaR09",
-		"amanaR10",
-		"amanaR11",
-		"amanaR12"
+		"amanaW00",
+		"amanaW01",
+		"amanaW02",
+		"amanaW03",
+		"amanaW04",
+		"amanaW05",
+		"amanaW06",
+		"amanaW07",
+		"amanaW08",
+		"amanaW09",
+		"amanaW10",
+		"amanaW11"
 	};
 
 	static const name MediumManaFrames[] = 
 	{
-		"amanaY01",
-		"amanaY02",
-		"amanaY03",
-		"amanaY04",
-		"amanaY05",
-		"amanaY06",
-		"amanaY07",
-		"amanaY08",
-		"amanaY09",
-		"amanaY10",
-		"amanaY11",
-		"amanaY12"
+		"amanaM00",
+		"amanaM01",
+		"amanaM02",
+		"amanaM03",
+		"amanaM04",
+		"amanaM05",
+		"amanaM06",
+		"amanaM07",
+		"amanaM08",
+		"amanaM09",
+		"amanaM10",
+		"amanaM11"
 	};
 	
-	static const name BlueManaFrames[] = 
+	static const name StrongManaFrames[] = 
 	{
-		"amanaB01",
-		"amanaB02",
-		"amanaB03",
-		"amanaB04",
-		"amanaB05",
-		"amanaB06",
-		"amanaB07",
-		"amanaB08",
-		"amanaB09",
-		"amanaB10",
-		"amanaB11",
-		"amanaB12"
+		"amanaS00",
+		"amanaS01",
+		"amanaS02",
+		"amanaS03",
+		"amanaS04",
+		"amanaS05",
+		"amanaS06",
+		"amanaS07",
+		"amanaS08",
+		"amanaS09",
+		"amanaS10",
+		"amanaS11"
 	};
 }
 

@@ -503,17 +503,29 @@ class ToM_AliceHUD : BaseStatusBar
 		Ammo am1; Ammo am2; int amt1; int amt2;
 		[am1, am2, amt1, amt2] = GetCurrentAmmo();
 		string amtex;
+		string amLightTex;
 		if (am1)
 		{
 			if (am1.GetClass() == "ToM_WeakMana")
+			{
 				amtex = "vessel_runes_weak.png";
+				amLightTex = "vessel_runes_weak_highlights.png";
+			}
 			else if (am1.GetClass() == "ToM_MediumMana")
+			{
 				amtex = "vessel_runes_medium.png";
+				amLightTex = "vessel_runes_medium_highlights.png";
+			}
 			else if (am1.GetClass() == "ToM_StrongMana")
+			{
 				amtex = "vessel_runes_strong.png";
+				amLightTex = "vessel_runes_strong_highlights.png";
+			}
 			double amtAlpha = ToM_UtilsP.LinearMap(amt1, 0, am1.maxamount, 0.5, 1);
 			amtex = String.Format("graphics/HUD/%s", amtex);
+			amLightTex = String.Format("graphics/HUD/%s", amLightTex);
 			ToM_DrawImage(amtex, ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM, alpha: amtAlpha);
+			ToM_DrawImage(amLightTex, ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM, alpha: amtAlpha);
 		}
 		
 		// highlights go on top:

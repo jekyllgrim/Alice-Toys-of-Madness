@@ -353,6 +353,7 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		// Get current ammo/max ammo as a 0.0-1.0 range:
 		double amtFac = amount / double(maxamount);
+		amtFac = Clamp(amtfac, 0.0, 1.0);
 		
 		// Calculate the distance of how far to clip the
 		// mana texture from the top of the bubble. This
@@ -380,12 +381,12 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		vector2 tscale = (1, (IsAspectCorrected() ? noYStretch : 1));
 		// Draw the mana texture (properly clipped)
-		ToM_DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, scale: tscale);
+		DrawImage(texture, pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, scale: tscale);
 		
 		// Dim if current weapon isn't using this mana type:
 		if (!isSelected)
 		{
-			ToM_DrawImage("graphics/HUD/vessel_black_liquid.png", pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: 0.7, scale: tscale);
+			DrawImage("graphics/HUD/vessel_black_liquid.png", pos, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_LEFT_TOP, alpha: 0.7, scale: tscale);
 		}
 		// The rest shoudln't be clipped, don't forget to
 		// clear the rectangle:
@@ -442,7 +443,7 @@ class ToM_AliceHUD : BaseStatusBar
 				else
 					triHeight = ToM_UtilsP.LinearMap(amtFac, 0.5, 0.0, 0, rad);
 				// The Pythagorean theorem is: hypotenuse squared equals 
-				// the sum of its squared catheti (c2 = a2 + b2).
+				// the sum of its squared catheti (c*c = a*a + b*b).
 				// Since the chord (or rather, half of it) is a cathetus 
 				// here, and the radius is the hypotenuse, restructure the 
 				// formula:
@@ -458,7 +459,7 @@ class ToM_AliceHUD : BaseStatusBar
 				// Make it a bit smaller so that it doesn't stick out of
 				// the bubble's sides (the bubble is pixelated, after all,
 				// not a perfectly smooth circle, so it can happen):
-				width = chord * 0.96;
+				width = chord * 0.95;
 			}
 			
 			// The top texture is aligned to its center (middle of the
@@ -642,7 +643,12 @@ class ToM_AliceHUD : BaseStatusBar
 		if (CPlayer.health <= 0 || !CPlayer.mo)
 			return;
 		
-		ToM_DrawTexture(GetMugShot(5), pos,  DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER, alpha: CPlayer.mo.alpha);
+		int flags = Mugshot.STANDARD;
+		if (CPlayer.cheats & CF_GODMODE || CPlayer.cheats & CF_GODMODE2 || CPLayer.mo.FindInventory("PowerInvulnerable", true) || CPlayer.mo.FindInventory("ToM_RageBoxMainEffect"))
+		{
+			flags = Mugshot.DISABLERAMPAGE;
+		}
+		ToM_DrawTexture(GetMugShot(5, flags), pos,  DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER, alpha: CPlayer.mo.alpha);
 		
 		/*
 		if (!FaceController)

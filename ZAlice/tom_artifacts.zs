@@ -466,12 +466,75 @@ class ToM_Invisibility : PowerupGiver
 
 class ToM_InvisibilityEffect : Powerup
 {
+	bool active;
+	ToM_Mainhandler handler;
+	Actor soundtarget;
+	int sndTargetLifeTime;
+	const MAXSNDTARGETLIFETIME = 35 * 6;
+	const SNDTARGETALPHA = 0.4;
+
 	protected double prevAlpha;
 	protected int prevRenderstyle;
 	
 	Default
 	{
 		Powerup.duration -40;
+		Inventory.Icon "LGMYA0";
+	}
+
+	void SpawnSoundTarget()
+	{
+		if (!owner || owner.health <= 0)
+			return;
+
+		sndTargetLifeTime = 0;
+		if (soundtarget)
+		{
+			soundtarget.SetOrigin(owner.pos, true);
+			soundtarget.angle = owner.angle;
+			soundtarget.alpha = SNDTARGETALPHA;
+			//ToM_BaseActor.CopyAppearance(soundtarget, owner, false);
+		}
+
+		else 
+		{
+			soundtarget = Actor.Spawn("ToM_PlayerSoundTarget", owner.pos);
+			/*if (soundtarget)
+			{
+				soundtarget.bNOINTERACTION = true;
+				soundtarget.bISMONSTER = true;
+				soundtarget.bFRIENDLY = true;
+				soundtarget.bNODAMAGE = true;
+				soundtarget.bNOBLOOD = true;
+				soundtarget.bNONSHOOTABLE = true;
+				soundtarget.A_SetRenderstyle(SNDTARGETALPHA, STYLE_Shaded);
+				soundtarget.SetShade("FFFFFF");
+				//ToM_BaseActor.CopyAppearance(soundtarget, owner, false);
+				soundtarget.tics = -1;
+			}*/
+		}
+	}
+
+	override void Activate(Actor activator)
+	{
+		SpawnSoundTarget();
+		active = true;
+	}
+
+	void UpdateSoundTarget()
+	{
+		if (soundtarget && !soundtarget.isFrozen())
+		{
+			sndTargetLifeTime++;
+			soundtarget.A_FadeOut(SNDTARGETALPHA / MAXSNDTARGETLIFETIME);
+			//soundtarget.scale.x -= soundtarget.default.scale.x / MAXSNDTARGETLIFETIME * 0.5;
+			//soundtarget.scale.y -= soundtarget.default.scale.y / MAXSNDTARGETLIFETIME * 0.5;
+			if (soundtarget && sndTargetLifeTime >= MAXSNDTARGETLIFETIME)
+			{
+				soundtarget.Destroy();
+				sndTargetLifeTime = 0;
+			}
+		}
 	}
 	
 	override void InitEffect()
@@ -488,18 +551,142 @@ class ToM_InvisibilityEffect : Powerup
 				invs.prevWeapon = owner.player.readyweapon;
 				owner.player.pendingweapon = invs;
 			}
+
+			/*let ti = ThinkerIterator.Create("Actor");
+			Actor mo;
+			while (mo = Actor(ti.Next()))
+			{
+				if (mo && mo.bISMONSTER && mo.health > 0 && mo.target == owner)
+				{
+					//console.printf("%s target: %s", mo.GetTag(), mo.target ? mo.target.GetTag() : "none");
+					mo.bSeeFriendlyMonsters = true;
+					mo.target = soundtarget;
+					mo.lastheard = soundtarget;
+					mo.lastenemy = soundtarget;
+				}
+			}*/
 		}
 		super.InitEffect();
 	}
+
+	override void Tick()
+	{
+		if (!active)
+			return;
+		
+		super.Tick();
+	}
 	
+	override void DoEffect()
+	{
+		if (!active)
+			return;
+		
+		super.DoEffect();		
+		if (owner && owner.player)
+		{
+			//owner.player.cheats |= CF_NOTARGET;
+			owner.bNOTARGET = true;
+			owner.bNEVERTARGET = true;
+			
+			let psp = owner.player.FindPSprite(PSP_WEAPON);
+			let weap = owner.player.readyweapon;
+			if (owner.health > 0 && weap && psp && (InStateSequence(psp.curstate, weap.FindState("Fire")) || InStateSequence(psp.curstate, weap.FindState("AltFire"))))
+			{
+				SpawnSoundTarget();
+			}
+			else
+			{
+				UpdateSoundTarget();
+			}
+
+			if (!handler)
+				handler = ToM_Mainhandler(EventHandler.Find("ToM_Mainhandler"));
+
+			for (int i = 0; i < handler.allmonsters.Size(); i++)
+			{
+				let mo = handler.allmonsters[i];
+				if (mo && mo.health > 0)
+				{
+					mo.bSeeFriendlyMonsters = true;
+					if (mo.target == owner)
+					{
+						mo.target = soundtarget;
+						mo.lastheard = soundtarget;
+						mo.lastenemy = soundtarget;
+					}
+				}
+			}
+		}
+	}
 	
 	override void EndEffect()
 	{
 		if (owner && owner.player)
 		{
+			if (soundtarget)
+				soundtarget.Destroy();
+			
 			owner.A_SetRenderstyle(prevAlpha, prevRenderstyle);
+			// Don't override the notarget console cheat if active:
+			/*CVar nt = CVar.GetCVar('notarget', owner.player);
+			if (nt && nt.GetBool() == false)
+			{
+				owner.player.cheats &= ~CF_NOTARGET;
+			}*/
+			
+			owner.bNOTARGET = owner.default.bNOTARGET;
+			owner.bNEVERTARGET = owner.default.bNEVERTARGET;
+			
+			/*let ti = ThinkerIterator.Create("Actor");
+			Actor mo;
+			while (mo = Actor(ti.Next()))
+			{
+				if (mo && mo.bISMONSTER && mo.health > 0 && mo.target == owner)
+				{
+					mo.bSeeFriendlyMonsters = mo.default.bSeeFriendlyMonsters;
+				}
+			}*/
+
+			if (!handler)
+				handler = ToM_Mainhandler(EventHandler.Find("ToM_Mainhandler"));
+
+			for (int i = 0; i < handler.allmonsters.Size(); i++)
+			{
+				let mo = handler.allmonsters[i];
+				if (mo)
+				{
+					mo.bSeeFriendlyMonsters = mo.default.bSeeFriendlyMonsters;
+				}
+			}
 		}
 		super.EndEffect();
+	}
+}
+
+class ToM_PlayerSoundTarget : Actor
+{
+	Default
+	{
+		+NOINTERACTION
+		+ISMONSTER
+		+FRIENDLY
+		+NODAMAGE
+		+SHOOTABLE
+		+NONSHOOTABLE
+		+NOBLOOD
+		+NOSPRITESHADOW
+		renderstyle 'Translucent';
+		//renderstyle 'STYLE_Shaded';
+		//stencilcolor "FFFFFF";
+		XScale 0.8;
+		YScale 0.65;
+	}
+
+	States {
+	Spawn:
+		INVH Z -1;
+		stop;
 	}
 }
 
@@ -597,11 +784,15 @@ class ToM_InvisibilitySelector : ToM_BaseWeapon
 				double fac = 0.0425;
 				psp.alpha = Clamp(psp.alpha - fac, 0.15, 1);
 				psf.alpha = Clamp(psp.alpha - fac, 0.15, 1);
-				A_SetRenderstyle(psp.alpha, Style_Translucent);
+				A_SetRenderstyle(psp.alpha, Style_Shaded);
+				SetShade("FFFFFF");
 			}
 		}		
 		TNT1 A 0
 		{
+			let invs = FindInventory("ToM_InvisibilityEffect");
+			if (invs)
+				invs.Activate(self);
 			player.SetPSprite(TIP_Face, ResolveState("FaceBack"));
 			player.SetPSprite(TIP_Frame, ResolveState("FrameBack"));
 		}
@@ -678,7 +869,7 @@ class ToM_ReflectionCamera : Actor
 			ppawn, 
 			xofs: ppawn.radius + 16, 
 			yofs: -8,
-			zofs: ppawn.player.viewheight
+			zofs: ppawn.player.viewheight - 16
 		);
 		
 		A_SetRoll(ppawn.roll, SPF_INTERPOLATE);

@@ -466,12 +466,31 @@ Class ToM_BaseActor : Actor abstract
 		to.sprite = from.sprite;
 		to.frame = from.frame;
 		to.scale = from.scale;
+		to.angle = from.angle;
+		to.roll = from.roll;
+		to.bROLLSPRITE = from.bROLLSPRITE;
+		to.bROLLCENTER = from.bROLLCENTER;
+		to.spriteoffset = from.spriteoffset;
+		to.worldOffset = from.worldOffset;
 		to.bSPRITEFLIP = from.bSPRITEFLIP;
 		to.bXFLIP = from.bXFLIP;
 		to.bYFLIP = from.bYFLIP;
-		to.angle = from.angle;
+		to.bFORCEYBILLBOARD = from.bFORCEYBILLBOARD;
+		to.bFORCEXYBILLBOARD = from.bFORCEXYBILLBOARD;
+		to.bFLOATBOB = from.bFLOATBOB;
+		to.FloatBobPhase = from.FloatBobPhase;
+		to.FloatBobStrength = from.FloatBobStrength;
+		// these 4 are CRITICALLY important to make sure
+		// the copy also has the same sprite clipping
+		// as the original actor:
+		to.bIsMonster = from.bIsMonster;
+		to.bCorpse = from.bCorpse;
+		to.bFloorclip = from.bFloorclip;
+		to.bSpecialFloorclip = from.bSpecialFloorclip;
+
 		if (size)
 			to.A_SetSize(from.height, from.radius);
+			
 		if (style) 
 		{
 			to.A_SetRenderstyle(from.alpha, from.GetRenderstyle());

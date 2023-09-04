@@ -2,10 +2,42 @@ class ToM_Mainhandler : EventHandler
 {
 	ToM_HUDFaceController HUDfaces[MAXPLAYERS];
 	array < Class<Weapon> > mapweapons;
+
+	array < Actor > allmonsters;
 	
 	static bool IsVoodooDoll(PlayerPawn mo) 
 	{
 		return !mo.player || !mo.player.mo || mo.player.mo != mo;
+	}
+
+	override void NetworkProcess(consoleevent e)
+	{
+		if (!PlayerInGame[e.Player] || e.Player < 0)
+			return;
+		
+		let plr = players[e.Player].mo;
+		if (!plr)
+			return;
+		
+		string lcname = e.name.MakeLower();		
+
+// 		//FOV test:
+//		if (lcname.IndexOf("weapfov") >= 0)
+//		{
+//			let weap = plr.player.readyweapon;
+//			if (weap)
+//			{
+//				array < string > fovcmd;
+//				lcname.Split(fovcmd, ":");
+//				double fov;
+//				if (fovcmd.Size() == 2)
+//				{				
+//					fov = fovcmd[1].ToDouble();
+//				}
+//				weap.FOVscale = fov;
+//				console.printf("%s FOVscale: %.2f", weap.GetTag(), weap.FOVScale);
+//			}
+//		}
 	}
 	
 	void GiveStartingItems(int playerNumber)
@@ -20,6 +52,37 @@ class ToM_Mainhandler : EventHandler
 		plr.GiveInventory("ToM_CrosshairSpawner", 1);
 		plr.GiveInventory("ToM_InvReplacementControl", 1);
 		plr.GiveInventory("ToM_KickWeapon", 1);
+	}
+
+	override void WorldThingSpawned(worldEvent e)
+	{
+		let thing = e.thing;
+		if (thing && thing.bISMONSTER && !thing.bFRIENDLY && thing.health > 0)
+		{
+			allmonsters.Push(thing);
+		}
+	}
+
+	override void WorldThingDied(worldEvent e)
+	{
+		let thing = e.thing;
+		if (thing && thing.bISMONSTER)
+		{
+			int i = allmonsters.Find(thing);
+			if (i < allmonsters.Size())
+			{
+				allmonsters.Delete(i);
+			}
+		}
+	}
+
+	override void WorldThingRevived(worldEvent e)
+	{
+		let thing = e.thing;
+		if (thing && thing.bISMONSTER && !thing.bFRIENDLY && thing.health > 0 && allmonsters.Find(thing) != allmonsters.Size())
+		{
+			allmonsters.Push(thing);
+		}
 	}
 	
 	override void WorldThingDamaged(worldEvent e)

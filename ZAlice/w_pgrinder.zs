@@ -15,7 +15,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		weapon.ammouse1 1;
 		weapon.ammogive1 100;
 		weapon.ammotype2 "ToM_WeakMana";
-		weapon.ammouse2 10;
+		weapon.ammouse2 1;
 	}
 	
 	action void A_PepperFlash()
@@ -27,6 +27,15 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		A_Overlay(APSP_TopFX, "Highlights");
 		A_OverlayFlags(APSP_TopFX, PSPF_RenderStyle|PSPF_ForceAlpha, true);
 		A_OverlayRenderstyle(APSP_TopFX, Style_Add);
+	}
+
+	action void A_ProgressSpinFrame(bool reverse = false)
+	{
+		invoker.spinframe += reverse ? -1 : 1;
+		if (invoker.spinframe > 9)
+			invoker.spinframe = 0;
+		if (invoker.spinframe < 0)
+			invoker.spinframe = 9;
 	}
 	
 	action void A_PepperRecoil()
@@ -80,8 +89,14 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		}
 	}
 	
-	action	 void A_FirePepperSpray()
+	action void A_FirePepperSpray()
 	{
+		for (int i = 0; i < 10; i++)
+		{
+			A_FirePepperGun(6);
+		}
+		return;
+
 		let proj = A_Fire3DProjectile("ToM_PepperBomb", forward: 8, leftright:11, updown:-16);
 		if (proj)
 		{
@@ -134,14 +149,15 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		PPGR A -1;
 		stop;
 	Fire:
-		PPGR Z 7 
+		PPGR Z 5 
 		{
 			A_Overlay(APSP_Righthand, "Right.Spin");
-			A_StartSound("weapons/pgrinder/grindloop", CHAN_WEAPON, CHANF_LOOPING);
+			A_StartSound("weapons/pgrinder/grindloop", CHAN_7, CHANF_LOOPING);
 			A_StartSound("weapons/pgrinder/windup", CHAN_WEAPON);
+			player.refire++;
 		}
 	Hold:
-		PPGR Z 5 
+		PPGR Z 5
 		{
 			A_PepperFlash();
 			A_FirePepperGun();
@@ -150,42 +166,67 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		TNT1 A 0 
 		{
 			A_ResetPepperSprite();
-			A_Overlay(APSP_Righthand, "Right.SpinEnd");
+			A_ResetZoom();
+			//A_Overlay(APSP_Righthand, "Right.SpinEnd");
+			A_StopSound(CHAN_7);
 			A_StartSound("weapons/pgrinder/stop", CHAN_WEAPON);
 		}
-		PPGR Z 1;
-		wait;
-	Right.Spin:
-		PPGR ABCDEFGHIJ 2
+		PPGR ZZZ 1
 		{
-			let psp = player.FindPSprite(OverlayID());
-			if (psp)
+			if (invoker.spinframe == 0)
 			{
-				//console.printf("frame: %d", psp.frame);
-				invoker.spinframe = psp.frame;
-			}
-			if (player.refire)
-				A_PepperRecoil();
-		}
-		loop;
-	Right.SpinEnd:
-		PPGR # 1
-		{
-			A_ResetZoom();
-			A_ResetPSprite(OverlayID());
-			let psp = player.FindPSprite(OverlayID());
-			if (psp)
-			{
-				invoker.spinframe = Clamp(invoker.spinframe - 1, 0, 8);
-				psp.frame = invoker.spinframe;
-				if (invoker.spinframe <= 0)
-				{
-					return ResolveState("Right.End");
-				}
+				let psp = player.FindPSprite(APSP_Righthand);
+				if (psp)
+					psp.Destroy();
+				return ResolveState("Ready");
 			}
 			return ResolveState(null);
 		}
+		PPGR Z 1
+		{
+			if (invoker.spinframe == 0)
+			{
+				let psp = player.FindPSprite(APSP_Righthand);
+				if (psp)
+					psp.Destroy();
+				return ResolveState("Ready");
+			}
+			A_ReFire();
+			return ResolveState(null);
+		}
 		wait;
+	Right.Spin:
+		PPGR # 2
+		{
+			if (player.refire)
+			{
+				A_PepperRecoil();
+			}
+			A_ProgressSpinFrame(player.refire == 0);
+			let psp = player.FindPSprite(OverlayID());
+			if (psp)
+			{
+				psp.frame = invoker.spinframe;
+			}
+		}
+		loop;
+//	Right.SpinEnd:
+//		PPGR # 1
+//		{
+//			A_ResetZoom();
+//			let psp = player.FindPSprite(OverlayID());
+//			if (psp)
+//			{
+//				invoker.spinframe = Clamp(invoker.spinframe - 1, 0, 8);
+//				psp.frame = invoker.spinframe;
+//				if (invoker.spinframe <= 0)
+//				{
+//					return ResolveState("Right.End");
+//				}
+//			}
+//			return ResolveState(null);
+//		}
+//		wait;
 	Right.End:
 		PPGR JIHGFEDCB 2 A_ResetZoom();
 		PPGR A 2
@@ -236,13 +277,13 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		{
 			A_ResetPSprite(OverlayID(), 10);
 		}
-		PPGR Y 8 A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
-		PPGR Y 8 A_WeaponReady(WRF_NOSECONDARY);
+		PPGR Y 6 A_WeaponReady(WRF_NOFIRE|WRF_NOBOB);
+		PPGR Y 4 A_WeaponReady(WRF_NOSECONDARY);
 		goto Ready;
 	Right.Chargealt:
 		TNT1 A 0 A_StartSound("weapons/pgrinder/crunch");
 		PPGR JIHGFE 1 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
-		PPGR DCB 2 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
+		PPGR DCB 1 A_Weaponoffset(frandom(-1,1), WEAPONTOP + frandom(0, 2));
 		PPGR AAA 1 A_Weaponoffset(frandom(-2,2), WEAPONTOP + frandom(0, 2.5));
 		TNT1 A 0 
 		{

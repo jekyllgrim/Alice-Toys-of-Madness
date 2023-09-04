@@ -264,7 +264,7 @@ class ToM_Teapot : ToM_BaseWeapon
 				if (tip)
 					tip.Destroy();
 			}
-			A_ZoomFactor(1);
+			A_ResetZoom(0);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
 			A_StopSound(CHAN_WEAPON);
 		}
@@ -448,6 +448,7 @@ class ToM_Teapot : ToM_BaseWeapon
 
 class ToM_TeaBurnControl : ToM_ControlToken 
 {
+	ToM_ActorLayer burnlayer;
 	protected uint prevtrans;
 	
 	Default
@@ -463,7 +464,17 @@ class ToM_TeaBurnControl : ToM_ControlToken
 			return;
 		ResetTimer();
 		prevtrans = owner.translation;
-		owner.A_SetTranslation("GreenTea");
+		//owner.A_SetTranslation("GreenTea");
+		if (burnlayer)
+			burnlayer.Destroy();
+
+		burnlayer = ToM_ActorLayer(Spawn("ToM_TeaBurnLayer", owner.pos));
+		if (burnlayer)
+		{
+			burnlayer.bISMONSTER = owner.bISMONSTER;
+			burnlayer.master = owner;
+			burnlayer.fade = 0;
+		}
 	}
 	
 	override void DoControlEffect()
@@ -509,12 +520,23 @@ class ToM_TeaBurnControl : ToM_ControlToken
 	{
 		if (owner)
 		{
-			owner.translation = prevtrans;
+			/*owner.translation = prevtrans;
 			let al = Spawn("ToM_TeaBurnLayer", owner.pos);
 			if (al)
-				al.master = owner;
+				al.master = owner;*/
+			if (burnlayer)
+				burnlayer.fade = burnlayer.default.fade;
 		}	
 		super.DetachFromOwner();
+	}
+}
+
+class ToM_TeaBurnLayer : ToM_ActorLayer
+{
+	Default
+	{
+		Translation "GreenTea";
+		ToM_ActorLayer.Fade 0.075;
 	}
 }
 	
@@ -523,6 +545,7 @@ class ToM_TeaProjectile : ToM_Projectile
 	Default
 	{
 		ToM_Projectile.trailcolor "32a856";
+		ToM_Projectile.trailtexture "LENYA0";
 		ToM_Projectile.trailscale 0.2;
 		ToM_Projectile.trailfade 0.07;
 		ToM_Projectile.trailalpha 0.75;
@@ -623,15 +646,6 @@ class ToM_TeaProjectile : ToM_Projectile
 			A_FadeOut(0.1);
 		}*/
 		stop;
-	}
-}
-
-class ToM_TeaBurnLayer : ToM_ActorLayer
-{
-	Default
-	{
-		Translation "GreenTea";
-		ToM_ActorLayer.Fade 0.075;
 	}
 }
 

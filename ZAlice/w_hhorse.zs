@@ -66,13 +66,13 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		{
 			let victim = hit.HitActor;
 			// Check the victim is valid and not yet in the array:
-			if (victim && (victim.bSHOOTABLE || victim.bVULNERABLE || victim.bSOLID) && invoker.swingVictims.Find(victim) == invoker.swingVictims.Size())
+			if (victim && (victim.bSHOOTABLE || victim.bSOLID) && victim.health > 0 && invoker.swingVictims.Find(victim) == invoker.swingVictims.Size())
 			{
 				invoker.swingVictims.Push(victim);
 				// Can be damaged:
 				if (!victim.bDORMANT && (victim.bSHOOTABLE || victim.bVULNERABLE))
 				{
-					victim.DamageMobj(self, self, damage, 'normal');
+					victim.DamageMobj(self, self, damage, 'normal', angle: self.angle + 180);
 					A_StartSound("weapons/hhorse/hitflesh", CHAN_WEAPON);
 					// Bleed:
 					if (!victim.bNOBLOOD)
@@ -94,8 +94,26 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		invoker.swingOfs += invoker.swingStep;
 	}
 
+	action void A_StartJumpAttack()
+	{
+		invoker.combo = 0;
+		A_ResetPSprite();
+		A_OverlayPivot(OverlayID(), 0.2, 0.8);
+		A_StartSound("weapons/hhorse/jumpattack", CHAN_BODY);
+		vector3 forwarddir = (cos(angle), sin(angle), 0);
+		double fwdvel = vel dot forwarddir;
+		VelFromAngle(fwdvel + 7);
+		// jump has to be reset to not mess with jumping/falling-after-jump gravity:
+		player.jumptics = 0;
+		if (player.onGround)
+		{
+			vel.z += 12;
+		}
+	}
+
 	action void A_LandAttack()
 	{
+		A_StopSound(CHAN_BODY);
 		A_StartSound("*land", CHAN_BODY);
 		A_CameraSway(0, 30, 4);
 
@@ -406,20 +424,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		stop;
 	Altfire:				
-		TNT1 A 0 
-		{
-			invoker.combo = 0;
-			A_ResetPSprite();
-			A_OverlayPivot(OverlayID(), 0.2, 0.8);
-			A_StartSound("weapons/hhorse/jumpattack", CHAN_BODY);
-			vector3 forwarddir = (cos(angle), sin(angle), 0);
-			double fwdvel = vel dot forwarddir;
-			VelFromAngle(fwdvel + 7);
-			if (player.onGround)
-			{
-				vel.z += 12;
-			}
-		}
+		TNT1 A 0 A_StartJumpAttack();
 		HHRS KKKKLLLL 1 
 		{
 			A_WeaponOffset(1.2, -4, WOF_ADD);

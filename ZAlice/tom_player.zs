@@ -51,8 +51,11 @@ class ToM_AlicePlayer : DoomPlayer
 	state s_atk_blunderbuss;
 	state s_swim;
 	state s_jump;
+	state s_jump_end;
 
 	private int curWeaponID;
+	private vector3 prevMoveDir;
+
 	private int airJumps;
 	private int airJumpTics;
 	const MAXAIRJUMPTICS = 6;
@@ -237,10 +240,30 @@ class ToM_AlicePlayer : DoomPlayer
 		return targetState;
 	}
 
-	void UpdateMovementSpeed()
+	void UpdateMovementSpeed(int lastframe = 0, int mintics = 1, int maxtics = 4)
 	{
-		//int targetTics = int(ToM_UtilsP.LinearMap(vel.length(), 0, 10, 5, 1, true));
-		//A_SetTics(targetTics);
+		//int targetTics = int(ToM_UtilsP.LinearMap(vel.length(), 0, 10, maxtics, Clamp(mintics, 1, 100), true));
+		//A_SetTics(targetTics)
+
+//		if (lastframe > 0)
+//		{
+//			if (player.cmd.forwardmove != 0)
+//			{
+//				if (player.cmd.forwardmove > 0)
+//				{
+//					frame = ToM_UtilsP.LoopRange(frame + 1, 0, lastframe);
+//				}
+//				else
+//				{
+//					frame = ToM_UtilsP.LoopRange(frame - 1, 0, lastframe);
+//				}
+//			}
+//			else if (player.cmd.sidemove != 0)
+//			{
+//				frame = ToM_UtilsP.LoopRange(frame + 1, 0, lastframe);
+//			}
+//		}
+
 		PlayRunning();
 	}
 
@@ -297,10 +320,15 @@ class ToM_AlicePlayer : DoomPlayer
 	
 	override void PlayRunning()
 	{
+		let player = self.player;
+
 		if (player.playerstate == PST_DEAD)
 			return;
-
+		
 		if (player.cmd.buttons & BT_ATTACK || player.cmd.buttons & BT_ALTATTACK)
+			return;
+		
+		if (InStateSequence(curstate, s_jump) || InStateSequence(curstate, s_jump_end))
 			return;
 
 		state targetstate = PickMovementState();
@@ -329,6 +357,8 @@ class ToM_AlicePlayer : DoomPlayer
 
 		if (curWeaponID < 0)
 			return;
+		
+		spriteRotation = 0;
 		
 		state targetstate;
 		switch (curWeaponID) {
@@ -361,7 +391,7 @@ class ToM_AlicePlayer : DoomPlayer
 		bool pressingAttack = (player.cmd.buttons & BT_ATTACK) || (player.cmd.buttons & BT_ALTATTACK);
 		// only play the attack animation if it's either not yet playing,
 		// or the player keeps pressing fire (for autofire weapons):
-		if (targetstate && (pressingAttack || !InStateSequence(curstate, targetState)))
+		if (targetstate && (player.attackdown || !InStateSequence(curstate, targetState)))
 		{
 			SetState(targetstate);
 		}
@@ -393,6 +423,7 @@ class ToM_AlicePlayer : DoomPlayer
 		s_atk_blunderbuss = ResolveState("Attack_Blunderbuss");
 		s_swim = ResolveState("Swim");
 		s_jump = ResolveState("Jump");
+		s_jump_end = ResolveState("JumpEnd");
 	}
 	
 	override void Tick()
@@ -405,16 +436,30 @@ class ToM_AlicePlayer : DoomPlayer
 	{
 		super.PlayerThink();
 
+		let player = self.player;
+		if (!player)
+			return;
+
+		// make the model face the direction of movement:
+		if (!InStateSequence(curstate, missilestate))
+		{
+			if (vel.Length() > 0)
+				prevMoveDir = Level.Vec3Diff(pos, pos + vel);
+			spriteRotation = (prevMoveDir == (0,0,0)) ? 0 : atan2(prevMoveDir.y, prevMoveDir.x) - angle;
+		}
+		else
+		{
+			spriteRotation = 0;
+			prevMoveDir = (0,0,0);
+		}
+
+		//console.printf("Player z: %.1f | floorz: %.1f | jumptics: %d", pos.z, floorz, player.jumptics);
+
 		if (airJumpTics > 0)
 			airJumpTics--;
 
-		if (pos.z <= floorz || waterlevel > 0)
+		if (player.onground || waterlevel > 0)
 			airJumps = 0;
-
-		if (pos.z > floorz && waterlevel == 0 && !bNOGRAVITY)
-		{
-			CheckAirJump();
-		}
 
 		double lim = -12;
 		double downlim = -4;
@@ -510,6 +555,8 @@ class ToM_AlicePlayer : DoomPlayer
 				Thrust(sidemove, a);
 			}
 
+			SetState(s_jump);
+
 			//console.printf("doing jump %d", airJumps);
 
 			FSpawnParticleParams leaf;
@@ -563,21 +610,32 @@ class ToM_AlicePlayer : DoomPlayer
 
 	override void FallAndSink(double grav, double oldfloorz)
 	{
-		if (pos.z > floorz && waterlevel == 0 && !bNOGRAVITY)
-		{
-			// Default handling for crossing ledges:
-			if (vel.z == 0 && pos.z == oldfloorz && oldfloorz > floorz)
-				vel.z -= grav * 2;
-			// slowed-down falling:
-			else
-				vel.z -= grav * 0.5;
-			
-			return;
+		let player = self.player;
+		if (player)
+		{			
+			// [AA] No falling in water if the player is
+			// moving:
+			if (waterlevel > 1 && vel.x != 0 && vel.y != 0)
+			{
+				return;
+			}
+
+			else if (pos.z > floorz && waterlevel == 0 && !bNOGRAVITY)
+			{
+				// Handling for crossing ledges:
+				if (vel.z == 0 && pos.z == oldfloorz && oldfloorz > floorz)
+				{
+					vel.z -= grav * 1.5; //[AA] default was * 2
+					return;
+				}
+				// reduced gravity effect when jumping:
+				else if (player.jumptics != 0)
+				{
+					vel.z -= grav * 0.5; //[AA] default was 1.0
+					return;
+				}
+			}
 		}
-		
-		// No falling in water (I've always hated it):
-		else if (waterlevel > 0)
-			return;
 
 		super.FallAndSink(grav, oldfloorz);
 	}
@@ -658,62 +716,125 @@ class ToM_AlicePlayer : DoomPlayer
 			}
 		}
 	}
+
+	override void CheckJump()
+	{
+		let player = self.player;
+		// [RH] check for jump
+		if (player.cmd.buttons & BT_JUMP)
+		{
+			if (pos.z > floorz && !player.onGround && waterlevel == 0 && !bNOGRAVITY)
+			{
+				CheckAirJump();
+			}
+
+			if (player.crouchoffset != 0)
+			{
+				// Jumping while crouching will force an un-crouch but not jump
+				player.crouching = 1;
+			}
+			else if (waterlevel >= 2)
+			{
+				Vel.Z = 4 * Speed;
+			}
+			else if (bNoGravity)
+			{
+				Vel.Z = 3.;
+			}
+			else if (level.IsJumpingAllowed() && player.onground && player.jumpTics == 0)
+			{
+				double jumpvelz = JumpZ * 35 / TICRATE;
+				double jumpfac = 0;
+
+				// [BC] If the player has the high jump power, double his jump velocity.
+				// (actually, pick the best factors from all active items.)
+				for (let p = Inv; p != null; p = p.Inv)
+				{
+					let pp = PowerHighJump(p);
+					if (pp)
+					{
+						double f = pp.Strength;
+						if (f > jumpfac) jumpfac = f;
+					}
+				}
+				if (jumpfac > 0) jumpvelz *= jumpfac;
+
+				Vel.Z += jumpvelz;
+				bOnMobj = false;
+				player.jumpTics = -1;
+				if (!(player.cheats & CF_PREDICTING)) A_StartSound("*jump", CHAN_BODY);
+
+				if (!InStateSequence(curstate, s_jump))
+				{
+					SetState(s_jump);
+				}
+			}
+		}
+	}
+
+	enum EMoveFrames
+	{
+		LF_WalkSmall = 19, // T
+		LF_RunSmall = 11, // L
+		LF_WalkBig = 19, // T
+		LF_RunBig = 11, // L
+	}
 	
 	States {
+	Move:
 	Spawn:
 		M100 A 320;
 	//	M100 A 30;
 	//Idle:
 	//	M000 ABCDEFGHIJKLMLKJIHGFEDCB 2;
-		Loop;
+		TNT1 A 0 { return spawnstate; }
 	WalkSmall:
-		M001 ABCDEFGHIJKLMNOPQRST 1 UpdateMovementSpeed();
-		Loop;
+		M001 ABCDEFGHIJKLMNOPQRST 1 UpdateMovementSpeed(LF_WalkSmall);
+		TNT1 A 0 { return s_walk_smallweapon; }
 	RunSmall:
-		M002 ABCDEFGHIJKL 2 UpdateMovementSpeed();
-		Loop;
+		M002 ABCDEFGHIJKL 2 UpdateMovementSpeed(LF_RunSmall);
+		TNT1 A 0 { return s_run_smallweapon; }
 	WalkBig:
-		M003 ABCDEFGHIJKLMNOPQRST 1  UpdateMovementSpeed();
-		Loop;
+		M003 ABCDEFGHIJKLMNOPQRST 1 UpdateMovementSpeed(LF_WalkBig);
+		TNT1 A 0 { return s_walk_bigweapon; }
 	RunBig:
-		M004 ABCDEFGHIJKL 2 UpdateMovementSpeed();
-		Loop;
+		M004 ABCDEFGHIJKL 2 UpdateMovementSpeed(LF_RunBig);
+		TNT1 A 0 { return s_run_bigweapon; }
 	Swim:
 		M009 ABCDEFGHIJKLMNOPQRSTU 1 UpdateMovementSpeed();
-		loop;
+		TNT1 A 0 { return s_swim; }
 
 	Melee:
 		stop;
-	Missile:
-		stop;
-	
+	Missile:	
 	Attack_Knife:
 		M011 ABCDEFGHIJKLMNOPQRSTU 1;
-		Goto Spawn;
+		TNT1 A 0 { return spawnstate; }
 	Attack_Horse:
 		M012 ABCDEFGHIJKLMNOP 2;
-		Goto Spawn;
+		TNT1 A 0 { return spawnstate; }
 	Attack_Cards:
 		M014 ABCDEFGHIJKLMN 2;
-		Goto Spawn;
+		TNT1 A 0 { return spawnstate; }
 	Attack_PGrinder:
 		M013 A 10;
 		M013 A 10;
-		Goto Spawn;
+		TNT1 A 0 { return spawnstate; }
 	Attack_Teapot:
 		M015 ABCDEFGH 1;
 		M015 HGFEDCB 2;
 		M015 A 10;
-		Goto Spawn;
+		TNT1 A 0 { return spawnstate; }
 	Attack_Eyestaff:
 		M016 A 10;
 		M016 A 10;
-		Goto Spawn;
+		TNT1 A 0 { return spawnstate; }
 	Attack_Blunderbuss:
 		M017 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
 		M018 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
 		M019 ABCDEFGHIJKLMNOPQRSTU 1;
-		goto Spawn;
+		TNT1 A 0 { return spawnstate; }
+		stop;
 	
 	Pain:
 		M005 ABCDEFGHIJKLM 1;

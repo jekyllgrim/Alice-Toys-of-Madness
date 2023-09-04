@@ -56,7 +56,7 @@ class ToM_Cards : ToM_BaseWeapon
 			invoker.cardLayerID = 0;
 	}
 
-	action 	void A_RotateIdleCard()
+	action void A_RotateIdleCard()
 	{
 		int layer;
 		switch (OverlayID())
@@ -151,7 +151,7 @@ class ToM_Cards : ToM_BaseWeapon
 				case APSP_Card3: cardId = 2; break;
 				}
 				
-				dmg = Clamp(invoker.cardDamage[cardId], 1, 10);
+				dmg = 4 * Clamp(invoker.cardDamage[cardId], 1, 10);
 				spritename = invoker.cardSpriteName[cardId];
 			}
 			
@@ -161,7 +161,7 @@ class ToM_Cards : ToM_BaseWeapon
 				proj.sprite = sprt;
 			}
 			
-			proj.SetDamage(dmg);
+			proj.cardSpecialDamage = dmg;
 			proj.broll = frandom[card](-2,2);
 			return proj;
 		}
@@ -481,7 +481,7 @@ class ToM_CardProjectile : ToM_StakeProjectile
 	double broll;
 	double angleCurve;
 	double pitchCurve;
-	//name spriteName;
+	int cardSpecialDamage;
 	
 	Default
 	{
@@ -490,15 +490,22 @@ class ToM_CardProjectile : ToM_StakeProjectile
 		ToM_Projectile.trailscale 0.013;
 		ToM_Projectile.trailfade 0.024;
 		ToM_Projectile.trailalpha 0.2;
-		ToM_Projectile.DelayTraceDist 24;
 		+ROLLSPRITE
 		renderstyle "Translucent";
-		speed 40;
-		damage (12);
+		speed 55;
+		DamageFunction SetCardDamage();
 		gravity 0.6;
 		radius 8;
 		height 6;
 		scale 0.75;
+	}
+
+	int SetCardDamage()
+	{
+		int dmg = cardSpecialDamage > 0 ? cardSpecialDamage : 20;
+		if (tom_debugmessages > 1)
+			console.printf("card damage: %d", dmg);
+		return dmg;
 	}
 	
 	override void PostBeginPlay()

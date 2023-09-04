@@ -186,7 +186,7 @@ class ToM_GrowthPotion : PowerupGiver
 	Default
 	{
 		Powerup.Type "ToM_GrowthPotionEffect";
-		Powerup.Duration -10; //-40;
+		Powerup.Duration -30;
 		Inventory.Pickupmessage "Growth potion!";
 		+INVENTORY.AUTOACTIVATE
 	}
@@ -239,17 +239,20 @@ class ToM_GrowControl : ToM_InventoryToken
 	protected vector2 prevScale;
 	protected double prevSpeed;
 	protected double prevViewHeight;
+	protected double prevAttackZOffset;
 	protected vector2 prevWeaponScale;
 	protected double prevZoom;
 	
 	protected double targetSpeed;
 	protected double targetHeight;
 	protected double targetViewHeight;
+	protected double targetAttackZOffset;
 	protected vector2 targetScale;
 	protected vector2 targetWeaponScale;
 	protected vector2 curWeaponScale;
 	
 	protected double viewHeightStep;
+	protected double attackZOffsetStep;
 	protected vector2 scaleStep;
 	protected vector2 weaponScaleStep;
 	
@@ -282,14 +285,15 @@ class ToM_GrowControl : ToM_InventoryToken
 			prevScale = owner.scale;
 			prevSpeed = owner.speed;
 			prevViewHeight = owner.player.viewHeight;
+			prevAttackZOffset = owner.player.mo.AttackZOffset;
 			
 			// target height (to be set in DoEffect):
 			targetHeight = prevHeight * GROWFACTOR;
 			
 			// target scale and scale step (to be set in DoEffect):
 			targetScale = prevScale * GROWFACTOR;
-			scaleStep.x = (prevScale.x - targetScale.x) / GROWTIME;
-			scaleStep.y = (prevScale.y - targetScale.y) / GROWTIME;
+			scaleStep.x = (targetScale.x - prevScale.x) / GROWTIME;
+			scaleStep.y = (targetScale.y - prevScale.y) / GROWTIME;
 			
 			// target weapon scale and weapon scale step:
 			if (weap)
@@ -302,6 +306,10 @@ class ToM_GrowControl : ToM_InventoryToken
 			// target viewheight and viewheight step (to be set in DoEffect):
 			targetViewHeight = prevViewHeight * VIEWFACTOR;
 			viewHeightStep = (targetViewHeight - prevViewHeight) / GROWTIME;
+
+			// target AttackZOffset and AttackZOffset step (to be set in DoEffect):
+			targetAttackZOffset = prevAttackZOffset * VIEWFACTOR;
+			attackZOffsetStep = (targetAttackZOffset - prevAttackZOffset) / GROWTIME;
 			
 			// zoom step:
 			prevZoom = owner.player.fov;
@@ -343,6 +351,13 @@ class ToM_GrowControl : ToM_InventoryToken
 			pmo.viewHeight + viewHeightStep * stepFactor,
 			prevViewHeight, targetViewHeight
 		);
+
+		pmo.AttackZOffset = Clamp(
+			pmo.AttackZOffset + attackZOffsetStep * stepFactor,
+			prevAttackZOffset, targetAttackZOffset
+		);
+		
+		console.printf("attackZOffset: %.2f | viewheight: %.2f", pmo.attackZOffset, player.viewHeight);
 	
 		// gradually modify zoom:
 		owner.player.desiredFov = Clamp(
@@ -350,7 +365,7 @@ class ToM_GrowControl : ToM_InventoryToken
 			1, 
 			targetZoom
 		);
-		console.printf("player fov: %.1f desired: %.1f", owner.player.fov, owner.player.desiredfov);
+		//console.printf("player fov: %.1f desired: %.1f", owner.player.fov, owner.player.desiredfov);
 		
 		// gradually modify weapon scale:
 		for(PSprite psp = player.psprites; psp; psp = psp.Next)

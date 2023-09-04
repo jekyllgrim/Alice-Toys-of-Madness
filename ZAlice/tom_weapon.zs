@@ -246,24 +246,32 @@ class ToM_BaseWeapon : Weapon abstract
 	
 	action void A_AttackZoom(double step = 0.001, double limit = 0.03, double jitter = 0.002)
 	{
-		if (invoker.atkzoom < limit)
-		{
-			invoker.atkzoom += step;
-			A_ZoomFactor(invoker.GetBaseZoom() - invoker.atkzoom,ZOOM_NOSCALETURNING);
-		}
-		else
-		{
-			A_ZoomFactor(invoker.GetBaseZoom() - invoker.atkzoom + frandom[atkzoom](-jitter, jitter),ZOOM_NOSCALETURNING);
-		}
+		if (!player)
+			return;
+		
+		let weap = player.readyweapon;
+		if (!weap)
+			return;
+
+		invoker.atkzoom = Clamp(invoker.atkzoom + step, 0, limit);
+		double targetZoom = invoker.atkzoom;
+		if (targetZoom >= limit)
+			targetZoom += frandom[atkzoom](-jitter, jitter);
+		
+		weap.FOVScale = 1 + targetZoom;
 	}
 	
 	action void A_ResetZoom(double step = 0.005)
 	{
-		if (invoker.atkzoom > 0)
-		{
-			invoker.atkzoom = Clamp(invoker.atkzoom - step, 0, 1);
-			A_ZoomFactor(1 - invoker.atkzoom,ZOOM_NOSCALETURNING);
-		}
+		if (!player)
+			return;
+		
+		let weap = player.readyweapon;
+		if (!weap)
+			return;
+		
+		invoker.atkzoom = Clamp(invoker.atkzoom - step, 0, 1);
+		weap.FOVScale = Clamp(1 + invoker.atkzoom, 1, weap.FOVScale);
 	}
 	
 	// Camera sway function by josh771
@@ -843,8 +851,6 @@ Class ToM_Projectile : ToM_BaseActor abstract
 {
 	protected bool ShouldActivateLines;
 	property ShouldActivateLines : ShouldActivateLines;
-	protected double DelayTraceDist;
-	property DelayTraceDist : DelayTraceDist;
 	protected bool dead;
 	protected state s_spawn; //pointer to Spawn label
 	protected state s_death;
@@ -898,7 +904,6 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		ToM_Projectile.trailfade 0.1;
 		ToM_Projectile.flareactor "ToM_ProjFlare";
 		ToM_Projectile.trailactor "";
-		ToM_Projectile.DelayTraceDist 80;
 	}
 	
 	/*

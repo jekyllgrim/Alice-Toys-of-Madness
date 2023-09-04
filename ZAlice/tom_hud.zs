@@ -68,7 +68,7 @@ class ToM_AliceHUD : BaseStatusBar
 	{
 		if (IsAspectCorrected()) 
 		{
-			scale.y *= noYStretch;
+			scale.y /= noYStretch;
 			pos.y *= noYStretch;
 		}
 		DrawImageRotated(texid, pos, flags, angle, alpha, scale, style, col, translation);

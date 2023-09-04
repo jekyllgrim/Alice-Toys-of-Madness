@@ -5,6 +5,15 @@ class ToM_UtilsP : Actor abstract
 		return (i >= 0) ? 1 : -1;
 	}
 
+	static clearscope double LoopRange(double val, double min, double max)
+	{
+		if (val > max)
+			val = min;
+		else if (val < min)
+			val = max;
+		return val;
+	}
+
 	//By default returns true if ANY of the players has the item.
 	//If 'checkall' argument is true, the function returns true if ALL players have the item.
 	static bool CheckPlayersHave(Class<Inventory> itm, bool checkall = false) {
@@ -905,8 +914,10 @@ class ToM_ActorLayer : ToM_SmallDebris abstract
 	Default
 	{
 		+NOINTERACTION
+		+NOSPRITESHADOW
 		ToM_ActorLayer.fade 0.1;
 		Renderstyle 'Translucent';
+		Alpha 1.0;
 	}
 	
 	override void PostBeginPlay()
@@ -916,7 +927,6 @@ class ToM_ActorLayer : ToM_SmallDebris abstract
 		{
 			Destroy();
 		}
-		CopyAppearance(self, master, style: false);
 	}
 	
 	override void Tick()
@@ -926,11 +936,18 @@ class ToM_ActorLayer : ToM_SmallDebris abstract
 			Destroy();
 			return;
 		}
-		SetOrigin(master.pos, true);
-		angle = master.angle;
-		sprite = master.sprite;
-		frame = master.frame;
-		A_FadeOut(fade);
+		if (!master.isFrozen())
+		{
+			SetOrigin(master.pos, true);
+			CopyAppearance(self, master, style: false, size: true);
+			//console.printf("%s layer alpha: %.2f", master.GetTag(), alpha);
+			if (fade > 0)
+			{
+				alpha -= fade;
+				if (alpha <= 0.0)
+					Destroy();
+			}
+		}
 	}
 }
 

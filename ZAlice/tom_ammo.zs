@@ -7,6 +7,11 @@ class ToM_Ammo : Ammo
 	
 	class<Ammo> bigPickupClass;
 	property bigPickupClass : bigPickupClass;
+
+	color particleColor;
+	property particleColor : particleColor;
+
+	Actor manashade;
 	
 	Default 
 	{
@@ -14,8 +19,13 @@ class ToM_Ammo : Ammo
 		yscale 0.33334;
 		+BRIGHT
 		+RANDOMIZE
+		+ROLLSPRITE
+		+ROLLCENTER
+		+FORCEXYBILLBOARD
 		FloatBobStrength 0.65;
 		Inventory.pickupsound "pickups/ammo";
+		Renderstyle 'Translucent';
+		alpha 0.999;
 	}
 
 	override Class<Ammo> GetParentAmmo ()
@@ -29,21 +39,106 @@ class ToM_Ammo : Ammo
 		return (class<Ammo>)(type);
 	}
 	
-	override void PostBeginPlay()
-	{
-		super.PostBeginPlay();
-		A_SpriteOffset (0, -24);
-	}
-	
 	override void Tick()
 	{
 		super.Tick();
-		if (owner || isFrozen())
-			return;
-		
-		WorldOffset.z = BobSin(FloatBobPhase + 0.85 * level.maptime) * FloatBobStrength;
+		if (!owner && !isFrozen())// && InStateSequence(curstate, FindState("Idle")))
+		{
+			WorldOffset.z = BobSin(FloatBobPhase + 0.85 * level.maptime) * FloatBobStrength;
+		}
+
+		if (manashade && owner)
+		{
+			manashade.Destroy();
+		}
+	}
+
+	void SpawnManaParticles()
+	{		
+		int life = random[part](30,40);
+		A_SpawnParticleEx(
+			particleColor,
+			TexMan.CheckForTexture("LENYA0"),
+			STYLE_AddShaded,
+			SPF_FULLBRIGHT|SPF_RELATIVE,
+			lifetime: life,
+			size: 4,
+			angle: random[part](0, 359),
+			xoff: random[part](4, 8),
+			zoff: frandom[part](-8, 0) + WorldOffset.z,
+			velx: -0.3,
+			velz: -frandom(0.2, 0.85),
+			sizestep: 4 / double(-life)
+		);
+	}
+	
+	States {
+	Spawn:
+		TNT1 A 0 NoDelay
+		{
+			if (bTossed)
+				return ResolveState("DroppedSpawn");
+			return ResolveState("Idle");
+		}
+		stop;
+	DroppedSpawn:
+		#### # 0
+		{
+			state st = FindState("Idle");
+			if (st)
+			{
+				sprite = st.sprite;
+				frame = st.frame;
+			}
+			scale *= 0.2;
+			alpha = 0;
+			//roll = -120;
+			gravity = 0.3;
+			//spriteOffset.Y = 8;
+			if (!manashade)
+			{
+				manashade = Spawn("ToM_ManaShade", pos);
+				if (manashade)
+				{
+					manashade.master = self;
+				}
+			}
+			vel.z = 4;
+		}
+		#### # 1
+		{	
+			SpawnManaParticles();
+			double fac = 0.02;
+			scale.x = Clamp(scale.x + default.scale.x * fac, scale.x, default.scale.x);			
+			scale.y = Clamp(scale.y + default.scale.y * fac, scale.y, default.scale.y);
+			//roll = Clamp(roll + 4, roll, default.roll);
+			if (manashade)
+				manashade.alpha = Clamp(manashade.alpha - fac, 0., default.alpha);
+			alpha = Clamp(alpha + fac, 0., default.alpha);
+			if (spriteOffset == default.spriteOffset && scale == default.scale && alpha == default.alpha && roll == 0)
+			{
+				if (manashade)
+					manashade.Destroy();
+				gravity = default.gravity;
+				return ResolveState("Idle");
+			}
+
+			return ResolveState(null);
+		}
+		wait;	
 	}
 }
+
+class ToM_ManaShade : ToM_ActorLayer
+{
+	Default
+	{
+		Renderstyle 'AddShaded';
+		Stencilcolor "FFFFFF";
+		alpha 0.999;
+		ToM_ActorLayer.fade 0;
+	}
+}	
 
 class ToM_WeakMana : ToM_Ammo
 {
@@ -55,6 +150,7 @@ class ToM_WeakMana : ToM_Ammo
 		ammo.backpackamount 100;
 		ammo.backpackmaxamount 300;
 		ToM_Ammo.bigPickupClass "ToM_WeakManaBig";
+		ToM_Ammo.particleColor "ffb100";
 	}
 	
 	override string GetPickupNote()
@@ -63,7 +159,7 @@ class ToM_WeakMana : ToM_Ammo
 	}
 	
 	States {
-	Spawn:
+	Idle:
 		AMWS A 15;
 		AMWS BCDEFGHI 3;
 		loop;
@@ -79,7 +175,7 @@ class ToM_WeakManaBig : ToM_WeakMana
 	}
 	
 	States {
-	Spawn:
+	Idle:
 		AMWB A 15;
 		AMWB BCDEFGHIJKL 2;
 		loop;
@@ -97,6 +193,7 @@ class ToM_MediumMana : ToM_Ammo
 		ammo.backpackamount 100;
 		ammo.backpackmaxamount 300;
 		ToM_Ammo.bigPickupClass "ToM_MediumManaBig";
+		ToM_Ammo.particleColor "8df500";
 	}
 	
 	override string GetPickupNote()
@@ -105,7 +202,7 @@ class ToM_MediumMana : ToM_Ammo
 	}
 	
 	States {
-	Spawn:
+	Idle:
 		AMMS A 15;
 		AMMS BCDEFGHIJKL 2;
 		loop;
@@ -121,7 +218,7 @@ class ToM_MediumManaBig : ToM_MediumMana
 	}
 	
 	States {
-	Spawn:
+	Idle:
 		AMMB A 15;
 		AMMB BCDEFGHIJKL 2;
 		loop;
@@ -138,6 +235,7 @@ class ToM_StrongMana : ToM_Ammo
 		ammo.backpackamount 100;
 		ammo.backpackmaxamount 300;
 		ToM_Ammo.bigPickupClass "ToM_StrongManaBig";
+		ToM_Ammo.particleColor "9734ab";
 	}
 	
 	override string GetPickupNote()
@@ -146,7 +244,7 @@ class ToM_StrongMana : ToM_Ammo
 	}
 	
 	States {
-	Spawn:
+	Idle:
 		AMSS A 15;
 		AMSS BCDEFGHI 3;
 		loop;
@@ -162,7 +260,7 @@ class ToM_StrongManaBig : ToM_StrongMana
 	}
 	
 	States {
-	Spawn:
+	Idle:
 		AMSB A 15;
 		AMSB BCDEFGHIJKL 2;
 		loop;

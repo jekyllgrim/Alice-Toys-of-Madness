@@ -921,6 +921,15 @@ Class ToM_Projectile : ToM_BaseActor abstract
 			return false;
 		return super.CanCollideWith(other, passive);
 	}
+
+	// Prevent gravity changes underwater:
+	override void FallAndSink(double grav, double oldfloorz) 
+	{
+		if (pos.z > floorz && !bNOGRAVITY)
+		{
+			vel.z -= grav;
+		}
+	}
 	
 	//This is just to make sure the projectile doesn't collide with certain
 	//non-collidable actors. Used by stuff like stakes.
@@ -1100,9 +1109,9 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		if (GetParticlesQuality() <= TOMPART_MIN)
 			return;	
 			
-		if (!farenough) 
+		if (!farenough && target)
 		{
-			if (level.Vec3Diff(pos,spawnpos).length() < DelayTraceDist)
+			if (level.Vec3Diff(pos, spawnpos).length() < vel.length() + target.radius)
 				return;
 			farenough = true;
 		}

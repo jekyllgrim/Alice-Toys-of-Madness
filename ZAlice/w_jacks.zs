@@ -248,7 +248,6 @@ class ToM_JackProjectile : ToM_Projectile
 		ToM_Projectile.trailscale 0.07;
 		ToM_Projectile.trailfade 0.01;
 		ToM_Projectile.trailalpha 0.14;
-		ToM_Projectile.DelayTraceDist 80;
 		ToM_JackProjectile.JackDamage 32;
 		ProjectileKickback 40;
 		-NOGRAVITY

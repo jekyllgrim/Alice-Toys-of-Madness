@@ -1,4 +1,4 @@
-class ToM_UtilsP : Actor abstract
+class ToM_UtilsP
 {		
 	static clearscope int Sign (double i) 
 	{
@@ -16,7 +16,8 @@ class ToM_UtilsP : Actor abstract
 
 	//By default returns true if ANY of the players has the item.
 	//If 'checkall' argument is true, the function returns true if ALL players have the item.
-	static bool CheckPlayersHave(Class<Inventory> itm, bool checkall = false) {
+	static clearscope bool CheckPlayersHave(Class<Inventory> itm, bool checkall = false)
+	{
 		if(!itm)
 			return false;
 		
@@ -25,7 +26,8 @@ class ToM_UtilsP : Actor abstract
 		// Otherwise: start with FALSE; as soon as somebody is found
 		// to HAVE the item, flip to true and break.
 		bool found = checkall;
-		for (int pn = 0; pn < MAXPLAYERS; pn++) {
+		for (int pn = 0; pn < MAXPLAYERS; pn++) 
+		{
 			if (!playerInGame[pn])
 				continue;
 			
@@ -37,7 +39,8 @@ class ToM_UtilsP : Actor abstract
 			
 			// If we're checking anyone, as soon as somebody is found
 			// to have the item, return true:
-			if (!checkall) {
+			if (!checkall) 
+			{
 				if (hasItem) {
 					if (tom_debugmessages > 1)
 						console.printf("Player %d has %s",plr.mo.PlayerNumber(),itm.GetClassName());
@@ -48,7 +51,8 @@ class ToM_UtilsP : Actor abstract
 			
 			// If we're checking everyone, as soon as somebody is found
 			// to NOT have the item, return false:
-			else if (!hasItem) {
+			else if (!hasItem) 
+			{
 				if (tom_debugmessages > 1)
 					console.printf("Player %d doesn't have %s.",plr.mo.PlayerNumber(),itm.GetClassName());
 				found = false;
@@ -69,19 +73,20 @@ class ToM_UtilsP : Actor abstract
 		}
 		return d;
 	}
-	
-	//Utility functions by Marisa Kirisame
-	
-	//Checks which side of a lindef the actor is on:
+		
+	// Checks which side of a lindef the actor is on:
+	// Unnecessary wrapper, since PointOnLineSide has since been
+	// added to GZDoom
 	static clearscope int PointOnLineSide( Vector2 p, Line l ) 
 	{
 		if ( !l ) return 0;
-		return (((p.y-l.v1.p.y)*l.delta.x+(l.v1.p.x-p.x)*l.delta.y) > double.epsilon);	
+		//return (((p.y-l.v1.p.y)*l.delta.x+(l.v1.p.x-p.x)*l.delta.y) > double.epsilon);	
+		return LevelLocals.PointOnLineSide(p, l);
 	}
 	
 	//Returns -1 if the box (normally an actor's radius) intersects a linedef:
-    static int BoxOnLineSide( double top, double bottom, double left, double right, Line l ) 
-{
+    static clearscope int BoxOnLineSide( double top, double bottom, double left, double right, Line l ) 
+	{
 		if ( !l ) return 0;
 		int p1, p2;
 		if ( l.delta.x == 0 ) 
@@ -121,7 +126,7 @@ class ToM_UtilsP : Actor abstract
 		return (p1==p2)?p1:-1;
 	}
 	
-	static vector3 FindRandomPosAround(vector3 actorpos, double rad = 512, double mindist = 16, double fovlimit = 0, double viewangle = 0, bool checkheight = false)
+	static play vector3 FindRandomPosAround(vector3 actorpos, double rad = 512, double mindist = 16, double fovlimit = 0, double viewangle = 0, bool checkheight = false)
 	{
 		if (!level.IsPointInLevel(actorpos))
 			return actorpos;
@@ -143,7 +148,7 @@ class ToM_UtilsP : Actor abstract
 			if (fovlimit > 0)
 			{
 				double ang = atan2(diff.y, diff.x);
-				if (AbsAngle(viewangle, ang) > fovlimit)
+				if (Actor.AbsAngle(viewangle, ang) > fovlimit)
 					inFOV = false;
 			}			
 			
@@ -161,7 +166,7 @@ class ToM_UtilsP : Actor abstract
 		return finalpos;
 	}
 	
-	static double GetPlayerAtkHeight(PlayerPawn ppawn, bool absolute = false)
+	static play double GetPlayerAtkHeight(PlayerPawn ppawn, bool absolute = false)
 	{
 		if (!ppawn)
 			return 0;
@@ -177,35 +182,19 @@ class ToM_UtilsP : Actor abstract
 		return h;
 	}
 	
-	static vector3 GetRelativePosition(actor mo, vector3 offset)
+	// Converts offsets into relative offsets, by Lewisk3.
+	// If 'isPosition' is TRUE, adds actor's position to the result.
+	// Set to FALSE when used for relative velocity.
+	static play vector3 RelativeToGlobalCoords(actor mo, vector3 offset, bool isPosition = true)
 	{
 		if (!mo)
 			return (0,0,0);
-		let cosang     = cos(mo.angle);
-		let cosvang    = cos(mo.pitch);
-		let cosrang    = cos(mo.roll);
-		let sinang     = sin(mo.angle);
-		let sinvang    = sin(-mo.pitch);
-		let sinrang    = sin(-mo.roll);
 
-		let up_no_roll = (
-		-   sinvang * cosang,
-		-   sinvang * sinang,
-			cosvang);
-		let left_no_roll = (
-		-   sinang,
-			cosang,
-			0);
-
-		// Now use these three:
-		let forw = (
-			cosvang * cosang,
-			cosvang * sinang,
-			sinvang);
-		let left    = cosrang * left_no_roll - sinrang * up_no_roll;
-		let up      = cosrang * up_no_roll + sinrang * left_no_roll;
-
-		return(mo.pos + forw * offset.x + left * offset.y + up * offset.z);
+		Quat dir = Quat.FromAngles(mo.angle, mo.pitch, mo.roll);
+		vector3 ofs = dir * (offset.x, -offset.y, offset.z);
+		if (isPosition)
+			return level.vec3offset(isPosition ? mo.pos : offset, ofs);
+		return ofs;
 	}
 }
 

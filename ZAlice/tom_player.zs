@@ -186,7 +186,10 @@ class ToM_AlicePlayer : DoomPlayer
 	}
 	
 	bool IsPlayerMoving()
-	{	
+	{
+		let player = self.player;
+		return player.cmd.forwardmove != 0 || player.cmd.sidemove != 0;
+
 		let buttons = player.cmd.buttons;
 
 		/*console.printf(
@@ -358,8 +361,6 @@ class ToM_AlicePlayer : DoomPlayer
 		if (curWeaponID < 0)
 			return;
 		
-		spriteRotation = 0;
-		
 		state targetstate;
 		switch (curWeaponID) {
 		case AW_Knife:
@@ -388,7 +389,8 @@ class ToM_AlicePlayer : DoomPlayer
 			break;
 		}
 
-		bool pressingAttack = (player.cmd.buttons & BT_ATTACK) || (player.cmd.buttons & BT_ALTATTACK);
+		//bool pressingAttack = (player.cmd.buttons & BT_ATTACK) || (player.cmd.buttons & BT_ALTATTACK);
+
 		// only play the attack animation if it's either not yet playing,
 		// or the player keeps pressing fire (for autofire weapons):
 		if (targetstate && (player.attackdown || !InStateSequence(curstate, targetState)))
@@ -790,19 +792,19 @@ class ToM_AlicePlayer : DoomPlayer
 		TNT1 A 0 { return spawnstate; }
 	WalkSmall:
 		M001 ABCDEFGHIJKLMNOPQRST 1 UpdateMovementSpeed(LF_WalkSmall);
-		TNT1 A 0 { return s_walk_smallweapon; }
+		loop;
 	RunSmall:
 		M002 ABCDEFGHIJKL 2 UpdateMovementSpeed(LF_RunSmall);
-		TNT1 A 0 { return s_run_smallweapon; }
+		loop;
 	WalkBig:
 		M003 ABCDEFGHIJKLMNOPQRST 1 UpdateMovementSpeed(LF_WalkBig);
-		TNT1 A 0 { return s_walk_bigweapon; }
+		loop;
 	RunBig:
 		M004 ABCDEFGHIJKL 2 UpdateMovementSpeed(LF_RunBig);
-		TNT1 A 0 { return s_run_bigweapon; }
+		loop;
 	Swim:
 		M009 ABCDEFGHIJKLMNOPQRSTU 1 UpdateMovementSpeed();
-		TNT1 A 0 { return s_swim; }
+		loop;
 
 	Melee:
 		stop;

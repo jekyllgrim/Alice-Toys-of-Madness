@@ -153,6 +153,11 @@ class ToM_Cards : ToM_BaseWeapon
 				
 				dmg = 4 * Clamp(invoker.cardDamage[cardId], 1, 10);
 				spritename = invoker.cardSpriteName[cardId];
+				if (tom_debugmessages)
+				{
+					string cs = ""..spritename;
+					console.printf("Card layer %d: sprite %s | damage %d", invoker.curCardLayer, cs, dmg);
+				}
 			}
 			
 			let sprt = GetSpriteIndex(spritename);

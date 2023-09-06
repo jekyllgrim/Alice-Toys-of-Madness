@@ -546,9 +546,9 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		if (alt)
 			A_FadeOut(0.07);
 		roll += 11;
-		vector3 projpos = ToM_UtilsP.GetRelativePosition(self, (-TRAILOFS, -TRAILOFS, 0));
+		vector3 projpos = ToM_UtilsP.RelativeToGlobalCoords(self, (-TRAILOFS, -TRAILOFS, 0));
 		Spawn("ToM_EStrail", projpos);
-		projpos = ToM_UtilsP.GetRelativePosition(self, (-TRAILOFS, TRAILOFS, 0));
+		projpos = ToM_UtilsP.RelativeToGlobalCoords(self, (-TRAILOFS, TRAILOFS, 0));
 		Spawn("ToM_EStrail", projpos);
 	}
 	

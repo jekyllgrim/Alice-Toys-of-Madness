@@ -80,8 +80,8 @@ class ToM_UtilsP
 	static clearscope int PointOnLineSide( Vector2 p, Line l ) 
 	{
 		if ( !l ) return 0;
-		//return (((p.y-l.v1.p.y)*l.delta.x+(l.v1.p.x-p.x)*l.delta.y) > double.epsilon);	
-		return LevelLocals.PointOnLineSide(p, l);
+		return (((p.y-l.v1.p.y)*l.delta.x+(l.v1.p.x-p.x)*l.delta.y) > double.epsilon);	
+		//return LevelLocals.PointOnLineSide(p, l);
 	}
 	
 	//Returns -1 if the box (normally an actor's radius) intersects a linedef:

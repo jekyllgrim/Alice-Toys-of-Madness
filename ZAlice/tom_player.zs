@@ -51,10 +51,9 @@ class ToM_AlicePlayer : DoomPlayer
 	state s_atk_blunderbuss;
 	state s_swim;
 	state s_jump;
-	state s_jump_end;
 
 	private int curWeaponID;
-	private vector3 prevMoveDir;
+	private vector2 prevMoveDir;
 
 	private int airJumps;
 	private int airJumpTics;
@@ -331,7 +330,7 @@ class ToM_AlicePlayer : DoomPlayer
 		if (player.cmd.buttons & BT_ATTACK || player.cmd.buttons & BT_ALTATTACK)
 			return;
 		
-		if (InStateSequence(curstate, s_jump) || InStateSequence(curstate, s_jump_end))
+		if (InStateSequence(curstate, s_jump))
 			return;
 
 		state targetstate = PickMovementState();
@@ -425,13 +424,6 @@ class ToM_AlicePlayer : DoomPlayer
 		s_atk_blunderbuss = ResolveState("Attack_Blunderbuss");
 		s_swim = ResolveState("Swim");
 		s_jump = ResolveState("Jump");
-		s_jump_end = ResolveState("JumpEnd");
-	}
-	
-	override void Tick()
-	{
-		super.Tick();
-		UpdateWeaponModel();
 	}
 
 	override void PlayerThink()
@@ -440,21 +432,20 @@ class ToM_AlicePlayer : DoomPlayer
 
 		let player = self.player;
 		if (!player)
-			return;
+			return;		
+		
+		UpdateWeaponModel();
 
-		// make the model face the direction of movement:
-		if (!InStateSequence(curstate, missilestate))
+		// If firing, face the angle (no direction);
+		if (InStateSequence(curstate, missilestate))
 		{
-			if (vel.Length() > 0)
-				prevMoveDir = Level.Vec3Diff(pos, pos + vel);
-			spriteRotation = (prevMoveDir == (0,0,0)) ? 0 : atan2(prevMoveDir.y, prevMoveDir.x) - angle;
+			prevMoveDir = (0,0);
 		}
-		else
+		else if (vel.xy.Length() > 0)
 		{
-			spriteRotation = 0;
-			prevMoveDir = (0,0,0);
+			prevMoveDir = Level.Vec2Diff(pos.xy, pos.xy + vel.xy);
 		}
-
+		spriteRotation = (prevMoveDir == (0,0)) ? 0 : atan2(prevMoveDir.y, prevMoveDir.x) - angle;
 		//console.printf("Player z: %.1f | floorz: %.1f | jumptics: %d", pos.z, floorz, player.jumptics);
 
 		if (airJumpTics > 0)
@@ -557,7 +548,7 @@ class ToM_AlicePlayer : DoomPlayer
 				Thrust(sidemove, a);
 			}
 
-			SetState(s_jump);
+			SetStateLabel("JumpAir");
 
 			//console.printf("doing jump %d", airJumps);
 
@@ -791,55 +782,97 @@ class ToM_AlicePlayer : DoomPlayer
 	//	M000 ABCDEFGHIJKLMLKJIHGFEDCB 2;
 		TNT1 A 0 { return spawnstate; }
 	WalkSmall:
-		M001 ABCDEFGHIJKLMNOPQRST 1 UpdateMovementSpeed(LF_WalkSmall);
+		M000 LMNOPQRSTUVWXYZ 1 UpdateMovementSpeed(LF_WalkSmall);
+		M001 ABCDE 1 UpdateMovementSpeed(LF_WalkSmall);
 		loop;
 	RunSmall:
-		M002 ABCDEFGHIJKL 2 UpdateMovementSpeed(LF_RunSmall);
+		M001 FGHIJKLMNOPQ 2 UpdateMovementSpeed(LF_RunSmall);
 		loop;
 	WalkBig:
-		M003 ABCDEFGHIJKLMNOPQRST 1 UpdateMovementSpeed(LF_WalkBig);
+		M001 RSTUVWXYZ 1 UpdateMovementSpeed(LF_WalkBig);
+		M002 ABCDEFGHIJK 1 UpdateMovementSpeed(LF_WalkBig);
 		loop;
 	RunBig:
-		M004 ABCDEFGHIJKL 2 UpdateMovementSpeed(LF_RunBig);
+		M002 LMNOPQRSTUVW 2 UpdateMovementSpeed(LF_RunBig);
 		loop;
 	Swim:
-		M009 ABCDEFGHIJKLMNOPQRSTU 1 UpdateMovementSpeed();
+		M005 QRSTUVWXYZ 1 UpdateMovementSpeed();
+		M006 ABCDEFGHIJK 1 UpdateMovementSpeed();
 		loop;
 
 	Melee:
 		stop;
 	Missile:	
 	Attack_Knife:
-		M011 ABCDEFGHIJKLMNOPQRSTU 1;
-		TNT1 A 0 { return spawnstate; }
+		M006 UVWXYZ 1;
+		M007 ABCDEFGHIJKLMNO 1;
+		#### # 0 { return spawnstate; }
 	Attack_Horse:
-		M012 ABCDEFGHIJKLMNOP 2;
-		TNT1 A 0 { return spawnstate; }
+		M007 PQRSTUVWXYZ 2;
+		M008 ABCDE 2;
+		#### # 0 { return spawnstate; }
 	Attack_Cards:
-		M014 ABCDEFGHIJKLMN 2;
-		TNT1 A 0 { return spawnstate; }
+		M008 HIJKLMNOPQRSTU 2;
+		#### # 0 { return spawnstate; }
 	Attack_PGrinder:
-		M013 A 10;
-		M013 A 10;
-		TNT1 A 0 { return spawnstate; }
+		M008 F 20;
+		#### # 0 { return spawnstate; }
 	Attack_Teapot:
-		M015 ABCDEFGH 1;
-		M015 HGFEDCB 2;
-		M015 A 10;
-		TNT1 A 0 { return spawnstate; }
+		M008 VWXYZ 1;
+		M009 ABC 1;
+		M009 BA 2;
+		M008 ZYXW 2;
+		M008 V 10;
+		#### # 0 { return spawnstate; }
 	Attack_Eyestaff:
-		M016 A 10;
-		M016 A 10;
-		TNT1 A 0 { return spawnstate; }
+		M009 D 20;
+		#### # 0 { return spawnstate; }
 	Attack_Blunderbuss:
-		M017 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
-		M018 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
-		M019 ABCDEFGHIJKLMNOPQRSTU 1;
-		TNT1 A 0 { return spawnstate; }
+		M009 FGHIJKLMNOPQRSTUVWXYZ 2;
+		M010 ABCDE 2;
+		M010 FGHIJKLMNOPQRSTUVWXYZ 1;
+		M011 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
+		#### # 0 { return spawnstate; }
 		stop;
 	
+	Jump:
+		M006 LMNO 1;
+		M006 OPQRST 1
+		{
+			if (player.onGround)
+				return ResolveState("JumpEnd");
+			return ResolveState(null);
+		}
+	JumpLoop:
+		M012 ABCDE 2 
+		{
+			if (player.onGround)
+				return ResolveState("JumpEnd");
+			return ResolveState(null);
+		}
+		#### # 0 { return ResolveState("JumpLoop"); }
+	JumpAir:
+		M012 FGH 2
+		{
+			if (player.onGround)
+				return ResolveState("JumpEnd");
+			return ResolveState(null);
+		}
+	JumpAirLoop:
+		M012 IJKL 2
+		{
+			if (player.onGround)
+				return ResolveState("JumpEnd");
+			return ResolveState(null);
+		}
+		loop;
+	JumpEnd:
+		M012 MNOPQRSTUV 1;
+		goto Spawn;
+	
 	Pain:
-		M005 ABCDEFGHIJKLM 1;
+		M002 XYZ 1;
+		M003 ABCDEFGHIJ 1;
 		Goto Spawn;
 		
 	Death:
@@ -848,8 +881,8 @@ class ToM_AlicePlayer : DoomPlayer
 			A_PlayerScream();
 			A_NoBlocking();
 		}
-		M006 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
-		M007 ABCDEFGHIJ 1;
+		M003 KLMNOPQRSTUVWXYZ 1;
+		M004 ABCDEFGHIJKLMNOPQRST 1;
 		#### # -1;
 		Stop;
 	XDeath:
@@ -858,22 +891,10 @@ class ToM_AlicePlayer : DoomPlayer
 			A_PlayerScream();
 			A_NoBlocking();
 		}
-		M008 ABCDEFGHIJKLMNOPQRSTUV 1;
+		M004 UVWXYZ 1;
+		M005 ABCDEFGHIJKLMNOP 1;
 		#### # -1;
 		Stop;
-	
-	Jump:
-		M010 ABCDEFGH 1;
-		M010 I 1
-		{
-			if (player.onGround)
-				return ResolveState("JumpEnd");
-			return ResolveState(null);
-		}
-		wait;
-	JumpEnd:
-		M010 HGFEDCBA 1;
-		goto Spawn;
 	}
 }
 

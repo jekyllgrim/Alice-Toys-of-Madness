@@ -1136,11 +1136,12 @@ class ToM_PiercingProjectile : ToM_Projectile
 {
 	array <Actor> hitvictims;
 	
-	virtual void HitVictim(Actor victim)	{}
+	virtual void HitVictim(Actor victim)
+	{}
 	
 	virtual bool CheckValid(Actor victim)
 	{
-		return (!target || victim != target) && (victim.bSHOOTABLE || victim.bVULNERABLE) && victim.health > 0;
+		return (!target || victim != target) && victim.bSHOOTABLE && victim.health > 0;
 	}
 	
 	override int SpecialMissileHit(actor victim)

@@ -242,10 +242,11 @@ class ToM_AlicePlayer : DoomPlayer
 		return targetState;
 	}
 
-	void UpdateMovementSpeed(int lastframe = 0, int mintics = 1, int maxtics = 4)
+	void UpdateMovementSpeed(int mintics = 1, int maxtics = 4)
 	{
-		//int targetTics = int(ToM_UtilsP.LinearMap(vel.length(), 0, 10, maxtics, Clamp(mintics, 1, 100), true));
-		//A_SetTics(targetTics)
+//		int targetTics = int(ToM_UtilsP.LinearMap(vel.length(), 0, 10, 8, 1));
+//		targetTics = Clamp(targetTics, mintics, maxtics);
+//		A_SetTics(targetTics);
 
 //		if (lastframe > 0)
 //		{
@@ -454,18 +455,22 @@ class ToM_AlicePlayer : DoomPlayer
 		if (player.onground || waterlevel > 0)
 			airJumps = 0;
 
-		double lim = -12;
-		double downlim = -4;
-		double downfac = 6;
+		double downlim = -6;
+		double downfac = 2.6;
+		double uplim = 6;
+		double upfac = -1.2;
 
 		int jumptics = player.jumptics;
-		if (jumptics < 0 && jumptics >= lim)
+		if (jumptics != 0)
 		{
-			if (jumptics >= downlim)
+			if (jumptics >= downlim && jumptics < 0)
 				player.viewz += jumptics * downfac;
 			
-			else
-				player.viewz += ToM_UtilsP.LinearMap(jumptics, downlim, lim, downlim * downfac, 0, true);
+			if (jumptics <= uplim && jumptics > 0)
+				player.viewz += jumptics * upfac;
+			
+			//else if (jumptics > 0)
+			//	player.viewz += ToM_UtilsP.LinearMap(jumptics, downlim, lim, downlim * downfac, 0, true);
 
 			//double vz = player.viewz - pos.z;
 		}
@@ -482,23 +487,27 @@ class ToM_AlicePlayer : DoomPlayer
 
 		let bob = super.BobWeapon(ticfrac);
 
-		int lim = -12;
 		int downlim = -4;
+		int uplim = 6;
 		double downfac = -1.85;
-		if (player && player.jumptics < 0 && player.jumptics >= lim)
+		double upfac = 1.2;
+		int jumptics = player.jumptics;
+		if (player && jumptics != 0)
 		{
 			double prevboby;
 			double boby;
-			if (player.jumptics >= downlim)
+			
+			if (jumptics >= downlim && jumptics < 0)
 			{
 				prevboby = (player.jumptics - 1) * downfac;
 				boby = player.jumptics * downfac;
 			}
-			else
+			
+			if (jumptics <= uplim && jumptics > 0)
 			{
-				prevboby = ToM_UtilsP.LinearMap(player.jumptics - 1, downlim, lim, downlim * downfac, 0, true);
-				boby = ToM_UtilsP.LinearMap(player.jumptics, downlim, lim, downlim * downfac, 0, true);
-			}				
+				prevboby = (player.jumptics - 1) * upfac;
+				boby = player.jumptics * upfac;
+			}
 			
 			return (bob.x, boby * (1. - ticfrac) + prevboby * ticfrac);
 		}
@@ -650,22 +659,69 @@ class ToM_AlicePlayer : DoomPlayer
 		}
 
 		player.onground = (pos.z <= floorz) || bOnMobj || bMBFBouncer || (player.cheats & CF_NOCLIP2);
+		
+		// [AA] If the player just landed after a jump and
+		// isn't trying to move, aggressively reduce velocity
+		// to avoid uncontrollable after-jump sliding:
+		bool doBrake;
+		if (player.onground && !waterlevel && player.jumptics > 0)
+		{
+			// If the player isn't pressing movement keys
+			// at all, let them brake:
+			if (!(cmd.sidemove | cmd.forwardmove))
+			{
+				doBrake = true;
+			}
+			else 
+			{
+				// Compare velocity to controls. If the player is pressing
+				// movement keys in the opposite direction of their
+				// current movement, let them brake:
+				let hvel = ToM_UtilsP.RelativeToGlobalCoords(self, vel, false);
+				vector2 movevel;
+				moveVel.x = ToM_UtilsP.LinearMap(cmd.forwardmove, -12800, 12800, -hvel.x, hvel.x, true);
+				moveVel.y = ToM_UtilsP.LinearMap(cmd.sidemove, -12800, 12800, -hvel.y, hvel.y, true);
+				if ( (movevel.x > 0 && hvel.x < 0 || movevel.x < 0 && hvel.x > 0) || (movevel.x > 0 && hvel.x < 0 || movevel.x < 0 && hvel.x > 0) )
+				{
+					//console.printf("forwardmove/sidemove: %.2f, %.2f | vel.xy: %.2f, %.2f", movevel.x, movevel.y, hvel.x, hvel.y);
+					doBrake = true;
+				}
+			}
+		}
+		// Aggressive braking:
+		if (doBrake)
+		{
+			vel.xy *= 0.72;
+		}
 
 		if (cmd.forwardmove | cmd.sidemove)
 		{
 			double forwardmove, sidemove;
-			double bobfactor;
 			double friction, movefactor;
+			double bobfactor;
 			double fm, sm;
-
+		
 			[friction, movefactor] = GetFriction();
+
 			bobfactor = friction < ORIG_FRICTION ? movefactor : ORIG_FRICTION_FACTOR;
-			// [JGP] Only had to override this to add this feature:
-			if (!player.onground && !bNoGravity && !waterlevel && airJumpTics <= 0)
+			// [AA] Changes to aircontrol application:
+			if (!player.onground && !bNoGravity && !waterlevel)
 			{
-				// [RH] allow very limited movement if not on ground.
-				movefactor *= level.aircontrol;
-				bobfactor*= level.aircontrol;
+				double aircontrol = level.aircontrol;
+				// [AA] increased aircontrol during jumping:
+				if (player.jumptics < 0)
+				{
+					aircontrol *= 50;
+				}
+				// [AA] Aircontrol doesn't apply for a few tics after
+				// an air jump (see airJumpTics), to let the player
+				// reorient themselves when performing it:
+				if (airJumpTics <= 0)
+				{
+					movefactor *= aircontrol;
+					bobfactor*= aircontrol;
+				}
+				//console.printf("jumptics: %d | movefactor: %.2f | aircontrol: %.8f | level.aircontrol: %.8f", player.jumptics, aircontrol, level.aircontrol, movefactor);
 			}
 
 			fm = cmd.forwardmove;
@@ -684,7 +740,7 @@ class ToM_AlicePlayer : DoomPlayer
 
 			forwardmove = fm * movefactor * (35 / TICRATE);
 			sidemove = sm * movefactor * (35 / TICRATE);
-
+			
 			if (forwardmove)
 			{
 				Bob(Angle, cmd.forwardmove * bobfactor / 256., true);
@@ -696,6 +752,8 @@ class ToM_AlicePlayer : DoomPlayer
 				Bob(a, cmd.sidemove * bobfactor / 256., false);
 				Thrust(sidemove, a);
 			}
+			
+			// [AA] Slow down the player just after jump if they're not pressing movement keys
 
 			if (!(player.cheats & CF_PREDICTING) && (forwardmove != 0 || sidemove != 0))
 			{
@@ -764,14 +822,6 @@ class ToM_AlicePlayer : DoomPlayer
 			}
 		}
 	}
-
-	enum EMoveFrames
-	{
-		LF_WalkSmall = 19, // T
-		LF_RunSmall = 11, // L
-		LF_WalkBig = 19, // T
-		LF_RunBig = 11, // L
-	}
 	
 	States {
 	Move:
@@ -780,20 +830,20 @@ class ToM_AlicePlayer : DoomPlayer
 	//	M100 A 30;
 	//Idle:
 	//	M000 ABCDEFGHIJKLMLKJIHGFEDCB 2;
-		TNT1 A 0 { return spawnstate; }
+		loop;
 	WalkSmall:
-		M000 LMNOPQRSTUVWXYZ 1 UpdateMovementSpeed(LF_WalkSmall);
-		M001 ABCDE 1 UpdateMovementSpeed(LF_WalkSmall);
+		M000 LMNOPQRSTUVWXYZ 1 UpdateMovementSpeed();
+		M001 ABCDE 1 UpdateMovementSpeed();
 		loop;
 	RunSmall:
-		M001 FGHIJKLMNOPQ 2 UpdateMovementSpeed(LF_RunSmall);
+		M001 FGHIJKLMNOPQ 2 UpdateMovementSpeed(2);
 		loop;
 	WalkBig:
-		M001 RSTUVWXYZ 1 UpdateMovementSpeed(LF_WalkBig);
-		M002 ABCDEFGHIJK 1 UpdateMovementSpeed(LF_WalkBig);
+		M001 RSTUVWXYZ 1 UpdateMovementSpeed();
+		M002 ABCDEFGHIJK 1 UpdateMovementSpeed();
 		loop;
 	RunBig:
-		M002 LMNOPQRSTUVW 2 UpdateMovementSpeed(LF_RunBig);
+		M002 LMNOPQRSTUVW 2 UpdateMovementSpeed(2);
 		loop;
 	Swim:
 		M005 QRSTUVWXYZ 1 UpdateMovementSpeed();

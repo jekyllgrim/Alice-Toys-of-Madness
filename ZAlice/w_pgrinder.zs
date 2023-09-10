@@ -61,18 +61,24 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		A_ResetPSprite(APSP_TopFX);
 	}
 	
-	action void A_FirePepperGun(double spread = 2, double spawnheight = 5.5, double spawnofs_xy = 5.7, bool hitscan = true)
+	action Actor A_FirePepperGun(double spread = 2, double spawnheight = 5.5, double spawnofs_xy = 5.7, bool hitscan = true)
 	{
 		double angleofs = frandom[ppgr](-spread,spread);
 		double pitchofs = frandom[ppgr](-spread,spread);
 		A_StartSound("weapons/pgrinder/fire", flags: CHANF_OVERLAP);
-		let proj = A_FireProjectile(
+
+		// spawn projectiles unconditionally:
+		Actor p1, proj;
+		[p1, proj] = A_FireProjectile(
 			"ToM_PepperProjectile", 
 			angle: angleofs,
 			spawnofs_xy: spawnofs_xy + frandom[ppgr](-0.5,0.5),
 			spawnheight: spawnheight + frandom[ppgr](-1,1),
 			pitch: pitchofs
 		);		
+
+		// in hitscan mode (primary attack) the projectilles
+		// are still used but only for visuals:
 		if (hitscan)
 		{
 			A_FireBullets(angleofs, pitchofs, -1, int(3 * frandom(1., 8.)), "", FBF_NORANDOM|FBF_EXPLICITANGLE);
@@ -87,20 +93,23 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 				proj.A_SetSize(1, 1);
 			}
 		}
+		return proj;
 	}
-	
-	action void A_FirePepperSpray()
-	{
-		for (int i = 0; i < 10; i++)
-		{
-			A_FirePepperGun(6);
-		}
-		return;
 
-		let proj = A_Fire3DProjectile("ToM_PepperBomb", forward: 8, leftright:11, updown:-16);
-		if (proj)
+	action void A_FirePepperSpray(double spread = 2, double spawnheight = 5.5, double spawnofs_xy = 5.7, int projectiles = 10)
+	{
+		for (int i = 0; i < projectiles; i++)
 		{
-			proj.A_StartSound("weapons/pgrinder/spray", pitch:0.6);
+			let proj = A_FirePepperGun(spread, spawnheight, spawnofs_xy, hitscan: false);
+			if (proj)
+			{
+				proj.vel = proj.vel.Unit() * 35;
+				proj.bNOGRAVITY = false;
+				proj.gravity = 0.5;
+				proj.bBOUNCEONFLOORS = true;
+				proj.bBOUNCEONWALLS = true;
+				proj.bBOUNCEONCEILINGS = true;
+			}
 		}
 		A_QuakeEX(1,1,0,4,0,1, sfx:"world/null", flags:QF_SCALEDOWN);
 	}
@@ -265,7 +274,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	AltFireDo:
 		PPGR Y 1 
 		{
-			A_FirePepperSpray();
+			A_FirePepperSpray(6);
 			A_OverlayPivot(OverlayID(), 0.1, 0.8);
 		}
 		PPGR YYYY 1 
@@ -293,7 +302,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	}
 }
 
-class ToM_PepperProjectile : ToM_Projectile
+class ToM_PepperProjectile : ToM_PiercingProjectile
 {
 	static const color pcolor[] =
 	{
@@ -301,20 +310,43 @@ class ToM_PepperProjectile : ToM_Projectile
 		"fb4834",
 		"251308"
 	};
+
+	override void HitVictim(Actor victim)
+	{
+		if (self && victim && target)
+		{
+			victim.DamageMobj(self, target, damage, 'Pepper');
+			victim.TraceBleed(damage, self);
+			victim.SpawnBlood(pos, AngleTo(victim), damage);
+			bMISSILE = false;
+			bCORPSE = true;
+		}
+	}
+	
+	override int SpecialMissileHit(actor victim)
+	{
+		if (bNOGRAVITY)
+			return -1;
+		
+		return super.SpecialMissileHit(victim);
+	}
 	
 	Default
 	{
+		mass 1;
 		renderstyle 'Normal';
 		scale 0.16;
 		+FORCEXYBILLBOARD
 		+ROLLCENTER
+		BounceFactor 0.2;
 		seesound "";
 		deathsound "";
 		damagetype 'Pepper';
 		//ToM_Projectile.ShouldActivateLines true;
 		ToM_Projectile.flarecolor "fb4834";
 		ToM_Projectile.trailcolor "fb4834";
-		damage 3;
+		ToM_Projectile.flarescale 0.12;
+		damage 15;
 		speed 60;
 	}
 	
@@ -328,8 +360,29 @@ class ToM_PepperProjectile : ToM_Projectile
 	States
 	{
 	Spawn:
-		APPC A 1 { roll + wrot; }
+		APPC A 1 
+		{
+			A_SetRoll(roll + wrot, SPF_INTERPOLATE);
+			if (bMISSILE && !bNOGRAVITY && vel.length() <= 3)
+			{
+				bMISSILE = false;
+				bCORPSE = true;
+			}
+		}
 		loop;
+	Crash:
+		TNT1 A 0 
+		{ 
+			trailcolor = "";
+			flarecolor = "";
+		}
+		APPC A 1 
+		{ 
+			scale *= 0.92;
+			if (scale.x < default.scale.x * 0.1)
+				Destroy();
+		}
+		wait;
 	Death:
 		TNT1 A 1
 		{
@@ -370,14 +423,9 @@ class ToM_PepperPuff : ToM_BasePuff
 	}
 }
 
-class ToM_PepperProjectileVisual : ToM_PepperProjectile
-{	
-	Default
-	{
-		speed 150;
-		damage 0;
-	}
-}
+// Unused alt attack that causes monsters to stumble and cough
+
+/*
 
 class ToM_PepperBomb : ToM_PiercingProjectile
 {
@@ -451,11 +499,11 @@ class ToM_PepperBomb : ToM_PiercingProjectile
 		let smk = ToM_WhiteSmoke.Spawn(
 			pos,
 			ofs: sofs,
-			/*vel: (
-				frandom[pbom](-svel,svel),
-				frandom[pbom](-svel,svel),
-				frandom[pbom](-svel,svel)
-			),*/
+//			vel: (
+//				frandom[pbom](-svel,svel),
+//				frandom[pbom](-svel,svel),
+//				frandom[pbom](-svel,svel)
+//			),
 			scale: sscale,
 			alpha: salpha,
 			fade: 0.02,

@@ -341,9 +341,11 @@ Model ToM_AlicePlayer
 	FrameIndex	M012	C	0	315
 	FrameIndex	M012	D	0	316
 	FrameIndex	M012	E	0	317
+	// jump - leg forward
 	FrameIndex	M012	F	0	318
 	FrameIndex	M012	G	0	319
 	FrameIndex	M012	H	0	320
+	// jump - leg forward loop
 	FrameIndex	M012	I	0	321
 	FrameIndex	M012	J	0	322
 	FrameIndex	M012	K	0	323

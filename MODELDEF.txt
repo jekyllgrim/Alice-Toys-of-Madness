@@ -1,6 +1,5 @@
 #include "Models/Alice/MODELDEF.aliceplayer"
 #include "Models/Characters/Cheshire/Modeldef.CheshireCat"
-#include "Models/Characters/Cardguard/MODELDEF.cardguard"
 
 Model ToM_KnifeProjectileModel 
 {

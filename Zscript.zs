@@ -2,7 +2,6 @@ version "4.10"
 
 #include "ZAlice/tom_constants.zs"
 #include "ZAlice/tom_main.zs"
-#include "ZAlice/tom_monster.zs"
 #include "ZAlice/tom_events.zs"
 #include "ZAlice/tom_items.zs"
 #include "ZAlice/tom_ammo.zs"

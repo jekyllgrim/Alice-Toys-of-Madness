@@ -1,6 +1,7 @@
 version "4.10"
 
 #include "ZAlice/tom_constants.zs"
+#include "ZAlice/tom_menu.zs"
 #include "ZAlice/tom_main.zs"
 #include "ZAlice/tom_events.zs"
 #include "ZAlice/tom_items.zs"
@@ -21,6 +22,7 @@ version "4.10"
 
 #include "ZAlice/tom_cat.zs"
 
+#include "ZAlice/StatusBarScreen/StatusScreen_base.zsc"
 #include "ZAlice/GZBeamz/laser_math.zsc"
 #include "ZAlice/GZBeamz/laser_base.zsc"
 #include "ZAlice/ToM_Gutamatics/GlobalMaths.zsc"

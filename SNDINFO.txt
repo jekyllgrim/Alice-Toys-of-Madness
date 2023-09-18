@@ -1,5 +1,14 @@
 misc/teleport "sounds/player/respawn.ogg"
 
+// MENU
+
+menu/cursor		"sounds/menu/hover_mainmenu.wav"
+menu/activate	"sounds/menu/click_1.wav"
+menu/choose		"sounds/menu/gong.wav"
+menu/backup		"sounds/menu/click_4.wav"
+menu/clear		"sounds/menu/click_4.wav"
+menu/quit		"sounds/menu/click_1.wav"
+
 // ALICE
 
 $playeralias		player	male	*death		alice/death

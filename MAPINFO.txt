@@ -4,4 +4,13 @@ Gameinfo
 	AddEventhandlers = "ToM_Mainhandler", "ToM_Animated_Handler"
 	StatusBarClass = "ToM_AliceHUD"
 	ArmorIcons = "ACARM_1", 0.5, "ACARM_2"
+	TitleMusic = "music/alice_title.mp3"
+	QuitMessages = "Running away, are we?"
+	QuitSound = "menu/quit"
+}
+
+Map TITLEMAP ""
+{
+	EventHandlers = "ToM_MenuBackGroundHandler"
+	Music = "music/alice_title.mp3"
 }

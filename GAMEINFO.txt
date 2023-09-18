@@ -1,0 +1,2 @@
+STARTUPTITLE="Alice: Toys of Madness © Agent_Ash aka jekyllgrim"
+STARTUPCOLORS="8080CC","000000"

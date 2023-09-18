@@ -1,0 +1,25 @@
+DefaultListMenu
+{
+	Font "AsrafelGreyBO", "Untranslated", "White"
+	Selector "", 0, 0
+}
+
+ListMenu "MainMenu"
+{
+	size 860, 480
+	LineSpacing 32
+	ForceList
+
+	ToM_DrawMainMenuBackground 0, 0
+
+	Position 85, 30
+	TextItem  "$MNU_NEWGAME", "", "PlayerclassMenu"
+	Position 40, 113
+	TextItem  "$MNU_LOADGAME", "", "LoadGameMenu"
+	Position 163, 208
+	TextItem  "$MNU_SAVEGAME", "", "SaveGameMenu"
+	Position 80, 306
+	TextItem  "$MNU_OPTIONS", "", "OptionsMenu"
+	Position 236, 393
+	TextItem  "$MNU_QUITGAME", "", "QuitMenu"
+}

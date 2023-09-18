@@ -193,7 +193,7 @@ class ToM_UtilsP
 		Quat dir = Quat.FromAngles(mo.angle, mo.pitch, mo.roll);
 		vector3 ofs = dir * (offset.x, -offset.y, offset.z);
 		if (isPosition)
-			return level.vec3offset(isPosition ? mo.pos : offset, ofs);
+			return level.vec3offset(mo.pos, ofs);
 		return ofs;
 	}
 }
@@ -1246,6 +1246,7 @@ Class ToM_BaseFlare : ToM_SmallDebris
 {
 	protected state mdeath;
 	protected state mxdeath;
+	protected state mcrash;
 	color fcolor;
 	property fcolor : fcolor;
 	bool style;
@@ -1288,6 +1289,7 @@ Class ToM_BaseFlare : ToM_SmallDebris
 		{
 			mdeath = master.FindState("Death");
 			mxdeath = master.FindState("XDeath");
+			mcrash = master.FindState("Crash");
 		}
 		SetColor();
 	}
@@ -1330,12 +1332,26 @@ Class ToM_BaseFlare : ToM_SmallDebris
 Class ToM_ProjFlare : ToM_BaseFlare 
 {
 	double xoffset;
+	double scaleDiff;
+
 	Default 
 	{
 		ToM_BaseFlare.fcolor "FF0000";
 		alpha 0.8;
-		scale 0.11;
+		scale 0.11;		
 	}
+
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		if (!master)
+		{
+			Destroy();
+			return;
+		}
+		scalediff = scale.x / max(master.scale.x, master.scale.y);
+	}
+
 	override void Tick() 
 	{
 		super.Tick();
@@ -1343,15 +1359,25 @@ Class ToM_ProjFlare : ToM_BaseFlare
 		{
 			destroy();
 			return;
-		}
+		}	
+
 		if (isFrozen())
 			return;
+
+		// sprite clipping:
+		bMissile = master.bMissile; 		
+		bCorpse = master.bCorpse;
+		bSpecialFloorclip = master.bSpecialFloorclip;
+
+		scale = master.scale * scalediff;
+
 		Warp(master,xoffset,0,0,flags:WARPF_INTERPOLATE);
-		/*if (master.InstateSequence(master.curstate,mdeath) || master.InstateSequence(master.curstate,mxdeath)) 
+		
+		if (master.InstateSequence(master.curstate, mdeath) || master.InstateSequence(master.curstate, mxdeath) || master.InstateSequence(master.curstate, mcrash)) 
 		{
 			Destroy();
 			return;
-		}*/
+		}
 	}
 }
 

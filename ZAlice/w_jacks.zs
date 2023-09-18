@@ -319,7 +319,7 @@ class ToM_JackProjectile : ToM_Projectile
 	Spawn:
 		AMRK A 1
 		{
-			if (vel.length() < 3 || age >= JLIFETIME)
+			if (bMISSILE && vel.length() < 3 || age >= JLIFETIME)
 			{
 				bMISSILE = false;	//stop bouncing and start sliding
 				return ResolveState("Death");

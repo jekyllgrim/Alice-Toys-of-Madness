@@ -497,21 +497,41 @@ class ToM_TeaBurnControl : ToM_ControlToken
 		}
 
 		if (timer % 4 == 0)
-		{
-			double rad = owner.radius*0.6;		
-			
+		{	
 			if (GetParticlesQuality() >= TOMPART_MED) 
 			{
-				ToM_WhiteSmoke.Spawn(
-					owner.pos + (
-						frandom[tsfx](-rad,rad), 
-						frandom[tsfx](-rad,rad), 
-						frandom[tsfx](owner.pos.z,owner.height*0.75)
-					), 
-					vel: (frandom[tsfx](-0.2,0.2),frandom[tsfx](-0.2,0.2),frandom[tsfx](0.5,1.2)),
-					scale: 0.15,
-					alpha: 0.2
+				double rad = owner.radius*0.6;
+				
+				FSpawnParticleParams smoke;
+				smoke.pos = owner.pos + (
+					frandom[tsfx](-rad,rad), 
+					frandom[tsfx](-rad,rad), 
+					frandom[tsfx](owner.pos.z,owner.height*0.75)
 				);
+				smoke.color1 = "";
+				smoke.texture = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
+				smoke.vel = (frandom[tsfx](-0.2,0.2),frandom[tsfx](-0.2,0.2),frandom[tsfx](0.5,1.2));
+				smoke.size = TexMan.GetSize(smoke.texture) * 0.15;
+				
+				smoke.flags = SPF_ROLL|SPF_REPLACE;
+				smoke.lifetime = 18;
+				smoke.sizestep = smoke.size * 0.03;
+				smoke.startalpha = 0.2;
+				smoke.fadestep = -1;
+				smoke.startroll = random[sfx](0, 359);
+				smoke.rollvel = frandom[sfx](0.5,1) * randompick[sfx](-1,1);
+				Level.SpawnParticle(smoke);
+			
+//				ToM_WhiteSmoke.Spawn(
+//					owner.pos + (
+//						frandom[tsfx](-rad,rad), 
+//						frandom[tsfx](-rad,rad), 
+//						frandom[tsfx](owner.pos.z,owner.height*0.75)
+//					), 
+//					vel: (frandom[tsfx](-0.2,0.2),frandom[tsfx](-0.2,0.2),frandom[tsfx](0.5,1.2)),
+//					scale: 0.15,
+//					alpha: 0.2
+//				);
 			}
 		}
 	}
@@ -572,13 +592,30 @@ class ToM_TeaProjectile : ToM_Projectile
 		TGLO ABCDEFGHIJ 2
 		{
 			if (GetAge() > 8)
-				ToM_WhiteSmoke.Spawn(
-					pos,
-					ofs:4,
-					vel: (frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2)),
-					scale: 0.15,
-					alpha: 0.4
-				);
+			{
+//				ToM_WhiteSmoke.Spawn(
+//					pos,
+//					ofs:4,
+//					vel: (frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2)),
+//					scale: 0.15,
+//					alpha: 0.4
+//				);
+				
+				FSpawnParticleParams smoke;
+				smoke.pos = pos;
+				smoke.color1 = "";
+				smoke.texture = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
+				smoke.vel = (frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2));
+				smoke.size = TexMan.GetSize(smoke.texture) * 0.15;				
+				smoke.flags = SPF_ROLL|SPF_REPLACE;
+				smoke.lifetime = 35;
+				smoke.sizestep = smoke.size * 0.03;
+				smoke.startalpha = 0.4;
+				smoke.fadestep = -1;
+				smoke.startroll = random[sfx](0, 359);
+				smoke.rollvel = frandom[sfx](0.5,1) * randompick[sfx](-1,1);
+				Level.SpawnParticle(smoke);
+			}
 		}
 		loop;
 	Death:

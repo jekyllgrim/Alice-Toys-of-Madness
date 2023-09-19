@@ -1,6 +1,6 @@
 DefaultListMenu
 {
-	Font "AsrafelGreyBO", "Untranslated", "White"
+	Font "AsrafelComplete", "Untranslated", "White"
 	Selector "", 0, 0
 }
 

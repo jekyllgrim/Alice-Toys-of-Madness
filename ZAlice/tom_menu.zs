@@ -78,6 +78,8 @@ class ToM_MenuCandleSmokeController ui
 			ofs.x += ofs_step.x;
 		}
 		ofs.y += ofs_step.y;
+		//ofs += ofs_step;
+		//ofs_step *= 0.99;
 
 		alpha += alpha_step;
 		scale = Clamp(scale + scale_step, 0, 100);
@@ -95,6 +97,12 @@ class ToM_MenuBackGroundHandler : EventHandler
 			MMD_Init();
 		else
 			MMD_Tick();
+		
+		/*let mnu = OptionMenu(Menu.GetCurrentMenu());
+		if (mnu)
+		{
+			console.printf("options menu open (%d)", mnu.MenuTime());
+		}*/
 	}
 
 	override void RenderOverlay(RenderEvent e)
@@ -111,8 +119,6 @@ mixin class ToM_MainMenuDrawer
 	ui TextureID tex_lightning;
 	ui TextureID smokeTex;
 	ui TextureID candleLighTex;
-	const ALICE_BG_X = 860;
-	const ALICE_BG_Y = 480;
 
 	ui int lightningDelay;
 	ui int lightningPhase;
@@ -157,32 +163,32 @@ mixin class ToM_MainMenuDrawer
 		
 		Screen.DrawTexture(tex_bg, false,
 			0, 0,
-			DTA_VirtualWidthF, ALICE_BG_X,
-			DTA_VirtualheightF, ALICE_BG_Y,
+			DTA_VirtualWidthF, size.X,
+			DTA_VirtualheightF, size.Y,
 			DTA_FullscreenScale, FSMode_ScaleToFit43
 		);
 
 		Screen.DrawTexture(tex_lightning, false,
 			0, 0,
-			DTA_VirtualWidthF, ALICE_BG_X,
-			DTA_VirtualheightF, ALICE_BG_Y,
+			DTA_VirtualWidthF, size.X,
+			DTA_VirtualheightF, size.Y,
 			DTA_Alpha, lightAlpha,
 			DTA_FullscreenScale, FSMode_ScaleToFit43
 		);
 
 		if (!smokeTex)
 			smokeTex = TexMan.CheckForTexture("SMO2C0");
-		vector2 smokePos = (-59.3, 46);
+		vector2 smokePos = (-60, 46);
 		for (int i = 0; i < smokeElements.Size(); i++)
 		{
 			let csc = smokeElements[i];
 			if (!csc)
 				continue;
 			Screen.DrawTexture(smokeTex, false,
-				ALICE_BG_X / 2 + (smokePos.x + csc.ofs.x),// * scale.x, 
-				ALICE_BG_Y / 2 + (smokePos.y + csc.ofs.y),// * scale.y,
-				DTA_VirtualWidthF, ALICE_BG_X,
-				DTA_VirtualheightF, ALICE_BG_Y,
+				size.X / 2 + (smokePos.x + csc.ofs.x),// * scale.x, 
+				size.Y / 2 + (smokePos.y + csc.ofs.y),// * scale.y,
+				DTA_VirtualWidthF, size.X,
+				DTA_VirtualheightF, size.Y,
 				DTA_ScaleX, csc.scale,
 				DTA_ScaleY, csc.scale,
 				DTA_Alpha, csc.alpha,
@@ -194,15 +200,29 @@ mixin class ToM_MainMenuDrawer
 			candleLighTex = TexMan.CheckForTexture("graphics/menu/menu_background_candlelight.png");
 		Screen.DrawTexture(candleLighTex, false,
 			0, 0,
-			DTA_VirtualWidthF, ALICE_BG_X,
-			DTA_VirtualheightF, ALICE_BG_Y,
+			DTA_VirtualWidthF, size.X,
+			DTA_VirtualheightF, size.Y,
 			DTA_Alpha, candleLightAlpha,
 			DTA_FullscreenScale, FSMode_ScaleToFit43
 		);
 	}
 
+	//ui double smoketime;
 	ui void MMD_Tick()
 	{
+		// smoke:
+		/*let csc = ToM_MenuCandleSmokeController.Create(
+			//pos 
+			(0, 0), (sin(smoketime) * 0.2, frandom[tomMenu](-0.8, -1)),
+			// scale
+			frandom[tomMenu](0.04, 0.06), 0.003,
+			// alpha
+			frandom[tomMenu](0.05, 0.15), -0.005,
+			//rotation
+			frandom[tomMenu](0, 360), frandom[tomMenu](-1, -4),
+			//return steps
+			random[tomMenu](24, 42)
+		);*/
 		let csc = ToM_MenuCandleSmokeController.Create(
 			//pos 
 			(0, 0), (frandom[tomMenu](-0.25,0.25), frandom[tomMenu](-0.7, -1)),
@@ -218,6 +238,7 @@ mixin class ToM_MainMenuDrawer
 		if (csc)
 		{
 			smokeElements.Push(csc);
+			//smoketime += 1;
 		}
 
 		// candle light flickering:

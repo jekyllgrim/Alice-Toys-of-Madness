@@ -4,6 +4,8 @@ Rogue Entertainment: American McGee's Alice
 
 Spicy Horse: Alice: Madness Returns
 
+Scriptorium: Asrafel font
+
 Lewisk3: GZBeamz API (https://github.com/Lewisk3/GZBeamz)
 
 Gutawer: Gutamatics API (https://gitlab.com/Gutawer/gzdoom-gutamatics/)

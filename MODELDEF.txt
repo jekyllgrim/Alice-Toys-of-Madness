@@ -176,7 +176,7 @@ Model "ToM_LaserBeam"
 	Skin 0 "beam.png"
 	USEACTORPITCH
 	
-	FrameIndex MODL A 0 0
+	FrameIndex M000 A 0 0
 }
 
 Model "ToM_EyestaffBeam"
@@ -191,12 +191,11 @@ Model "ToM_EyestaffBeam"
 
 Model ToM_EyestaffProjectile
 {
-	CORRECTPIXELSTRETCH
+	Path "models/Eyestaff"
+	Model 0 "eye_proj.obj"
 	DontCullBackfaces
 	UseActorRoll
 	UseActorPitch
-	Path "models/Eyestaff"
-	Model 0 "eye_proj.obj"
 	FrameIndex M000 A 0 0
 }
 

@@ -4,7 +4,7 @@ DefaultListMenu
 	Selector "", 0, 0
 }
 
-ListMenu "MainMenu"
+ListMenu "MainMenuTextOnly"
 {
 	size 860, 480
 	LineSpacing 32
@@ -22,4 +22,13 @@ ListMenu "MainMenu"
 	TextItem  "$MNU_OPTIONS", "", "OptionsMenu"
 	Position 236, 393
 	TextItem  "$MNU_QUITGAME", "", "QuitMenu"
+}
+
+ListMenu "SkillMenu"
+{
+	class "ToM_SkillMenu"
+	size 860, 480
+	LineSpacing 56
+	ForceList
+	//StaticTextCentered 440, 32, "$MNU_CHOOSESKILL", "White"
 }

@@ -1,3 +1,67 @@
+class ToM_SkillMenu : ListMenu 
+{
+	override void Drawer()
+	{
+		ToM_StatusBarScreen.Fill("000000",0,0, Screen.GetWidth(), Screen.GetHeight(),1);
+
+		int vHeight = mDesc.mVirtHeight;
+		int vWidth = mDesc.mVirtWidth / 2; //center of the menu
+		int y = vHeight / 4;
+		let mFont = mDesc.mFont;
+
+		for (int i = 0; i < mDesc.mItems.Size(); ++i)
+		{
+			let mItem = mDesc.mItems[i];
+			if (!mItem)
+				continue;
+	
+			// Draw the title at the top:
+			let title = ListMenuItemStaticText(mItem);
+			if (title)
+			{
+				string text = StringTable.Localize(title.mText);
+				vector2 textpos = ( (vWidth / 2) - (mFont.StringWidth(text) / 2), y / 2);
+				// draw the actual text:
+				Screen.DrawText(
+					mFont, 
+					Font.CR_Untranslated,
+					textpos.x, textpos.y, 
+					text, 
+					DTA_VirtualWidth, vWidth,
+					DTA_VirtualHeight, vHeight,
+					DTA_FullscreenScale, FSMode_ScaleToFit43
+				);
+			}
+			
+			// Draw the skills:
+			let item = ListMenuItemTextItem(mItem);
+			if (item)
+			{
+				// Set vertical collision for mouse selection:
+				item.SetY(y);
+				item.mHeight = mDesc.mLinespacing;
+
+				string text = StringTable.Localize(item.mText);
+				double textwidth = mFont.StringWidth(text);
+				vector2 textpos = ( (vWidth / 2) - (mFont.StringWidth(text) / 2), y);
+				
+				// Draw the skill text:
+				Screen.DrawText(
+					mFont, 
+					mDesc.mSelectedItem == i ? item.mColorSelected : mDesc.mFontColor,
+					textpos.x, textpos.y, 
+					text,
+					DTA_VirtualWidth, vWidth,
+					DTA_VirtualHeight, vHeight,
+					DTA_FullscreenScale, FSMode_ScaleToFit43
+				);
+
+				y += mDesc.mLinespacing;
+			}
+		}
+	}
+}
+
 class ListMenuItemToM_DrawMainMenuBackground : ListMenuItem 
 {
 	mixin ToM_MainMenuDrawer;
@@ -71,13 +135,14 @@ class ToM_MenuCandleSmokeController ui
 		age++;
 		if (age >= returnsteps)
 		{
-			ofs.x *= 0.94;
+			ofs.x *= 0.95;
 		}
 		else 
 		{
 			ofs.x += ofs_step.x;
 		}
 		ofs.y += ofs_step.y;
+		ofs_step *= 0.999;
 		//ofs += ofs_step;
 		//ofs_step *= 0.99;
 
@@ -211,29 +276,17 @@ mixin class ToM_MainMenuDrawer
 	ui void MMD_Tick()
 	{
 		// smoke:
-		/*let csc = ToM_MenuCandleSmokeController.Create(
-			//pos 
-			(0, 0), (sin(smoketime) * 0.2, frandom[tomMenu](-0.8, -1)),
-			// scale
-			frandom[tomMenu](0.04, 0.06), 0.003,
-			// alpha
-			frandom[tomMenu](0.05, 0.15), -0.005,
-			//rotation
-			frandom[tomMenu](0, 360), frandom[tomMenu](-1, -4),
-			//return steps
-			random[tomMenu](24, 42)
-		);*/
 		let csc = ToM_MenuCandleSmokeController.Create(
 			//pos 
-			(0, 0), (frandom[tomMenu](-0.25,0.25), frandom[tomMenu](-0.7, -1)),
+			(0, 0), (frandom[tomMenu](-0.2,0.2), frandom[tomMenu](-0.4, -0.5)),
 			// scale
 			frandom[tomMenu](0.04, 0.08), -0.002,
 			// alpha
-			frandom[tomMenu](0.15, 0.27), -0.01,
+			frandom[tomMenu](0.025, 0.1), -0.0045,
 			//rotation
 			frandom[tomMenu](0, 360), frandom[tomMenu](-1, -4),
 			//return steps
-			random[tomMenu](24, 42)
+			random[tomMenu](30, 90)
 		);
 		if (csc)
 		{

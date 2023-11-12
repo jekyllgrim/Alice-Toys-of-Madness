@@ -1,203 +1,3 @@
-class ToM_UtilsP
-{		
-	static clearscope int Sign (double i) 
-	{
-		return (i >= 0) ? 1 : -1;
-	}
-
-	static clearscope double LoopRange(double val, double min, double max)
-	{
-		if (val > max)
-			val = min;
-		else if (val < min)
-			val = max;
-		return val;
-	}
-
-	//By default returns true if ANY of the players has the item.
-	//If 'checkall' argument is true, the function returns true if ALL players have the item.
-	static clearscope bool CheckPlayersHave(Class<Inventory> itm, bool checkall = false)
-	{
-		if(!itm)
-			return false;
-		
-		// Check all: start with a TRUE; as soon as somebody is found
-		// to NOT have the item, flip to false and break.
-		// Otherwise: start with FALSE; as soon as somebody is found
-		// to HAVE the item, flip to true and break.
-		bool found = checkall;
-		for (int pn = 0; pn < MAXPLAYERS; pn++) 
-		{
-			if (!playerInGame[pn])
-				continue;
-			
-			PlayerInfo plr = players[pn];
-			if (!plr || !plr.mo)
-				continue;
-				
-			bool hasItem = plr.mo.CountInv(itm);
-			
-			// If we're checking anyone, as soon as somebody is found
-			// to have the item, return true:
-			if (!checkall) 
-			{
-				if (hasItem) {
-					if (tom_debugmessages > 1)
-						console.printf("Player %d has %s",plr.mo.PlayerNumber(),itm.GetClassName());
-					found = true;
-					break;
-				}
-			}
-			
-			// If we're checking everyone, as soon as somebody is found
-			// to NOT have the item, return false:
-			else if (!hasItem) 
-			{
-				if (tom_debugmessages > 1)
-					console.printf("Player %d doesn't have %s.",plr.mo.PlayerNumber(),itm.GetClassName());
-				found = false;
-				break;
-			}
-		}
-		return found;
-	}
-	
-	static clearscope double LinearMap(double val, double source_min, double source_max, double out_min, double out_max, bool clampit = false) 
-	{
-		double d = (val - source_min) * (out_max - out_min) / (source_max - source_min) + out_min;
-		if (clampit)
-		{
-			double truemax = out_max > out_min ? out_max : out_min;
-			double truemin = out_max > out_min ? out_min : out_max;
-			d = Clamp(d, truemin, truemax);
-		}
-		return d;
-	}
-		
-	// Checks which side of a lindef the actor is on:
-	// Unnecessary wrapper, since PointOnLineSide has since been
-	// added to GZDoom
-	static clearscope int PointOnLineSide( Vector2 p, Line l ) 
-	{
-		if ( !l ) return 0;
-		return (((p.y-l.v1.p.y)*l.delta.x+(l.v1.p.x-p.x)*l.delta.y) > double.epsilon);	
-		//return LevelLocals.PointOnLineSide(p, l);
-	}
-	
-	//Returns -1 if the box (normally an actor's radius) intersects a linedef:
-    static clearscope int BoxOnLineSide( double top, double bottom, double left, double right, Line l ) 
-	{
-		if ( !l ) return 0;
-		int p1, p2;
-		if ( l.delta.x == 0 ) 
-		{
-			// ST_VERTICAL:
-			p1 = (right < l.v1.p.x);
-			p2 = (left < l.v1.p.x);
-			if ( l.delta.y < 0 ) 
-			{
-				p1 ^= 1;
-				p2 ^= 1;
-			}
-		}
-		else if ( l.delta.y == 0 )	
-		{
-			// ST_HORIZONTAL:
-			p1 = (top > l.v1.p.y);
-			p2 = (bottom > l.v1.p.y);
-			if ( l.delta.x < 0 )		
-			{
-				p1 ^= 1;
-				p2 ^= 1;
-			}
-		}
-		else if ( (l.delta.x*l.delta.y) >= 0 )	
-		{
-			// ST_POSITIVE:
-			p1 = PointOnLineSide((left,top),l);
-			p2 = PointOnLineSide((right,bottom),l);
-		}
-		else 
-		{
-			// ST_NEGATIVE:
-			p1 = PointOnLineSide((right,top),l);
-			p2 = PointOnLineSide((left,bottom),l);
-		}
-		return (p1==p2)?p1:-1;
-	}
-	
-	static play vector3 FindRandomPosAround(vector3 actorpos, double rad = 512, double mindist = 16, double fovlimit = 0, double viewangle = 0, bool checkheight = false)
-	{
-		if (!level.IsPointInLevel(actorpos))
-			return actorpos;
-		
-		vector3 finalpos = actorpos;
-		double ofs = rad * 0.5;
-		// 64 iterations should be enough...
-		for (int i = 64; i > 0; i--)
-		{
-			// Pick a random position:
-			vector3 ppos = actorpos + (frandom[frpa](-ofs, ofs), frandom[frpa](-ofs, ofs), 0);
-			// Get the sector and distance to the point:
-			let sec = Level.PointinSector(ppos.xy);
-			double secfz = sec.NextLowestFloorAt(ppos.x, ppos.y, ppos.z);
-			let diff = LevelLocals.Vec2Diff(actorpos.xy, ppos.xy);
-			
-			// Check FOV, if necessary:
-			bool inFOV = true;
-			if (fovlimit > 0)
-			{
-				double ang = atan2(diff.y, diff.x);
-				if (Actor.AbsAngle(viewangle, ang) > fovlimit)
-					inFOV = false;
-			}			
-			
-			// We found suitable position if it's in the map,
-			// in view (optionally), on the same elevation
-			// (optionally) and not closer than necessary
-			// (optionally):
-			if (inFOV && Level.IsPointInLevel(ppos) && (!checkheight || secfz == actorpos.z) && (mindist <= 0 || diff.Length() >= mindist))
-			{
-				finalpos = ppos;
-				//console.printf("Final pos: %.1f,%.1f,%.1f", finalpos.x,finalpos.y,finalpos.z);
-				break;
-			}
-		}
-		return finalpos;
-	}
-	
-	static play double GetPlayerAtkHeight(PlayerPawn ppawn, bool absolute = false)
-	{
-		if (!ppawn)
-			return 0;
-		
-		let player = ppawn.player;
-		if (!player)
-			return 0;
-		
-		double h = ppawn.height * 0.5 - ppawn.floorclip + ppawn.AttackZOffset*player.crouchFactor;
-		if (absolute)
-			h += ppawn.pos.z;
-		
-		return h;
-	}
-	
-	// Converts offsets into relative offsets, by Lewisk3.
-	// If 'isPosition' is TRUE, adds actor's position to the result.
-	// Set to FALSE when used for relative velocity.
-	static play vector3 RelativeToGlobalCoords(actor mo, vector3 offset, bool isPosition = true)
-	{
-		if (!mo)
-			return (0,0,0);
-
-		Quat dir = Quat.FromAngles(mo.angle, mo.pitch, mo.roll);
-		vector3 ofs = dir * (offset.x, -offset.y, offset.z);
-		if (isPosition)
-			return level.vec3offset(mo.pos, ofs);
-		return ofs;
-	}
-}
-
 mixin class ToM_PlayerSightCheck 
 {
 	protected bool canSeePlayer;
@@ -247,14 +47,14 @@ class ToM_NullActor : Actor
 //A class that returns the name of a key bound to a specific action (thanks to 3saster):
 class ToM_Keybinds 
 {
-    static string getKeyboard(string keybind) 
+	static string getKeyboard(string keybind) 
 	{
-        Array<int> keyInts;
-        Bindings.GetAllKeysForCommand(keyInts, keybind);
+		Array<int> keyInts;
+		Bindings.GetAllKeysForCommand(keyInts, keybind);
 		if (keyInts.Size() == 0)
 			return Stringtable.Localize("$PKC_NOTBOUND");
-        return Bindings.NameAllKeys(keyInts);
-    }
+		return Bindings.NameAllKeys(keyInts);
+	}
 }
 
 Class ToM_BaseActor : Actor abstract 
@@ -275,9 +75,26 @@ Class ToM_BaseActor : Actor abstract
 		"SMO2F0"
 	};
 
+	static const name blackSmokeTextures[] =
+	{
+		"SMOKC0",
+		"SMOKE0",
+		"SMOKG0",
+		"SMOKI0",
+		"SMOKK0",
+		"SMOKM0",
+		"SMOKO0",
+		"SMOKQ0"
+	};
+
 	static string GetRandomWhiteSmoke() 
 	{
 		return ToM_BaseActor.whiteSmokeTextures[random[smksfx](0, ToM_BaseActor.whiteSmokeTextures.Size() -1)];
+	}
+
+	static string GetRandomBlackSmoke()
+	{
+		return ToM_BaseActor.blackSmokeTextures[random[smksfx](0, ToM_BaseActor.BlackSmokeTextures.Size() -1)];
 	}
 
 	bool CheckLandingSize (double cradius = 0, bool checkceiling = false) 
@@ -305,7 +122,7 @@ Class ToM_BaseActor : Actor abstract
 		return false;
 	}
 	
-    bool CheckClippingLines(double size) 
+	bool CheckClippingLines(double size)
 	{
 		BlockLinesIterator it = BlockLinesIterator.Create(self, size);
 		double tbox[4];
@@ -316,84 +133,22 @@ Class ToM_BaseActor : Actor abstract
 		tbox[3] = pos.x+size;
 		while (it.Next()) 
 		{
-		    let l = it.CurLine;
-		    if ( !l ) continue;
-		    if ( tbox[2] > l.bbox[3] ) continue;
-		    if ( tbox[3] < l.bbox[2] ) continue;
-		    if ( tbox[0] < l.bbox[1] ) continue;
-		    if ( tbox[1] > l.bbox[0] ) continue;
-		    if (ToM_UtilsP.BoxOnLineSide(tbox[0],tbox[1],tbox[2],tbox[3],l) == -1 ) 
+			let l = it.CurLine;
+			if ( !l ) continue;
+			if ( tbox[2] > l.bbox[3] ) continue;
+			if ( tbox[3] < l.bbox[2] ) continue;
+			if ( tbox[0] < l.bbox[1] ) continue;
+			if ( tbox[1] > l.bbox[0] ) continue;
+			if (ToM_UtilsP.BoxOnLineSide(tbox[0],tbox[1],tbox[2],tbox[3],l) == -1 ) 
 				return true;
 		}
 		return false;
-    }
-	
-	vector3 GetEndOfVector(double angle, double distance, double pitch, double offsetz)
-	{
-		FLineTraceData tr;
-		LineTrace(angle, distance, pitch, TRF_THRUACTORS, offsetz, 0, 0, data: tr);
-		
-		vector3 endpos;
-		if (tr.HitType == Trace_HitNone)
-		{
-			let dir = (cos(angle)*cos(pitch), sin(angle)*cos(pitch), sin(-pitch));
-			endpos = (pos + (0,0,offsetz)) + (dir * distance);
-		}
-		else
-		{
-			endpos = tr.HitLocation;
-		}
-		return endpos;
 	}
 	
 	static const string ToM_LiquidFlats[] = 
 	{ 
 		"BLOOD", "LAVA", "NUKAGE", "SLIME01", "SLIME02", "SLIME03", "SLIME04", "SLIME05", "SLIME06", "SLIME07", "SLIME08", "BDT_"
 	};
-	
-	//water check by Boondorl
-	double GetWaterTop()	
-	{
-		if (CurSector.MoreFlags & Sector.SECMF_UNDERWATER)
-			return CurSector.ceilingPlane.ZAtPoint(pos.xy);
-		else
-		
-		{
-			let hsec = CurSector.GetHeightSec();
-			if (hsec)
-			
-			{
-				double top = hsec.floorPlane.ZAtPoint(pos.xy);
-				if ((hsec.MoreFlags & Sector.SECMF_UNDERWATERMASK)
-					&& (pos.z < top
-					|| (!(hsec.MoreFlags & Sector.SECMF_FAKEFLOORONLY) && pos.z > hsec.ceilingPlane.ZAtPoint(pos.xy))))
-				
-				{
-					return top;
-				}
-			}
-			
-			else
-			{
-				for (int i = 0; i < CurSector.Get3DFloorCount(); ++i)
-				{
-					let ffloor = CurSector.Get3DFloor(i);
-					if (!(ffloor.flags & F3DFloor.FF_EXISTS)
-						|| (ffloor.flags & F3DFloor.FF_SOLID)
-						|| !(ffloor.flags & F3DFloor.FF_SWIMMABLE))
-					
-					{
-						continue;
-					}
-						
-					double top = ffloor.top.ZAtPoint(pos.xy);
-					if (top > pos.z && ffloor.bottom.ZAtPoint(pos.xy) <= pos.z)
-						return top;
-				}
-			}
-		}			
-		return 0;
-	}	
 	
 	bool CheckLiquidFlat() 
 	{
@@ -411,116 +166,6 @@ Class ToM_BaseActor : Actor abstract
 		}
 		return false;
 	}
-	
-	static void AlignToPlane(Actor a, SecPlane sec = null, bool ceiling = false) 
-	{
-		if (!a)
-			return;
-		Vector3 norm;
-		a.pitch = 0;
-		a.roll = 0;
-		if (sec)
-			norm = sec.normal;
-		else 
-		{
-			FLineTraceData hit;
-			a.LineTrace(0,a.height+16,ceiling ? 90 : -90,flags:TRF_THRUACTORS|TRF_NOSKY,data:hit);
-			if (hit.Hit3DFloor) 
-			{
-				F3DFloor ff = hit.Hit3DFloor;
-				norm = ceiling ? ff.bottom.normal : -ff.top.normal;
-			}
-			else 
-				norm = ceiling ? a.CurSector.ceilingplane.normal : a.CurSector.floorplane.normal;
-		}
-		if (abs(norm.z) ~== 1) 
-		{
-			if (ceiling) 
-			{
-				a.pitch += 180;
-			}
-			return;		
-		}
-		a.angle = 0;
-		double ang = DeltaAngle(VectorAngle(norm.x, norm.y), a.angle);
-		double pch = 90 - asin(norm.z);
-		if (pch > 90)
-			pch -= 180;			
-		a.pitch = pch * cos(ang);
-		a.roll = pch * sin(ang);	
-		if (ceiling) 
-		{
-			a.pitch += 180;
-			a.roll *= -1;
-		}
-	}
-	
-	// Copies appearance of one actor to another in all 
-	// the ways I could think of:
-	static void CopyAppearance(Actor to, Actor from, bool style = true, bool size = false) 
-	{
-		if (!to || !from)
-			return;
-		to.sprite = from.sprite;
-		to.frame = from.frame;
-		to.scale = from.scale;
-		to.angle = from.angle;
-		to.roll = from.roll;
-		to.bROLLSPRITE = from.bROLLSPRITE;
-		to.bROLLCENTER = from.bROLLCENTER;
-		to.spriteoffset = from.spriteoffset;
-		to.worldOffset = from.worldOffset;
-		to.bSPRITEFLIP = from.bSPRITEFLIP;
-		to.bXFLIP = from.bXFLIP;
-		to.bYFLIP = from.bYFLIP;
-		to.bFORCEYBILLBOARD = from.bFORCEYBILLBOARD;
-		to.bFORCEXYBILLBOARD = from.bFORCEXYBILLBOARD;
-		to.bFLOATBOB = from.bFLOATBOB;
-		to.FloatBobPhase = from.FloatBobPhase;
-		to.FloatBobStrength = from.FloatBobStrength;
-		// these 4 are CRITICALLY important to make sure
-		// the copy also has the same sprite clipping
-		// as the original actor:
-		to.bIsMonster = from.bIsMonster;
-		to.bCorpse = from.bCorpse;
-		to.bFloorclip = from.bFloorclip;
-		to.bSpecialFloorclip = from.bSpecialFloorclip;
-
-		if (size)
-			to.A_SetSize(from.height, from.radius);
-			
-		if (style) 
-		{
-			to.A_SetRenderstyle(from.alpha, from.GetRenderstyle());
-			to.translation = from.translation;
-		}
-	}
-	
-	// Make the given actor invisible, have it drop its items
-	// and call A_BossDeath if necessary.
-	// If 'remove' is true, also destroy it; otherwise it's implied
-	// that it's queued for destruction to be destroyed later by
-	// the caller.
-	static void KillActorSilent(actor victim, bool remove = true) 
-	{
-		if (!victim)
-			return;
-		//hide the corpse
-		victim.A_SetRenderstyle(0, Style_None);
-		//drop the items
-		victim.A_NoBlocking();
-		//call A_BossDeath if necessary
-		if (victim.bBOSS || victim.bBOSSDEATH)
-			victim.A_BossDeath();
-		if (remove && !victim.player)
-			victim.Destroy();
-	}
-	
-	override void BeginPlay() 
-	{
-		super.BeginPlay();
-		pi = 3.141592653589793;
-	}	
 	
 	override void Tick() 
 	{
@@ -591,7 +236,7 @@ Class ToM_BaseDebris : ToM_BaseActor abstract
 	{
 		if (!level.IsPointInLevel(pos)) 
 		{
-			destroy();
+			Destroy();
 			return;
 		}
 		super.PostBeginPlay();
@@ -649,13 +294,13 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 		ChangeStatnum(110);
 	}
 	//a cheaper version of SetOrigin that also doesn't update floorz/ceilingz (because they're updated manually in Tick) - thanks phantombeta
-    void ToM_SetOrigin (Vector3 newPos) 
+	void ToM_SetOrigin (Vector3 newPos) 
 	{
-        LinkContext ctx;
-        UnlinkFromWorld (ctx);
-        SetXYZ (newPos);
-        LinkToWorld (ctx);
-    }
+		LinkContext ctx;
+		UnlinkFromWorld (ctx);
+		SetXYZ (newPos);
+		LinkToWorld (ctx);
+	}
 	override void PostBeginPlay() 
 	{
 		super.PostBeginPlay();
@@ -672,7 +317,7 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 	{		
 		if (alpha < 0)
 		{
-			destroy();
+			Destroy();
 			return;
 		}
 		if (isFrozen())
@@ -824,11 +469,11 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 	virtual void ToM_HitFloor() {			//hit floor if close enough
 		if (removeonfall) 
 		{
-			destroy();
+			Destroy();
 			return;
 		}
 		if (floorpic == skyflatnum) { 
-			destroy();
+			Destroy();
 			return;
 		}
 		landed = true;
@@ -842,7 +487,7 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 			A_StartSound(liquidsound,slot:CHAN_AUTO,flags:CHANF_DEFAULT,1.0,attenuation:3);
 			if (removeonliquid) 
 			{
-				destroy();
+				Destroy();
 				return;
 			}
 			
@@ -867,7 +512,7 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 	{
 		if (ceilingpic == skyflatnum) 
 		{
-			destroy();
+			Destroy();
 			return;
 		}
 		SetZ(ceilingz-Voffset);
@@ -928,7 +573,7 @@ class ToM_ActorLayer : ToM_SmallDebris abstract
 		if (!master.isFrozen())
 		{
 			SetOrigin(master.pos, true);
-			CopyAppearance(self, master, style: false, size: true);
+			ToM_UtilsP.CopyAppearance(self, master, style: false, size: true);
 			//console.printf("%s layer alpha: %.2f", master.GetTag(), alpha);
 			if (fade > 0)
 			{
@@ -955,7 +600,7 @@ Class ToM_RicochetSpark : ToM_SmallDebris
 	{
 		if (waterlevel > 1) 
 		{
-			destroy();
+			Destroy();
 			return;
 		}
 		super.PostbeginPlay();
@@ -1043,16 +688,21 @@ Class ToM_SmokingDebris : ToM_RandomDebris
 		super.Tick();	
 		if (isFrozen())
 			return;
-		ToM_WhiteSmoke.Spawn(
-			pos, 
-			ofs: 4,
-			vel:(
-				frandom[smk](-1,1),
-				frandom[smk](-1,1),
-				frandom[smk](-1,1)
-			),
-			alpha: alpha *0.4
-		);
+		TextureID smoketex = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
+		FSpawnParticleParams smoke;
+		smoke.texture = smoketex;
+		smoke.color1 = "";
+		smoke.flags = SPF_ROLL|SPF_REPLACE;
+		smoke.lifetime = 34;
+		smoke.size = TexMan.GetSize(smoketex) * 0.11;
+		smoke.sizestep = smoke.size * 0.03;
+		smoke.startalpha = alpha * 0.4;
+		smoke.fadestep = 0.01;
+		smoke.vel = (frandom[smk](-1,1),frandom[smk](-1,1),frandom[smk](-1,1));
+		smoke.pos = pos+(frandom[smk](-4,4),frandom[smk](-4,4),frandom[smk](-4,4));
+		smoke.startroll = random[sfx](0, 359);
+		smoke.rollvel = frandom[sfx](0.5,1) * randompick[sfx](-1,1);
+		Level.SpawnParticle(smoke);
 		A_FadeOut(0.03);
 	}
 }
@@ -1087,36 +737,60 @@ Class ToM_DebrisFlame : ToM_BaseFlare
 
 Class ToM_ExplosiveDebris : ToM_RandomDebris 
 {
+	static const name flameTextures[] = { "BOM4I0", "BOM4J0", "BOM4K0", "BOM4L0" };
+
 	Default 
 	{
 		scale 0.5;
 		gravity 0.3;
 	}
-	override void Tick () 
+
+	override void Tick ()
 	{
-		Vector3 oldPos = self.pos;		
-		Super.Tick();	
 		if (isFrozen())
 			return;
-		let smk = Spawn("ToM_BlackSmoke",pos+(frandom[smk](-9,9),frandom[smk](-9,9),frandom[smk](-9,9)));
-		if (smk) 
-		{
-			smk.A_SetScale(scale.x * 0.5);
-			smk.alpha = alpha*0.3;
-			smk.vel = (frandom[smk](-1,1),frandom[smk](-1,1),frandom[smk](-1,1));
-		}
-		Vector3 path = level.vec3Diff( self.pos, oldPos );
-		double distance = path.length() / 4; //this determines how far apart the particles are
+
+		Vector3 oldPos = self.pos;
+		Super.Tick();
+		
+		TextureID smoketex = TexMan.CheckForTexture(ToM_BaseActor.GetRandomBlackSmoke());
+		FSpawnParticleParams smoke;
+		smoke.texture = smoketex;
+		smoke.color1 = "";
+		smoke.flags = SPF_ROLL|SPF_REPLACE;
+		smoke.lifetime = 34;
+		smoke.size = TexMan.GetSize(smoketex) * 0.25;
+		smoke.sizestep = -1.4;
+		smoke.startalpha = alpha * 0.3;
+		smoke.fadestep = -1;
+		smoke.vel = (frandom[smk](-1,1),frandom[smk](-1,1),frandom[smk](-1,1));
+		smoke.pos = pos+(frandom[smk](-9,9),frandom[smk](-9,9),frandom[smk](-9,9));
+		smoke.startroll = frandom[sfx](-40,40);
+		smoke.rollvel = frandom[sfx](0.5,1) * randompick[sfx](-1,1);
+		Level.SpawnParticle(smoke);
+
+		Vector3 path = level.vec3Diff(self.pos, oldPos);
+		double distance = path.length() / 4;
 		Vector3 direction = path / distance;
-		int steps = int( distance );		
-		for( int i = 0; i < steps; i++ )  
+		int steps = int( distance );
+		for(int i = 0; i < steps; i++)
 		{
-			let trl = Spawn("ToM_DebrisFlame",oldPos);
-			if (trl)
-			{
-				trl.alpha = alpha*0.75;
-				trl.scale *= scale.x;
-			}
+			TextureID flametex = TexMan.CheckForTexture(flameTextures[random[sfx](0, flameTextures.Size() - 1)]);
+			FSpawnParticleParams flame;
+			flame.texture = flametex;
+			flame.color1 = "";
+			flame.style - STYLE_Add;
+			flame.flags = SPF_ROLL|SPF_REPLACE|SPF_FULLBRIGHT;
+			flame.lifetime = 40;
+			flame.pos = oldpos;
+			flame.size = TexMan.GetSize(flametex) * 0.1;
+			flame.sizestep = flame.size * 0.05;
+			flame.startalpha = alpha * 0.3;
+			flame.fadestep = -1;
+			flame.startroll = frandom[sfx](0,360);
+			flame.rollvel = frandom[sfx](5,10)+randompick[sfx](-1,1);
+			Level.SpawnParticle(flame);
+
 			oldPos = level.vec3Offset( oldPos, direction );
 		}
 		A_FadeOut(0.022);
@@ -1188,60 +862,6 @@ class ToM_SphereFX : ToM_SmallDebris
 	}
 }
 
-Class ToM_Tracer : FastProjectile 
-{
-	Default 
-	{
-		-ACTIVATEIMPACT;
-		-ACTIVATEPCROSS;
-		+NOTELEPORT;
-		+BLOODLESSIMPACT;
-		alpha 0.75;
-		renderstyle "add";
-		speed 64;
-		radius 4;
-		height 4;
-		seesound "null";
-		deathsound "null";
-	}    
-	//whizz sound snippet by phantombeta
-	override void Tick () 
-	{
-		Super.Tick ();
-		if (level.isFrozen())
-			return;
-		if (!playeringame [consolePlayer])
-			return;		
-		let curCamera = players [consolePlayer].camera;
-		if (!curCamera) // If the player's "camera" variable is null, set it to their PlayerPawn
-			curCamera = players [consolePlayer].mo;
-		if (!curCamera) // If the player's PlayerPawn is null too, just stop trying
-			return;
-		if (CheckIfCloser (curCamera, 192))
-			A_StartSound("weapons/tracerwhizz",CHAN_AUTO,attenuation:8);
-	}
-	states 
-	{
-		Spawn:
-			TNT1 A 2 NoDelay 
-			{
-				vel = vel.unit() * 256;
-			}
-			MODL A 1 bright;
-			wait;
-		Xdeath:
-			TNT1 A 1;
-			stop;
-		Death:
-			TNT1 A 1 
-			{
-				//if (frandom(0.0,1.0) > 0.8)
-				//	A_SpawnProjectile("RicochetBullet",0,0,random(0,360),2,random(-40,40));
-			}
-			stop;
-	}
-}
-	
 Class ToM_BaseFlare : ToM_SmallDebris 
 {
 	protected state mdeath;
@@ -1294,12 +914,13 @@ Class ToM_BaseFlare : ToM_SmallDebris
 		SetColor();
 	}
 	
-	virtual void SetColor() { //fcolor is meant to be set by the actor that spawns the flare
+	virtual void SetColor()
+	{ //fcolor is meant to be set by the actor that spawns the flare
 		if (GetRenderstyle() == Style_AddShaded || GetRenderstyle() == Style_Shaded) 
 		{
 			if (!fcolor) 
 			{
-				destroy();
+				Destroy();
 				return;
 			}				
 			else 
@@ -1355,9 +976,9 @@ Class ToM_ProjFlare : ToM_BaseFlare
 	override void Tick() 
 	{
 		super.Tick();
-		if (!master /*|| !bdoom_debris*/) 
+		if (!master) 
 		{
-			destroy();
+			Destroy();
 			return;
 		}	
 
@@ -1399,7 +1020,7 @@ Class ToM_BaseSmoke : ToM_SmallDebris abstract
 		super.PostBeginPlay();
 		if (waterlevel > 1) 
 		{
-			self.destroy();
+			self.Destroy();
 			return;
 		}
 		scale.x *= frandom[sfx](0.8,1.2);
@@ -1458,8 +1079,6 @@ class ToM_BlackSmoke : ToM_BaseSmoke
 class ToM_WhiteSmoke : ToM_BaseSmoke 
 {
 	int fadedelay;
-	bool cheap;
-	double cheapalpha;
 
 	Default 
 	{
@@ -1468,11 +1087,44 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 		alpha 0.5;
 	}
 	
-	static ToM_WhiteSmoke Spawn(vector3 pos, double ofs = 0, vector3 vel = (0,0,0), double scale = (0.1), double rotation = 4, double alpha = 0.5, double fade = 0, double dbrake = 0.98, double dscale = 1.04, int fadedelay = 25, bool cheap = false, class<ToM_WhiteSmoke> smoke = "ToM_WhiteSmoke")
+	static Actor Spawn(vector3 pos, double ofs = 0, vector3 vel = (0,0,0), double scale = 0.1, double rotation = 4, double alpha = 0.5, double fade = 0.01, double dbrake = 0.98, double dscale = 1.04, int fadedelay = 25, int style = STYLE_Translucent, color shade = -1, bool bright = false, bool particle = true)
 	{
+		if (particle)
+		{
+			TextureID smoketex = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
+			FSpawnParticleParams smoke;
+			smoke.texture = smoketex;
+			smoke.color1 = "";
+			smoke.style = style;
+			if (style == STYLE_Shaded || style == STYLE_AddShaded)
+			{
+				smoke.color1 = shade;
+			}
+			else
+			{
+				smoke.color1 = "";
+			}
+			smoke.lifetime = ceil(alpha / fade) + fadedelay;
+			smoke.flags = SPF_ROLL|SPF_REPLACE;
+			if (bright)
+				smoke.flags |= SPF_FULLBRIGHT;
+			smoke.size = TexMan.GetSize(smoketex) * scale * frandom[sfx](0.9,1.1);
+			smoke.sizestep = smoke.size * (dscale - 1.0) * 0.75;
+			smoke.startalpha = alpha;
+			smoke.fadestep = -1;
+			smoke.pos = pos+(frandom[smk](-ofs,ofs), frandom[wsmk](-ofs,ofs), frandom[wsmk](-ofs,ofs));
+			smoke.vel = vel;
+			smoke.accel = -(vel / smoke.lifetime);
+			smoke.startroll = random[sfx](0, 359);
+			smoke.rollvel = rotation * frandom[sfx](-1,1);
+			smoke.rollacc = -(smoke.rollvel / smoke.lifetime);
+			Level.SpawnParticle(smoke);
+			return null;
+		}
+
 		let smk = ToM_WhiteSmoke(
 			Actor.Spawn(
-				smoke, 
+				'ToM_WhiteSmoke', 
 				pos + (frandom[wsmk](-ofs,ofs), frandom[wsmk](-ofs,ofs), frandom[wsmk](-ofs,ofs))
 			)
 		);
@@ -1486,13 +1138,6 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 			smk.dbrake = dbrake;
 			smk.dscale = dscale;
 			smk.fadedelay = fadedelay;
-			smk.cheap = cheap;
-			smk.cheapalpha = alpha;
-			if (cheap)
-			{
-				smk.A_SetRenderstyle(alpha, Style_Normal);
-				smk.bROLLSPRITE = false;
-			}
 		}
 		return smk;
 	}
@@ -1506,11 +1151,6 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 			fade = 0.01;
 		if (fadedelay <= 0)
 			fadedelay = 25;
-		if (cheap)
-		{
-			SetStateLabel("SpawnCheap");
-			scale *= 2; //because it's 128x128 instead of 256x256
-		}
 	}	
 	
 	override void Tick()
@@ -1531,10 +1171,7 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 		{
 			dbrake *= 0.96;
 			dscale = Clamp(dscale *= 0.98, 1, 100);
-			if (!cheap)
-				A_FadeOut(fade);
-			else
-				cheapalpha -= fade;
+			A_FadeOut(fade);
 		}
 	}
 	
@@ -1544,20 +1181,6 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 		SMO2 # -1 NoDelay 
 		{
 			frame = random[sfx](0,5);
-		}
-		stop;
-	SpawnCheap:
-		SMO3 A 1
-		{
-			if (GetAge() >= fadedelay)
-				SetStateLabel("DespawnCheap");
-		}
-		loop;
-	DespawnCheap:
-		SMO3 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1
-		{
-			int t = ToM_UtilsP.LinearMap(cheapalpha, 1.0, 0, 2, 10);
-			A_SetTics(t);
 		}
 		stop;
 	}

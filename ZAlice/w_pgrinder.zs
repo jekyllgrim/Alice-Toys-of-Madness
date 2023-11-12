@@ -17,6 +17,13 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		weapon.ammotype2 "ToM_WeakMana";
 		weapon.ammouse2 1;
 	}
+
+	action void A_PepperReady()
+	{
+		A_Overlay(APSP_Righthand, "Right.Ready", true);
+		A_ResetZoom();
+		A_WeaponReady();
+	}
 	
 	action void A_PepperFlash()
 	{
@@ -36,6 +43,8 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 			invoker.spinframe = 0;
 		if (invoker.spinframe < 0)
 			invoker.spinframe = 9;
+		if (reverse)
+			A_ResetZoom();
 	}
 	
 	action void A_PepperRecoil()
@@ -148,11 +157,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		TNT1 A 0 A_Lower;
 		wait;
 	Ready:
-		PPGR Z 1
-		{
-			A_Overlay(APSP_Righthand, "Right.Ready", true);
-			A_WeaponReady();
-		}
+		PPGR Z 1 A_PepperReady();
 		loop;
 	Right.Ready:
 		PPGR A -1;
@@ -175,7 +180,6 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		TNT1 A 0 
 		{
 			A_ResetPepperSprite();
-			A_ResetZoom();
 			//A_Overlay(APSP_Righthand, "Right.SpinEnd");
 			A_StopSound(CHAN_7);
 			A_StartSound("weapons/pgrinder/stop", CHAN_WEAPON);

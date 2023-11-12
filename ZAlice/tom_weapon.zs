@@ -872,6 +872,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	double trailvel;
 	double trailz;
 	double trailshrink;
+	int trailstyle;
 	
 	double wrot;
 	
@@ -890,6 +891,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	property trailshrink : trailshrink;
 	property trailvel : trailvel;
 	property trailz : trailz;
+	property trailstyle : trailstyle;
 	
 	Default 
 	{
@@ -897,13 +899,14 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		height 6;
 		radius 6;
 		+ROLLSPRITE
+		ToM_Projectile.flareactor "ToM_ProjFlare";
 		ToM_Projectile.flarescale 0.065;
 		ToM_Projectile.flarealpha 0.7;
 		ToM_Projectile.trailscale 0.04;
 		ToM_Projectile.trailalpha 0.4;
 		ToM_Projectile.trailfade 0.1;
-		ToM_Projectile.flareactor "ToM_ProjFlare";
 		ToM_Projectile.trailactor "";
+		ToM_Projectile.trailstyle STYLE_Translucent;
 	}
 	
 	/*
@@ -959,7 +962,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	
 	override void PostBeginPlay() 
 	{
-		super.PostBeginPlay();		
+		super.PostBeginPlay();
 		s_spawn = FindState("Spawn");
 		s_death = FindState("Death");
 		s_crash = FindState("Crash");
@@ -979,11 +982,13 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	}
 
 	// Spawns a particle or actor-based trail:
-	virtual void SpawnTrail(vector3 ppos) {
+	virtual void SpawnTrail(vector3 ppos)
+	{
 		// Actor based:
 		if (trailactor) {
 			vector3 tvel;
-			if (trailvel != 0) {
+			if (trailvel != 0)
+			{
 				tvel = (
 					frandom[trailfx](-trailvel,trailvel),
 					frandom[trailfx](-trailvel,trailvel),
@@ -991,10 +996,12 @@ Class ToM_Projectile : ToM_BaseActor abstract
 				);
 			}
 			let trl = Spawn(trailactor,ppos+(0,0,trailz));
-			if (trl) {
+			if (trl)
+			{
 				trl.master = self;
 				let trlflr = ToM_BaseFlare(trl);
-				if (trlflr) {
+				if (trlflr)
+				{
 					trlflr.fcolor = trailcolor;
 					trlflr.fscale = trailscale;
 					trlflr.falpha = trailalpha;
@@ -1009,7 +1016,8 @@ Class ToM_Projectile : ToM_BaseActor abstract
 			}
 		}
 		// Particle based:
-		else {
+		else
+		{
 			FSpawnParticleParams trail;
 			CreateParticleTrail(trail, ppos, trailvel);
 			Level.SpawnParticle(trail);
@@ -1028,7 +1036,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		// (for projectiles that randomize the particle texture dynamically)
 		if (!trailtex || (trailTexture && trailTexture != default.trailTexture))
 			trailtex = TexMan.CheckForTexture(trailTexture);
-		trailtex = TexMan.CheckForTexture(trailTexture);
+			
 		bool isTextured = trailtex.IsValid();
 
 		// if textured, apply the texture:
@@ -1040,7 +1048,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		if (trailcolor) {
 			// MUST BE SHADED if we're using textured particles,
 			// otherwise the colors get weird for some reason:
-			trail.style = STYLE_Shaded;
+			trail.style = trailstyle == STYLE_Translucent ? STYLE_Shaded : trailstyle;
 			trail.color1 = color(trailcolor);
 		}
 

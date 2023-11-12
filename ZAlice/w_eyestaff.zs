@@ -81,14 +81,22 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	
 	action void A_EyestaffFlash(StateLabel label, double alpha = 0)
 	{
-		A_Overlay(PSP_Flash, label);
-		A_OverlayFlags(PSP_Flash, PSPF_Renderstyle|PSPF_ForceAlpha, true);
-		A_OverlayRenderstyle(PSP_Flash, Style_Add);
+		let psp = Player.FindPSprite(PSP_Flash);
+		if (!psp)
+		{
+			let st = ResolveState(label);
+			if (!st)
+				return;
+			psp = player.GetPSprite(PSP_Flash);
+			player.SetPSprite(PSP_Flash, st);
+			A_OverlayFlags(PSP_Flash, PSPF_Renderstyle|PSPF_ForceAlpha, true);
+			A_OverlayRenderstyle(PSP_Flash, Style_Add);
+		}
 		if (alpha <= 0)
 		{
 			alpha = ToM_UtilsP.LinearMap(invoker.charge, 0, ES_FULLCHARGE, 0.0, 1.0);
 		}
-		A_OverlayAlpha(PSP_Flash, alpha);
+		psp.alpha = alpha;
 	}
 	
 	action void A_EyestaffRecoil()
@@ -299,13 +307,14 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 		goto FireEnd;
 	BeamFlash:
-		JEYC F 2 bright;
+		JEYC F -1 bright;
 		stop;
 	FireEnd:
 		TNT1 A 0 
 		{
 			A_StopBeam();
 			A_StopSound(CHAN_WEAPON);
+			player.SetPsprite(PSP_Flash, ResolveState("Null"));
 			let proj = A_FireProjectile("ToM_EyestaffProjectile", useammo: false);
 			if (proj)
 				proj.A_StartSound("weapons/eyestaff/fireProjectile");
@@ -489,6 +498,12 @@ class ToM_EyestaffProjectile : ToM_Projectile
 	Default
 	{
 		ToM_Projectile.flarecolor "ff38f5";
+		ToM_Projectile.trailtexture "LENGA0";
+		ToM_Projectile.trailcolor "c334eb";
+		ToM_Projectile.trailfade 0.05;
+		ToM_Projectile.trailalpha 1;
+		ToM_Projectile.trailscale 0.08;
+		ToM_Projectile.trailstyle Style_AddShaded;
 		+FORCEXYBILLBOARD
 		+NOGRAVITY
 		+FORCERADIUSDMG
@@ -514,10 +529,8 @@ class ToM_EyestaffProjectile : ToM_Projectile
 			bNOINTERACTION = true;
 			double vx = 3.5;
 			int life = 25;
-			int parts = 12;
-			double pangle = 360. / parts;
 			TextureID ptex = TexMan.CheckForTexture("JEYCP0");
-			for (int i = 0; i < parts; i++)
+			for (double pangle = 0; pangle < 360; pangle += (360.0 / 12))
 			{
 				//int r = random[eyec](0, ToM_EyestaffProjectile.SmokeColors.Size() - 1);
 				//let col = ToM_EyestaffProjectile.SmokeColors[r];
@@ -528,11 +541,11 @@ class ToM_EyestaffProjectile : ToM_Projectile
 					SPF_FULLBRIGHT|SPF_RELATIVE,
 					lifetime: life,
 					size: 7,
-					angle: pangle * i,
+					angle: pangle,
 					velx: vx,
 					accelx: -(vx / life),
 					accelz: -0.1,
-					sizestep: 1. / life
+					sizestep: -(7. / life)
 				);
 			}
 		}
@@ -545,11 +558,20 @@ class ToM_EyestaffProjectile : ToM_Projectile
 			return;
 		if (alt)
 			A_FadeOut(0.07);
-		roll += 11;
-		vector3 projpos = ToM_UtilsP.RelativeToGlobalCoords(self, (-TRAILOFS, -TRAILOFS, 0));
-		Spawn("ToM_EStrail", projpos);
-		projpos = ToM_UtilsP.RelativeToGlobalCoords(self, (-TRAILOFS, TRAILOFS, 0));
-		Spawn("ToM_EStrail", projpos);
+		A_SetRoll(roll + 16, SPF_INTERPOLATE);
+	}
+
+	override void SpawnTrail(vector3 ppos)
+	{
+		FSpawnParticleParams trail;
+
+		vector3 projpos = ToM_UtilsP.RelativeToGlobalCoords(self, (-TRAILOFS, -TRAILOFS, 0), isPosition: false);
+		CreateParticleTrail(trail, ppos + projpos, trailvel);
+		Level.SpawnParticle(trail);
+		
+		projpos = ToM_UtilsP.RelativeToGlobalCoords(self, (-TRAILOFS, TRAILOFS, 0), isPosition: false);
+		CreateParticleTrail(trail, ppos + projpos, trailvel);
+		Level.SpawnParticle(trail);
 	}
 	
 	States
@@ -557,8 +579,8 @@ class ToM_EyestaffProjectile : ToM_Projectile
 	Spawn:
 		M000 A 1 
 		{
-			double svel = 2;
-			let smk = ToM_WhiteSmoke.Spawn(
+			double svel = 0.5;
+			ToM_WhiteSmoke.Spawn(
 				pos,
 				ofs: 4,
 				vel: (
@@ -566,17 +588,14 @@ class ToM_EyestaffProjectile : ToM_Projectile
 					frandom[essmk](-svel,svel),
 					frandom[essmk](-svel,svel)
 				),
-				scale: 0.1,
-				alpha: 0.3,
+				scale: 0.3,
+				alpha: 0.4,
 				fade: 0.15,
-				dbrake: 0.6
+				dbrake: 0.6,
+				style: STYLE_AddShaded,
+				shade: SmokeColors[random[essmk](0, SmokeColors.Size() - 1)],
+				bright:true
 			);
-			if (smk)
-			{
-				smk.A_SetRenderstyle(smk.alpha, Style_Shaded);
-				smk.SetShade(SmokeColors[random[essmk](0, SmokeColors.Size() - 1)]);
-				smk.bBRIGHT = true;
-			}
 		}
 		loop;
 	Death:
@@ -584,10 +603,10 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		{
 			A_Explode(80, 128);
 			ToM_SphereFX.SpawnExplosion(pos, col1: flarecolor, col2: "fcb126");
-			double svel = 4;
-			for (int i = 8; i > 0; i--)
+			double svel = 2;
+			for (int i = 10; i > 0; i--)
 			{
-				let smk = ToM_WhiteSmoke.Spawn(
+				ToM_WhiteSmoke.Spawn(
 					pos,
 					ofs: 16,
 					vel: (
@@ -595,18 +614,16 @@ class ToM_EyestaffProjectile : ToM_Projectile
 						frandom[essmk](-svel,svel),
 						frandom[essmk](-svel,svel)
 					),
-					scale: 0.4,
+					scale: 0.6,
 					rotation: 2,
-					fade: 0.1,
+					alpha: 0.6,
+					fade: 0.02,
 					dbrake: 0.7,
-					dscale: 1.015
+					dscale: 1.015,
+					style: STYLE_AddShaded,
+					shade: SmokeColors[random[essmk](0, SmokeColors.Size() - 1)],
+					bright:true
 				);
-				if (smk)
-				{
-					smk.A_SetRenderstyle(smk.alpha, Style_Shaded);
-					smk.SetShade(SmokeColors[random[essmk](0, SmokeColors.Size() - 1)]);
-					smk.bBRIGHT = true;
-				}
 			}
 		}
 		//BAL2 CDE 5;

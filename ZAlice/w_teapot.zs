@@ -12,6 +12,7 @@ class ToM_Teapot : ToM_BaseWeapon
 	private double prevAngle[STEAMFRAMES];
 	private double prevPitch[STEAMFRAMES];
 	private int steamFrame;
+	private vector2 preSteamOfs;
 	
 	enum HeatLevels
 	{
@@ -203,13 +204,18 @@ class ToM_Teapot : ToM_BaseWeapon
 		A_StartSound("weapons/teapot/altfire", CHAN_WEAPON, CHANF_LOOPING);
 		A_SoundPitch(CHAN_WEAPON, pp);
 		A_SoundVolume(CHAN_WEAPON, vol);
+		int freq = ToM_UtilsP.LinearMap(invoker.heat, 0, HEAT_MAX, 5, 1, true);
 	}
 	
+	static const int lidframes[] = { 2, 11, 12, 13 };
 	action void A_JitterLid()
 	{
 		int i = invoker.lidframe;
 		while (invoker.lidframe == i)
-			invoker.lidframe = randompick[boil](2, 11, 12, 13);
+		{
+			int i = random[boil](0, invoker.lidframes.Size() - 1);
+			invoker.lidframe = invoker.lidframes[i];
+		}
 		let psp = player.FindPSprite(OverlayID());
 		if (psp)
 		{
@@ -381,12 +387,18 @@ class ToM_Teapot : ToM_BaseWeapon
 		TNT1 A 0 A_StartSound("weapons/teapot/close", CHAN_AUTO);
 		TPOT AB 3;
 	AltFireDo:
-		TPOT OP 2;
+		TPOT OOPP 1 
+		{
+			A_WeaponOffset(-7, 4, WOF_ADD);
+			A_ScalePSprite(OverlayID(), -0.02, -0.02, WOF_ADD);
+		}
 		TNT1 A 0 
 		{
 			A_StopSound(CH_TPOTCHARGE);
 			A_StopSound(CH_TPOTHEAT);
 			A_StartSound("weapons/teapot/charge", CHAN_7);
+			let psp = Player.FindPSprite(OverlayID());
+			invoker.preSteamOfs = (psp.x, psp.y);
 		}
 	AltHold:
 		TPOT P 1
@@ -396,11 +408,13 @@ class ToM_Teapot : ToM_BaseWeapon
 				return ResolveState("AltFireEnd");
 			}
 			
+			let psp = Player.FindPSprite(OverlayID());
 			A_FireSteam();
 			
 			int steamfr = Clamp( ToM_UtilsP.LinearMap(invoker.heat, 0, HEAT_MAX, 4, 1), 1, 4);
 			if (GetAge() % steamfr == 0)
 			{
+				A_WeaponOffset(invoker.preSteamOfs.x + frandom(-0.5,0.5), invoker.preSteamOfs.y + frandom(0,1), WOF_INTERPOLATE);
 				invoker.steamFrame++;
 				if (invoker.steamFrame >= STEAMFRAMES)
 					invoker.steamFrame = 0;
@@ -413,6 +427,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		TNT1 A 0 
 		{
 			A_StartSound("weapons/teapot/discharge", CHAN_WEAPON, volume: 0.4);
+			A_ResetPSprite(OverlayID(), 6);
 		}
 		TPOT PO 3;
 		TNT1 A 0 A_PickReady();
@@ -521,17 +536,6 @@ class ToM_TeaBurnControl : ToM_ControlToken
 				smoke.startroll = random[sfx](0, 359);
 				smoke.rollvel = frandom[sfx](0.5,1) * randompick[sfx](-1,1);
 				Level.SpawnParticle(smoke);
-			
-//				ToM_WhiteSmoke.Spawn(
-//					owner.pos + (
-//						frandom[tsfx](-rad,rad), 
-//						frandom[tsfx](-rad,rad), 
-//						frandom[tsfx](owner.pos.z,owner.height*0.75)
-//					), 
-//					vel: (frandom[tsfx](-0.2,0.2),frandom[tsfx](-0.2,0.2),frandom[tsfx](0.5,1.2)),
-//					scale: 0.15,
-//					alpha: 0.2
-//				);
 			}
 		}
 	}
@@ -593,20 +597,12 @@ class ToM_TeaProjectile : ToM_Projectile
 		{
 			if (GetAge() > 8)
 			{
-//				ToM_WhiteSmoke.Spawn(
-//					pos,
-//					ofs:4,
-//					vel: (frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2)),
-//					scale: 0.15,
-//					alpha: 0.4
-//				);
-				
 				FSpawnParticleParams smoke;
 				smoke.pos = pos;
 				smoke.color1 = "";
 				smoke.texture = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
 				smoke.vel = (frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2));
-				smoke.size = TexMan.GetSize(smoke.texture) * 0.15;				
+				smoke.size = TexMan.GetSize(smoke.texture) * 0.15;
 				smoke.flags = SPF_ROLL|SPF_REPLACE;
 				smoke.lifetime = 35;
 				smoke.sizestep = smoke.size * 0.03;
@@ -628,7 +624,7 @@ class ToM_TeaProjectile : ToM_Projectile
 			ToM_SphereFX.SpawnExplosion(pos, size: 42, alpha: 0.5, col1: "32a856", boomfactor: 2);
 			
 			double fz = CurSector.floorplane.ZAtPoint(pos.xy);
-			bool onFloor = (pos.z <= fz + 32 && waterlevel <= 0);			
+			bool onFloor = (pos.z <= fz + 32 && waterlevel <= 0);
 			if (onFloor && (!CheckLandingSize(32) || !(CurSector.FloorPlane.Normal == (0,0,1))))
 				Spawn("ToM_TeaPool", (pos.x,pos.y, fz+0.5));
 				
@@ -636,8 +632,8 @@ class ToM_TeaProjectile : ToM_Projectile
 			{
 				ToM_WhiteSmoke.Spawn(
 					pos + (frandom[tpotsmk](-6,6),frandom[tpotsmk](-6,6),frandom[tpotsmk](10,16)), 
-					vel: (frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](2,3)),
-					scale: 0.3,
+					vel: (frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](-0.2,0.2),frandom[tpotsmk](1,2)),
+					scale: 0.5,
 					alpha: 0.75
 				);
 			}
@@ -752,7 +748,7 @@ class ToM_TeaPool : ToM_SmallDebris
 	{
 		super.PostBeginPlay();
 		wscale = 0.05;
-		AlignToPlane(self);
+		ToM_UtilsP.AlignToPlane(self);
 	}
 	
 	States
@@ -763,14 +759,16 @@ class ToM_TeaPool : ToM_SmallDebris
 			A_FadeOut(0.012);
 			scale *= (1 + wscale);
 			wscale *= 0.95;
-			if (alpha > 0.15 && random[vapr](1,3) == 3)
+			if (alpha > 0.15)
+			{
 				ToM_WhiteSmoke.Spawn(
-					pos + (frandom[wsmoke](-64,64),frandom[wsmoke](-64,64), 5), 
+					pos + (frandom[wsmoke](-56,56),frandom[wsmoke](-56,56), 5), 
 					vel: (0, 0, frandom[wsmoke](0.5, 1)),
-					scale: 0.08,
-					alpha: 0.7,
+					scale: frandom[wsmoke](0.08, 0.12),
+					alpha: alpha,
 					fade: 0.01
 				);
+			}
 		}
 		wait;
 	}

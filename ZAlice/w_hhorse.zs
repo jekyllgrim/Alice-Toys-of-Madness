@@ -57,7 +57,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				invoker.swingSndCounter = SWINGSTAGGER;
 				A_StartSound("weapons/hhorse/hitwall", CHAN_AUTO);
 				int val = 1 * invoker.combo;
-				A_QuakeEx(val, val, val, 6, 0, 32, "");				
+				A_QuakeEx(val, val, val, 6, 0, 32, "");
 			}
 		}
 		

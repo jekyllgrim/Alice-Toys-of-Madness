@@ -503,12 +503,13 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		ToM_Projectile.trailfade 0.05;
 		ToM_Projectile.trailalpha 1;
 		ToM_Projectile.trailscale 0.08;
-		ToM_Projectile.trailstyle Style_AddShaded;
+		ToM_Projectile.trailstyle STYLE_AddShaded;
 		+FORCEXYBILLBOARD
 		+NOGRAVITY
 		+FORCERADIUSDMG
 		+BRIGHT
 		+ROLLCENTER
+		+HITTRACER
 		deathsound "weapons/eyestaff/boom1";
 		height 13;
 		radius 10;
@@ -532,8 +533,6 @@ class ToM_EyestaffProjectile : ToM_Projectile
 			TextureID ptex = TexMan.CheckForTexture("JEYCP0");
 			for (double pangle = 0; pangle < 360; pangle += (360.0 / 12))
 			{
-				//int r = random[eyec](0, ToM_EyestaffProjectile.SmokeColors.Size() - 1);
-				//let col = ToM_EyestaffProjectile.SmokeColors[r];
 				A_SpawnParticleEx(
 					"",//col,
 					ptex,
@@ -557,7 +556,15 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		if (isFrozen())
 			return;
 		if (alt)
-			A_FadeOut(0.07);
+		{
+			if (pos.z > ceilingz)
+			{
+				Destroy();
+				return;
+			}
+			A_FadeOut(0.04);
+			trailalpha = alpha * 3;
+		}
 		A_SetRoll(roll + 16, SPF_INTERPOLATE);
 	}
 
@@ -577,7 +584,7 @@ class ToM_EyestaffProjectile : ToM_Projectile
 	States
 	{
 	Spawn:
-		M000 A 1 
+		M000 A 4
 		{
 			double svel = 0.5;
 			ToM_WhiteSmoke.Spawn(
@@ -625,21 +632,50 @@ class ToM_EyestaffProjectile : ToM_Projectile
 					flags: SPF_FULLBRIGHT
 				);
 			}
+			if (tracer && tracer.bISMONSTER && tracer.health <= 0)
+			{
+				tracer.GiveInventory("ToM_EyestaffBurnControl", 1);
+			}
 		}
 		//BAL2 CDE 5;
 		stop;
 	}
 }
 
-class ToM_EStrail : ToM_BaseFlare
+class ToM_EyestaffBurnControl : ToM_ControlToken
 {
 	Default
 	{
-		ToM_BaseFlare.fcolor "c334eb";
-		ToM_BaseFlare.fadefactor 0.05;
-		alpha 1;
-		scale 0.08;
-	}	
+		ToM_ControlToken.duration 200;
+		ToM_ControlToken.EffectFrequency 3;
+	}
+
+	override void DoControlEffect()
+	{
+		if (GetParticlesQuality() >= TOMPART_MED) 
+		{
+			FSpawnParticleParams smoke;
+			double rad = owner.radius * 0.6;
+			smoke.pos = owner.pos + (
+				frandom[tsfx](-rad,rad), 
+				frandom[tsfx](-rad,rad), 
+				frandom[tsfx](owner.height*0.4,owner.height)
+			);
+			smoke.texture = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
+			smoke.color1 = ToM_EyestaffProjectile.SmokeColors[random[sfx](0, ToM_EyestaffProjectile.SmokeColors.Size() - 1)];
+			smoke.style = STYLE_AddShaded;
+			smoke.vel = (frandom[sfx](-0.2,0.2),frandom[sfx](-0.2,0.2),frandom[sfx](0.5,1.2));
+			smoke.size = frandom[sfx](35, 50);
+			smoke.flags = SPF_ROLL|SPF_REPLACE;
+			smoke.lifetime = random[sfx](60, 100);
+			smoke.sizestep = smoke.size * 0.03;
+			smoke.startalpha = ToM_UtilsP.LinearMap(timer, 0, duration, 1, 0.15);
+			smoke.fadestep = -1;
+			smoke.startroll = random[sfx](0, 359);
+			smoke.rollvel = frandom[sfx](-4,4);
+			Level.SpawnParticle(smoke);
+		}
+	}
 }
 
 class ToM_AimingTracer : LineTracer

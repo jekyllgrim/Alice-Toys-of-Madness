@@ -1061,18 +1061,10 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		else
 			trail.size = 256. * trailscale;
 
-		// Add size step if trailshrink is defined. Since particle
-		// sizestep is a flat addition, I convert the float value
-		// of 'trainshrink' into a positive or negative value
-		// to convert it into a proper sizestep value:
+		// Add size step if trailshrink is defined:
 		if (trailshrink != 0)
 		{
-			double sstep;
-			if (trailshrink > 1)
-				sstep = trail.size * (trailshrink - 1);
-			else
-				sstep = trail.size * -(1 - trailshrink);
-			trail.sizestep = sstep;
+			trail.sizestep = trail.size * (trailshrink - 1);
 		}
 	}
 

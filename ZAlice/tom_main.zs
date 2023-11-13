@@ -1,12 +1,16 @@
 mixin class ToM_PlayerSightCheck 
 {
-	protected bool canSeePlayer;
+	protected transient bool canSeePlayer;
 	//a simple check that returns true if the actor is in any player's LOS:
-	bool CheckPlayerSights() 
+	bool CheckPlayerSights(bool local = false)
 	{
-		for ( int i=0; i<MAXPLAYERS; i++ ) 	
+		if (local)
 		{
-			if ( playeringame[i] && players[i].mo && CheckSight(players[i].mo) )
+			return players[consoleplayer].mo && CheckSight(players[consoleplayer].mo);
+		}
+		for (int i = 0; i < MAXPLAYERS; i++)
+		{
+			if (playeringame[i] && players[i].mo && CheckSight(players[i].mo))
 				return true;
 		}
 		return false;
@@ -959,7 +963,7 @@ Class ToM_ProjFlare : ToM_BaseFlare
 	{
 		ToM_BaseFlare.fcolor "FF0000";
 		alpha 0.8;
-		scale 0.11;		
+		scale 0.11;
 	}
 
 	override void PostBeginPlay()

@@ -623,7 +623,7 @@ class ToM_BaseWeapon : Weapon abstract
 		{
 			TextureID tex = TexMan.CheckForTexture("ACWEZ0");
 			double size = TexMan.GetSize(tex);
-			for (int i = 0; i < 5; i++)
+			for (int i = 0; i < 2; i++)
 			{
 				FSpawnParticleParams pp;
 				pp.texture = tex;
@@ -631,7 +631,7 @@ class ToM_BaseWeapon : Weapon abstract
 				pp.lifetime = 20;
 				pp.size = size*0.25;
 				pp.sizestep = -(pp.size / pp.lifetime);
-				pp.startalpha = 2;
+				pp.startalpha = 1;
 				pp.fadestep = -1;
 				pp.startroll = frandom[pickupPartvis](0,360);
 				pp.rollvel = 5 * randompick[pickupPartvis](-1,1);
@@ -745,49 +745,6 @@ class ToM_KickWeapon : CustomInventory
 			speed = invoker.prekickspeed;
 		}
 		AKIK NO 2;
-		stop;
-	}
-}
-
-class ToM_WeaponPickupParticle : Actor
-{
-	Default
-	{
-		+NOINTERACTION
-		+NOBLOCKMAP
-		+SYNCHRONIZED
-		+DONTBLAST
-		FloatBobPhase 0;
-		renderstyle 'Add';
-		alpha 2;
-		scale 0.25;
-	}
-	
-	override void PostBeginPlay()
-	{
-		super.PostBeginPlay();
-		//roll = frandom[pickupPart](0,360);
-		//scale *= frandom[pickupPart](0.8, 1.2);
-		/*if (master)
-		{
-			let weap = ToM_BaseWeapon(master);
-			A_SetRenderstyle(alpha, Style_Shaded);
-			SetShade(weap.PickupParticleColor);
-		}*/
-	}
-	
-	override void Tick()
-	{
-		SetOrigin(pos + vel, true);
-		A_FadeOut(0.1);
-		roll += 5;
-		scale *= 0.95;
-	}
-
-	States
-	{
-	Spawn:
-		ACWE Z -1;
 		stop;
 	}
 }

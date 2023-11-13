@@ -27,9 +27,17 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	
 	action void A_PepperFlash()
 	{
-		A_Overlay(APSP_UnderLayer, "Flash");
+		bool alt = invoker.bAltFire;
+		state fl = alt ? ResolveState("AltFlash") : ResolveState("Flash");
+		player.SetPSprite(APSP_UnderLayer, fl);
 		A_OverlayFlags(APSP_UnderLayer, PSPF_RenderStyle|PSPF_ForceAlpha, true);
 		A_OverlayRenderstyle(APSP_UnderLayer, Style_Add);
+		A_OverlayPivot(APSP_UnderLayer, 0.36, 0.59);
+		if (!alt)
+		{
+			double sc = frandom[pflash](0.7, 1.0);
+			A_OverlayScale(APSP_UnderLayer, sc, sc, WOF_INTERPOLATE);
+		}
 		
 		A_Overlay(APSP_TopFX, "Highlights");
 		A_OverlayFlags(APSP_TopFX, PSPF_RenderStyle|PSPF_ForceAlpha, true);
@@ -107,6 +115,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 
 	action void A_FirePepperSpray(double spread = 2, double spawnheight = 5.5, double spawnofs_xy = 5.7, int projectiles = 10)
 	{
+		A_PepperFlash();
 		for (int i = 0; i < projectiles; i++)
 		{
 			let proj = A_FirePepperGun(spread, spawnheight, spawnofs_xy, hitscan: false);
@@ -262,6 +271,26 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		}
 		#### # 1 bright A_overlayAlpha(OverlayID(),0.75);
 		stop;
+	AltFlash:
+		PPGF A 1 
+		{
+			A_OverlayPivot(OverlayID(), 0.36, 0.59);
+			let psp = player.FindPSprite(OverlayID());
+			if (psp)
+			{
+				psp.frame = random[ppgr](0,2);
+			}
+		}
+		#### #### 1 bright 
+		{
+			let psp = player.FindPSprite(OverlayID());
+			if (psp)
+			{
+				psp.alpha -= 0.1;
+				psp.scale *= 0.86;
+			}
+		}
+		stop;
 	AltFire:
 		TNT1 A 0 
 		{
@@ -327,6 +356,9 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 		}
 	}
 	
+	// Primary-fire projectiles have bNOGRAVITY,
+	// and they shouldn't exhibit any piercing
+	// behavior:
 	override int SpecialMissileHit(actor victim)
 	{
 		if (bNOGRAVITY)
@@ -371,6 +403,8 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 			{
 				bMISSILE = false;
 				bCORPSE = true;
+				if (flare)
+					flare.A_FadeOut(0.2);
 			}
 		}
 		loop;
@@ -378,11 +412,29 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 		TNT1 A 0 
 		{ 
 			trailcolor = "";
-			flarecolor = "";
 		}
 		APPC A 1 
-		{ 
+		{
+			A_SetTics(random[ppsfx](1,3));
+			if (flare)
+				flare.A_FadeOut(0.2);
+
+			FSpawnParticleParams pp;
+			pp.color1 = color(pcolor[random[ppsfx](0, pcolor.Size()-1)]);
+			pp.lifetime = random[ppsfx](20,35);
+			pp.pos = pos + (frandom[ppsfx](-5,5), frandom[ppsfx](-5,5), 0);
+			pp.vel.x = frandom[ppsfx](-0.5, 0.5);
+			pp.vel.y = frandom[ppsfx](-0.5, 0.5);
+			pp.vel.z = frandom[ppsfx](0.5, 1.2);
+			pp.size = 6;
+			pp.sizestep = -(pp.size / pp.lifetime);
+			pp.startalpha = ToM_UtilsP.LinearMap(scale.x, default.scale.x*0.1, default.scale.x, 0.1, 1);
+			pp.accel.xy = -(pp.vel.xy * 0.05);
+			pp.accel.z = -(pp.vel.z / pp.lifetime);
+			Level.SpawnParticle(pp);
+			
 			scale *= 0.92;
+
 			if (scale.x < default.scale.x * 0.1)
 				Destroy();
 		}

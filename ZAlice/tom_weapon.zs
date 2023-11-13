@@ -856,6 +856,10 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	protected state s_death;
 	protected state s_crash;
 	
+	class<Actor> trailactor;
+	class<ToM_ProjFlare> flareactor;
+	ToM_ProjFlare flare;
+
 	//protected bool mod; //affteced by Weapon Modifier
 	protected vector3 spawnpos;
 	protected bool farenough;	
@@ -876,9 +880,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	
 	double wrot;
 	
-	class<Actor> trailactor;
 	property trailactor : trailactor;
-	class<ToM_ProjFlare> flareactor;	
 	property flareactor : flareactor;
 	property flarecolor : flarecolor;
 	property flarescale : flarescale;
@@ -971,13 +973,13 @@ Class ToM_Projectile : ToM_BaseActor abstract
 			spawnpos = pos;
 		if (!flarecolor || !flareactor)
 			return;
-		let fl = ToM_ProjFlare( Spawn(flareactor,pos) );
-		if (fl) 
+		flare = ToM_ProjFlare( Spawn(flareactor,pos) );
+		if (flare) 
 		{
-			fl.master = self;
-			fl.fcolor = flarecolor;
-			fl.fscale = flarescale;
-			fl.falpha = flarealpha;
+			flare.master = self;
+			flare.fcolor = flarecolor;
+			flare.fscale = flarescale;
+			flare.falpha = flarealpha;
 		}
 	}
 
@@ -1040,16 +1042,23 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		bool isTextured = trailtex.IsValid();
 
 		// if textured, apply the texture:
-		if (isTextured) {
+		if (isTextured)
+		{
 			trail.texture = trailtex;
 		}
 
 		// apply color if provided:
-		if (trailcolor) {
+		if (trailcolor)
+		{
 			// MUST BE SHADED if we're using textured particles,
 			// otherwise the colors get weird for some reason:
-			trail.style = trailstyle == STYLE_Translucent ? STYLE_Shaded : trailstyle;
+			trail.style = (trailstyle == STYLE_Translucent) ? STYLE_Shaded : trailstyle;
 			trail.color1 = color(trailcolor);
+		}
+
+		if (trail.style == STYLE_Shaded || trail.style == STYLE_AddShaded)
+		{
+			trail.flags |= SPF_FULLBRIGHT;
 		}
 
 		// add vertical offset to position:

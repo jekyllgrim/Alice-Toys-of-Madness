@@ -479,7 +479,6 @@ class ToM_TeaBurnControl : ToM_ControlToken
 			return;
 		ResetTimer();
 		prevtrans = owner.translation;
-		//owner.A_SetTranslation("GreenTea");
 		if (burnlayer)
 			burnlayer.Destroy();
 
@@ -515,26 +514,25 @@ class ToM_TeaBurnControl : ToM_ControlToken
 		{	
 			if (GetParticlesQuality() >= TOMPART_MED) 
 			{
-				double rad = owner.radius*0.6;
-				
 				FSpawnParticleParams smoke;
+				double rad = owner.radius * 0.6;
 				smoke.pos = owner.pos + (
 					frandom[tsfx](-rad,rad), 
 					frandom[tsfx](-rad,rad), 
-					frandom[tsfx](owner.pos.z,owner.height*0.75)
+					frandom[tsfx](owner.height*0.4,owner.height)
 				);
-				smoke.color1 = "";
 				smoke.texture = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
+				smoke.color1 = "24e23f";
+				smoke.style = STYLE_AddShaded;
 				smoke.vel = (frandom[tsfx](-0.2,0.2),frandom[tsfx](-0.2,0.2),frandom[tsfx](0.5,1.2));
-				smoke.size = TexMan.GetSize(smoke.texture) * 0.15;
-				
+				smoke.size = frandom[tsfx](35, 50);
 				smoke.flags = SPF_ROLL|SPF_REPLACE;
-				smoke.lifetime = 18;
+				smoke.lifetime = random[tsfx](60, 100);
 				smoke.sizestep = smoke.size * 0.03;
-				smoke.startalpha = 0.2;
+				smoke.startalpha = 0.7;
 				smoke.fadestep = -1;
-				smoke.startroll = random[sfx](0, 359);
-				smoke.rollvel = frandom[sfx](0.5,1) * randompick[sfx](-1,1);
+				smoke.startroll = random[tsfx](0, 359);
+				smoke.rollvel = frandom[tsfx](-1,1);
 				Level.SpawnParticle(smoke);
 			}
 		}
@@ -559,7 +557,7 @@ class ToM_TeaBurnLayer : ToM_ActorLayer
 {
 	Default
 	{
-		Translation "GreenTea";
+		Translation "ToM_GreenTea";
 		ToM_ActorLayer.Fade 0.075;
 	}
 }

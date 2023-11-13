@@ -107,5 +107,6 @@ Sprite "PPGRY0", 403, 215
 {
 	YScale 1.200
 	Offset -107, 4
-	Patch "PPGRY", 0, 0
+	Patch "PPGRZ", 0, 0
+	Patch "PPGRA", 0, 0
 }

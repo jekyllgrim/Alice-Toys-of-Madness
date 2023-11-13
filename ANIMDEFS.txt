@@ -54,4 +54,3 @@ Texture PPGFB0 NoTrim
 Texture PPGFC0 NoTrim
 Texture PPGFZ0 NoTrim
 Texture PPGRZ0 NoTrim
-Texture PPGRY0 NoTrim

@@ -681,10 +681,9 @@ class ToM_EyestaffBurnControl : ToM_ControlToken
 class ToM_AimingTracer : LineTracer
 {
 	override ETraceStatus TraceCallback()
-    {
 		if (results.hitType == TRACE_HitWall || results.hitType == TRACE_HitCeiling || results.hitType == TRACE_HitFloor)
 			return TRACE_Stop;
-        
+		
 		return TRACE_Skip;
 	}
 }
@@ -725,7 +724,6 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 	{
 		"c334eb",
 		"ff00f7",
-		"ffe8fe",
 		"70006b"
 	};
 	
@@ -763,20 +761,30 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 		
 		if (isFrozen())
 			return;
-			
-		for (int i = 6; i > 0; i--)
+		
+		FSpawnParticleParams pp;
+		pp.texture = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
+		pp.style = STYLE_AddShaded;
+		pp.color1 = EyeColor[random[eyec](0, EyeColor.Size()-1)];
+		pp.lifetime = random[eyec](30, 50);
+		pp.size = frandom[eyec](100, 140);
+		pp.startalpha = 1.0;
+		pp.fadestep = -1;
+		pp.startroll = frandom[eyec](0, 360);
+		double hv = 0.6;
+		pp.vel.x = frandom[eyec](-hv,hv);
+		pp.vel.y = frandom[eyec](-hv,hv);
+		pp.vel.z = frandom[eyec](-hv,0);
+		for (int i = ToM_UtilsP.LinearMap(charge, 0, ToM_Eyestaff.ES_FULLCHARGE, 1, 7); i > 0; i--)
 		{		
 			vector3 ppos = pos;
-			
 			ppos.xy = Vec2Angle(frandom[eye](0, circleRad), random[eye](0, 359));
-			
-			double toplimit = level.PointInSector(ppos.xy).NextHighestCeilingAt(ppos.x, ppos.y, ppos.z, ppos.z, ppos.z+ height);
-			
+
+			double toplimit = Level.PointInSector(ppos.xy).NextHighestCeilingAt(ppos.x, ppos.y, ppos.z, ppos.z, ppos.z+ height);
 			ppos.z = Clamp(ppos.z, floorz, toplimit);
-			
-			let t = Spawn("ToM_EStrail", ppos);
-			if (t)
-				t.scale *= frandom[eyec](1, 3);
+
+			pp.pos = ppos;
+			Level.SpawnParticle(pp);
 		}
 	}
 	
@@ -822,9 +830,10 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 				}
 				if (!tracer)
 				{
-					Destroy();
+					return ResolveState("Null");
 				}
 			}
+			return ResolveState(null);
 		}
 		wait;
 	}

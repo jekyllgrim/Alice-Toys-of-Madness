@@ -11,6 +11,9 @@ class ToM_BaseWeapon : Weapon abstract
 	protected int particleLayer; //used by multi-layer particle effects
 	protected double atkzoom;
 	
+	protected state kickstate;
+	protected double prekickspeed;
+	
 	color PickupParticleColor;
 	property PickupParticleColor : PickupParticleColor;
 	bool IsTwoHanded;
@@ -62,120 +65,10 @@ class ToM_BaseWeapon : Weapon abstract
 		ToM_BaseWeapon.PickupParticleColor "7fa832";
 	}
 	
-	override void BeginPlay()
-	{
-		super.BeginPlay();
-		swayTics = -1;
-		s_fire = FindState("Fire");
-		s_hold = FindState("Hold");
-		s_altfire = FindState("AltFire");
-		s_althold = FindState("AltHold");
-		s_idle = FindState("IdleAnim");
-	}
-	
-	// I don't want weapon pickups to be too common due to their
-	// somewhat dramatic appearance. If all players already have 
-	// this weapon, and this weapon uses ammo, we'll destroy it 
-	// and spawn ammo for it instead.
-	// If it doesn't use ammo, we'll just destroy it directly,
-	// since there's no need to spawn duplicates of weapons 
-	// that don't consume ammo.
-	override void PostBeginPlay()
-	{
-		super.PostBeginPlay();
-		if (bTOSSED && ToM_UtilsP.CheckPlayersHave(self.GetClass(), checkAll: true))
-		{
-			if (ammotype1)
-			{
-				let am = Ammo(Spawn(ammotype1, pos));
-				if (am)
-				{
-					am.bTOSSED = true;
-					am.vel = vel;
-				}
-				Destroy();
-				return;
-			}
-		}
-		let handler = ToM_MainHandler(EventHandler.Find("ToM_MainHandler"));
-		if (handler && handler.mapweapons.Find(GetClass()) == handler.mapweapons.Size())
-		{
-			handler.mapweapons.Push(GetClass());
-		}
-	}
-	
-	override void DoEffect()
-	{
-		super.DoEffect();
-		
-		if (!owner || !owner.player)
-			return;
-			
-		let weap = owner.player.readyweapon;
-		
-		if (!weap || weap != self)
-			return;
-		
-		if (SwayTics >= 0) 
-		{
-			double phase = (SwayTics / maxSwayTics) * 90.0;
-			double newAngleSway = (cos(phase) * SwayAngle);
-			double newPitchSway = (cos(phase) * SwayPitch);
-			double finalAngle = (owner.angle - currentAngleSway) + newAngleSway;
-			double finalPitch = (owner.pitch - currentPitchSway) + newPitchSway;
-			currentAngleSway = newAngleSway;
-			currentPitchSway = newPitchSway;
-			owner.A_SetAngle(finalAngle, SPF_INTERPOLATE);
-			owner.A_SetPitch(finalPitch, SPF_INTERPOLATE);
-			SwayTics--;
-		}
-	
-		for (int i = pspcontrols.Size() - 1; i >= 0; i--)
-		{
-			if (pspcontrols[i])
-			{
-				pspcontrols[i].DoResetStep();
-			}
-			else
-			{
-				pspcontrols.Delete(i);
-			}	
-		}
-	}
-	
-	override void Tick()
-	{
-		super.Tick();
-		if (owner || isFrozen())
-			return;
-		
-		WorldOffset.z = BobSin(FloatBobPhase + 0.85 * level.maptime) * FloatBobStrength;
-		
-		if (GetAge() % 10 == 0)
-			canSeePlayer = CheckPlayerSights();		
-		if (!canSeePlayer)
-			return;
-			
-		if (players[consoleplayer].mo && players[consoleplayer].mo.CountInv(self.GetClass()) <= 0 )
-		{
-			for (int i = 0; i < 5; i++)
-			{		
-				A_SpawnItemEx(
-					"ToM_WeaponPickupParticle",
-					xofs: frandom[pickupPartvis](-radius, radius),
-					yofs: frandom[pickupPartvis](-radius, radius),
-					zofs: frandom[pickupPartvis](1, 4),
-					zvel: frandom[pickupPartvis](0.4, 4)
-				);
-			}
-		}
-	}
-	
 	action bool HasRageBox()
 	{
 		return (CountInv("ToM_RageBoxInitEffect") || CountInv("ToM_RageBoxMainEffect"));
 	}
-
 	
 	/*	Function by Lewisk3 using Gutamatics to fire 3D projectiles
 		with proper 3D offsets and optional crosshair converging.
@@ -626,14 +519,132 @@ class ToM_BaseWeapon : Weapon abstract
 		return A_FireProjectile(missiletype, angle, useammo, spawnofs_xy, spawnheight, flags, pitchOfs);
 	}
 	
-	protected state kickstate;
-	protected double prekickspeed;
-	
 	action void A_AliceKick()
 	{
 		A_CustomPunch(30, true, CPF_NOTURN, pufftype: "ToM_Kickpuff", range: 80);
 	}
 	
+	
+	override void BeginPlay()
+	{
+		super.BeginPlay();
+		swayTics = -1;
+		s_fire = FindState("Fire");
+		s_hold = FindState("Hold");
+		s_altfire = FindState("AltFire");
+		s_althold = FindState("AltHold");
+		s_idle = FindState("IdleAnim");
+	}
+	
+	// I don't want weapon pickups to be too common due to their
+	// somewhat dramatic appearance. If all players already have 
+	// this weapon, and this weapon uses ammo, we'll destroy it 
+	// and spawn ammo for it instead.
+	// If it doesn't use ammo, we'll just destroy it directly,
+	// since there's no need to spawn duplicates of weapons 
+	// that don't consume ammo.
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		if (bTOSSED && ToM_UtilsP.CheckPlayersHave(self.GetClass(), checkAll: true))
+		{
+			if (ammotype1)
+			{
+				let am = Ammo(Spawn(ammotype1, pos));
+				if (am)
+				{
+					am.bTOSSED = true;
+					am.vel = vel;
+				}
+				Destroy();
+				return;
+			}
+		}
+		let handler = ToM_MainHandler(EventHandler.Find("ToM_MainHandler"));
+		if (handler && handler.mapweapons.Find(GetClass()) == handler.mapweapons.Size())
+		{
+			handler.mapweapons.Push(GetClass());
+		}
+	}
+	
+	override void DoEffect()
+	{
+		super.DoEffect();
+		
+		if (!owner || !owner.player)
+			return;
+			
+		let weap = owner.player.readyweapon;
+		
+		if (!weap || weap != self)
+			return;
+		
+		if (SwayTics >= 0) 
+		{
+			double phase = (SwayTics / maxSwayTics) * 90.0;
+			double newAngleSway = (cos(phase) * SwayAngle);
+			double newPitchSway = (cos(phase) * SwayPitch);
+			double finalAngle = (owner.angle - currentAngleSway) + newAngleSway;
+			double finalPitch = (owner.pitch - currentPitchSway) + newPitchSway;
+			currentAngleSway = newAngleSway;
+			currentPitchSway = newPitchSway;
+			owner.A_SetAngle(finalAngle, SPF_INTERPOLATE);
+			owner.A_SetPitch(finalPitch, SPF_INTERPOLATE);
+			SwayTics--;
+		}
+	
+		for (int i = pspcontrols.Size() - 1; i >= 0; i--)
+		{
+			if (pspcontrols[i])
+			{
+				pspcontrols[i].DoResetStep();
+			}
+			else
+			{
+				pspcontrols.Delete(i);
+			}	
+		}
+	}
+	
+	override void Tick()
+	{
+		super.Tick();
+		if (owner || isFrozen())
+			return;
+		
+		WorldOffset.z = BobSin(FloatBobPhase + 0.85 * level.maptime) * FloatBobStrength;
+		
+		if (GetAge() % 10 == 0)
+			canSeePlayer = CheckPlayerSights(true);
+		if (!canSeePlayer)
+			return;
+			
+		if (players[consoleplayer].mo && players[consoleplayer].mo.CountInv(self.GetClass()) <= 0 )
+		{
+			TextureID tex = TexMan.CheckForTexture("ACWEZ0");
+			double size = TexMan.GetSize(tex);
+			for (int i = 0; i < 5; i++)
+			{
+				FSpawnParticleParams pp;
+				pp.texture = tex;
+				pp.color1 = "";
+				pp.lifetime = 20;
+				pp.size = size*0.25;
+				pp.sizestep = -(pp.size / pp.lifetime);
+				pp.startalpha = 2;
+				pp.fadestep = -1;
+				pp.startroll = frandom[pickupPartvis](0,360);
+				pp.rollvel = 5 * randompick[pickupPartvis](-1,1);
+				pp.flags = SPF_FULLBRIGHT|SPF_ROLL;
+				pp.style = Style_Add;
+				pp.pos.x = pos.x + frandom[pickupPartvis](-radius, radius);
+				pp.pos.y = pos.y + frandom[pickupPartvis](-radius, radius);
+				pp.pos.z = pos.z + frandom[pickupPartvis](1, 4);
+				pp.vel.z = frandom[pickupPartvis](0.4, 4);
+				Level.SpawnParticle(pp);
+			}
+		}
+	}
 	States
 	{
 	Kick:
@@ -1066,7 +1077,8 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		// lifetime is calculated based on alpha and fadefactor:
 		trail.lifetime = ceil(trailalpha / trailfade);
 		// apply random velocity if pvel is not 0:
-		if (pvel != 0) {
+		if (pvel != 0)
+		{
 			trail.vel = (
 				frandom[trailfx](-pvel,pvel),
 				frandom[trailfx](-pvel,pvel),
@@ -1096,7 +1108,8 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		// sizestep is a flat addition, I convert the float value
 		// of 'trainshrink' into a positive or negative value
 		// to convert it into a proper sizestep value:
-		if (trailshrink != 0) {
+		if (trailshrink != 0)
+		{
 			double sstep;
 			if (trailshrink > 1)
 				sstep = trail.size * (trailshrink - 1);

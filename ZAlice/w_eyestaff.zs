@@ -88,7 +88,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			if (!st)
 				return;
 			psp = player.GetPSprite(PSP_Flash);
-			player.SetPSprite(PSP_Flash, st);
+			psp.SetState(st);
 			A_OverlayFlags(PSP_Flash, PSPF_Renderstyle|PSPF_ForceAlpha, true);
 			A_OverlayRenderstyle(PSP_Flash, Style_Add);
 		}
@@ -181,7 +181,6 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		ppos.z = level.PointInSector(ppos.xy).NextLowestFloorAt(ppos.x, ppos.y, ppos.z) + 18;
 		
 		let proj = ToM_EyestaffProjectile(Spawn("ToM_EyestaffProjectile", ppos));
-		//ToM_EyestaffProjectile(A_Fire3DProjectile("ToM_EyestaffProjectile", useammo: false, forward: 56 + frandom(-5,5), leftright: frandom(-5,5), updown: 5));
 		if (proj)
 		{
 			proj.alt = true;
@@ -286,6 +285,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 				return ResolveState("Fire");
 			}
 			A_StopCharge();
+			player.SetPsprite(PSP_Flash, ResolveState("FlashEnd"));
 			A_StartSound("weapons/eyestaff/chargeoff", CHAN_WEAPON);
 			return ResolveState("Ready");
 		}
@@ -309,12 +309,15 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	BeamFlash:
 		JEYC F -1 bright;
 		stop;
+	FlashEnd:
+		#### # 1 bright A_PSPFadeOut(0.15);
+		loop;
 	FireEnd:
 		TNT1 A 0 
 		{
 			A_StopBeam();
 			A_StopSound(CHAN_WEAPON);
-			player.SetPsprite(PSP_Flash, ResolveState("Null"));
+			player.SetPsprite(PSP_Flash, ResolveState("FlashEnd"));
 			let proj = A_FireProjectile("ToM_EyestaffProjectile", useammo: false);
 			if (proj)
 				proj.A_StartSound("weapons/eyestaff/fireProjectile");
@@ -335,7 +338,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		JEYC EEDDCCBBA 1;
 		goto ready;
 	AltFlash:
-		JEYC G 10 bright;
+		JEYC G -1 bright;
 		stop;
 	AltFire:
 		//TNT1 A 0 A_OverlayPivot(OverlayID(), 1, 1);
@@ -375,7 +378,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			if (invoker.charge <= 0)
 				return ResolveState("AltFireEnd");
 			
-			A_LaunchSkyMissiles();			
+			A_LaunchSkyMissiles();
 			return ResolveState(null);
 		}
 		wait;
@@ -384,7 +387,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			A_SpawnSkyMissiles();
 			A_StopCharge();
-			A_ClearOverlays(PSP_Flash,PSP_Flash);
+			player.SetPsprite(PSP_Flash, ResolveState("Null"));
 		}
 	AltFireEndFast:
 		JEYC # 0 
@@ -681,6 +684,7 @@ class ToM_EyestaffBurnControl : ToM_ControlToken
 class ToM_AimingTracer : LineTracer
 {
 	override ETraceStatus TraceCallback()
+	{
 		if (results.hitType == TRACE_HitWall || results.hitType == TRACE_HitCeiling || results.hitType == TRACE_HitFloor)
 			return TRACE_Stop;
 		

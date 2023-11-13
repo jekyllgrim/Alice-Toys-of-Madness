@@ -998,7 +998,7 @@ Class ToM_ProjFlare : ToM_BaseFlare
 
 		Warp(master,xoffset,0,0,flags:WARPF_INTERPOLATE);
 		
-		if (master.InstateSequence(master.curstate, mdeath) || master.InstateSequence(master.curstate, mxdeath) || master.InstateSequence(master.curstate, mcrash)) 
+		if (master.InstateSequence(master.curstate, mdeath) || master.InstateSequence(master.curstate, mxdeath) /*|| master.InstateSequence(master.curstate, mcrash)*/) 
 		{
 			Destroy();
 			return;

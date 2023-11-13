@@ -1087,7 +1087,7 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 		alpha 0.5;
 	}
 	
-	static Actor Spawn(vector3 pos, double ofs = 0, vector3 vel = (0,0,0), double scale = 0.1, double rotation = 4, double alpha = 0.5, double fade = 0.01, double dbrake = 0.98, double dscale = 1.04, int fadedelay = 25, int style = STYLE_Translucent, color shade = -1, bool bright = false, bool particle = true)
+	static Actor Spawn(vector3 pos, double ofs = 0, vector3 vel = (0,0,0), double scale = 0.1, double rotation = 4, double alpha = 0.5, double fade = 0.01, double dbrake = 0.98, double dscale = 1.04, int fadedelay = 25, int style = STYLE_Translucent, color shade = -1, int flags = 0, bool particle = true)
 	{
 		if (particle)
 		{
@@ -1105,9 +1105,7 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 				smoke.color1 = "";
 			}
 			smoke.lifetime = ceil(alpha / fade) + fadedelay;
-			smoke.flags = SPF_ROLL|SPF_REPLACE;
-			if (bright)
-				smoke.flags |= SPF_FULLBRIGHT;
+			smoke.flags = SPF_ROLL|SPF_REPLACE|flags;
 			smoke.size = TexMan.GetSize(smoketex) * scale * frandom[sfx](0.9,1.1);
 			smoke.sizestep = smoke.size * (dscale - 1.0) * 0.75;
 			smoke.startalpha = alpha;

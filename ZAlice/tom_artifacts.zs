@@ -17,27 +17,23 @@ class ToM_RageBox : Actor replaces Berserk
 	
 	void SpawnRageSmoke()
 	{
-		if (target)
+		if (target && target.player)
 		{
-			let diff = LevelLocals.Vec2Diff(pos.xy, target.pos.xy);
-			let dir = diff.unit();
-			smokedir = (dir.x, dir.y, pos.z);
+			let diff = LevelLocals.Vec3Diff(pos + (0,0,24), target.pos + (0,0, ToM_UtilsP.GetPlayerAtkHeight(target.player.mo)));
+			smokedir = diff.unit();
 			
-			let smk = ToM_WhiteSmoke.Spawn(
+			ToM_WhiteSmoke.Spawn(
 				pos + (0,0, 24),
 				vel: smokedir * 5,
 				scale: 0.1,
 				alpha: 1,
 				fade: 0.1,
 				dbrake: 0.94,
-				dscale: 1.025
+				dscale: 1.025,
+				style: STYLE_Shaded,
+				shade: "a80a0a",
+				flags: SPF_NOTIMEFREEZE
 			);
-			if (smk)
-			{
-				smk.A_SetRenderstyle(smk.alpha, Style_Shaded);
-				smk.SetShade("a80a0a");
-				smk.bNOTIMEFREEZE = true;
-			}
 		}
 	}
 	

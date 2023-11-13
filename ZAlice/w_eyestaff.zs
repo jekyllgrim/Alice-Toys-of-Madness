@@ -594,7 +594,7 @@ class ToM_EyestaffProjectile : ToM_Projectile
 				dbrake: 0.6,
 				style: STYLE_AddShaded,
 				shade: SmokeColors[random[essmk](0, SmokeColors.Size() - 1)],
-				bright:true
+				flags: SPF_FULLBRIGHT
 			);
 		}
 		loop;
@@ -622,7 +622,7 @@ class ToM_EyestaffProjectile : ToM_Projectile
 					dscale: 1.015,
 					style: STYLE_AddShaded,
 					shade: SmokeColors[random[essmk](0, SmokeColors.Size() - 1)],
-					bright:true
+					flags: SPF_FULLBRIGHT
 				);
 			}
 		}

@@ -385,7 +385,7 @@ class ToM_Teapot : ToM_BaseWeapon
 	AltFire:
 		TNT1 A 0 A_JumpIf(invoker.overheated == false, "AltFireDo");
 		TNT1 A 0 A_StartSound("weapons/teapot/close", CHAN_AUTO);
-		TPOT AB 3;
+		TPOT AB 2;
 	AltFireDo:
 		TPOT OOPP 1 
 		{

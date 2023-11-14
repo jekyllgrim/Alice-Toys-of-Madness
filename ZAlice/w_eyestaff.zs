@@ -680,17 +680,6 @@ class ToM_EyestaffBurnControl : ToM_ControlToken
 	}
 }
 
-class ToM_AimingTracer : LineTracer
-{
-	override ETraceStatus TraceCallback()
-	{
-		if (results.hitType == TRACE_HitWall || results.hitType == TRACE_HitCeiling || results.hitType == TRACE_HitFloor)
-			return TRACE_Stop;
-		
-		return TRACE_Skip;
-	}
-}
-
 class ToM_ESAimingCircle : ToM_BaseActor
 {
 	Default

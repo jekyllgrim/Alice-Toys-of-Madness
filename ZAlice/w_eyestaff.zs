@@ -698,7 +698,7 @@ class ToM_ESAimingCircle : ToM_BaseActor
 		+NOBLOCKMAP
 		+NOINTERACTION
 		+BRIGHT
-		renderstyle 'Translucent';
+		renderstyle 'Add';
 		alpha 0.42;
 		radius 256;
 		scale 256;

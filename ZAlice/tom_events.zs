@@ -95,6 +95,11 @@ class ToM_Mainhandler : EventHandler
 		if (!e.thing)
 			return;
 
+		if (e.thing.health <= 0 && e.DamageType == 'Eyestaff')
+		{
+			e.thing.GiveInventory("ToM_EyestaffBurnControl", 1);
+		}
+
 		if (e.Inflictor && e.Inflictor.GetClass() == 'ToM_TeaProjectile' && e.Inflictor.target)
 		{
 			let act = e.thing;

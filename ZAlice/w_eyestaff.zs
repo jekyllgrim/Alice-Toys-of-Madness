@@ -440,6 +440,7 @@ class ToM_EyestaffPuff : ToM_BasePuff
 	Default
 	{
 		+NODAMAGETHRUST
+		DamageType 'Eyestaff';
 	}
 }
 
@@ -506,12 +507,12 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		ToM_Projectile.trailalpha 1;
 		ToM_Projectile.trailscale 0.08;
 		ToM_Projectile.trailstyle STYLE_AddShaded;
+		DamageType 'Eyestaff';
 		+FORCEXYBILLBOARD
 		+NOGRAVITY
 		+FORCERADIUSDMG
 		+BRIGHT
 		+ROLLCENTER
-		+HITTRACER
 		deathsound "weapons/eyestaff/boom1";
 		height 13;
 		radius 10;
@@ -633,10 +634,6 @@ class ToM_EyestaffProjectile : ToM_Projectile
 					shade: SmokeColors[random[essmk](0, SmokeColors.Size() - 1)],
 					flags: SPF_FULLBRIGHT
 				);
-			}
-			if (tracer && tracer.bISMONSTER && tracer.health <= 0)
-			{
-				tracer.GiveInventory("ToM_EyestaffBurnControl", 1);
 			}
 		}
 		//BAL2 CDE 5;

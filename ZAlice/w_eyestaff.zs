@@ -810,7 +810,6 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 					double hvel = 2.8;
 					proj.vel.xy = (frandom(-hvel,hvel), frandom(-hvel,hvel));
 					proj.A_FaceMovementDirection();
-					proj.A_StartSound("weapons/eyestaff/boom2");
 				}
 				charge--;
 			}

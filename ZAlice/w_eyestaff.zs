@@ -138,8 +138,6 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	
 	action void A_AimCircle(double dist = 350)
 	{
-		if (!invoker.aimCircle)
-			invoker.aimCircle = ToM_ESAimingCircle(Spawn("ToM_ESAimingCircle", pos));
 		
 		double atkheight = ToM_UtilsP.GetPlayerAtkHeight(PlayerPawn(self));
 		
@@ -156,9 +154,10 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			ppos = tr.HitLocation;
 		}
-		
 		ppos.z = level.PointInSector(ppos.xy).NextLowestFloorAt(ppos.x, ppos.y, ppos.z);
 
+		if (!invoker.aimCircle)
+			invoker.aimCircle = ToM_ESAimingCircle(Spawn("ToM_ESAimingCircle", ppos));
 		invoker.aimCircle.SetOrigin(ppos, true);
 	}
 	

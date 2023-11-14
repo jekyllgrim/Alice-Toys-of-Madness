@@ -81,15 +81,25 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 			A_WeaponOffset(frandom[bbus](-invoker.charge, invoker.charge), WEAPONTOP + frandom[bbus](0, invoker.charge), WOF_INTERPOLATE);
 			invoker.charge += 0.2;
 			A_Overlay(APSP_Overlayer, "Flint");
+			A_AttackZoom(0.001, 0.08, 0.002);
 			A_SpawnPSParticle("FireParticle", bottom: false, density: 3, xofs: 1.4, yofs: 1);
 		}
 		BBUS B 1 A_FireBlunderbuss();
-		TNT1 A 0 A_CameraSway(0, -12, 10);
+		TNT1 A 0 
+		{
+			A_CameraSway(0, -12, 10);
+			player.cheats |= CF_FROZEN;
+		}
 		BBUS DF 1;
 		BBUS FFFFFFFFFF 1 
 		{
 			A_WeaponOffset(30, 20, WOF_ADD);
 			A_OverlayScale(OverlayID(), 0.08, 0.08, WOF_ADD);
+			A_ResetZoom();
+		}
+		TNT1 A 0
+		{
+			player.cheats &= ~CF_FROZEN;
 		}
 		TNT1 A 25 A_CheckReload();
 		BBUS B 0 

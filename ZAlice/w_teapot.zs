@@ -358,7 +358,7 @@ class ToM_Teapot : ToM_BaseWeapon
 			let psp = player.FindPSprite(OverlayID());
 			if (psp)
 			{
-				A_OverlayFlags(OverlayID(), PSPF_AddWeapon|PSPF_AddBob, false);
+				A_OverlayFlags(OverlayID(), PSPF_AddWeapon, false);
 				A_PSPMakeTranslucent(OverlayID(), 0.6);
 				A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);
 				//psp.x = frandom[vapr](-7,7);

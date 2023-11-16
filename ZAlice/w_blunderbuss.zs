@@ -20,8 +20,12 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 	action void A_FireBlunderbuss()
 	{
 		A_ClearPSParticles(bottom:false);
-		A_Overlay(APSP_UnderLayer, "MuzzleSmoke");
+		//A_Overlay(APSP_UnderLayer, "MuzzleSmoke");
 		//A_Overlay(APSP_TopFX, "Flash");
+		for (int i = 3; i > 0; i--)
+		{
+			A_FireProjectile("ToM_MuzzleSmoke", frandom[muzsm](-5,5), useammo:false, spawnheight: -8, flags:FPF_NOAUTOAIM, pitch: frandom[muzsm](-5,5));
+		}
 		A_FireProjectile("ToM_Cannonball");
 		invoker.charge = 0;
 		A_Recoil(14);
@@ -177,6 +181,43 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 		stop;
 	}
 }
+
+class ToM_MuzzleSmoke : ToM_SmallDebris
+{
+	TextureID trailtex;
+	Default
+	{
+		+NOINTERACTION
+		+MISSILE
+		Speed 15;
+		Scale 1.0;
+		Renderstyle 'Shaded';
+		StencilColor '800080';
+		Alpha 0.6;
+	}
+	override void PostBeginPlay() 
+	{
+		super.PostBeginPlay();
+		frame = random[sfx](0,5);
+		dscale = frandom[sfx](0.002, 0.003);
+		wrot = frandom[sfx](-10, 10);
+	}
+	States
+	{
+	Spawn:
+		SMO2 # 1
+		{
+			vel *= 0.8;
+			scale *= (1 + dscale);
+			dscale *= 0.99;
+			roll += wrot;
+			wrot *= 0.9;
+			A_FadeOut(default.alpha * 0.01);
+		}
+		loop;
+	}
+}
+
 
 class ToM_Cannonball : ToM_Projectile
 {

@@ -68,6 +68,7 @@ class ToM_Cards : ToM_BaseWeapon
 		invoker.cardVertStep[layer]++;
 		if (invoker.cardVertStep[layer] > CARDSTEPS)
 			invoker.cardVertStep[layer] = 1;
+		//double f = frandom[cardsfx](0.1, 1.0);
 		for (int i = 0; i < 4; i++)
 		{
 			double ang = ANGLESTEP * Clamp(invoker.cardVertStep[layer], 1, CARDSTEPS) + (CARDANGLEDIFF * 10 * layer);
@@ -113,6 +114,40 @@ class ToM_Cards : ToM_BaseWeapon
 		player.SetPSPrite(APSP_Card2, ResolveState("RemoveCard"));
 		player.SetPSPrite(APSP_Card3, ResolveState("RemoveCard"));
 	}
+
+	action Actor A_FindCardTarget(double dist = 2048, double aimAngle = 15)
+	{
+		let it = BlockThingsIterator.Create(self, dist);
+		Actor closest;
+		double closestDist = dist;
+		double atkheight = ToM_UtilsP.GetPlayerAtkHeight(player.mo);
+		vector3 eyes = pos + (0,0,atkheight);
+		while (it.Next())
+		{
+			let t = it.thing;
+			if (!t)
+				continue;
+			
+			if (t.health <= 0 || !t.bSHOOTABLE || t.bNONSHOOTABLE)
+				continue;
+			
+			vector3 coords = Level.SphericalCoords(eyes, t.pos + (0,0,t.height*0.5), (angle, pitch));
+			if (coords.z > closestDist)
+				continue;
+			
+			double angFac = ToM_UtilsP.LinearMap(coords.z + radius + t.radius, 0, dist, 1.0, 0.1);
+			if (abs(coords.x) > aimAngle*angFac || abs(coords.y) > aimAngle*angFac)
+				continue;
+			
+			if (CheckSight(t,SF_IGNOREWATERBOUNDARY))
+			{
+				//Console.Printf("Found %s. Coords: %.1f, %.1f, %1.f", t.GetClassName(), coords.x, coords.y, coords.z);
+				closestDist = coords.z;
+				closest = t;
+			}
+		}
+		return closest;
+	}
 	
 	action Actor A_FireCard(double xspread = 0, double yspread = 0, double xofs = 0, double yofs = 0, bool altmode = false)
 	{
@@ -122,6 +157,7 @@ class ToM_Cards : ToM_BaseWeapon
 		//console.printf("firing a card at an angle of %1.f", horspread);
 		let proj = ToM_CardProjectile(A_Fire3DProjectile(
 			"ToM_CardProjectile",
+			forward: radius,
 			leftright: xofs,
 			updown: yofs,
 			crosshairConverge: true,
@@ -132,6 +168,7 @@ class ToM_Cards : ToM_BaseWeapon
 		if (proj)
 		{
 			proj.A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
+			proj.tracer = A_FindCardTarget();
 			
 			int dmg;
 			name spritename; 
@@ -139,6 +176,9 @@ class ToM_Cards : ToM_BaseWeapon
 			if (altmode)
 			{
 				[dmg, spritename] = invoker.PickRandomCard();
+				proj.vel *= 0.35;
+				proj.seekDelay = 14;
+				proj.seekAngle = 6;
 			}
 			
 			else 
@@ -354,9 +394,10 @@ class ToM_Cards : ToM_BaseWeapon
 			}
 			return ResolveState("Null");
 		}			
-		#### A 1 A_RotateIdleCard();		
+		#### A 1 A_RotateIdleCard();
 		wait;
 	FireCard:
+		#### # 0 A_OverlayPivot(OverlayID(), 0, 0);
 		#### ### 1 
 		{
 			A_OverlayScale(OverlayID(), -0.3, -0.3, WOF_ADD);
@@ -416,7 +457,7 @@ class ToM_Cards : ToM_BaseWeapon
 			//console.printf("ofs: %1.f, %1.f", ofs.x, ofs.y);
 			A_FireCard(1, 1, xofs: ofs.x, yofs: ofs.y);
 		}
-		APCR AAAAAAAAA 1 A_RotateHand();
+		APCR AAAAAAAA 1 A_RotateHand();
 		TNT1 A 0 
 		{
 			A_CheckReload();
@@ -451,8 +492,8 @@ class ToM_Cards : ToM_BaseWeapon
 			invoker.cardXpos += 1;
 		}
 		APCR OOOOO 1 A_OverlayOffset(OverlayID(), 2, 0, WOF_ADD);
-		TNT1 A 0 A_ResetPSprite(OverlayID(), 5);
-		APCR PPQAA 1;
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 7);
+		APCR PPQQAAA 1;
 		TNT1 A 0 A_ReFire();
 		APCR A 6 A_CreateCardLayers();
 		goto ready;
@@ -482,20 +523,24 @@ class ToM_CardData play
 }
 
 class ToM_CardProjectile : ToM_StakeProjectile
-{	
+{
+	const TRAILOFS = 4;
 	double broll;
 	double angleCurve;
 	double pitchCurve;
 	int cardSpecialDamage;
+	int seekDelay;
+	int seekAngle;
 	
 	Default
 	{
 		ToM_Projectile.ShouldActivateLines true;
 		ToM_Projectile.trailcolor "f4f4f4";
 		ToM_Projectile.trailscale 0.013;
-		ToM_Projectile.trailfade 0.024;
-		ToM_Projectile.trailalpha 0.2;
+		ToM_Projectile.trailfade 0.005;
+		ToM_Projectile.trailalpha 0.1;
 		+ROLLSPRITE
+		+SCREENSEEKER
 		renderstyle "Translucent";
 		speed 55;
 		DamageFunction SetCardDamage();
@@ -512,6 +557,19 @@ class ToM_CardProjectile : ToM_StakeProjectile
 			console.printf("card damage: %d", dmg);
 		return dmg;
 	}
+
+	override void SpawnTrail(vector3 ppos)
+	{
+		FSpawnParticleParams trail;
+
+		vector3 projpos = ToM_UtilsP.RelativeToGlobalCoords(self, (-TRAILOFS, -TRAILOFS, 0), isPosition: false);
+		CreateParticleTrail(trail, ppos + projpos, trailvel);
+		Level.SpawnParticle(trail);
+		
+		projpos = ToM_UtilsP.RelativeToGlobalCoords(self, (-TRAILOFS, TRAILOFS, 0), isPosition: false);
+		CreateParticleTrail(trail, ppos + projpos, trailvel);
+		Level.SpawnParticle(trail);
+	}
 	
 	override void PostBeginPlay()
 	{
@@ -519,24 +577,31 @@ class ToM_CardProjectile : ToM_StakeProjectile
 		//console.printf("card damage: %d", damage);
 		if (target && (angleCurve > 0 || pitchCurve > 0))
 		{
-			angle = target.angle + angleCurve;			
+			angle = target.angle + angleCurve;
 			pitch = target.pitch + pitchCurve;
 			Vel3DFromAngle(speed, angle, pitch);
 		}
+
+		seekAngle = Clamp(seekAngle, 1, 90);
 	}
 	
 	States
 	{
 	Spawn:
 		#### A 1
-		{			
-			if (GetAge() > 5)
-				roll += broll;
-			if (angleCurve > 0 || pitchCurve > 0)
+		{
+			if (tracer && age > seekDelay && seekAngle > 0)
 			{
-				A_SetAngle(angle + angleCurve);
-				A_SetPitch(pitch + pitchCurve);
-				Vel3DFromAngle(speed, angle, pitch);
+				double angTo = DeltaAngle(angle, AngleTo(tracer));
+				if (abs(angTo) > 90 || abs(PitchTo(tracer)) > 45)
+				{
+					tracer = null;
+				}
+				else
+				{
+					A_SetRoll(roll - Clamp(angTo, -20, 20), SPF_INTERPOLATE);
+				}
+				A_SeekerMissile(0, seekAngle, SMF_PRECISE|SMF_CURSPEED, 256);
 			}
 		}
 		loop;

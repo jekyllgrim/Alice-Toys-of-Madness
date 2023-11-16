@@ -917,7 +917,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 			if (victim.bSPECTRAL && !missile.bSPECTRAL)
 				return true;
 		}*/
-		return (victim.bSHOOTABLE && !victim.bNONSHOOTABLE && !victim.bNOCLIP && !victim.bNOINTERACTION && !victim.bINVULNERABLE && !victim.bDORMANT && !victim.bNODAMAGE  && !victim.bSPECTRAL);
+		return (victim.bSHOOTABLE && !victim.bNONSHOOTABLE && !victim.bNOCLIP && !victim.bNOINTERACTION && !victim.bINVULNERABLE && !victim.bDORMANT && !victim.bNODAMAGE && !victim.bSPECTRAL);
 	}
 	
 	bool FireLineActivator()
@@ -937,8 +937,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		s_death = FindState("Death");
 		s_crash = FindState("Crash");
 		//tom_main = target && PKWeapon.CheckWmod(target);
-		if (trailcolor)
-			spawnpos = pos;
+		spawnpos = pos;
 		if (!flarecolor || !flareactor)
 			return;
 		flare = ToM_ProjFlare( Spawn(flareactor,pos) );
@@ -1071,9 +1070,11 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	//An override initially by Arctangent that spawns trails like FastProjectile does it:
 	override void Tick () 
 	{
-		Vector3 oldPos = self.pos;		
+		Vector3 oldPos = self.pos;
 		Super.Tick();
-		
+		if (isFrozen())
+			return;
+			
 		/*if (ShouldActivateLines && !dead && ( InStateSequence(curstate, s_death) || InStateSequence(curstate, s_crash)))
 		{
 			dead = true;
@@ -1083,11 +1084,14 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		// Continue only if either a color is specified
 		// ir the trailactor is a custom actor:
 		if (!trailcolor && !trailactor)
-			return;		
+			return;
 		
 		if (GetParticlesQuality() <= TOMPART_MIN)
-			return;	
+			return;
 			
+		if (oldPos == self.pos || vel.length() == 0)
+			return;
+
 		if (!farenough && target)
 		{
 			if (level.Vec3Diff(pos, spawnpos).length() < vel.length() + target.radius)
@@ -1102,11 +1106,11 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		// This determines how far apart the particles areL
 		double distance = path.length() / clamp(int(trailscale * 50),1,8); 
 		Vector3 direction = path / distance;
-		int steps = int( distance );		
-		for( int i = 0; i < steps; i++ )  
+		int steps = int( distance );
+		for(int i = 0; i < steps; i++)
 		{
 			SpawnTrail(oldpos);
-			oldPos = level.vec3Offset( oldPos, direction );
+			oldPos = level.vec3Offset(oldPos, direction);
 		}
 	}
 }

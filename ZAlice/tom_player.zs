@@ -433,7 +433,7 @@ class ToM_AlicePlayer : DoomPlayer
 
 		let player = self.player;
 		if (!player)
-			return;		
+			return;
 		
 		UpdateWeaponModel();
 

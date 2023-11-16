@@ -38,9 +38,9 @@ class ToM_NullActor : Actor
 		+NOBLOCKMAP
 		+SYNCHRONIZED
 		+DONTBLAST
+		FloatBobPhase 0;
 		radius 0;
 		height 0;
-		FloatBobPhase 0;
 	}
 	override void PostBeginPlay() 
 	{
@@ -1177,7 +1177,7 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 		}
 	}
 	
-	states 
+	States
 	{
 	Spawn:
 		SMO2 # -1 NoDelay 

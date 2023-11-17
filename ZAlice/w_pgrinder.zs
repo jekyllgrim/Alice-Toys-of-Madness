@@ -307,7 +307,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	AltFireDo:
 		PPGR Y 1 
 		{
-			A_FirePepperSpray(6);
+			A_FirePepperSpray(6, projectiles: 8);
 			A_OverlayPivot(OverlayID(), 0.1, 0.8);
 		}
 		PPGR YYYY 1 

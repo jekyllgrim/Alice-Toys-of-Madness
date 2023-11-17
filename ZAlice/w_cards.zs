@@ -533,10 +533,10 @@ class ToM_Cards : ToM_BaseWeapon
 			invoker.cardXpos += 1;
 		}
 		APCR OOOOO 1 A_OverlayOffset(OverlayID(), 2, 0, WOF_ADD);
-		TNT1 A 0 A_ResetPSprite(OverlayID(), 7);
-		APCR PPQQAAA 1;
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 6);
+		APCR PPQQAA 1;
 		TNT1 A 0 A_ReFire();
-		APCR A 6 A_CreateCardLayers();
+		APCR A 5 A_CreateCardLayers();
 		goto ready;
 	Cache:
 		ACC1 A 0; ACC2 A 0; ACC3 A 0; ACC4 A 0; ACC5 A 0; ACC6 A 0; ACC7 A 0; ACC8 A 0; ACC9 A 0; ACCT A 0; ACCJ A 0; ACCQ A 0; ACCK A 0; 

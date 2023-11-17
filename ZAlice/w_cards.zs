@@ -397,18 +397,8 @@ class ToM_Cards : ToM_BaseWeapon
 			}
 		}
 		TNT1 A 1;
-		APCR BCD 1 
-		{
-			A_OffsetCardLayer(OverlayID());
-			//if (OverlayID() == APSP_Card2)
-				//A_OverlayScale(OverlayID(), 0.035, 0.035, WOF_ADD);
-		}
-		APCR EFG 2 
-		{
-			A_OffsetCardLayer(OverlayID());
-			//if (OverlayID() == APSP_Card2)
-				//A_OverlayScale(OverlayID(), 0.08, 0.08, WOF_ADD);
-		}
+		APCR BCD 1 A_OffsetCardLayer(OverlayID());
+		APCR EFG 2 A_OffsetCardLayer(OverlayID());
 	ReadyCardIdle:
 		TNT1 A 0 
 		{
@@ -464,7 +454,7 @@ class ToM_Cards : ToM_BaseWeapon
 				psp.scale.x = Clamp(psp.scale.x * 0.8, 1, 10);
 				psp.scale.y = Clamp(psp.scale.y * 0.8, 1, 10);
 				// If this happens during altfire, also move
-				// the cards to the right and down, to match
+				// the cards to the left and down, to match
 				// the movement of the arm:
 				let psw = player.FindPSprite(PSP_WEAPON);
 				if (psw && InStateSequence(psw.curstate, ResolveState("AltFire")))
@@ -491,9 +481,9 @@ class ToM_Cards : ToM_BaseWeapon
 			vector2 ofs;
 			switch (invoker.curCardLayer)
 			{
-			case APSP_Card1: ofs = (9, 0); break;
-			case APSP_Card2: ofs = (12, 2); break;
-			case APSP_Card3: ofs = (15, 1); break;
+			case APSP_Card1: ofs = (3, 0); break;
+			case APSP_Card2: ofs = (4, 2); break;
+			case APSP_Card3: ofs = (5, 1); break;
 			}
 			//console.printf("ofs: %1.f, %1.f", ofs.x, ofs.y);
 			A_FireCard(1, 1, xofs: ofs.x, yofs: ofs.y);

@@ -545,8 +545,8 @@ class ToM_CardProjectile : ToM_StakeProjectile
 		speed 55;
 		DamageFunction SetCardDamage();
 		gravity 0.6;
-		radius 8;
-		height 6;
+		radius 4;
+		height 1;
 		scale 0.75;
 	}
 

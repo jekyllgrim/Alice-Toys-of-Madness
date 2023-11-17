@@ -397,7 +397,21 @@ class ToM_Cards : ToM_BaseWeapon
 		#### A 1 A_RotateIdleCard();
 		wait;
 	FireCard:
-		#### # 0 A_OverlayPivot(OverlayID(), 0, 0);
+		#### # 0 
+		{
+			Vector2 pivot;
+			switch (OverlayID())
+			{
+			case APSP_Card1:
+			case APSP_Card2: 
+				pivot = (0,0);
+				break;
+			case APSP_Card3: 
+				pivot = (0,0.6);
+				break;
+			}
+			A_OverlayPivot(OverlayID(), pivot.x, pivot.y);
+		}
 		#### ### 1 
 		{
 			A_OverlayScale(OverlayID(), -0.3, -0.3, WOF_ADD);

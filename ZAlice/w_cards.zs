@@ -61,17 +61,19 @@ class ToM_Cards : ToM_BaseWeapon
 		int layer;
 		switch (OverlayID())
 		{
-		case APSP_Card1: layer = 0; break;
-		case APSP_Card2: layer = 1; break;
-		case APSP_Card3: layer = 2; break;
+		case APSP_Card1:
+			layer = 0;
+			break;
+		case APSP_Card2:
+			layer = 1;
+			break;
+		case APSP_Card3:
+			layer = 2;
+			break;
 		}
-		invoker.cardVertStep[layer]++;
-		if (invoker.cardVertStep[layer] > CARDSTEPS)
-			invoker.cardVertStep[layer] = 1;
-		//double f = frandom[cardsfx](0.1, 1.0);
 		for (int i = 0; i < 4; i++)
 		{
-			double ang = ANGLESTEP * Clamp(invoker.cardVertStep[layer], 1, CARDSTEPS) + (CARDANGLEDIFF * 10 * layer);
+			double ang = ANGLESTEP * Clamp(invoker.cardVertStep[layer], 1, CARDSTEPS) + (CARDANGLEDIFF * 10);
 			ang += (CARDANGLEDIFF * i);
 			vector2 coords = (cos(ang) * CARDRAD, sin(ang) * CARDRAD);
 			A_OverlayVertexOffset(OverlayID(), i, coords.x, coords.y);
@@ -301,6 +303,31 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 		
 		return -1;
+	}
+
+	override void DoEffect()
+	{
+		super.DoEffect();
+		if (!owner || !owner.player)
+			return;
+		
+		let weap = owner.player.readyweapon;
+		if (!weap || weap != self)
+			return;
+
+		int d = cardVertStep[0] + 1;
+		
+		cardVertStep[0] = d;
+		cardVertStep[1] = d + 7;
+		cardVertStep[2] = d + 15;
+
+		for (int i = 0; i < 3; i++)
+		{
+			if (cardVertStep[i] > CARDSTEPS)
+			{
+				cardVertStep[i] -= CARDSTEPS;
+			}
+		}
 	}
 	
 	/*override bool TryPickup(in out Actor toucher)

@@ -70,7 +70,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			{
 				invoker.swingVictims.Push(victim);
 				// Can be damaged:
-				if (!victim.bDORMANT && (victim.bSHOOTABLE || victim.bVULNERABLE))
+				if (!victim.bDORMANT && victim.bSHOOTABLE)
 				{
 					victim.DamageMobj(self, self, damage, 'normal', angle: self.angle + 180);
 					A_StartSound("weapons/hhorse/hitflesh", CHAN_WEAPON);

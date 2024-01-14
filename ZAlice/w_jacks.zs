@@ -267,7 +267,7 @@ class ToM_JackProjectile : ToM_Projectile
 		if (!victim)
 			return -1;
 
-		if (victim.bSHOOTABLE || victim.bVULNERABLE)
+		if (victim.bSHOOTABLE && !victim.bNONSHOOTABLE)
 		{
 			// Check that victim isn't the shooter,
 			// and that it's either a new victim,

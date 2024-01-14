@@ -134,7 +134,7 @@ class ToM_BaseWeapon : Weapon abstract
 	
 	double GetBaseZoom()
 	{
-		return owner.CountInv("ToM_GrowControl") ? ToM_GrowControl.GROWZOOM : 1;
+		return owner.CountInv("ToM_GrowthPotionEffect") ? ToM_GrowthPotionEffect.GROWZOOM : 1;
 	}
 	
 	action void A_AttackZoom(double step = 0.001, double limit = 0.03, double jitter = 0.002)

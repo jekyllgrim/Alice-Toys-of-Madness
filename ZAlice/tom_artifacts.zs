@@ -197,38 +197,6 @@ class ToM_GrowthPotion : PowerupGiver
 
 class ToM_GrowthPotionEffect : PowerInvulnerable
 {
-	ToM_GrowControl growcontrol;
-	
-	Default
-	{
-		Powerup.duration -40;
-		Inventory.Icon "APOTZ0";
-	}
-
-	override void InitEffect()
-	{
-		if (owner)
-		{
-			if (tom_debugmessages)
-				console.printf("Giving grow control token");
-			owner.GiveInventory("ToM_GrowControl", 1);
-			growcontrol = ToM_GrowControl(owner.FindInventory("ToM_GrowControl"));
-			growcontrol.StartEffect();
-		}
-		Super.InitEffect();
-	}
-	
-	override void EndEffect()
-	{
-		if (owner && growcontrol)
-			growcontrol.StopEffect();
-		
-		super.EndEffect();
-	}
-}
-
-class ToM_GrowControl : ToM_InventoryToken
-{
 	bool finishEffect;
 
 	protected double prevHeight;
@@ -238,6 +206,7 @@ class ToM_GrowControl : ToM_InventoryToken
 	protected double prevAttackZOffset;
 	protected vector2 prevWeaponScale;
 	protected double prevZoom;
+	protected double prevViewBobSpeed;
 	
 	protected double targetSpeed;
 	protected double targetHeight;
@@ -253,76 +222,106 @@ class ToM_GrowControl : ToM_InventoryToken
 	protected vector2 weaponScaleStep;
 	
 	protected double zoomStep;
-	protected double targetZoom;	
+	protected double targetZoom;
 	
 	protected int stepCycle;
 	
 	const GROWFACTOR = 1.5;
-	const VIEWFACTOR = 2.;
+	const GROWWEAPON = 1.2;
+	const VIEWFACTOR = 2.0;
 	const SPEEDFACTOR = 0.5;
 	const GROWTIME = 50;
 	const GROWZOOM = 1.2;
 	
-	void StartEffect()
+	Default
 	{
-		if (owner && owner.player)
-		{
-			finishEffect = false;
-			let weap = owner.player.readyweapon;
-			if (weap)
-			{
-				let dweap = GetDefaultByType(weap.GetClass());
-				prevWeaponScale = (dweap.WeaponScaleX, dweap.WeaponScaleY);
-				curWeaponScale = prevWeaponScale;
-			}
-		
-			// record current values:
-			prevHeight = owner.height;
-			prevScale = owner.scale;
-			prevSpeed = owner.speed;
-			prevViewHeight = owner.player.viewHeight;
-			prevAttackZOffset = owner.player.mo.AttackZOffset;
-			
-			// target height (to be set in DoEffect):
-			targetHeight = prevHeight * GROWFACTOR;
-			
-			// target scale and scale step (to be set in DoEffect):
-			targetScale = prevScale * GROWFACTOR;
-			scaleStep.x = (targetScale.x - prevScale.x) / GROWTIME;
-			scaleStep.y = (targetScale.y - prevScale.y) / GROWTIME;
-			
-			// target weapon scale and weapon scale step:
-			if (weap)
-			{
-				targetweaponScale = prevweaponScale * GROWFACTOR;
-				weaponScaleStep.x = (targetweaponScale.x - prevweaponScale.x) / GROWTIME;
-				weaponScaleStep.y = (targetweaponScale.y - prevweaponScale.y) / GROWTIME;
-			}				
-			
-			// target viewheight and viewheight step (to be set in DoEffect):
-			targetViewHeight = prevViewHeight * VIEWFACTOR;
-			viewHeightStep = (targetViewHeight - prevViewHeight) / GROWTIME;
+		Powerup.duration -40;
+		Inventory.Icon "APOTZ0";
+	}
 
-			// target AttackZOffset and AttackZOffset step (to be set in DoEffect):
-			targetAttackZOffset = prevAttackZOffset * VIEWFACTOR;
-			attackZOffsetStep = (targetAttackZOffset - prevAttackZOffset) / GROWTIME;
-			
-			// zoom step:
-			prevZoom = owner.player.fov;
-			targetZoom = prevZoom * GROWZOOM;
-			zoomStep = (targetZoom - prevZoom) / GROWTIME;
-			
-			// speed is modified instantly:
-			owner.speed *= SPEEDFACTOR;
-			
-			if (tom_debugmessages)
-			{
-				console.printf(
-					"Growth potion initialized.\n"
-					"View height: %.1f | step: %.1f | target: %.1f",
-					owner.player.viewheight, viewHeightStep, targetViewHeight
-				);
-			}
+	override void InitEffect()
+	{
+		Super.InitEffect();
+		if (!owner || !owner.player)
+		{
+			Destroy();
+			return;
+		}
+		finishEffect = false;
+
+		prevViewBobSpeed = owner.player.mo.ViewBobSpeed;
+		owner.player.mo.ViewBobSpeed *= VIEWFACTOR;
+
+		let weap = owner.player.readyweapon;
+		if (weap)
+		{
+			let dweap = GetDefaultByType(weap.GetClass());
+			prevWeaponScale = (dweap.WeaponScaleX, dweap.WeaponScaleY);
+			curWeaponScale = prevWeaponScale;
+		}
+	
+		// record current values:
+		prevHeight = owner.height;
+		prevScale = owner.scale;
+		prevSpeed = owner.speed;
+		prevViewHeight = owner.player.viewHeight;
+		prevAttackZOffset = owner.player.mo.AttackZOffset;
+		
+		// target height (to be set in DoEffect):
+		targetHeight = prevHeight;//prevHeight * GROWFACTOR;
+		
+		// target scale and scale step (to be set in DoEffect):
+		targetScale = prevScale * GROWWEAPON;
+		scaleStep.x = (targetScale.x - prevScale.x) / GROWTIME;
+		scaleStep.y = (targetScale.y - prevScale.y) / GROWTIME;
+		
+		// target weapon scale and weapon scale step:
+		if (weap)
+		{
+			targetweaponScale = prevweaponScale * GROWFACTOR;
+			weaponScaleStep.x = (targetweaponScale.x - prevweaponScale.x) / GROWTIME;
+			weaponScaleStep.y = (targetweaponScale.y - prevweaponScale.y) / GROWTIME;
+		}
+		
+		// target viewheight and viewheight step (to be set in DoEffect):
+		targetViewHeight = prevViewHeight * VIEWFACTOR;
+		viewHeightStep = (targetViewHeight - prevViewHeight) / GROWTIME;
+
+		// target AttackZOffset and AttackZOffset step (to be set in DoEffect):
+		targetAttackZOffset = targetViewHeight - (prevViewHeight - prevAttackZOffset - prevHeight*0.5) - targetHeight*0.5;
+		attackZOffsetStep = (targetAttackZOffset - prevAttackZOffset) / GROWTIME;
+		
+		// zoom step:
+		prevZoom = owner.player.fov;
+		targetZoom = prevZoom * GROWZOOM;
+		zoomStep = (targetZoom - prevZoom) / GROWTIME;
+		
+		// speed is modified instantly:
+		owner.speed *= SPEEDFACTOR;
+		
+		if (tom_debugmessages)
+		{
+			console.printf(
+				"Growth potion initialized:\n"
+				"View height: \cD%.1f\c- | step: \cD%.1f\c- | target: \cD%.1f\c-\n"
+				"AttackZOffset: \cD%.1f\c- | step: \cD%.1f\c- | target: \cD%.1f\c-",
+				prevViewHeight, viewHeightStep, targetViewHeight,
+				prevAttackZOffset, attackZOffsetStep, targetAttackZOffset
+			);
+		}
+	}
+
+	override void Tick()
+	{
+		if (!owner || !owner.player)
+		{
+			Destroy();
+			return;
+		}
+
+		if (!finishEffect && (EffectTics == 0 || (EffectTics > 0 && --EffectTics == 0)))
+		{
+			finishEffect = true;
 		}
 	}
 	
@@ -336,7 +335,7 @@ class ToM_GrowControl : ToM_InventoryToken
 		let player = owner.player;
 		let weap = owner.player.readyweapon;
 		
-		int stepFactor = finishEffect ? -2 : 1;
+		double stepFactor = finishEffect ? -2 : 1;
 		
 		// gradually modify viewheight:
 		player.viewHeight = Clamp(
@@ -353,7 +352,7 @@ class ToM_GrowControl : ToM_InventoryToken
 			prevAttackZOffset, targetAttackZOffset
 		);
 		
-		console.printf("attackZOffset: %.2f | viewheight: %.2f", pmo.attackZOffset, player.viewHeight);
+		//console.printf("attackZOffset: %.2f | viewheight: %.2f", pmo.attackZOffset, player.viewHeight);
 	
 		// gradually modify zoom:
 		owner.player.desiredFov = Clamp(
@@ -398,8 +397,8 @@ class ToM_GrowControl : ToM_InventoryToken
 		
 		// Walking:
 		if (!finishEffect)
-		{			
-			if (pmo.Vel.Length() > 4) 
+		{
+			if (pmo.player.onground && pmo.Vel.Length() > 4) 
 			{
 				stepCycle++;
 				if (stepCycle % 20 == 0) {
@@ -432,6 +431,7 @@ class ToM_GrowControl : ToM_InventoryToken
 		
 		else if (player.viewHeight <= prevViewHeight)
 		{
+			owner.player.mo.ViewBobSpeed = prevViewBobSpeed;
 			player.viewHeight = prevViewHeight;
 			pmo.viewHeight = prevViewHeight;
 			//pmo.A_SetSize(pmo.radius, prevHeight);
@@ -447,11 +447,6 @@ class ToM_GrowControl : ToM_InventoryToken
 			pmo.speed = prevSpeed;
 			Destroy();
 		}
-	}
-	
-	void StopEffect()
-	{
-		finishEffect = true;
 	}
 }
 

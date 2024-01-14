@@ -421,7 +421,7 @@ Sprite "APCRA0", 344, 228
 {
 	YScale 1.200
 	Offset -32, -15
-	Patch "APCRA", 0, 0
+	Patch "APCR0", 0, 0
 }
 
 Sprite "APCRB0", 344, 228
@@ -477,63 +477,63 @@ Sprite "APCRI0", 344, 228
 {
 	YScale 1.200
 	Offset -43, -3
-	Patch "APCRI", 0, 0
+	Patch "APCR1", 0, 0
 }
 
 Sprite "APCRJ0", 344, 228
 {
 	YScale 1.200
 	Offset -28, 13
-	Patch "APCRJ", 0, 0
+	Patch "APCR2", 0, 0
 }
 
 Sprite "APCRK0", 344, 228
 {
 	YScale 1.200
 	Offset -28, 13
-	Patch "APCRK", 0, 0
+	Patch "APCR3", 0, 0
 }
 
 Sprite "APCRL0", 344, 228
 {
 	YScale 1.200
 	Offset -28, 13
-	Patch "APCRL", 0, 0
+	Patch "APCR4", 0, 0
 }
 
 Sprite "APCRM0", 344, 228
 {
 	YScale 1.200
 	Offset -28, 13
-	Patch "APCRM", 0, 0
+	Patch "APCR5", 0, 0
 }
 
 Sprite "APCRN0", 344, 228
 {
 	YScale 1.200
 	Offset -28, 13
-	Patch "APCRN", 0, 0
+	Patch "APCR6", 0, 0
 }
 
 Sprite "APCRO0", 344, 228
 {
 	YScale 1.200
 	Offset -28, 13
-	Patch "APCRO", 0, 0
+	Patch "APCR7", 0, 0
 }
 
 Sprite "APCRP0", 344, 228
 {
 	YScale 1.200
 	Offset -28, 13
-	Patch "APCRP", 0, 0
+	Patch "APCR8", 0, 0
 }
 
 Sprite "APCRQ0", 344, 228
 {
 	YScale 1.200
 	Offset -12, -5
-	Patch "APCRP", 0, 0
+	Patch "APCR8", 0, 0
 }
 
 // End of texture definitions

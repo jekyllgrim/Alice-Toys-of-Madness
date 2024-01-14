@@ -347,6 +347,13 @@ weapons/blunderbuss/pull		"Sounds/blunderbuss/bb_pull.ogg"
 weapons/blunderbuss/cock		"Sounds/blunderbuss/bb_cock.ogg"
 weapons/blunderbuss/flyloop	"Sounds/blunderbuss/bb_loop.wav"
 
+// JACKBOMB
+weapons/jackbomb/flame			"sounds/jackbomb/jackbomb_breath.wav"
+weapons/jackbomb/explode		"sounds/jackbomb/jackbomb_explode.wav"
+weapons/jackbomb/music			"sounds/jackbomb/jackbomb_music.wav"
+weapons/jackbomb/dollpop		"sounds/jackbomb/jackbomb_pop.wav"
+weapons/jackbomb/throw			"sounds/jackbomb/jackbomb_toss.wav"
+
 
 // ITEMS
 

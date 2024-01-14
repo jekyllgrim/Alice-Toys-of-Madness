@@ -577,8 +577,6 @@ class ToM_Megasphere : ToM_HealthPickup
 	{
 		+COUNTITEM
 		+INVENTORY.ALWAYSPICKUP
-		// This seemingly does nothing at all, but
-		// the original Megasphere has it, so... :
 		+INVENTORY.AUTOACTIVATE
 		Inventory.pickupMessage "$TOM_ITEM_HEALTH200";
 		Inventory.amount 200;
@@ -635,6 +633,107 @@ class ToM_Megasphere : ToM_HealthPickup
 	States {
 	Spawn:
 		AROS P -1;
+		stop;
+	}
+}
+
+class ToM_JackBombPickup : ToM_Inventory
+{
+	Default
+	{
+		Tag "$TOM_ITEM_JACKBOMB";
+		Inventory.pickupmessage "$TOM_ITEM_JACKBOMB";
+		Inventory.amount 1;
+		Inventory.maxamount 15;
+	}
+
+	States {
+	Spawn:
+		M000 A -1;
+		stop;
+	}
+}
+
+class ToM_JackBombProjectile : ToM_Projectile
+{
+	static const color popcolors[] = 
+	{
+		"ff0000",
+		"2448ff",
+		"ffed24",
+		"ff8124",
+		"11ea11"
+	};
+
+	Default
+	{
+		Projectile;
+		-NOGRAVITY
+		+BOUNCEONFLOORS
+		+BOUNCEONCEILINGS
+		+BOUNCEONWALLS
+		+ALLOWBOUNCEONACTORS
+		+BOUNCEONACTORS
+		+CANBOUNCEWATER
+		BounceFactor 0.5;
+		WallBounceFactor 0.8;
+		Damage 0;
+		SeeSound "weapons/jackbomb/throw";
+		Speed 20;
+		Scale 1.5;
+	}
+
+	States {
+	Spawn:
+		M000 A 1
+		{
+			if (bMISSILE && vel.length() < 3)
+			{
+				return ResolveState("Death");
+			}
+			A_SetAngle(angle + vel.xy.Length());
+			return ResolveState(null);
+		}
+		loop;
+	Death:
+		M000 A 10 { bMISSILE = false; }
+		TNT1 A 0 A_StartSound("weapons/jackbomb/music");
+		M000 BCDEFGHIJKLMNOPQRST 1;
+		M000 BCDEFGHIJKLMNOPQRST 2;
+		M001 ABCDEFGHI 1;
+		TNT1 A 0 
+		{
+			A_StartSound("weapons/jackbomb/dollpop");
+			FSpawnParticleParams pp;
+			pp.style = STYLE_Normal;
+			pp.size = 5;
+			pp.flags = SPF_FULLBRIGHT;
+			pp.startalpha = 1;
+			pp.fadestep = -1;
+			pp.lifetime = 35;
+			pp.pos = pos+(0,0,10);
+			for (int i = 25; i > 0; i--)
+			{
+				pp.color1 = popcolors[random[popc](0, popcolors.Size()-1)];
+				double v = 3;
+				pp.vel.x = frandom[popc](-v, v);
+				pp.vel.y = frandom[popc](-v, v);
+				pp.vel.z = frandom[popc](4, 7);
+				pp.accel.xy = pp.vel.xy*-0.03;
+				pp.accel.z = -0.35;
+				Level.SpawnParticle(pp);
+			}
+		}
+		M002 ABCDEFGHIJ 1;
+		M003 ABCD 2;
+		M004 ABCDEFGFEDCB 1;
+		M004 ABCDEFGFEDCB 1;
+		TNT1 A 0
+		{
+			A_StartSound("weapons/jackbomb/explode");
+			A_Explode();
+			ToM_GenericExplosion.Create(pos, scale: 0.8, randomdebris: 5, smokingdebris: 0);
+		}
 		stop;
 	}
 }

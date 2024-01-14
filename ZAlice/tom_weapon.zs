@@ -126,8 +126,10 @@ class ToM_BaseWeapon : Weapon abstract
 			proj.roll = r;
 			proj.vel = projVel;
 			proj.target = self;
-			if (proj.seesound)
+			if (proj.seesound && Level.IsPointInLevel(proj.pos) && proj.pos == proj.pos)
+			{
 				proj.A_StartSound(proj.seesound);
+			}
 		}
 		return proj;
 	}

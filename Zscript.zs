@@ -22,6 +22,7 @@ version "4.11"
 #include "ZAlice/w_blunderbuss.zs"
 
 #include "ZAlice/tom_cat.zs"
+#include "ZAlice/tom_debugstuff.zs"
 
 #include "ZAlice/StatusBarScreen/StatusScreen_base.zsc"
 #include "ZAlice/GZBeamz/laser_math.zsc"

@@ -23,7 +23,7 @@ class ToM_Cards : ToM_BaseWeapon
 	
 	Default
 	{
-		Tag "Playing cards";
+		Tag "$TOM_WEAPON_CARDS";
 		weapon.slotnumber 2;
 		weapon.ammotype1 "ToM_WeakMana";
 		weapon.ammouse1 2;

@@ -9,16 +9,30 @@ class ToM_Knife : ToM_BaseWeapon
 	protected int recallWait; //recall timer
 	
 	protected int otherHandWait;
+
+	static const String pickupLines[] =
+	{
+		"$TOM_WEAPONMSG_KNIFE1",
+		"$TOM_WEAPONMSG_KNIFE2",
+		"$TOM_WEAPONMSG_KNIFE3"
+	};
 	
 	Default 
 	{
+		Tag "$TOM_WEAPON_KNIFE";
 		+WEAPON.MELEEWEAPON;
 		+WEAPON.NOAUTOFIRE;
 		//Obituary "";
-		Tag "Vorpal Knife";
 		weapon.slotnumber 1;
 		//inventory.icon "";
 		//weapon.upsound "weapons/knife/draw";
+	}
+
+	override String PickupMessage()
+	{
+		String weapname = StringTable.Localize(GetTag());
+		String comment = StringTable.Localize(pickupLines[random[msg](0, pickupLines.Size()-1)]);
+		return String.Format("%s! %s", weapname, comment);
 	}
 	
 	action void A_KnifeReady(int flags = 0)

@@ -23,8 +23,8 @@ class ToM_Teapot : ToM_BaseWeapon
 	
 	Default
 	{
+		Tag "$TOM_WEAPON_TEAPOT";
 		weapon.slotnumber 5;
-		Tag "Teapot Cannon";
 		weapon.ammotype1 "ToM_MediumMana";
 		weapon.ammouse1 20;
 		weapon.ammogive1 100;

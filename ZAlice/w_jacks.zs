@@ -13,7 +13,7 @@ class ToM_Jacks : ToM_BaseWeapon
 
 	Default
 	{
-		Tag "Jacks";
+		Tag "$TOM_WEAPON_JACKS";
 		weapon.slotnumber 3;
 		weapon.ammotype1 "ToM_MediumMana";
 		weapon.ammouse1 6;

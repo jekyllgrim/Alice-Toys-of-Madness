@@ -12,7 +12,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	
 	Default
 	{
-		Tag "Hobby Horse";
+		Tag "$TOM_WEAPON_HORSE";
 		ToM_BaseWeapon.IsTwoHanded true;
 		+WEAPON.MELEEWEAPON
 		+WEAPON.NOAUTOFIRE

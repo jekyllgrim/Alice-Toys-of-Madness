@@ -193,7 +193,7 @@ class ToM_Cards : ToM_BaseWeapon
 				case APSP_Card3: cardId = 2; break;
 				}
 				
-				dmg = 4 * Clamp(invoker.cardDamage[cardId], 1, 10);
+				dmg = Clamp(invoker.cardDamage[cardId], 1, 10);
 				spritename = invoker.cardSpriteName[cardId];
 				if (tom_debugmessages)
 				{
@@ -208,7 +208,7 @@ class ToM_Cards : ToM_BaseWeapon
 				proj.sprite = sprt;
 			}
 			
-			proj.cardSpecialDamage = dmg;
+			proj.cardSpecialDamage = dmg * 3;
 			proj.broll = frandom[card](-2,2);
 			return proj;
 		}

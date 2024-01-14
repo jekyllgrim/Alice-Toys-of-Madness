@@ -1,6 +1,6 @@
 class ToM_HobbyHorse : ToM_BaseWeapon
 {
-	int combo;	
+	int combo;
 
 	protected array < Actor > swingVictims; //actors hit by the attack
 	protected vector2 swingOfs;
@@ -8,7 +8,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	protected int swingSndCounter; //delay the attack sound...
 	const SWINGSTAGGER = 8; // ...by this much
 
-	int falLAttackForce;
+	int fallAttackForce;
 	
 	Default
 	{
@@ -34,7 +34,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		// Get the screen-relative angle/pitch using Gutamatics:
 		ToM_GM_Quaternion view = ToM_GM_Quaternion.createFromAngles(angle, pitch, roll);
 		ToM_GM_Quaternion ofs = ToM_GM_Quaternion.createFromAngles(invoker.swingOfs.x, invoker.swingOfs.y, 0);
-		ToM_GM_Quaternion res = view.multiplyQuat(ofs);		
+		ToM_GM_Quaternion res = view.multiplyQuat(ofs);
 		double aimAng, aimPch;
 		[aimAng, aimPch] = res.toAngles();
 		
@@ -117,20 +117,20 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		A_StartSound("*land", CHAN_BODY);
 		A_CameraSway(0, 30, 4);
 
-		int falLAttackForce = invoker.falLAttackForce;
-		//int falLAttackForce = (abs(vel.x) + abs(vel.y)) * 0.5 + abs(vel.z);
+		int fallAttackForce = invoker.fallAttackForce;
+		//int fallAttackForce = (abs(vel.x) + abs(vel.y)) * 0.5 + abs(vel.z);
 		
-		int rad = 128 + falLAttackForce;
+		int rad = 128 + fallAttackForce;
 		vector3 ipos = (radius + 8, 0, floorz);
 		let hi = Spawn("ToM_HorseImpactSpot", pos);
 		if (hi)
 		{
 			hi.target = self;
 			hi.Warp(self, ipos.x, ipos.y, ipos.z);
-			hi.A_Explode(80 + falLAttackForce, rad, 0);
+			hi.A_Explode(80 + fallAttackForce, rad, 0);
 			hi.A_StartSound("weapons/hhorse/hitfloor", CHAN_7);
-			double qints = ToM_UtilsP.LinearMap(falLAttackForce, 4, 32, 3, 8, true);
-			int qdur = ToM_UtilsP.LinearMap(falLAttackForce, 4, 32, 15, 40, true);
+			double qints = ToM_UtilsP.LinearMap(fallAttackForce, 4, 32, 3, 8, true);
+			int qdur = ToM_UtilsP.LinearMap(fallAttackForce, 4, 32, 15, 40, true);
 			hi.A_Quake(qints, qdur, 0, rad, sfx: "");
 			for (int i = random[sfx](12,16); i > 0; i--)
 			{
@@ -181,7 +181,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			}
 		}
 
-		int reps = ToM_UtilsP.LinearMap(falLAttackForce, 40, 1, 5, 1, true);
+		int reps = ToM_UtilsP.LinearMap(fallAttackForce, 40, 1, 5, 1, true);
 		for (reps; reps > 0; reps--)
 		{
 			let iring = ToM_HorseImpact(Spawn("ToM_HorseImpact", pos));
@@ -191,7 +191,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			iring.scale.x = rad * sfac;
 		}
 
-		if (falLAttackForce >= 29 && pos.z <= floorz)
+		if (fallAttackForce >= 29 && pos.z <= floorz)
 		{
 			let hid = Spawn("ToM_HorseImpactDebris", pos);
 			if (hid)
@@ -221,7 +221,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				
 				if (InStateSequence(psp.curstate, ResolveState("AltFire")))
 				{
-					falLAttackForce = ceil( (abs(owner.vel.x) + abs(owner.vel.y)) * 0.15 + abs(owner.vel.z) );
+					fallAttackForce = ceil( (abs(owner.vel.x) + abs(owner.vel.y)) * 0.15 + abs(owner.vel.z) );
 				}
 			}
 		}
@@ -258,7 +258,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_OverlayRotate(OverlayID(), -3, WOF_ADD);
 		}
 		TNT1 A 0 A_Lower;
-		wait;		
+		wait;
 	Ready:
 		HHRS A 1 A_WeaponReady();
 		wait;
@@ -271,7 +271,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				return ResolveState("RightSwing");
 			if (invoker.combo == 2)
 				return ResolveState("LeftSwing");
-			return ResolveState("Overhead");			
+			return ResolveState("Overhead");
 		}
 	RightSwing:
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.1, 0.6);
@@ -323,7 +323,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			}
 		}
 		stop;
-	LeftSwing:			
+	LeftSwing:
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 1);
 		HHRS AAAEEEE 1 
 		{
@@ -373,7 +373,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			}
 		}
 		stop;
-	Overhead:				
+	Overhead:
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.2, 0.8);
 		HHRS KKKKLLLL 1 
 		{
@@ -423,7 +423,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			}
 		}
 		stop;
-	Altfire:				
+	Altfire:
 		TNT1 A 0 A_StartJumpAttack();
 		HHRS KKKKLLLL 1 
 		{
@@ -458,10 +458,10 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			{
 				A_WeaponOffset(Clamp(psp.x-2, -68, 0), Clamp(psp.y+2, 32, 68), WOF_INTERPOLATE);
 			}
-			//invoker.falLAttackForce++;
+			//invoker.fallAttackForce++;
 			if (tom_debugmessages)
-				console.printf("fall attack force: %d", invoker.falLAttackForce);
-			if (invoker.falLAttackForce > 25)
+				console.printf("fall attack force: %d", invoker.fallAttackForce);
+			if (invoker.fallAttackForce > 25)
 				A_StartSound("weapons/hhorse/freefall", CHAN_BODY, CHANF_LOOPING);
 		}
 		TNT1 A 0 

@@ -426,7 +426,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 		}
 		
 		if (!tracer)
-		{		
+		{
 			double closestDist = double.infinity;
 			BlockThingsIterator itr = BlockThingsIterator.Create(self,atkdist);
 			while (itr.next()) 

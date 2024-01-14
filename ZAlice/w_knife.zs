@@ -7,7 +7,6 @@ class ToM_Knife : ToM_BaseWeapon
 	const MAXRECALLTIME = 35 * 7; //recall knife after this wait time
 	ToM_KnifeProjectile knife; //pointer to thrown knife
 	protected int recallWait; //recall timer
-	
 	protected int otherHandWait;
 
 	static const String pickupLines[] =

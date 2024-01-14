@@ -261,7 +261,7 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 		
 		if (tom_debugmessages)
-			console.printf("Selected card sprite: %s | value: %d",cardSpriteName, cardValue);
+			console.printf("Selected card sprite: %s | value: %d", cardSpriteName, cardValue);
 		
 		return cardValue, cardSpriteName;
 	}

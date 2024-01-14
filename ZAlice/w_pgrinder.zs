@@ -98,7 +98,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		// are still used but only for visuals:
 		if (hitscan)
 		{
-			A_FireBullets(angleofs, pitchofs, -1, int(3 * frandom(1., 8.)), "", FBF_NORANDOM|FBF_EXPLICITANGLE);
+			A_FireBullets(angleofs, pitchofs, -1, int(3 * frandom(1., 8.)), "ToM_PepperPuff", FBF_NORANDOM|FBF_EXPLICITANGLE);
 			FLineTraceData pp;
 			double atkheight = ToM_UtilsP.GetPlayerAtkHeight(PlayerPawn(self));
 			LineTrace(angle + angleofs, 4096, pitch + pitchofs, TRF_SOLIDACTORS, atkheight, data: pp);
@@ -296,7 +296,6 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		{
 			A_Overlay(APSP_Righthand, "Right.Chargealt");
 			invoker.crunchpitch = 0.9;
-			//A_StartSound("weapons/pgrinder/windup", CHAN_7, CHANF_LOOPING, volume: 0.3, pitch: invoker.crunchpitch);
 		}
 		PPGR Z 1 
 		{
@@ -440,12 +439,29 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 		}
 		wait;
 	Death:
+		TNT1 A 1;
+		stop;
+	}
+}
+
+class ToM_PepperPuff : ToM_BasePuff
+{
+	Default
+	{
+		Damagetype 'Pepper';
+		+PUFFONACTORS
+	}
+	
+	States
+	{
+	Spawn:
 		TNT1 A 1
 		{
+			Console.Printf("spawning pepper puff");
 			A_StartSound("weapons/pgrinder/projdie", CHAN_AUTO, attenuation: 6);
 			for (int i = random[ppsfx](8,12); i > 0; i --) {
 				double vx = frandom[ppgr](1,4);
-				color col = color(pcolor[random[ppgr](0, pcolor.Size()-1)]);
+				color col = color(ToM_PepperProjectile.pcolor[random[ppgr](0, ToM_PepperProjectile.pcolor.Size()-1)]);
 				A_SpawnParticle(
 					col,
 					flags: SPF_RELATIVE|SPF_FULLBRIGHT,
@@ -459,22 +475,24 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 					sizestep: 0.08
 				);
 			}
+			FSpawnParticleParams sm;
+			sm.color1 = "ff4242";
+			sm.texture = TexMan.CheckForTexture("SMO2A0");
+			sm.flags = SPF_ROLL|SPF_REPLACE;
+			sm.fadestep = -1;
+			sm.startalpha = 0.5;
+			sm.pos = pos;
+			for (int i = 0; i < 3; i++)
+			{
+				sm.lifetime = random[ppsfx](30,40);
+				sm.size = frandom(10, 14);
+				sm.sizestep = 0.1;
+				sm.accel = -(sm.vel / sm.lifetime);
+				sm.startroll = frandom[ppsfx](0,360);
+				sm.rollvel = frandom[ppsfx](-5,5);
+				Level.SpawnParticle(sm);
+			}
 		}
-		stop;
-	}
-}
-
-class ToM_PepperPuff : ToM_BasePuff
-{
-	Default
-	{
-		Damagetype 'Pepper';
-	}
-	
-	States
-	{
-	Spawn:
-		TNT1 A 1;
 		stop;
 	}
 }

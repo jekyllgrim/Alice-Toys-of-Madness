@@ -671,50 +671,47 @@ class ToM_AliceHUD : BaseStatusBar
 		Screen.EnableStencil(false);
 		Screen.ClearStencil();
 	}
-	
+
+	static const name mirrorCrackTex[] =
+	{
+		"mirror_cracks01.png",
+		"mirror_cracks02.png",
+		"mirror_cracks03.png",
+		"mirror_cracks04.png",
+		"mirror_cracks05.png",
+		"mirror_cracks06.png",
+		"mirror_cracks07.png",
+		"mirror_cracks08.png",
+		"mirror_cracks09.png",
+		"mirror_cracks10.png",
+		"mirror_cracks11.png",
+		"mirror_cracks12.png",
+		"mirror_cracks13.png",
+		"mirror_cracks14.png",
+		"mirror_cracks15.png"
+	};
+
 	void DrawMirrorCracks(vector2 pos)
 	{
 		int health = CPlayer.health;
 		if (health > 70)
 			return;
 		
-		name path = "graphics/HUD/";
-		name tex;
-		
-		if (health > 65)
-			tex = "mirror_cracks01.png";
-		else if (health > 60)
-			tex = "mirror_cracks02.png";
-		else if (health > 55)
-			tex = "mirror_cracks03.png";
-		else if (health > 50)
-			tex = "mirror_cracks04.png";
-		else if (health > 45)
-			tex = "mirror_cracks05.png";
-		else if (health > 40)
-			tex = "mirror_cracks06.png";
-		else if (health > 35)
-			tex = "mirror_cracks07.png";
-		else if (health > 30)
-			tex = "mirror_cracks08.png";
-		else if (health > 25)
-			tex = "mirror_cracks09.png";
-		else if (health > 20)
-			tex = "mirror_cracks10.png";
-		else if (health > 15)
-			tex = "mirror_cracks11.png";
-		else if (health > 10)
-			tex = "mirror_cracks12.png";
-		else if (health > 5)
-			tex = "mirror_cracks13.png";
-		else if (health > 0)
-			tex = "mirror_cracks14.png";
-		else
-			tex = "mirror_cracks15.png";
-
-		if (tex)
+		String texpath;
+		if (health <= 0)
 		{
-			ToM_DrawImage(path..tex, pos, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
+			texpath = String.Format("graphics/HUD/%s", mirrorCrackTex[mirrorCrackTex.Size()-1]);
+		}
+		else
+		{
+			double pick = ToM_UtilsP.LinearMap(health, 65, 0, 0, mirrorCrackTex.Size() - 1);
+			int i = Clamp(round(pick), 0, mirrorCrackTex.Size() - 1);
+			texpath = String.Format("graphics/HUD/%s", mirrorCrackTex[i]);
+		}
+
+		if (texpath)
+		{
+			ToM_DrawImage(texpath, pos, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		}
 	}
 	

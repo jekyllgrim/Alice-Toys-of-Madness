@@ -50,7 +50,7 @@ class ToM_RageBox : Actor replaces Berserk
 	
 	override void Activate(Actor activator)
 	{
-		if (!activator || !activator.player)
+		if (!activator || !activator.player || used)
 			return;
 			
 		used = true;
@@ -61,8 +61,8 @@ class ToM_RageBox : Actor replaces Berserk
 			if (knife)
 			{
 				activator.A_Stop();
-				activator.angle = activator.AngleTo(self);
-				activator.pitch = 0;
+				activator.A_SetAngle(activator.AngleTo(self), SPF_INTERPOLATE);
+				activator.A_SetPitch(0, SPF_INTERPOLATE);
 				activator.GiveInventory("ToM_RageBoxInitEffect", 1);
 				activator.player.readyweapon = null;
 				activator.player.pendingweapon = knife;
@@ -111,6 +111,9 @@ class ToM_RageBox : Actor replaces Berserk
 	}
 }
 
+// Handles the initial effect (during knife selection and 
+// first-person animation). The player is made invulnerable,
+// and the level is frozen:
 class ToM_RageBoxInitEffect : Powerup
 {
 	Default
@@ -122,25 +125,33 @@ class ToM_RageBoxInitEffect : Powerup
 	{
 		if (owner && owner.player)
 		{
-			owner.player.cheats |= CF_TOTALLYFROZEN|CF_GODMODE;
-			level.SetFrozen(true);
+			owner.A_SetMugshotState("RageBoxActivation");
 		}
 		super.InitEffect();
 	}
-	
+
+	override void DoEffect()
+	{
+		super.DoEffect();
+		owner.player.cheats |= CF_TOTALLYFROZEN;
+		owner.bNODAMAGE = true;
+		Level.SetFrozen(true);
+	}
 	
 	override void EndEffect()
 	{
 		if (owner && owner.player)
 		{
-			owner.player.cheats &= ~(CF_TOTALLYFROZEN|CF_GODMODE);
-			level.SetFrozen(false);
+			owner.player.cheats &= ~CF_TOTALLYFROZEN;
+			owner.bNODAMAGE = false;
+			Level.SetFrozen(false);
 			owner.GiveInventory("ToM_RageBoxMainEffect", 1);
 		}
 		super.EndEffect();
 	}
 }
 
+// Handles the actual effects of the ragebox:
 class ToM_RageBoxMainEffect : PowerRegeneration 
 {
 	const PROTFACTOR = 0.15;
@@ -159,6 +170,7 @@ class ToM_RageBoxMainEffect : PowerRegeneration
 		owner.bNOPAIN = true;
 	}
 
+	// Increase outgoing damage and reduce incoming damage:
 	override void ModifyDamage(int damage, Name damageType, out int newdamage, bool passive, Actor inflictor, Actor source, int flags)
 	{
 		if (damage > 0)
@@ -173,6 +185,15 @@ class ToM_RageBoxMainEffect : PowerRegeneration
 				if (owner && newdamage > damage) 
 					owner.A_StartSound(ActiveSound, CHAN_AUTO, CHANF_DEFAULT, 1.0, ATTN_NONE);
 			}
+		}
+	}
+
+	override void DoEffect()
+	{
+		super.DoEffect();
+		if (owner && owner.player)
+		{
+			owner.A_SetMugshotState("RageBoxLoop");
 		}
 	}
 }
@@ -195,7 +216,7 @@ class ToM_GrowthPotion : PowerupGiver
 	}
 }
 
-class ToM_GrowthPotionEffect : PowerInvulnerable
+class ToM_GrowthPotionEffect : Powerup
 {
 	bool finishEffect;
 
@@ -247,6 +268,9 @@ class ToM_GrowthPotionEffect : PowerInvulnerable
 			Destroy();
 			return;
 		}
+		owner.bRespawnInvul = false;
+		owner.bInvulnerable = true;
+
 		finishEffect = false;
 
 		prevViewBobSpeed = owner.player.mo.ViewBobSpeed;
@@ -328,9 +352,14 @@ class ToM_GrowthPotionEffect : PowerInvulnerable
 	override void DoEffect()
 	{
 		super.DoEffect();
-		if (!owner || !owner.player || owner.isFrozen())
+		if (!owner || !owner.player)
 			return;
 		
+		owner.bInvulnerable = !finishEffect;
+		
+		if (owner.isFrozen())
+			return;
+
 		let pmo = PlayerPawn(owner);
 		let player = owner.player;
 		let weap = owner.player.readyweapon;
@@ -557,20 +586,6 @@ class ToM_InvisibilityEffect : Powerup
 				invs.prevWeapon = owner.player.readyweapon;
 				owner.player.pendingweapon = invs;
 			}
-
-			/*let ti = ThinkerIterator.Create("Actor");
-			Actor mo;
-			while (mo = Actor(ti.Next()))
-			{
-				if (mo && mo.bISMONSTER && mo.health > 0 && mo.target == owner)
-				{
-					//console.printf("%s target: %s", mo.GetTag(), mo.target ? mo.target.GetTag() : "none");
-					mo.bSeeFriendlyMonsters = true;
-					mo.target = soundtarget;
-					mo.lastheard = soundtarget;
-					mo.lastenemy = soundtarget;
-				}
-			}*/
 		}
 		super.InitEffect();
 	}
@@ -588,7 +603,7 @@ class ToM_InvisibilityEffect : Powerup
 		if (!active)
 			return;
 		
-		super.DoEffect();		
+		super.DoEffect();
 		if (owner && owner.player)
 		{
 			//owner.player.cheats |= CF_NOTARGET;
@@ -634,25 +649,8 @@ class ToM_InvisibilityEffect : Powerup
 				soundtarget.Destroy();
 			
 			owner.A_SetRenderstyle(prevAlpha, prevRenderstyle);
-			// Don't override the notarget console cheat if active:
-			/*CVar nt = CVar.GetCVar('notarget', owner.player);
-			if (nt && nt.GetBool() == false)
-			{
-				owner.player.cheats &= ~CF_NOTARGET;
-			}*/
-			
 			owner.bNOTARGET = owner.default.bNOTARGET;
 			owner.bNEVERTARGET = owner.default.bNEVERTARGET;
-			
-			/*let ti = ThinkerIterator.Create("Actor");
-			Actor mo;
-			while (mo = Actor(ti.Next()))
-			{
-				if (mo && mo.bISMONSTER && mo.health > 0 && mo.target == owner)
-				{
-					mo.bSeeFriendlyMonsters = mo.default.bSeeFriendlyMonsters;
-				}
-			}*/
 
 			if (!handler)
 				handler = ToM_Mainhandler(EventHandler.Find("ToM_Mainhandler"));
@@ -687,6 +685,15 @@ class ToM_PlayerSoundTarget : Actor
 		//stencilcolor "FFFFFF";
 		XScale 0.8;
 		YScale 0.65;
+	}
+
+	override void BeginPlay()
+	{
+		super.BeginPlay();
+		if (!tom_debugmessages)
+		{
+			A_SetRenderstyle(alpha, STYLE_None);
+		}
 	}
 
 	States {
@@ -858,6 +865,7 @@ class ToM_ReflectionCamera : Actor
 	Default	
 	{
 		+NOINTERACTION
+		+NOBLOCKMAP
 		+NOTIMEFREEZE
 		radius 1;
 		height 1;

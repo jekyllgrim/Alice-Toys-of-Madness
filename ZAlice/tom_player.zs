@@ -166,7 +166,7 @@ class ToM_AlicePlayer : DoomPlayer
 		if (!weap || weap.wasThrown)
 		{
 			curWeaponID = -1;
-			A_ChangeModel("", 1, "", "");
+			A_ChangeModel("", 1, flags: CMDL_HIDEMODEL);
 			return;
 		}
 

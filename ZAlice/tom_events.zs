@@ -250,6 +250,9 @@ class ToM_Mainhandler : EventHandler
 		case 'Megasphere':
 			e.Replacement = "ToM_Megasphere"; 
 			break;
+		case 'Blursphere':
+			e.Replacement = "ToM_Invisibility"; 
+			break;
 
 		case 'Clip':
 			e.Replacement = "ToM_AmmoSpawner_RedYellow"; 

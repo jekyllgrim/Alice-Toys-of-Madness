@@ -5,7 +5,6 @@ class ToM_AliceHUD : BaseStatusBar
 	protected transient CVar aspectScale;
 	HUDFont mIndexFont;
 	protected ToM_HUDFaceController FaceController;
-	protected TextureID HUDFace;
 	protected int hudstate;
 	
 	protected int weakAmmoFrame;
@@ -302,7 +301,7 @@ class ToM_AliceHUD : BaseStatusBar
 		ToM_DrawImage("graphics/HUD/mirror_back.png", ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		
 		// Alice's face:
-		DrawAliceFace((80, -85) + ofs);
+		DrawAliceFace(ofs, (80, -85));
 		
 		// mirror's glass:
 		ToM_DrawImage("graphics/HUD/mirror_glass.png", ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
@@ -635,36 +634,42 @@ class ToM_AliceHUD : BaseStatusBar
 			ToM_DrawImage("ACTPPUFF", pos, fflags);
 		}
 	}
-		
-		
 	
-	void DrawAliceFace(vector2 pos)
+	void DrawAliceFace(vector2 pos, vector2 ofs)
 	{
 		if (CPlayer.health <= 0 || !CPlayer.mo)
 			return;
 		
-		int flags = Mugshot.STANDARD;
+		Screen.EnableStencil(true);
+		Screen.SetStencil(0, SOP_Increment, SF_ColorMaskOff);
+		// use mirror's background as a mask:
+		ToM_DrawImage("graphics/HUD/mirror_back.png", pos, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
+		Screen.SetStencil(1, SOP_Keep, SF_AllOn);
+
+		/*int flags = Mugshot.STANDARD;
 		if (CPlayer.cheats & CF_GODMODE || CPlayer.cheats & CF_GODMODE2 || CPLayer.mo.FindInventory("PowerInvulnerable", true) || CPlayer.mo.FindInventory("ToM_RageBoxMainEffect"))
 		{
 			flags = Mugshot.DISABLERAMPAGE;
 		}
-		ToM_DrawTexture(GetMugShot(5, flags), pos,  DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER, alpha: CPlayer.mo.alpha);
+		ToM_DrawTexture(GetMugShot(5, flags), pos + ofs,  DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER, alpha: CPlayer.mo.alpha);*/
 		
-		/*
 		if (!FaceController)
 		{
 			let handler = ToM_Mainhandler(Eventhandler.Find("ToM_Mainhandler"));
 			if (handler)
 			{
 				FaceController = handler.HUDFaces[CPlayer.mo.PlayerNumber()];
-				HUDFace = FaceController.GetFaceTexture();
 			}
 		}
-		
-		if (HUDFace.isValid())
+
+		TextureID face = FaceController.GetFaceTexture();
+		if (face.isValid())
 		{
-			ToM_DrawTexture(HUDFace, pos, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
-		}*/
+			ToM_DrawTexture(face, pos + ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER);
+		}
+
+		Screen.EnableStencil(false);
+		Screen.ClearStencil();
 	}
 	
 	void DrawMirrorCracks(vector2 pos)
@@ -770,14 +775,15 @@ class ToM_AliceHUD : BaseStatusBar
 
 class ToM_HUDFaceController : Actor
 {
-	PlayerInfo HPlayer;
-	PlayerPawn HPlayerPawn;
+	const DMGDELAY = 25;
+
+	protected PlayerInfo HPlayer;
+	protected PlayerPawn HPlayerPawn;
 	
-	const BLINK_MIN = 35;
-	const BLINK_MAX = 35 * 5;
-	
-	const DMGDELAY = 20;
 	protected int dmgwait;
+	protected int damageAmount;
+	protected double damageAngle;
+	protected int attackdown;
 	
 	protected state s_front_calm;
 	protected state s_front_angry;
@@ -790,6 +796,8 @@ class ToM_HUDFaceController : Actor
 	protected state s_return_right_angry;
 	protected state s_right_angry;
 	protected state s_left_angry;
+	protected state s_ragebox;
+	protected state s_ragebox_loop;
 	
 	Default
 	{
@@ -799,8 +807,22 @@ class ToM_HUDFaceController : Actor
 		+SYNCHRONIZED
 		+NOTIMEFREEZE
 		FloatBobPhase 0;
-		Renderstyle 'None';
-		//YScale 0.834;
+		YScale 0.834;
+	}
+
+	static ToM_HUDFaceController Create(PlayerInfo player)
+	{
+		if (!player || !player.mo)
+		{
+			return null;
+		}
+		let fc = ToM_HUDFaceController(Actor.Spawn("ToM_HUDFaceController", player.mo.pos));
+		if (fc)
+		{
+			fc.HPlayer = player;
+			fc.HPlayerPawn = player.mo;
+		}
+		return fc;
 	}
 	
 	clearscope TextureID GetFaceTexture()
@@ -810,19 +832,47 @@ class ToM_HUDFaceController : Actor
 	
 	bool CheckFaceSequence(state checkstate)
 	{
-		return ( checkstate && InStateSequence(curstate, checkstate) );
+		return (checkstate && InStateSequence(curstate, checkstate));
 	}
 	
 	void SetFaceState(state newstate, bool noOverride = false)
 	{
 		if (!noOverride || !CheckFaceSequence(newstate))
+		{
 			SetState(newstate);
+		}
+	}
+
+	void PlayerDamaged(int damage, double angle)
+	{
+		damageAmount = damage;
+		damageAngle = angle;
+	}
+
+	bool HasRageBox()
+	{
+		return HPlayerPawn && (HPlayerPawn.FindInventory("ToM_RageBoxInitEffect") || HPlayerPawn.FindInventory("ToM_RageBoxMainEffect"));
+	}
+
+	bool IsInvulnerable()
+	{
+		return HPlayerPawn && (HPlayerPawn.bINVULNERABLE || HPlayer.cheats & CF_GODMODE || HPlayer.cheats & CF_GODMODE2);
+	}
+
+	void UpdateValues()
+	{
+		attackdown = HPlayer.attackdown? attackdown += 1 : 0;
+		
+		if (dmgwait > 0)
+		{
+			dmgwait--;
+		}
 	}
 	
 	override void BeginPlay()
 	{
 		super.BeginPlay();
-		//A_SpriteOffset(-32, -64);
+		A_SpriteOffset(-32, -128);
 		s_front_calm = FindState("FrontCalm");
 		s_front_angry = FindState("FrontAngry");
 		s_front_smile = FindState("FrontSmile");
@@ -834,66 +884,95 @@ class ToM_HUDFaceController : Actor
 		s_return_right_angry = FindState("ReturnRightAngry");
 		s_right_angry = FindState("RightAngry");
 		s_left_angry = FindState("LeftAngry");
+		s_ragebox = FindState("RageBoxActivation");
+		s_ragebox_loop = FindState("RageBoxLoop");
 	}
 	
 	override void Tick()
 	{
-		if (!HPlayer)
+		if (!HPlayer || !HPlayerPawn)
 			return;
 			
 		super.Tick();
 		
-		if (HPlayerPawn.FindInventory("PowerStrength", true))
+		// Rage box face takes priority:
+		if (HasRageBox())
+		{
+			SetFaceState(s_ragebox, true);
+		}
+		
+		// Otherwise invulnerable face takes priority:
+		else if (IsInvulnerable())
 		{
 			SetFaceState(s_front_demon, true);
 		}
 		
-		else if (HPlayer.damagecount > 0 && dmgwait <= 0)
+		// Otherwise, if we're damaged, display one of the
+		// damaged faces:
+		else if (damageAmount > 0 && dmgwait <= 0)
 		{
+			// Set this to DMGDELAY, so that if we're damaged
+			// continuously, the state doesn't get activated
+			// too frequently and has the chance to actually
+			// show its animation:
 			dmgwait = DMGDELAY;
-			if (HPlayer.damagecount >= 25)
+			if (damageAmount >= 25)
 			{
 				SetFaceState(s_front_ouch, true);
 			}
 			else
 			{
-				double atkangle = 0;
-				// angle to attacker:
-				if (HPlayer.attacker)
-				{
-					atkangle = HPlayerPawn.DeltaAngle(HPlayerPawn.angle, HPlayerPawn.AngleTo(HPlayer.attacker));
-				}
 				// Attacked from the front:
-				if (abs(atkangle) < 40)
+				if (abs(damageAngle) < 40)
 				{
 					// If already looking left, return from left:
 					if (CheckFaceSequence(s_left_angry))
+					{
 						SetFaceState(s_return_left_angry);
+					}
 					// If looking right, return from right:
 					else if (CheckFaceSequence(s_right_angry))
+					{
 						SetFaceState(s_return_right_angry);
+					}
 					// Otherwise just show front damage face:
 					else
+					{
 						SetFaceState(s_front_angry);
+					}
 				}
 				// Attacked from the right:
-				else if (atkangle < 0)
+				else if (damageAngle < 0)
+				{
 					SetFaceState(s_right_angry);
+				}
 				// Attacked from the left:
 				else
+				{
 					SetFaceState(s_left_angry);
+				}
 			}
+			// Don't forget to reset the stored amount of damage,
+			// so that the state doesn't get triggered mutliple
+			// times:
+			damageAmount = 0;
 		}
-		
-		if (dmgwait > 0)
-			dmgwait--;
+
+		// Otherwise go to rampage face if attackdown has been
+		// true for 2 seconds:
+		else if (attackdown >= TICRATE*2)
+		{
+			SetFaceState(s_front_angry, true);
+		}
+
+		UpdateValues();
 	}
 	
 	States
 	{
 	Spawn:
 	FrontCalm:
-		AHF1 A 1 NoDelay A_SetTics(random[ahf](BLINK_MIN, BLINK_MAX));
+		AHF1 A 1 NoDelay A_SetTics(random[ahf](TICRATE, TICRATE * 4));
 		AHF1 BC 3;
 		loop;
 	FrontAngry:
@@ -907,8 +986,14 @@ class ToM_HUDFaceController : Actor
 		AHF1 H 60;
 		goto FrontCalm;
 	FrontDemon:
-		AHF5 ABCD 4;
-		AHF5 CB 5;
+		AHF5 AAAABBBBCCCCDDDDCCCCCBBBBB 1
+		{
+			if (!IsInvulnerable())
+			{
+				return State(s_front_calm);
+			}
+			return State(null);
+		}
 		loop;
 	LeftAngry:
 		AHF2 ABC 3;
@@ -929,6 +1014,22 @@ class ToM_HUDFaceController : Actor
 		goto FrontCalm;
 	ReturnRightCalm:
 		AHF4 FGH 4;
+		goto FrontCalm;
+	RageBoxActivation:
+		AHF6 ABCDEFGHI 6;
+	RageBoxLoop:
+		AHF7 ABCDEFGHIJKLM 5 A_SetTics(random[ahf](3, 7));
+		TNT1 A 0
+		{
+			if (!HasRageBox())
+			{
+				return ResolveState("RageBoxDeactivation");
+			}
+			return ResolveState(null);
+		}
+		loop;
+	RageBoxDeactivation:
+		AHF6 IHGFEDCBA 4;
 		goto FrontCalm;
 	}
 }

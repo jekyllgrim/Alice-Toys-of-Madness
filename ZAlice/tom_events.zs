@@ -94,6 +94,21 @@ class ToM_Mainhandler : EventHandler
 		// projectile):
 		if (!e.thing)
 			return;
+		
+		if (e.thing.player)
+		{
+			int pn = e.thing.PlayerNumber();
+			if (HUDFaces[pn])
+			{
+				double dmgAngle = 0;
+				Actor who = e.inflictor ? e.inflictor : e.damageSource;
+				if (who)
+				{
+					dmgAngle = e.thing.DeltaAngle(e.thing.angle, e.thing.AngleTo(who));
+				}
+				HUDFaces[pn].PlayerDamaged(e.damage, dmgAngle);
+			}
+		}
 
 		if (e.thing.health <= 0 && e.DamageType == 'Eyestaff')
 		{
@@ -142,12 +157,9 @@ class ToM_Mainhandler : EventHandler
 		let pmo = players[pn].mo;
 		if (!pmo)
 			return;
-		let fc = ToM_HUDFaceController(Actor.Spawn("ToM_HUDFaceController", pmo.pos));
-		if (fc)
+		if (!HUDfaces[e.PlayerNumber])
 		{
-			HUDfaces[e.PlayerNumber] = fc;
-			fc.HPlayer = players[pn];
-			fc.HPlayerPawn = pmo;
+			HUDfaces[e.PlayerNumber] = ToM_HUDFaceController.Create(players[pn]);
 		}
 	}
 	

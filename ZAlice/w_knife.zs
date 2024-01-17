@@ -46,7 +46,6 @@ class ToM_Knife : ToM_BaseWeapon
 		
 		if (HasRageBox())
 		{
-			A_Overlay(APSP_LeftHand, "ClawHandReady", true);
 			flags |= WRF_NOSWITCH;
 		}
 		
@@ -234,39 +233,26 @@ class ToM_Knife : ToM_BaseWeapon
 	Spawn:
 		ALVB A -1;
 		stop;
-	SelectRage:
-		TNT1 A 0 
+	ClawHandSelect:
+		VCLW A 1
 		{
-			A_WeaponOffset(0, WEAPONTOP);
-			vector2 piv = (0.2, 0.3);
-			A_OverlayPivot(OverlayID(), piv.x, piv.y);
-			A_Overlay(APSP_LeftHand, "SelectRageLeftHand");
-			A_OverlayPivot(APSP_LeftHand, -piv.x, piv.y);
+			A_OverlayFlags(OverlayID(), PSPF_ADDWEAPON|PSPF_ADDBOB, false);
+			A_OverlayOffset(OverlayID(), -24, WEAPONTOP+30);
+			A_OverlayPivot(OverlayID(), 0.2, 0.8);
+			A_RotatePSprite(OverlayID(), -30);
 		}
-		VRAG ABCDEF 2 { player.viewheight -= 2; }
-		VRAG FFFGGGHHHIIIIIIIIIIIIIIIIIIIIIIIIII 5 A_OverlayOffset(OverlayID(), frandom[sfx](-1,1), frandom[sfx](-1,1), WOF_ADD);
-		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 0.6);
-		VRAG JKLMNO 2 A_RotatePSprite(OverlayID(), 3, WOF_ADD);
-		TNT1 A 0 A_RotatePSPrite(OverlayID(), 0, WOF_ADD);
-		VKRR BCDEFG 1 { player.viewheight += 2; }
-		goto ready;
-	SelectRageLeftHand:
-		TNT1 A 0 A_OverlayFlags(OverlayID(), PSPF_FLIP|PSPF_MIRROR, true);
-		VRAG ABCDEF 2;
-		VRAG FFFGGGHHHIIIIIIIIIIIIIIIIIIIIIIIIII 5 A_OverlayOffset(OverlayID(), frandom[sfx](-1,1), frandom[sfx](-1,1), WOF_ADD);
-		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 0.6);
-		VRAG JKL 2;
-		VRAG M 5;
-		TNT1 A 0 A_OverlayFlags(OverlayID(), PSPF_FLIP|PSPF_MIRROR, false);
-		VCLS AB 2;
-		VCLS C 10;
-		VCLS D 3;
+		#### ###### 1
+		{
+			A_OverlayOffset(OverlayID(), 4, -5, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
+		}
 		goto ClawHandReady;
 	ClawHandReady:
 		TNT1 A 0
 		{
 			A_OverlayPivot(OverlayID(), 0.2, 0.75);
 			A_OverlayFlags(OverlayID(), PSPF_ADDWEAPON, false);
+			A_OverlayFlags(OverlayID(), PSPF_ADDBOB, true);
 			A_OverlayOffset(OverlayID(), 0, WEAPONTOP);
 		}
 		VCLW A 1 
@@ -403,11 +389,19 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			if (HasRageBox())
 			{
-				return ResolveState("SelectRage");
+				A_WeaponOffset(0, WEAPONTOP);
+				return ResolveState("Ready");
+				//A_Overlay(APSP_LeftHand, "ClawHandSelect");
 			}
-			
-			if (invoker.wasThrown)
-				A_SetKnifeSprite("VKNR");
+
+			if (invoker.wasThrown) 
+			{
+				A_SetKnifeSprite("VKNR", "VKRR");
+			}
+			else
+			{
+				A_SetKnifeSprite("VKNF", "VKRF");
+			}
 				
 			A_WeaponOffset(-24, 86);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
@@ -444,6 +438,11 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		#### A 1 
 		{
+			if (HasRageBox())
+			{
+				A_Overlay(APSP_LeftHand, "ClawHandReady", true);
+			}
+
 			if (invoker.wasThrown) 
 			{
 				A_SetKnifeSprite("VKNR", "VKRR");
@@ -757,7 +756,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 	
 	bool ShooterHasRageBox()
 	{
-		return target && (target.CountInv("ToM_RageBoxInitEffect") || target.CountInv("ToM_RageBoxMainEffect"));
+		return target && (target.CountInv("ToM_RageBoxSelectorWeapon") || target.CountInv("ToM_RageBoxMainEffect"));
 	}
 	
 	Default

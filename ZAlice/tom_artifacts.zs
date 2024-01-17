@@ -1,3 +1,36 @@
+// Fake weapon for first-person artifact activation animations:
+class ToM_ArtifactSelectorWeapon : ToM_BaseWeapon
+{
+	Weapon prevWeapon;
+	
+	Default
+	{
+		Inventory.maxamount 1;
+		+WEAPON.CHEATNOTWEAPON
+	}
+
+	States
+	{
+	Select:
+		TNT1 A 0 { return ResolveState("Ready"); }
+		wait;
+	Deselect:
+		TNT1 A 0 A_Lower();
+		wait;
+	Fire:
+		TNT1 A 0 { return ResolveState("Ready"); }
+	Ready:
+		TNT1 A 1;
+	EndEffect:
+		TNT1 A 0
+		{
+			player.pendingweapon = invoker.prevWeapon;
+			A_TakeInventory(invoker.GetClass(), invoker.amount);
+		}
+		stop;
+	}
+}
+
 class ToM_RageBox : Actor replaces Berserk
 {
 	vector3 smokedir;
@@ -36,6 +69,11 @@ class ToM_RageBox : Actor replaces Berserk
 			);
 		}
 	}
+
+	static bool HasRageBox(Actor who)
+	{
+		return who && (who.CountInv("ToM_RageBoxSelectorWeapon") || who.CountInv("ToM_RageBoxMainEffect"));
+	}
 	
 	override bool CanCollideWith(Actor other, bool passive)
 	{
@@ -55,19 +93,15 @@ class ToM_RageBox : Actor replaces Berserk
 			
 		used = true;
 		A_StartSound("ragebox/activate", startTime: 0.5);
-		if (!activator.CountInv("ToM_RageBoxInitEffect") && !activator.CountInv("ToM_RageBoxMainEffect"))
+		if (!activator.CountInv("ToM_RageBoxSelectorWeapon") && !activator.CountInv("ToM_RageBoxMainEffect"))
 		{
-			let knife = ToM_Knife(activator.FindInventory("ToM_Knife"));
-			if (knife)
-			{
-				activator.A_Stop();
-				activator.A_SetAngle(activator.AngleTo(self), SPF_INTERPOLATE);
-				activator.A_SetPitch(0, SPF_INTERPOLATE);
-				activator.GiveInventory("ToM_RageBoxInitEffect", 1);
-				activator.player.readyweapon = null;
-				activator.player.pendingweapon = knife;
-				activator.A_StartSound("ragebox/scream", CHAN_AUTO);
-			}
+			activator.A_Stop();
+			activator.A_SetAngle(activator.AngleTo(self), SPF_INTERPOLATE);
+			activator.A_SetPitch(0, SPF_INTERPOLATE);
+			activator.GiveInventory("ToM_RageBoxSelectorWeapon", 1);
+			activator.player.readyweapon = null;
+			activator.player.pendingweapon = Weapon(activator.FindInventory("ToM_RageBoxSelectorWeapon"));
+			activator.A_StartSound("ragebox/scream", CHAN_AUTO);
 		}
 		
 		else if (activator.CountInv("ToM_RageBoxMainEffect"))
@@ -98,56 +132,15 @@ class ToM_RageBox : Actor replaces Berserk
 			SpawnRageSmoke();
 			if (target)
 			{
-				if  (!target.CountInv("ToM_RageBoxInitEffect") && !target.CountInv("ToM_RageBoxMainEffect"))
+				/*if  (!target.CountInv('ToM_RageBoxMainEffect'))
 					target.A_SetBlend("a80a0a", 0.75, 250);
-				else
+				else*/
 					target.A_SetBlend("a80a0a", 0.35, 100);
 			}
 		}
 		M000 AAAAAAAAAAAAAAAAAAAAA 2 SpawnRageSmoke();
-		TNT1 A 0 A_SetRenderstyle(1, Style_Translucent);
 		M000 B 1 A_FadeOut(0.05);
 		wait;
-	}
-}
-
-// Handles the initial effect (during knife selection and 
-// first-person animation). The player is made invulnerable,
-// and the level is frozen:
-class ToM_RageBoxInitEffect : Powerup
-{
-	Default
-	{
-		Powerup.duration -5;
-	}
-	
-	override void InitEffect()
-	{
-		if (owner && owner.player)
-		{
-			owner.A_SetMugshotState("RageBoxActivation");
-		}
-		super.InitEffect();
-	}
-
-	override void DoEffect()
-	{
-		super.DoEffect();
-		owner.player.cheats |= CF_TOTALLYFROZEN;
-		owner.bNODAMAGE = true;
-		Level.SetFrozen(true);
-	}
-	
-	override void EndEffect()
-	{
-		if (owner && owner.player)
-		{
-			owner.player.cheats &= ~CF_TOTALLYFROZEN;
-			owner.bNODAMAGE = false;
-			Level.SetFrozen(false);
-			owner.GiveInventory("ToM_RageBoxMainEffect", 1);
-		}
-		super.EndEffect();
 	}
 }
 
@@ -162,12 +155,6 @@ class ToM_RageBoxMainEffect : PowerRegeneration
 		Powerup.Duration -30;
 		Powerup.Strength 5;
 		Powerup.Color "FF0000", 0.12;
-	}
-	
-	override void InitEffect()
-	{
-		Super.InitEffect();
-		owner.bNOPAIN = true;
 	}
 
 	// Increase outgoing damage and reduce incoming damage:
@@ -194,7 +181,121 @@ class ToM_RageBoxMainEffect : PowerRegeneration
 		if (owner && owner.player)
 		{
 			owner.A_SetMugshotState("RageBoxLoop");
+			owner.bNOPAIN = true;
 		}
+	}
+
+	override void EndEffect()
+	{
+		if (owner)
+		{
+			owner.bNOPAIN = owner.default.bNOPAIN;
+		}
+		Super.EndEffect();
+	}
+}
+
+class ToM_RageBoxSelectorWeapon : ToM_ArtifactSelectorWeapon
+{
+	int bloodtics;
+
+	override void DoEffect()
+	{
+		if (!owner || !owner.player)
+			return;
+
+		owner.player.cheats |= CF_TOTALLYFROZEN;
+		owner.bNODAMAGE = true;
+		Level.SetFrozen(true);
+	}
+
+	States
+	{
+	SpawnBloodParticle:
+		TNT1 A 1
+		{
+			if (invoker.bloodtics <= 0)
+			{
+				return ResolveState("Null");
+			}
+			A_SetTics(random[sfx](1, 10));
+			A_SpawnPSParticle("BloodParticle", xofs:frandom[sfx](-400, 400), yofs:frandom(-100, 100));
+			invoker.bloodtics--;
+			return ResolveState(null);
+		}
+		loop;
+	BloodParticle:
+		TNT1 A 1
+		{
+			let psp = player.FindPSprite(OverlayID());
+			psp.frame = random[sfx](0,7);
+			A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);
+			A_OverlayFlags(OverlayID(), PSPF_ADDBOB|PSPF_ADDWEAPON, false);
+			A_OverlayFlags(OverlayID(), PSPF_RENDERSTYLE|PSPF_FORCEALPHA,true);
+			A_OverlayAlpha(OverlayID(), frandom[sfx](0.5, 0.9));
+		}
+		VKNB # 1 A_PSPFadeOut(invoker.bloodtics ? 0.01 : 0.0075);
+		wait;
+	Ready:
+		TNT1 A 0 
+		{
+			invoker.bloodtics = 15;
+			A_Overlay(APSP_Overlayer, "SpawnBloodParticle");
+			A_WeaponOffset(0, WEAPONTOP);
+			vector2 piv = (0.2, 0.3);
+			A_OverlayPivot(OverlayID(), piv.x, piv.y);
+			A_Overlay(APSP_LeftHand, "SelectRageLeftHand");
+			A_OverlayPivot(APSP_LeftHand, -piv.x, piv.y);
+		}
+		VRAG ABCDEF 2 { player.viewheight -= 2; }
+		VRAG FFFGGGHHHIIIIIIIIIIIIIIIIIIIIIIIIII 5 A_OverlayOffset(OverlayID(), frandom[sfx](-1,1), frandom[sfx](-1,1), WOF_ADD);
+		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 0.6);
+		VRAG JKLMNO 2 A_RotatePSprite(OverlayID(), 3, WOF_ADD);
+		TNT1 A 0 
+		{
+			A_RotatePSPrite(OverlayID(), 0, WOF_INTERPOLATE);
+			A_WeaponOffset(0, WEAPONTOP, WOF_INTERPOLATE);
+		}
+		VKRR BCDEFG 1 { player.viewheight += 2; } 
+		VKRF A 1;
+		wait;
+	SelectRageLeftHand:
+		TNT1 A 0 A_OverlayFlags(OverlayID(), PSPF_FLIP|PSPF_MIRROR, true);
+		VRAG ABCDEF 2;
+		VRAG FFFGGGHHHIIIIIIIIIIIIIIIIIIIIIIIIII 5 A_OverlayOffset(OverlayID(), frandom[sfx](-1,1), frandom[sfx](-1,1), WOF_ADD);
+		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 0.6);
+		VRAG JKL 2;
+		VRAG MMMMM 1 A_OverlayOffset(OverlayID(), frandom(-0.5, 0.5), frandom(-0.5, 0.5), WOF_INTERPOLATE);
+		TNT1 A 0 A_OverlayFlags(OverlayID(), PSPF_FLIP|PSPF_MIRROR, false);
+		VCLS ABC 1 A_OverlayOffset(OverlayID(), 3, -5, WOF_INTERPOLATE);
+		VCLS CCCCCCCCCCCCCCCCCC 1 A_OverlayOffset(OverlayID(), frandom(1, 1), frandom(1, 1), WOF_INTERPOLATE);
+		VCLS CCCCCC 1
+		{
+			//A_OverlayOffset(OverlayID(), -3, 5, WOF_ADD);
+			A_OverlayScale(OverlayID(), -0.03, -0.03, WOF_ADD);
+			A_OverlayRotate(OverlayID(), -1, WOF_ADD);
+		}
+		TNT1 A 0 
+		{
+			A_OverlayScale(OverlayID(), 1.1, 1.1);
+			A_ResetPSprite(0, 5);
+		}
+		VCLW A 5;
+	EndEffect:
+		TNT1 A 0 
+		{
+			if (!CountInv("ToM_Knife"))
+			{
+				GiveInventory("ToM_Knife", 1);
+			}
+			GiveInventory("ToM_RageBoxMainEffect", 1);
+			player.cheats &= ~CF_TOTALLYFROZEN;
+			bNODAMAGE = false;
+			Level.SetFrozen(false);
+			A_SelectWeapon("ToM_Knife");
+			A_TakeInventory(invoker.GetClass(), invoker.amount);
+		}
+		stop;
 	}
 }
 
@@ -228,6 +329,8 @@ class ToM_GrowthPotionEffect : Powerup
 	protected vector2 prevWeaponScale;
 	protected double prevZoom;
 	protected double prevViewBobSpeed;
+	protected double prevjumpz;
+	protected double prevGravity;
 	
 	protected double targetSpeed;
 	protected double targetHeight;
@@ -268,10 +371,13 @@ class ToM_GrowthPotionEffect : Powerup
 			Destroy();
 			return;
 		}
+		finishEffect = false;
+
 		owner.bRespawnInvul = false;
 		owner.bInvulnerable = true;
-
-		finishEffect = false;
+		
+		prevjumpz = owner.player.mo.jumpz;
+		prevGravity = owner.gravity;
 
 		prevViewBobSpeed = owner.player.mo.ViewBobSpeed;
 		owner.player.mo.ViewBobSpeed *= VIEWFACTOR;
@@ -363,6 +469,9 @@ class ToM_GrowthPotionEffect : Powerup
 		let pmo = PlayerPawn(owner);
 		let player = owner.player;
 		let weap = owner.player.readyweapon;
+
+		pmo.jumpz = (player.viewHeight >= ceilingz)? 0 : prevjumpz;
+		owner.gravity = player.jumptics != 0 ? prevGravity / 2 : prevGravity;
 		
 		double stepFactor = finishEffect ? -2 : 1;
 		
@@ -460,6 +569,8 @@ class ToM_GrowthPotionEffect : Powerup
 		
 		else if (player.viewHeight <= prevViewHeight)
 		{
+			pmo.jumpz = prevjumpz;
+			owner.gravity = prevGravity;
 			owner.player.mo.ViewBobSpeed = prevViewBobSpeed;
 			player.viewHeight = prevViewHeight;
 			pmo.viewHeight = prevViewHeight;
@@ -703,10 +814,9 @@ class ToM_PlayerSoundTarget : Actor
 	}
 }
 
-class ToM_InvisibilitySelector : ToM_BaseWeapon
+class ToM_InvisibilitySelector : ToM_ArtifactSelectorWeapon
 {
 	ToM_ReflectionCamera cam;
-	Weapon prevWeapon;
 	
 	enum TIPsprites
 	{
@@ -739,20 +849,8 @@ class ToM_InvisibilitySelector : ToM_BaseWeapon
 		super.DetachFromOwner();
 	}
 	
-	Default
-	{
-		Inventory.maxamount 1;
-		+WEAPON.CHEATNOTWEAPON
-	}
-	
 	States
 	{
-	Select:
-		TNT1 A 0 { return ResolveState("Ready"); }
-		wait;
-	Deselect:
-		TNT1 A 0 A_Lower();
-		wait;
 	Mirror:
 		LGMR C -1
 		{
@@ -767,7 +865,6 @@ class ToM_InvisibilitySelector : ToM_BaseWeapon
 			A_OverlayRenderstyle(OverlayID(), Style_Translucent);
 		}
 		stop;
-	Fire:
 	Ready:
 		TNT1 A 0
 		{
@@ -791,12 +888,10 @@ class ToM_InvisibilitySelector : ToM_BaseWeapon
 		TNT1 AAAAAAAAAAAAAAAAAAAA 1 
 		{
 			let psp = player.FindPSprite(TIP_Arm);
-			let psf = player.FindPSprite(TIP_Face);
-			if (psp && psf)
+			if (psp)
 			{
 				double fac = 0.0425;
 				psp.alpha = Clamp(psp.alpha - fac, 0.15, 1);
-				psf.alpha = Clamp(psp.alpha - fac, 0.15, 1);
 				A_SetRenderstyle(psp.alpha, Style_Shaded);
 				SetShade("FFFFFF");
 			}
@@ -806,26 +901,20 @@ class ToM_InvisibilitySelector : ToM_BaseWeapon
 			let invs = FindInventory("ToM_InvisibilityEffect");
 			if (invs)
 				invs.Activate(self);
-			player.SetPSprite(TIP_Face, ResolveState("FaceBack"));
+			player.SetPSprite(TIP_Face, ResolveState("Null"));
 			player.SetPSprite(TIP_Frame, ResolveState("FrameBack"));
 		}
 		TNT1 AAAAAAAAA 1
 		{
 			A_WeaponOffset(-3, 14, WOF_ADD);
 		}
-		TNT1 A 0
-		{
-			player.pendingweapon = invoker.prevWeapon;
-			A_TakeInventory(invoker.GetClass(), invoker.amount);
-		}
-		stop;
+		goto EndEffect;
 	Face:
 		TNT1 A 1
 		{
 			A_OverlayFlags(OverlayID(), PSPF_RenderStyle|PSPF_ForceAlpha, true);
 			A_OverlayRenderstyle(OverlayID(), Style_Translucent);
 		}
-		//LGMT ABCDEFGH 1;
 		wait;
 	Frame:
 		TNT1 A 0
@@ -835,17 +924,13 @@ class ToM_InvisibilitySelector : ToM_BaseWeapon
 		}
 		LGMS ABCDEFGHI 1;
 		wait;
-	FaceBack:
-		//LGMT HGFEDCBA 1;
-		TNT1 A 1;
-		stop;
 	FrameBack:
 		TNT1 A 0 
 		{
 			A_OverlayFlags(OverlayID(), PSPF_RenderStyle|PSPF_ForceStyle|PSPF_ForceAlpha, true);
 			A_OverlayRenderstyle(OverlayID(), Style_Translucent);
 		}
-		LGMS IHGFEDCBA 1  
+		LGMS IHGFEDCBA 1
 		{
 			let psp = player.FindPSprite(OverlayID());
 			let psm = player.FindPSprite(TIP_Mirror);

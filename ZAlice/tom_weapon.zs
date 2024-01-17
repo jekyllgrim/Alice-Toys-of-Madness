@@ -595,7 +595,7 @@ class ToM_BaseWeapon : Weapon abstract
 			SwayTics--;
 		}
 	
-		for (int i = pspcontrols.Size() - 1; i >= 0; i--)
+		/*for (int i = pspcontrols.Size() - 1; i >= 0; i--)
 		{
 			if (pspcontrols[i])
 			{
@@ -605,7 +605,7 @@ class ToM_BaseWeapon : Weapon abstract
 			{
 				pspcontrols.Delete(i);
 			}	
-		}
+		}*/
 	}
 	
 	override void Tick()
@@ -1614,7 +1614,7 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 	}
 }
 
-class ToM_PspResetController : Object play
+class ToM_PspResetController : Thinker
 {
 	protected PSprite psp;	
 	protected int tics;
@@ -1636,23 +1636,23 @@ class ToM_PspResetController : Object play
 		if (!psp || tics <= 0)
 			return null;
 		
-		let prc = ToM_PspResetController(New("ToM_PspResetController"));
-		if (prc)
+		let ppRC = ToM_PspResetController(New("ToM_PspResetController"));
+		if (ppRC)
 		{
-			prc.psp = psp;
-			prc.tics = tics;
+			ppRC.psp = psp;
+			ppRC.tics = tics;
 			
-			prc.ofs = (psp.x, psp.y);
-			prc.scale = psp.scale;
-			prc.rotation = psp.rotation;
+			ppRC.ofs = (psp.x, psp.y);
+			ppRC.scale = psp.scale;
+			ppRC.rotation = psp.rotation;
 			
-			prc.targetofs = tofs;
-			prc.targetscale = tscale;
-			prc.targetrotation = trotation;
+			ppRC.targetofs = tofs;
+			ppRC.targetscale = tscale;
+			ppRC.targetrotation = trotation;
 			
-			prc.ofs_step = (tofs - prc.ofs) / tics;
-			prc.scale_step = (tscale - prc.scale ) / tics;
-			prc.rotation_step = (trotation - prc.rotation) / tics;
+			ppRC.ofs_step = (tofs - ppRC.ofs) / tics;
+			ppRC.scale_step = (tscale - ppRC.scale ) / tics;
+			ppRC.rotation_step = (trotation - ppRC.rotation) / tics;
 			if (tom_debugmessages > 1)
 			{
 				console.printf(
@@ -1660,17 +1660,18 @@ class ToM_PspResetController : Object play
 					"ofs: %d, %d | target ofs: %d, %d | step: %d, %d\n"
 					"scale: %.1f, %.1f | target scale: %.1f, %.1f | step: %.1f\n"
 					"rotation: %.1f | target rotation: %.1f | step: %.1f",
-					psp.x, psp.y, prc.targetofs.x, prc.targetofs.y, prc.ofs_step.x, prc.ofs_step.y,
-					psp.scale.x, psp.scale.y, prc.targetscale.x, prc.targetscale.y, prc.scale_step.x, prc.scale_step.y,
-					psp.rotation, prc.targetrotation, prc.rotation_step
+					psp.x, psp.y, ppRC.targetofs.x, ppRC.targetofs.y, ppRC.ofs_step.x, ppRC.ofs_step.y,
+					psp.scale.x, psp.scale.y, ppRC.targetscale.x, ppRC.targetscale.y, ppRC.scale_step.x, ppRC.scale_step.y,
+					psp.rotation, ppRC.targetrotation, ppRC.rotation_step
 				);
 			}
 		}
-		return prc;
+		return ppRC;
 	}
 	
-	void DoResetStep()
+	override void Tick()
 	{
+		Super.Tick();
 		if (!psp)
 		{
 			if (tom_debugmessages > 1)

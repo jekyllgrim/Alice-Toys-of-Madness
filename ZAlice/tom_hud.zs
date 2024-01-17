@@ -848,7 +848,7 @@ class ToM_HUDFaceController : Actor
 
 	bool HasRageBox()
 	{
-		return HPlayerPawn && (HPlayerPawn.FindInventory("ToM_RageBoxInitEffect") || HPlayerPawn.FindInventory("ToM_RageBoxMainEffect"));
+		return HPlayerPawn && ToM_RageBox.HasRageBox(HPlayerPawn);
 	}
 
 	bool IsInvulnerable()

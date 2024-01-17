@@ -67,7 +67,7 @@ class ToM_BaseWeapon : Weapon abstract
 	
 	action bool HasRageBox()
 	{
-		return (CountInv("ToM_RageBoxInitEffect") || CountInv("ToM_RageBoxMainEffect"));
+		return ToM_RageBox.HasRageBox(self);
 	}
 	
 	/*	Function by Lewisk3 using Gutamatics to fire 3D projectiles

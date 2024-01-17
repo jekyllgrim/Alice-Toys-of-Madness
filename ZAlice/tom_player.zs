@@ -419,6 +419,11 @@ class ToM_AlicePlayer : DoomPlayer
 		//	player.oldbuttons & BT_JUMP ? "held" : "not held"
 		//);
 
+		if (FindInventory('ToM_GrowthPotionEffect'))
+		{
+			return;
+		}
+
 		if (player.jumptics < AIRJUMPTICTHRESHOLD && airJumps < MAXAIRJUMPS && player.cmd.buttons & BT_JUMP && !(player.oldbuttons & BT_JUMP))
 		{
 			A_StartSound("alice/jumpair", CHAN_BODY);

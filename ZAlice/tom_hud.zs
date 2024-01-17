@@ -853,7 +853,7 @@ class ToM_HUDFaceController : Actor
 
 	bool IsInvulnerable()
 	{
-		return HPlayerPawn && (HPlayerPawn.bINVULNERABLE || HPlayer.cheats & CF_GODMODE || HPlayer.cheats & CF_GODMODE2);
+		return HPlayerPawn && (/*HPlayerPawn.bINVULNERABLE || */HPlayer.cheats & CF_GODMODE || HPlayer.cheats & CF_GODMODE2);
 	}
 
 	void UpdateValues()

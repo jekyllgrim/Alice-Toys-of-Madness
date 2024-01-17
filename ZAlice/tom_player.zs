@@ -324,17 +324,25 @@ class ToM_AlicePlayer : DoomPlayer
 		
 		UpdateWeaponModel();
 
-		// If firing, face the angle (no direction);
-		if (InStateSequence(curstate, missilestate))
+		// Make the model face the direction of movement, if the player
+		// is in third person or seen from outside:
+		if (PlayerNumber() != consoleplayer || (player.cheats & CF_CHASECAM) || player.camera != self)
 		{
-			prevMoveDir = (0,0);
+			// If firing, face the angle (no direction);
+			if (InStateSequence(curstate, missilestate))
+			{
+				prevMoveDir = (0,0);
+			}
+			else if (vel.xy.Length() > 0)
+			{
+				prevMoveDir = Level.Vec2Diff(pos.xy, pos.xy + vel.xy);
+			}
+			spriteRotation = (prevMoveDir == (0,0)) ? 0 : atan2(prevMoveDir.y, prevMoveDir.x) - angle;
 		}
-		else if (vel.xy.Length() > 0)
+		else
 		{
-			prevMoveDir = Level.Vec2Diff(pos.xy, pos.xy + vel.xy);
+			spriteRotation = 0;
 		}
-		spriteRotation = (prevMoveDir == (0,0)) ? 0 : atan2(prevMoveDir.y, prevMoveDir.x) - angle;
-		//console.printf("Player z: %.1f | floorz: %.1f | jumptics: %d", pos.z, floorz, player.jumptics);
 
 		if (airJumpTics > 0)
 			airJumpTics--;

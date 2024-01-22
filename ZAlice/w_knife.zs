@@ -756,7 +756,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 	
 	bool ShooterHasRageBox()
 	{
-		return target && (target.CountInv("ToM_RageBoxSelectorWeapon") || target.CountInv("ToM_RageBoxMainEffect"));
+		return target && ToM_RageBox.HasRageBox(target);
 	}
 	
 	Default
@@ -787,7 +787,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		}
 
 		if (tom_debugmessages)
-			console.printf("Recalling knife");		
+			console.printf("Recalling knife");
 		
 		if (tracer && tracer.bISMONSTER && tracer.health <= 0 && !tracer.bNOBLOOD)
 		{

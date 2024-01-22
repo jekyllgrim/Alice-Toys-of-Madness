@@ -121,12 +121,12 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		//int fallAttackForce = (abs(vel.x) + abs(vel.y)) * 0.5 + abs(vel.z);
 		
 		int rad = 128 + fallAttackForce;
-		vector3 ipos = (radius + 8, 0, floorz);
-		let hi = Spawn("ToM_HorseImpactSpot", pos);
+		vector3 ipos = ToM_UtilsP.RelativeToGlobalCoords(self, (radius + 8, 0, 0));
+		ipos.z = floorz;
+		let hi = Spawn("ToM_HorseImpactSpot", ipos);
 		if (hi)
 		{
 			hi.target = self;
-			hi.Warp(self, ipos.x, ipos.y, ipos.z);
 			hi.A_Explode(80 + fallAttackForce, rad, 0);
 			hi.A_StartSound("weapons/hhorse/hitfloor", CHAN_7);
 			double qints = ToM_UtilsP.LinearMap(fallAttackForce, 4, 32, 3, 8, true);
@@ -184,8 +184,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		int reps = ToM_UtilsP.LinearMap(fallAttackForce, 40, 1, 5, 1, true);
 		for (reps; reps > 0; reps--)
 		{
-			let iring = ToM_HorseImpact(Spawn("ToM_HorseImpact", pos));
-			iring.Warp(self, ipos.x, ipos.y, ipos.z);
+			let iring = ToM_HorseImpact(Spawn("ToM_HorseImpact", ipos));
 			double sfac = reps * 0.1;
 			//console.printf("reps: %d | sfac: %.2f", reps, sfac);
 			iring.scale.x = rad * sfac;

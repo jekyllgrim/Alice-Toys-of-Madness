@@ -513,33 +513,49 @@ class ToM_AlicePlayer : DoomPlayer
 	override void FallAndSink(double grav, double oldfloorz)
 	{
 		let player = self.player;
-		if (player)
-		{			
-			// [AA] No falling in water if the player is
-			// moving:
-			if (waterlevel > 1 && vel.x != 0 && vel.y != 0)
-			{
-				return;
-			}
+		bool done = false;
 
-			else if (pos.z > floorz && waterlevel == 0 && !bNOGRAVITY)
+		// [AA] No falling in water if the player is
+		// moving:
+		if (waterlevel > 1 && vel.x != 0 && vel.y != 0)
+		{
+			done = true;
+		}
+
+		else if (pos.z > floorz && waterlevel == 0 && !bNOGRAVITY)
+		{
+			// Handling for crossing ledges:
+			if (vel.z == 0 && pos.z == oldfloorz && oldfloorz > floorz)
 			{
-				// Handling for crossing ledges:
-				if (vel.z == 0 && pos.z == oldfloorz && oldfloorz > floorz)
-				{
-					vel.z -= grav * 1.5; //[AA] default was * 2
-					return;
-				}
-				// reduced gravity effect when jumping:
-				else if (player.jumptics != 0)
-				{
-					vel.z -= grav * 0.5; //[AA] default was 1.0
-					return;
-				}
+				vel.z -= grav * 1.; //[AA] default was * 2
+				done = true;
+			}
+			// reduced gravity effect when jumping:
+			else if (player.jumptics != 0)
+			{
+				vel.z -= grav * 0.5; //[AA] default was 1.0
+				done = true;
 			}
 		}
 
-		super.FallAndSink(grav, oldfloorz);
+		if (!done)
+		{
+			super.FallAndSink(grav, oldfloorz);
+		}
+
+		if (pos.z <= floorz && vel.z <= -8.0)
+		{
+			let growPot = ToM_GrowthPotionEffect(FindInventory('ToM_GrowthPotionEffect'));
+			if (growPot)
+			{
+				growPot.DoStepDamage(self, 512);
+				let hi = Spawn("ToM_HorseImpact", (pos.xy, floorz));
+				if (hi)
+				{
+					hi.scale.x = radius * ToM_GrowthPotionEffect.GROWFACTOR * 2;
+				}
+			}
+		}
 	}
 
 	override void MovePlayer ()

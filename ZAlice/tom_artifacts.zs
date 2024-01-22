@@ -287,6 +287,10 @@ class ToM_RageBoxEffect : ToM_Powerup
 	{
 		//owner.A_SetMugshotState("RageBoxLoop");
 		owner.bNOPAIN = true;
+		if (owner.health > 0 && (Level.maptime & 31) == 0)
+		{
+			owner.GiveBody(5);
+		}
 	}
 
 	override void EndEffect()

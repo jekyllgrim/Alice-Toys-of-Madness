@@ -1,12 +1,95 @@
 // Fake weapon for first-person artifact activation animations:
-class ToM_ArtifactSelectorWeapon : ToM_BaseWeapon
+class ToM_ArtifactSelector : ToM_BaseWeapon abstract
 {
 	Weapon prevWeapon;
+	ToM_Powerup power;
+	class<ToM_Powerup> powerupType;
+	property PowerupType : powerupType;
 	
 	Default
 	{
 		Inventory.maxamount 1;
 		+WEAPON.CHEATNOTWEAPON
+	}
+
+	// Gives the specified player pawn either a 1st-person powerup selector,
+	// or the powerup directly. Returns false if the player is receiving this
+	// powerup for the first time (they didn't have either the selector,
+	// or the powerup):
+	static bool GivePower(PlayerPawn who, class<ToM_ArtifactSelector> selector, bool anySelector = false)
+	{
+		if (!who)
+			return false;
+
+		// Get the powerup type from the selector:
+		let def = ToM_ArtifactSelector(GetDefaultByType(selector));
+		if (!def)
+			return false;
+
+		// Check if the player already has either the selector weapon, or the powerup:
+		ToM_Powerup t_powerup = ToM_Powerup(who.FindInventory(def.powerupType));
+		ToM_ArtifactSelector t_selector = ToM_ArtifactSelector(who.FindInventory(selector));
+		bool hasPower = t_powerup || t_selector;
+		
+		// If the player already has the powerup, update its tics,
+		// otherwise give it:
+		if (t_powerup)
+		{
+			t_powerup.effectTics = ToM_Powerup(GetDefaultByType(def.poweruptype)).effectTics;
+		}
+		else
+		{
+			t_powerup = ToM_Powerup(who.GiveInventoryType(def.powerupType));
+		}
+
+		// Do the rest if they're picking it up for the first time:
+		if (!hasPower)
+		{
+			// Give selector:
+			t_selector = ToM_ArtifactSelector(who.GiveInventoryType(selector));
+			// Set the powerup as inactive, so that the selector
+			// can activate it. Store the current readyweapon in 
+			// the selector, then switch to selector:
+			if (t_selector && t_powerup)
+			{
+				t_powerup.waitForSelector = true;
+				t_selector.power = t_powerup;
+				t_selector.prevWeapon = who.player.readyweapon;
+				who.player.readyweapon = null;
+				who.player.pendingweapon = t_selector;
+			}
+		}
+		
+		// Return true if the player had the selector or its powerup
+		// before this:
+		return hasPower;
+	}
+
+	virtual void EndSelectorAnimation()
+	{
+		if (prevWeapon)
+		{
+			owner.player.pendingweapon = prevWeapon;
+		}
+		// Double-check the owner has the necessary powerup:
+		if (!power)
+		{
+			owner.GiveInventory(powerupType, 1);
+			power = ToM_Powerup(owner.FindInventory(powerupType));
+		}
+		if (power && power.waitForSelector)
+		{
+			power.Activate(owner);
+		}
+	}
+
+	override void DetachFromOwner()
+	{
+		if (owner && owner.player)
+		{
+			EndSelectorAnimation();
+		}
+		super.DetachFromOwner();
 	}
 
 	States
@@ -22,20 +105,52 @@ class ToM_ArtifactSelectorWeapon : ToM_BaseWeapon
 	Ready:
 		TNT1 A 1;
 	EndEffect:
-		TNT1 A 0
-		{
-			player.pendingweapon = invoker.prevWeapon;
-			A_TakeInventory(invoker.GetClass(), invoker.amount);
-		}
+		TNT1 A 0 A_TakeInventory(invoker.GetClass(), invoker.amount);
 		stop;
 	}
 }
 
+class ToM_Powerup : Powerup abstract
+{
+	bool waitForSelector;
+
+	virtual void ToM_DoEffect()
+	{}
+
+	override void DoEffect()
+	{
+		if (waitForSelector || !owner || !owner.player)
+		{
+			return;
+		}
+		Super.DoEffect();
+		ToM_DoEffect();
+	}
+
+	virtual void ToM_Tick()
+	{}
+
+	override void Activate(Actor activator)
+	{
+		waitForSelector = false;
+	}
+
+	override void Tick()
+	{
+		if (waitForSelector || !owner || !owner.player)
+		{
+			return;
+		}
+		Super.Tick();
+		ToM_Tick();
+	}
+}
+
+// The in-world prop that activates the whole Rage Box effect:
 class ToM_RageBox : Actor replaces Berserk
 {
 	vector3 smokedir;
 	protected Actor flare;
-	protected bool used;
 
 	Default
 	{
@@ -72,14 +187,11 @@ class ToM_RageBox : Actor replaces Berserk
 
 	static bool HasRageBox(Actor who)
 	{
-		return who && (who.CountInv("ToM_RageBoxSelectorWeapon") || who.CountInv("ToM_RageBoxMainEffect"));
+		return who && (who.CountInv("ToM_RageBoxSelector") || who.CountInv("ToM_RageBoxEffect"));
 	}
 	
 	override bool CanCollideWith(Actor other, bool passive)
 	{
-		if (used)
-			return true;
-	
 		if (passive && other && other.player)
 			return true;
 		
@@ -88,27 +200,21 @@ class ToM_RageBox : Actor replaces Berserk
 	
 	override void Activate(Actor activator)
 	{
-		if (!activator || !activator.player || used)
+		if (!activator || !activator.player)
 			return;
 			
-		used = true;
 		A_StartSound("ragebox/activate", startTime: 0.5);
-		if (!activator.CountInv("ToM_RageBoxSelectorWeapon") && !activator.CountInv("ToM_RageBoxMainEffect"))
+		if (!ToM_ArtifactSelector.GivePower(PlayerPawn(activator), 'ToM_RageBoxSelector'))
 		{
 			activator.A_Stop();
 			activator.A_SetAngle(activator.AngleTo(self), SPF_INTERPOLATE);
 			activator.A_SetPitch(0, SPF_INTERPOLATE);
-			activator.GiveInventory("ToM_RageBoxSelectorWeapon", 1);
-			activator.player.readyweapon = null;
-			activator.player.pendingweapon = Weapon(activator.FindInventory("ToM_RageBoxSelectorWeapon"));
 			activator.A_StartSound("ragebox/scream", CHAN_AUTO);
 		}
-		
-		else if (activator.CountInv("ToM_RageBoxMainEffect"))
-			activator.GiveInventory("ToM_RageBoxMainEffect", 1);
-		
 		if (flare)
+		{
 			flare.Destroy();
+		}
 		A_RemoveLight('rageBoxLight');
 		SetStateLabel("Active");
 	}
@@ -132,10 +238,7 @@ class ToM_RageBox : Actor replaces Berserk
 			SpawnRageSmoke();
 			if (target)
 			{
-				/*if  (!target.CountInv('ToM_RageBoxMainEffect'))
-					target.A_SetBlend("a80a0a", 0.75, 250);
-				else*/
-					target.A_SetBlend("a80a0a", 0.35, 100);
+				target.A_SetBlend("a80a0a", 0.35, 100);
 			}
 		}
 		M000 AAAAAAAAAAAAAAAAAAAAA 2 SpawnRageSmoke();
@@ -145,7 +248,7 @@ class ToM_RageBox : Actor replaces Berserk
 }
 
 // Handles the actual effects of the ragebox:
-class ToM_RageBoxMainEffect : PowerRegeneration 
+class ToM_RageBoxEffect : ToM_Powerup 
 {
 	const PROTFACTOR = 0.15;
 	const DMGFACTOR = 4;
@@ -155,34 +258,35 @@ class ToM_RageBoxMainEffect : PowerRegeneration
 		Powerup.Duration -30;
 		Powerup.Strength 5;
 		Powerup.Color "FF0000", 0.12;
+		+Inventory.ALWAYSPICKUP
 	}
 
 	// Increase outgoing damage and reduce incoming damage:
 	override void ModifyDamage(int damage, Name damageType, out int newdamage, bool passive, Actor inflictor, Actor source, int flags)
 	{
-		if (damage > 0)
+		if (damage <= 0 || waitForSelector)
 		{
-			if (passive)
+			return;
+		}
+		
+		if (passive)
+		{
+			newdamage = max(0, ApplyDamageFactors(GetClass(), damageType, damage, int(damage  * PROTFACTOR)));
+		}
+		else
+		{
+			newdamage = max(1, ApplyDamageFactors(GetClass(), damageType, damage, damage * DMGFACTOR));
+			if (owner && newdamage > damage) 
 			{
-				newdamage = max(0, ApplyDamageFactors(GetClass(), damageType, damage, int(damage  * PROTFACTOR)));
-			}
-			else
-			{
-				newdamage = max(1, ApplyDamageFactors(GetClass(), damageType, damage, damage * DMGFACTOR));
-				if (owner && newdamage > damage) 
-					owner.A_StartSound(ActiveSound, CHAN_AUTO, CHANF_DEFAULT, 1.0, ATTN_NONE);
+				owner.A_StartSound(ActiveSound, CHAN_AUTO, CHANF_DEFAULT, 1.0, ATTN_NONE);
 			}
 		}
 	}
 
-	override void DoEffect()
+	override void ToM_DoEffect()
 	{
-		super.DoEffect();
-		if (owner && owner.player)
-		{
-			owner.A_SetMugshotState("RageBoxLoop");
-			owner.bNOPAIN = true;
-		}
+		//owner.A_SetMugshotState("RageBoxLoop");
+		owner.bNOPAIN = true;
 	}
 
 	override void EndEffect()
@@ -195,9 +299,14 @@ class ToM_RageBoxMainEffect : PowerRegeneration
 	}
 }
 
-class ToM_RageBoxSelectorWeapon : ToM_ArtifactSelectorWeapon
+class ToM_RageBoxSelector : ToM_ArtifactSelector
 {
 	int bloodtics;
+
+	Default
+	{
+		ToM_ArtifactSelector.PowerupType 'ToM_RageBoxEffect';
+	}
 
 	override void DoEffect()
 	{
@@ -206,7 +315,24 @@ class ToM_RageBoxSelectorWeapon : ToM_ArtifactSelectorWeapon
 
 		owner.player.cheats |= CF_TOTALLYFROZEN;
 		owner.bNODAMAGE = true;
-		Level.SetFrozen(true);
+		owner.vel = (0,0,0);
+		if (!multiplayer)
+		{
+			Level.SetFrozen(true);
+		}
+	}
+
+	override void EndSelectorAnimation()
+	{
+		if (!CountInv("ToM_Knife"))
+		{
+			GiveInventory("ToM_Knife", 1);
+		}
+		prevWeapon = Weapon(owner.FindInventory('ToM_Knife'));
+		owner.player.cheats &= ~CF_TOTALLYFROZEN;
+		owner.bNODAMAGE = false;
+		Level.SetFrozen(false);
+		super.EndSelectorAnimation();
 	}
 
 	States
@@ -234,7 +360,11 @@ class ToM_RageBoxSelectorWeapon : ToM_ArtifactSelectorWeapon
 			A_OverlayFlags(OverlayID(), PSPF_RENDERSTYLE|PSPF_FORCEALPHA,true);
 			A_OverlayAlpha(OverlayID(), frandom[sfx](0.5, 0.9));
 		}
-		VKNB # 1 A_PSPFadeOut(invoker.bloodtics ? 0.01 : 0.0075);
+		VKNB # 1 
+		{
+			A_PSPFadeOut(invoker.bloodtics ? 0.01 : 0.0075);
+			A_OverlayOffset(OverlayID(), 0, frandom[sfx](0.1, 0.42), WOF_ADD);
+		}
 		wait;
 	Ready:
 		TNT1 A 0 
@@ -281,21 +411,7 @@ class ToM_RageBoxSelectorWeapon : ToM_ArtifactSelectorWeapon
 			A_ResetPSprite(0, 5);
 		}
 		VCLW A 5;
-	EndEffect:
-		TNT1 A 0 
-		{
-			if (!CountInv("ToM_Knife"))
-			{
-				GiveInventory("ToM_Knife", 1);
-			}
-			GiveInventory("ToM_RageBoxMainEffect", 1);
-			player.cheats &= ~CF_TOTALLYFROZEN;
-			bNODAMAGE = false;
-			Level.SetFrozen(false);
-			A_SelectWeapon("ToM_Knife");
-			A_TakeInventory(invoker.GetClass(), invoker.amount);
-		}
-		stop;
+		goto EndEffect;
 	}
 }
 
@@ -454,6 +570,29 @@ class ToM_GrowthPotionEffect : Powerup
 			finishEffect = true;
 		}
 	}
+
+	void DoStepDamage(Actor source, double atkdist = 256)
+	{
+		BlockThingsIterator itr = BlockThingsIterator.Create(source,atkdist);
+		while (itr.next()) {
+			let next = itr.thing;
+			if (!next || next == source)
+				continue;
+			bool isValid = ((next.bSHOOTABLE || next.bVULNERABLE) && (next.bIsMonster ||next.player) && next.health > 0);
+			if (!isValid)
+				continue;
+			double zdiff = abs(source.pos.z - next.pos.z);
+			if (zdiff > 32)
+				continue;
+			double dist = source.Distance3D(next);
+			if (dist > atkdist)
+				continue;
+			next.DamageMobj(source,source,15,'normal',DMG_THRUSTLESS|DMG_NO_FACTOR);
+			next.vel.z += 4;
+		}
+		source.A_Quake(2,5,0,atkdist,"");
+		source.A_StartSound("growpotion/giantstep", CHAN_AUTO);
+	}
 	
 	override void DoEffect()
 	{
@@ -541,26 +680,7 @@ class ToM_GrowthPotionEffect : Powerup
 				stepCycle++;
 				if (stepCycle % 20 == 0) {
 					//do the damage:
-					int atkdist = 256;
-					BlockThingsIterator itr = BlockThingsIterator.Create(pmo,atkdist);
-					while (itr.next()) {
-						let next = itr.thing;
-						if (!next || next == pmo)
-							continue;
-						bool isValid = (next.bSHOOTABLE && (next.bIsMonster ||next.player) && next.health > 0);
-						if (!isValid)
-							continue;
-						double zdiff = abs(pmo.pos.z - next.pos.z);
-						if (zdiff > 32)
-							continue;
-						double dist = pmo.Distance3D(next);
-						if (dist > atkdist)
-							continue;
-						next.DamageMobj(pmo,pmo,15,'normal',DMG_THRUSTLESS|DMG_NO_FACTOR);
-						next.vel.z += 4;
-					}
-					pmo.A_Quake(2,5,0,atkdist,"");
-					pmo.A_StartSound("growpotion/giantstep", CHAN_AUTO);
+					DoStepDamage(pmo);
 				}
 			}
 			else
@@ -595,11 +715,20 @@ class ToM_Invisibility : PowerupGiver
 	Default
 	{
 		Inventory.pickupmessage "Looking-glass mirror";
-		Powerup.Type "ToM_InvisibilityEffect";
 		Powerup.Duration -40;
 		scale 0.25;
 		+FLOATBOB
 		+INVENTORY.AUTOACTIVATE
+	}
+
+	override bool Use (bool pickup)
+	{
+		if (owner && owner.player)
+		{
+			ToM_ArtifactSelector.GivePower(PlayerPawn(owner), 'ToM_InvisibilitySelector');
+			return true;
+		}
+		return false;
 	}
 	
 	States
@@ -610,9 +739,8 @@ class ToM_Invisibility : PowerupGiver
 	}
 }
 
-class ToM_InvisibilityEffect : Powerup
+class ToM_InvisibilityEffect : ToM_Powerup
 {
-	bool active;
 	ToM_Mainhandler handler;
 	Actor soundtarget;
 	int sndTargetLifeTime;
@@ -645,26 +773,13 @@ class ToM_InvisibilityEffect : Powerup
 		else 
 		{
 			soundtarget = Actor.Spawn("ToM_PlayerSoundTarget", owner.pos);
-			/*if (soundtarget)
-			{
-				soundtarget.bNOINTERACTION = true;
-				soundtarget.bISMONSTER = true;
-				soundtarget.bFRIENDLY = true;
-				soundtarget.bNODAMAGE = true;
-				soundtarget.bNOBLOOD = true;
-				soundtarget.bNONSHOOTABLE = true;
-				soundtarget.A_SetRenderstyle(SNDTARGETALPHA, STYLE_Shaded);
-				soundtarget.SetShade("FFFFFF");
-				//ToM_BaseActor.CopyAppearance(soundtarget, owner, false);
-				soundtarget.tics = -1;
-			}*/
 		}
 	}
 
 	override void Activate(Actor activator)
 	{
 		SpawnSoundTarget();
-		active = true;
+		super.Activate(activator);
 	}
 
 	void UpdateSoundTarget()
@@ -689,64 +804,42 @@ class ToM_InvisibilityEffect : Powerup
 		{
 			prevAlpha = owner.alpha;
 			prevRenderstyle = owner.GetRenderstyle();
-			
-			owner.GiveInventory("ToM_InvisibilitySelector", 1);
-			let invs = ToM_InvisibilitySelector(owner.FindInventory("ToM_InvisibilitySelector"));
-			if (invs)
-			{
-				invs.prevWeapon = owner.player.readyweapon;
-				owner.player.pendingweapon = invs;
-			}
 		}
 		super.InitEffect();
 	}
-
-	override void Tick()
-	{
-		if (!active)
-			return;
-		
-		super.Tick();
-	}
 	
-	override void DoEffect()
+	override void ToM_DoEffect()
 	{
-		if (!active)
-			return;
+		owner.bNOTARGET = true;
+		owner.bNEVERTARGET = true;
 		
-		super.DoEffect();
-		if (owner && owner.player)
+		let psp = owner.player.FindPSprite(PSP_WEAPON);
+		let weap = owner.player.readyweapon;
+		if (owner.health > 0 && weap && psp && (InStateSequence(psp.curstate, weap.FindState("Fire")) || InStateSequence(psp.curstate, weap.FindState("AltFire"))))
 		{
-			//owner.player.cheats |= CF_NOTARGET;
-			owner.bNOTARGET = true;
-			owner.bNEVERTARGET = true;
-			
-			let psp = owner.player.FindPSprite(PSP_WEAPON);
-			let weap = owner.player.readyweapon;
-			if (owner.health > 0 && weap && psp && (InStateSequence(psp.curstate, weap.FindState("Fire")) || InStateSequence(psp.curstate, weap.FindState("AltFire"))))
-			{
-				SpawnSoundTarget();
-			}
-			else
-			{
-				UpdateSoundTarget();
-			}
+			SpawnSoundTarget();
+		}
+		else
+		{
+			UpdateSoundTarget();
+		}
 
-			if (!handler)
-				handler = ToM_Mainhandler(EventHandler.Find("ToM_Mainhandler"));
+		if (!handler)
+		{
+			handler = ToM_Mainhandler(EventHandler.Find("ToM_Mainhandler"));
+		}
 
-			for (int i = 0; i < handler.allmonsters.Size(); i++)
+		for (int i = 0; i < handler.allmonsters.Size(); i++)
+		{
+			let mo = handler.allmonsters[i];
+			if (mo && mo.health > 0)
 			{
-				let mo = handler.allmonsters[i];
-				if (mo && mo.health > 0)
+				mo.bSeeFriendlyMonsters = true;
+				if (mo.target == owner)
 				{
-					mo.bSeeFriendlyMonsters = true;
-					if (mo.target == owner)
-					{
-						mo.target = soundtarget;
-						mo.lastheard = soundtarget;
-						mo.lastenemy = soundtarget;
-					}
+					mo.target = soundtarget;
+					mo.lastheard = soundtarget;
+					mo.lastenemy = soundtarget;
 				}
 			}
 		}
@@ -792,6 +885,7 @@ class ToM_PlayerSoundTarget : Actor
 		+NOBLOOD
 		+NOSPRITESHADOW
 		renderstyle 'Translucent';
+		alpha 0.2;
 		//renderstyle 'STYLE_Shaded';
 		//stencilcolor "FFFFFF";
 		XScale 0.8;
@@ -814,16 +908,20 @@ class ToM_PlayerSoundTarget : Actor
 	}
 }
 
-class ToM_InvisibilitySelector : ToM_ArtifactSelectorWeapon
+class ToM_InvisibilitySelector : ToM_ArtifactSelector
 {
 	ToM_ReflectionCamera cam;
 	
 	enum TIPsprites
 	{
 		TIP_Mirror = -10,
-		TIP_Face = 10,
 		TIP_Frame = 20,
 		TIP_Arm = 30,
+	}
+
+	Default
+	{
+		ToM_ArtifactSelector.PowerupType 'ToM_InvisibilityEffect';
 	}
 
 	override void DoEffect()
@@ -842,11 +940,11 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelectorWeapon
 		}
 	}
 	
-	override void DetachFromOwner()
+	override void EndSelectorAnimation()
 	{
 		if (cam)
 			cam.Destroy();
-		super.DetachFromOwner();
+		super.EndSelectorAnimation();
 	}
 	
 	States
@@ -861,14 +959,13 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelectorWeapon
 	Arm:
 		LGMR A -1
 		{
-			A_OverlayFlags(OverlayID(), PSPF_RenderStyle|PSPF_ForceStyle|PSPF_ForceAlpha, true);
-			A_OverlayRenderstyle(OverlayID(), Style_Translucent);
+			//A_OverlayFlags(OverlayID(), PSPF_RenderStyle|PSPF_ForceStyle|PSPF_ForceAlpha, true);
+			//A_OverlayRenderstyle(OverlayID(), Style_Translucent);
 		}
 		stop;
 	Ready:
 		TNT1 A 0
 		{
-			A_Overlay(TIP_Face, "Face");
 			A_Overlay(TIP_Frame, "Frame");
 			A_Overlay(TIP_Mirror, "Mirror");
 			A_Overlay(TIP_Arm, "Arm");
@@ -878,13 +975,14 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelectorWeapon
 		{
 			A_WeaponOffset(2.5, -12, WOF_ADD);
 		}
-		TNT1 A 1
+		/*TNT1 A 1
 		{
 			if (player.cmd.buttons & BT_ATTACK)
 				return A_Jump(256, 1);
 			return ResolveState(null);
 		}
-		wait;
+		wait;*/
+		TNT1 A 10;
 		TNT1 AAAAAAAAAAAAAAAAAAAA 1 
 		{
 			let psp = player.FindPSprite(TIP_Arm);
@@ -898,10 +996,10 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelectorWeapon
 		}		
 		TNT1 A 0
 		{
-			let invs = FindInventory("ToM_InvisibilityEffect");
-			if (invs)
-				invs.Activate(self);
-			player.SetPSprite(TIP_Face, ResolveState("Null"));
+			if (invoker.power)
+			{
+				invoker.power.Activate(self);
+			}
 			player.SetPSprite(TIP_Frame, ResolveState("FrameBack"));
 		}
 		TNT1 AAAAAAAAA 1
@@ -909,13 +1007,6 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelectorWeapon
 			A_WeaponOffset(-3, 14, WOF_ADD);
 		}
 		goto EndEffect;
-	Face:
-		TNT1 A 1
-		{
-			A_OverlayFlags(OverlayID(), PSPF_RenderStyle|PSPF_ForceAlpha, true);
-			A_OverlayRenderstyle(OverlayID(), Style_Translucent);
-		}
-		wait;
 	Frame:
 		TNT1 A 0
 		{

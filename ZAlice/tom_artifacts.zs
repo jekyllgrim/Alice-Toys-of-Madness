@@ -890,8 +890,6 @@ class ToM_PlayerSoundTarget : Actor
 		+NOSPRITESHADOW
 		renderstyle 'Translucent';
 		alpha 0.2;
-		//renderstyle 'STYLE_Shaded';
-		//stencilcolor "FFFFFF";
 		XScale 0.8;
 		YScale 0.65;
 	}
@@ -926,6 +924,7 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelector
 	Default
 	{
 		ToM_ArtifactSelector.PowerupType 'ToM_InvisibilityEffect';
+		Renderstyle 'Translucent'; //This is passed to the player
 	}
 
 	override void DoEffect()
@@ -994,8 +993,8 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelector
 			{
 				double fac = 0.0425;
 				psp.alpha = Clamp(psp.alpha - fac, 0.15, 1);
-				A_SetRenderstyle(psp.alpha, Style_Shaded);
-				SetShade("FFFFFF");
+				A_SetRenderstyle(psp.alpha, invoker.GetRenderstyle());
+				//SetShade("FFFFFF");
 			}
 		}		
 		TNT1 A 0

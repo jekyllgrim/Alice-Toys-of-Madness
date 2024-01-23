@@ -54,3 +54,16 @@ Texture PPGFB0 NoTrim
 Texture PPGFC0 NoTrim
 Texture PPGFZ0 NoTrim
 Texture PPGRZ0 NoTrim
+
+Texture LGMRA0 NoTrim
+Texture LGMRB0 NoTrim
+Texture LGMRC0 NoTrim
+Texture LGMSA0 NoTrim
+Texture LGMSB0 NoTrim
+Texture LGMSC0 NoTrim
+Texture LGMSD0 NoTrim
+Texture LGMSE0 NoTrim
+Texture LGMSF0 NoTrim
+Texture LGMSG0 NoTrim
+Texture LGMSH0 NoTrim
+Texture LGMSI0 NoTrim

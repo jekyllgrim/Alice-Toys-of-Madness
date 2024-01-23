@@ -972,11 +972,20 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelector
 			A_Overlay(TIP_Frame, "Frame");
 			A_Overlay(TIP_Mirror, "Mirror");
 			A_Overlay(TIP_Arm, "Arm");
-			A_WeaponOffset(-22.5, 108+WEAPONTOP);
+			A_WeaponOffset(-24, WEAPONTOP + 80);
+			A_OverlayPivot(TIP_Frame, 0.6, 0.8);
+			A_OverlayPivot(TIP_Mirror, 0.6, 0.8);
+			A_OverlayPivot(TIP_Arm, 0.6, 0.8);
+			A_RotatePSprite(TIP_Frame, 40);
+			A_RotatePSprite(TIP_Mirror, 40);
+			A_RotatePSprite(TIP_Arm, 40);
 		}
-		TNT1 AAAAAAAAA 1
+		#### ######## 1
 		{
-			A_WeaponOffset(2.5, -12, WOF_ADD);
+			A_WeaponOffset(3, -10, WOF_ADD);
+			A_RotatePSprite(TIP_Frame, -5, WOF_ADD);
+			A_RotatePSprite(TIP_Mirror, -5, WOF_ADD);
+			A_RotatePSprite(TIP_Arm, -5, WOF_ADD);
 		}
 		/*TNT1 A 1
 		{
@@ -985,29 +994,39 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelector
 			return ResolveState(null);
 		}
 		wait;*/
-		TNT1 A 10;
-		TNT1 AAAAAAAAAAAAAAAAAAAA 1 
+		TNT1 A 15;
+		TNT1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 1 
 		{
 			let psp = player.FindPSprite(TIP_Arm);
 			if (psp)
 			{
-				double fac = 0.0425;
+				double fac = (0.85 / 40);
 				psp.alpha = Clamp(psp.alpha - fac, 0.15, 1);
 				A_SetRenderstyle(psp.alpha, invoker.GetRenderstyle());
 				//SetShade("FFFFFF");
 			}
-		}		
-		TNT1 A 0
+			double f = 0.0025;
+			A_ScalePSprite(TIP_Frame, f, f, WOF_ADD);
+			A_ScalePSprite(TIP_Mirror, f, f, WOF_ADD);
+			A_ScalePSprite(TIP_Arm, f, f, WOF_ADD);
+		}
+		TNT1 A 10
 		{
 			if (invoker.power)
 			{
 				invoker.power.Activate(self);
 			}
 			player.SetPSprite(TIP_Frame, ResolveState("FrameBack"));
+			A_ResetPSprite(TIP_Frame, 10);
+			A_ResetPSprite(TIP_Mirror, 10);
+			A_ResetPSprite(TIP_Arm, 10);
 		}
-		TNT1 AAAAAAAAA 1
+		#### ###### 1
 		{
-			A_WeaponOffset(-3, 14, WOF_ADD);
+			A_WeaponOffset(-4, 9, WOF_ADD);
+			A_RotatePSprite(TIP_Frame, 5, WOF_ADD);
+			A_RotatePSprite(TIP_Mirror, 5, WOF_ADD);
+			A_RotatePSprite(TIP_Arm, 5, WOF_ADD);
 		}
 		goto EndEffect;
 	Frame:

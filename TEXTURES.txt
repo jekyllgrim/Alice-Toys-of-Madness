@@ -693,62 +693,6 @@ Sprite "LGMSI0", 208, 300
 	Patch "LGMSI", 0, 0
 }
 
-Sprite "LGMTA0", 208, 300
-{
-	YScale 1.200
-	Offset -164, -26
-	Patch "LGMTA", 0, 0
-}
-
-Sprite "LGMTB0", 208, 300
-{
-	YScale 1.200
-	Offset -164, -26
-	Patch "LGMTB", 0, 0
-}
-
-Sprite "LGMTC0", 208, 300
-{
-	YScale 1.200
-	Offset -164, -26
-	Patch "LGMTC", 0, 0
-}
-
-Sprite "LGMTD0", 208, 300
-{
-	YScale 1.200
-	Offset -164, -26
-	Patch "LGMTD", 0, 0
-}
-
-Sprite "LGMTE0", 208, 300
-{
-	YScale 1.200
-	Offset -164, -26
-	Patch "LGMTE", 0, 0
-}
-
-Sprite "LGMTF0", 208, 300
-{
-	YScale 1.200
-	Offset -164, -26
-	Patch "LGMTF", 0, 0
-}
-
-Sprite "LGMTG0", 208, 300
-{
-	YScale 1.200
-	Offset -164, -26
-	Patch "LGMTG", 0, 0
-}
-
-Sprite "LGMTH0", 208, 300
-{
-	YScale 1.200
-	Offset -164, -26
-	Patch "LGMTH", 0, 0
-}
-
 Sprite "LGMYA0", 66, 128
 {
 	YScale 1.200

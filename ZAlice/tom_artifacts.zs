@@ -16,20 +16,26 @@ class ToM_ArtifactSelector : ToM_BaseWeapon abstract
 	// or the powerup directly. Returns false if the player is receiving this
 	// powerup for the first time (they didn't have either the selector,
 	// or the powerup):
-	static bool GivePower(PlayerPawn who, class<ToM_ArtifactSelector> selector, bool anySelector = false)
+	static bool GivePower(PlayerPawn who, class<ToM_ArtifactSelector> selector, bool anySelector = true)
 	{
 		if (!who)
 			return false;
 
-		// Get the powerup type from the selector:
+		// We'll get the powerup type from the selector class:
 		let def = ToM_ArtifactSelector(GetDefaultByType(selector));
 		if (!def)
+		{
 			return false;
+		}
 
 		// Check if the player already has either the selector weapon, or the powerup:
-		ToM_Powerup t_powerup = ToM_Powerup(who.FindInventory(def.powerupType));
-		ToM_ArtifactSelector t_selector = ToM_ArtifactSelector(who.FindInventory(selector));
-		bool hasPower = t_powerup || t_selector;
+		let t_powerup = ToM_Powerup(who.FindInventory(def.powerupType));
+		let t_selector = ToM_ArtifactSelector(who.FindInventory(selector));
+
+		// We'll only give the player a first-person selector if they
+		// don't already have that selector OR the valid powerup,
+		// AND if anySelector is false or they don't have ANY selectors:
+		bool hasPower = t_powerup || t_selector || (anySelector && who.FindInventory('ToM_ArtifactSelector', true));
 		
 		// If the player already has the powerup, update its tics,
 		// otherwise give it:
@@ -46,7 +52,7 @@ class ToM_ArtifactSelector : ToM_BaseWeapon abstract
 		if (!hasPower)
 		{
 			// Give selector:
-			t_selector = ToM_ArtifactSelector(who.GiveInventoryType(selector));
+			t_selector = ToM_ArtifactSelector(who.GiveInventoryType(def.GetClass()));
 			// Set the powerup as inactive, so that the selector
 			// can activate it. Store the current readyweapon in 
 			// the selector, then switch to selector:

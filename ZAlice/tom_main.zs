@@ -212,30 +212,7 @@ Class ToM_BaseDebris : ToM_BaseActor abstract
 		height 1;
 		mass 1;
 	}
-	// thanks Gutawer for explaning the math and helping this function come to life
-	virtual void FlyBack() 
-	{
-		if (!target)
-			return;
-		SetZ(pos.z+5);
-		moving = true;
-		landed = false;
-		bFLATSPRITE = false;
-		bTHRUACTORS = true;
-		bNOGRAVITY = false;
-		gravity = 1.0;
-		A_FaceTarget();
-		
-		double dist = Distance2D(target);							//horizontal distance to target
-		double vdisp = target.pos.z - pos.z + frandom[sfx](8,32);		//height difference between gib and target + randomized height
-		double ftime = 20;											//time of flight
-		
-		double vvel = (vdisp + 0.5 * ftime*ftime) / ftime;
-		double hvel = dist / ftime;
-		
-		VelFromAngle(hvel,angle);
-		vel.z = vvel;
-	}
+
 	override void PostBeginPlay() 
 	{
 		if (!level.IsPointInLevel(pos)) 

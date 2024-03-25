@@ -647,6 +647,8 @@ class ToM_BaseWeapon : Weapon abstract
 			}
 		}
 	}
+
+	// Unused; moved to CustomInventory:
 	States
 	{
 	Kick:
@@ -709,18 +711,23 @@ class ToM_KickWeapon : CustomInventory
 			return;
 		
 		let player = owner.player;
+		PSprite psp;
 		if (player.cmd.buttons & BT_USER4)
 		{
 			if (!s_kicking)
 				s_kicking = FindState("Kick");
 				
-			let psp = player.FindPSprite(APSP_Kick);
+			psp = player.FindPSprite(APSP_Kick);
 			if (psp)
 				return;
 			
 			psp = player.GetPSprite(APSP_Kick);
 			psp.caller = self;
 			psp.SetState(FindState("Kick"));
+		}
+		if (psp)
+		{
+			psp.y = WEAPONTOP + ToM_UtilsP.LinearMap(owner.pitch, 90, -80, 0, 100, true);
 		}
 	}
 	

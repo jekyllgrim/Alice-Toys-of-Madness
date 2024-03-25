@@ -421,7 +421,7 @@ class ToM_Knife : ToM_BaseWeapon
 			if (invoker.wasThrown)
 				A_SetKnifeSprite("VKNR");
 
-			A_OverlayPivot(OverlayID(), 1, 1);	
+			A_OverlayPivot(OverlayID(), 1, 1);
 			let psp = player.FindPSprite(PSP_Weapon);
 		}
 		#### ###### 1

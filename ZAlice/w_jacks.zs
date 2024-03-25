@@ -7,9 +7,11 @@ class ToM_Jacks : ToM_BaseWeapon
 		JPROJNUMBER = 6, //number of jacks used by altfire
 		// In case jacks don't return for some reason, restore
 		// then automatically after x2 the regular DOT duration:
-		JSAFERELOAD = int(ToM_JackDOTControl.DOTTIME * 2),
+		JSAFERELOAD = TICRATE * 8,
 	}
 	int jackswait; //wait time for safe reload
+	Actor jackball;
+	array<ToM_JackProjectile> thrownSeekers;
 
 	Default
 	{
@@ -99,39 +101,7 @@ class ToM_Jacks : ToM_BaseWeapon
 				proj.angstep = frandom[jp](4, 5.5) * randompick[jp](-1, 1);
 				proj.vel *= frandom(0.9, 1);
 			}
-		}		
-		
-		/*
-		// Spawn the invisible seeker:
-		let seeker = ToM_JackSeeker(A_Fire3DProjectile("ToM_JackSeeker"));
-		if (!seeker)
-		{
-			if (tom_debugmessages)
-				console.printf("Couldn't spawn jack seeker");
-			return;
 		}
-		// Spawn visual dummy projectiles:
-		for (int i = 0; i < JPROJNUMBER; i++)
-		{
-			let j = ToM_VisualSeeker(
-				A_Fire3DProjectile(
-					"ToM_VisualSeeker",
-					useammo: false,
-					forward: 18,
-					leftright: frandom[fakejacks](-18, 18),
-					updown: frandom[fakejacks](-4, 16)
-				)
-			);
-			// Attach dummy projs to seeker and put them in its array:
-			if (j)
-			{
-				j.rollstep = frandom[fakejacks](4, 5.5) * randompick[fakejacks](-1, 1);
-				j.angstep = frandom[fakejacks](4, 5.5) * randompick[fakejacks](-1, 1);
-				j.master = seeker;
-				j.masterofs = j.pos - seeker.pos;
-				seeker.followjacks.Push(j);
-			}
-		}*/
 		
 		// The weapon is no longer ready for firing:
 		invoker.jackswait = JSAFERELOAD;
@@ -317,7 +287,7 @@ class ToM_JackProjectile : ToM_Projectile
 	States
 	{
 	Spawn:
-		AMRK A 1
+		M000 A 1
 		{
 			if (bMISSILE && vel.length() < 3 || age >= JLIFETIME)
 			{
@@ -328,8 +298,8 @@ class ToM_JackProjectile : ToM_Projectile
 		}
 		loop;
 	Death:
-		AMRK A 35;
-		AMRK A 1 
+		M000 A 35;
+		M000 A 1 
 		{
 			// Scale out of existence:
 			scale *= 0.92;

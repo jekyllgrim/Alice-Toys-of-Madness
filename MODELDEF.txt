@@ -113,7 +113,7 @@ Model ToM_JackProjectile
 	Model 0 "jack_single.obj"
 	Scale 3 3 3
 	
-	FrameIndex AMRK A 0 0	
+	FrameIndex M000 A 0 0	
 }
 
 Model ToM_RealSeeker
@@ -137,7 +137,7 @@ Model ToM_VisualSeeker
 	Model 0 "jack_single.obj"
 	Scale 3 3 3
 	
-	FrameIndex AMRK A 0 0	
+	FrameIndex M000 A 0 0	
 }
 
 Model ToM_ESAimingCircle

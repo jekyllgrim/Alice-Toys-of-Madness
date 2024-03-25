@@ -97,6 +97,7 @@ class ToM_Jacks : ToM_BaseWeapon
 			// Set randomized rotation and vel:
 			if (proj)
 			{
+				invoker.thrownSeekers.Push(proj);
 				proj.rollstep = frandom[jp](4, 5.5) * randompick[jp](-1, 1);
 				proj.angstep = frandom[jp](4, 5.5) * randompick[jp](-1, 1);
 				proj.vel *= frandom(0.9, 1);
@@ -106,17 +107,62 @@ class ToM_Jacks : ToM_BaseWeapon
 		// The weapon is no longer ready for firing:
 		invoker.jackswait = JSAFERELOAD;
 		invoker.wasThrown = true;
+		Vector2 horOfs = (28, -32);
+		horOfs = RotateVector(horOfs, angle);
+		invoker.jackball = Spawn('ToM_JackBall', pos+(horOfs, height*0.5));
+		invoker.jackball.master = self;
+	}
+
+	void RecallSeekerJacks()
+	{
+		for (int i = thrownSeekers.Size() - 1; i >= 0; i--)
+		{
+			let jack = thrownSeekers[i];
+			if (jack)
+			{
+				jack.tracer = null;
+				jack.SetStateLabel("ReturnToShooter");
+			}
+		}
 	}
 	
-	// Safe reload for edge cases when jacks can't return:
 	override void DoEffect()
 	{
 		super.DoEffect();
+		// Safe reload for edge cases when jacks can't return:
 		if (jackswait > 0)
 		{
 			jackswait--;
 			if (jackswait <= 0 && wasThrown)
+			{
 				wasThrown = false;
+				RecallSeekerJacks();
+				thrownSeekers.Clear();
+			}
+		}
+		// Reload if all seekers have returned:
+		if (wasThrown)
+		{
+			if (thrownSeekers.Size() > 0)
+			{
+				for (int i = thrownSeekers.Size() - 1; i >= 0; i--)
+				{
+					if (!thrownSeekers[i])
+					{
+						thrownSeekers.Delete(i);
+					}
+				}
+			}
+			if (thrownSeekers.Size() <= 0)
+			{
+				wasThrown = false;
+			}
+		}
+		// Remove ball:
+		if (!wasThrown && jackball)
+		{
+			jackball.Destroy();
+			jackball = null;
 		}
 	}
 	
@@ -458,23 +504,36 @@ class ToM_RealSeeker : ToM_JackProjectile
 		LineTrace(angle, cdist, pitch, offsetz: height * 0.5, data: check);
 		return (check.HitType == TRACE_HitFloor || check.HitType == TRACE_HitCeiling || check.HitType == TRACE_HitWall);
 	}*/
+
+	void ReturnToShooter()
+	{
+		if (!target)
+			return;
+		
+		let jacks = ToM_Jacks(target.FindInventory('ToM_Jacks'));
+		if (jacks)
+		{
+			jacks.RecallSeekerJacks();
+		}
+	}
 	
 	States
 	{
 	Spawn:
-		AMRK A 1
+		M000 A 1
 		{
 			// If time's up, return to the shooter:
-			if (age >= JSLIFETIME /*|| (!bMISSILE && !tracer)*/)
+			if (age >= JSLIFETIME)
 			{
-				return ResolveState("ReturnToShooter");
+				ReturnToShooter();
+				return null;
 			}
 			GetTracer();
-			return ResolveState(null);
+			return null;
 		}
 		wait;
 	Bounce:
-		AMRK A 1 
+		M000 A 1 
 		{
 			// Reset ripping timer upon bouncing:
 			// if an enemy is close to a surface, jacks
@@ -493,7 +552,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 			}
 			bNOINTERACTION = true;
 		}
-		AMRK A 1
+		M000 A 1
 		{
 			if (!target)
 				A_FadeOut(0.05);
@@ -508,7 +567,13 @@ class ToM_RealSeeker : ToM_JackProjectile
 				{
 					let weap = ToM_Jacks(target.FindInventory("ToM_Jacks"));
 					if (weap)
-						weap.wasThrown = false;
+					{
+						int id = weap.thrownSeekers.Find(self);
+						if (id != weap.thrownSeekers.Size())
+						{
+							weap.thrownSeekers.Delete(id);
+						}
+					}
 					Destroy();
 				}
 			}
@@ -516,6 +581,72 @@ class ToM_RealSeeker : ToM_JackProjectile
 		wait;
 	}
 }
+
+class ToM_JackBall : ToM_BaseActor
+{
+	Vector3 posOffset;
+
+	Default
+	{
+		+NOINTERACTION
+		+NOBLOCKMAP
+		Scale 0.5;
+		speed 15;
+	}
+
+	override void Tick()
+	{
+		Super.Tick();
+		if (!master)
+		{
+			Destroy();
+			return;
+		}
+		if (isFrozen())
+		{
+			return;
+		}
+
+		// Horizontal position:
+		Vector2 targetXY = master.pos.xy + RotateVector((28, -32), master.angle);
+		Vector2 hDiff = Level.Vec2Diff(pos.xy, targetXY);
+		posOffset.xy = pos.xy + hdiff*0.5;
+
+		// Vertical position:
+		double top = master.height * 1.2;
+		double ofsZ = top * ToM_UtilsP.SinePulse(counter:age);
+		posOffset.z = master.pos.z + ofsZ;
+
+		if (ofsZ <= 0.1)
+		{
+			A_StartSound("weapons/jacks/ballbounce", flags:CHANF_NOSTOP);
+		}
+
+		// Apply position:
+		SetOrigin(posOffset, true);
+
+		// Apply bouncy scale:
+		if (ofsZ <= top*0.2)
+		{
+			scale.x = ToM_UtilsP.LinearMap(ofsZ, 0, top*0.2, default.scale.x*1.4, default.scale.x);
+			scale.y = ToM_UtilsP.LinearMap(ofsZ, 0, top*0.2, default.scale.y*0.65, default.scale.y);
+		}
+		else
+		{
+			scale.x = ToM_UtilsP.LinearMap(ofsZ, top*0.2, top*0.6, default.scale.x, default.scale.x*0.75, true);
+			scale.y = ToM_UtilsP.LinearMap(ofsZ, top*0.2, top*0.6, default.scale.y, default.scale.y*1.15, true);
+		}
+	}
+
+	States 
+	{
+	Spawn:
+		M000 A -1;
+		stop;
+	}
+}
+
+
 
 
 ////////////////
@@ -593,7 +724,7 @@ class ToM_JackSeeker : ToM_Projectile
 			A_SeekerMissile(0, 5, SMF_LOOK | SMF_PRECISE | SMF_CURSPEED, 256);
 			// Make visible for debug purposes:
 			if (tom_debugmessages)
-				sprite = GetSpriteIndex("AMRK");
+				sprite = GetSpriteIndex("M000");
 		}
 		loop;
 	Death:
@@ -636,7 +767,7 @@ class ToM_VisualSeeker : ToM_JackProjectile
 	States
 	{
 	Spawn:
-		AMRK A 1
+		M000 A 1
 		{
 			// After attaching to a monster, move around it randomly
 			// to imitate the victim being struck by the jacks:
@@ -661,7 +792,7 @@ class ToM_VisualSeeker : ToM_JackProjectile
 				A_StartSound("weapons/jacks/ricochet", CHAN_BODY, CHANF_NOSTOP);
 			}
 		}
-		AMRK A 1
+		M000 A 1
 		{
 			// If no master, or victim, or the DOT effect ended,
 			// return to the shooter:
@@ -681,7 +812,7 @@ class ToM_VisualSeeker : ToM_JackProjectile
 		}
 		wait;
 	ReturnToShooter:
-		AMRK A 1
+		M000 A 1
 		{
 			if (!target)
 				A_FadeOut(0.05);

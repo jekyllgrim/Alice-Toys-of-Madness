@@ -125,7 +125,15 @@ Model ToM_RealSeeker
 	Model 0 "jack_single.obj"
 	Scale 3 3 3
 	
-	FrameIndex AMRK A 0 0	
+	FrameIndex M000 A 0 0	
+}
+
+Model ToM_Jackball
+{
+	Path "models/Jacks"
+	Model 0 "jackball.obj"
+	
+	FrameIndex M000 A 0 0
 }
 
 Model ToM_VisualSeeker

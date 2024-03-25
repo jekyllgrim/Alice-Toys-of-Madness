@@ -66,7 +66,12 @@ class ToM_UtilsP
 	
 	static clearscope double LinearMap(double val, double source_min, double source_max, double out_min, double out_max, bool clampit = false) 
 	{
-		double d = (val - source_min) * (out_max - out_min) / (source_max - source_min) + out_min;
+		double sourceDiff = source_max - source_min;
+		if (sourceDiff == 0)
+		{
+			return 0;
+		}
+		double d = (val - source_min) * (out_max - out_min) / sourceDiff + out_min;
 		if (clampit)
 		{
 			double truemax = out_max > out_min ? out_max : out_min;
@@ -74,6 +79,12 @@ class ToM_UtilsP
 			d = Clamp(d, truemin, truemax);
 		}
 		return d;
+	}
+
+	static play double SinePulse(double frequency = TICRATE, int counter = -1)
+	{
+		double time = counter >= 0 ? counter : Level.mapTime;
+		return 0.5 + 0.5 * sin(360.0 * time / frequency);
 	}
 		
 	// Checks which side of a lindef the actor is on:
@@ -264,7 +275,7 @@ class ToM_UtilsP
 		Quat dir = Quat.FromAngles(mo.angle, mo.pitch, mo.roll);
 		vector3 ofs = dir * (offset.x, -offset.y, offset.z);
 		if (isPosition)
-			return level.vec3offset(mo.pos, ofs);
+			return Level.vec3offset(mo.pos, ofs);
 		return ofs;
 	}
 	

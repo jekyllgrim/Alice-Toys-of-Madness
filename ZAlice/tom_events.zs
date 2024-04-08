@@ -5,9 +5,9 @@ class ToM_Mainhandler : EventHandler
 
 	array < Actor > allmonsters;
 	
-	static bool IsVoodooDoll(PlayerPawn mo) 
+	bool IsVoodooDoll(PlayerPawn mo) 
 	{
-		return !mo.player || !mo.player.mo || mo.player.mo != mo;
+		return ToM_UtilsP.IsVoodooDoll(mo);
 	}
 
 	override void NetworkProcess(consoleevent e)

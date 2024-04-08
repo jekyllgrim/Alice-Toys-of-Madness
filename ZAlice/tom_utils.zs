@@ -16,6 +16,11 @@ class ToM_UtilsP
 		return val;
 	}
 
+	static clearscope bool IsVoodooDoll(PlayerPawn mo) 
+	{
+		return !mo.player || !mo.player.mo || mo.player.mo != mo;
+	}
+
 	//By default returns true if ANY of the players has the item.
 	//If 'checkall' argument is true, the function returns true if ALL players have the item.
 	static clearscope bool CheckPlayersHave(Class<Inventory> itm, bool checkall = false)

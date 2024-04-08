@@ -54,6 +54,7 @@ class ToM_AlicePlayer : DoomPlayer
 
 	private int curWeaponID;
 	private vector2 prevMoveDir;
+	double modelDirection;
 
 	private int airJumps;
 	private int airJumpTics;
@@ -74,34 +75,12 @@ class ToM_AlicePlayer : DoomPlayer
 	bool IsPlayerMoving()
 	{
 		let player = self.player;
-		return player.cmd.forwardmove != 0 || player.cmd.sidemove != 0;
-
-		let buttons = player.cmd.buttons;
-
-		/*console.printf(
-			"maptime: %d | "
-			"FW %d | "
-			"BK %d | "
-			"LL %d | "
-			"RR %d | "
-			"sidemove: %d | "
-			"forwardmove: %d",
-			level.maptime,
-			buttons & BT_FORWARD,
-			buttons & BT_BACK,
-			buttons & BT_MOVELEFT,
-			buttons & BT_MOVERIGHT,
-			player.cmd.sidemove,
-			player.cmd.forwardmove
-		);*/
-		return (player.OnGround || waterlevel >= 2) && (buttons & BT_FORWARD || buttons & BT_BACK || buttons & BT_MOVELEFT || buttons & BT_MOVERIGHT);
+		return (player.OnGround || waterlevel >= 2) && (player.cmd.forwardmove != 0 || player.cmd.sidemove != 0);
 	}
 
 	bool IsPlayerRunning()
-	{	
-		let buttons = player.cmd.buttons;
-
-		return IsPlayerMoving() && (buttons & BT_RUN);
+	{
+		return IsPlayerMoving() && (player.cmd.buttons & BT_RUN);
 	}
 
 	state PickMovementState()
@@ -323,21 +302,22 @@ class ToM_AlicePlayer : DoomPlayer
 			return;
 		
 		UpdateWeaponModel();
+		// If firing, face the angle (no direction);
+		if (InStateSequence(curstate, missilestate))
+		{
+			prevMoveDir = (0,0);
+		}
+		else if (vel.xy.Length() > 0 && IsPlayerMoving())
+		{
+			prevMoveDir = Level.Vec2Diff(pos.xy, pos.xy + vel.xy);
+		}
+		modelDirection = (prevMoveDir == (0,0)) ? 0 : atan2(prevMoveDir.y, prevMoveDir.x) - Normalize180(angle);
 
 		// Make the model face the direction of movement, if the player
 		// is in third person or seen from outside:
 		if (PlayerNumber() != consoleplayer || (player.cheats & CF_CHASECAM) || player.camera != self)
 		{
-			// If firing, face the angle (no direction);
-			if (InStateSequence(curstate, missilestate))
-			{
-				prevMoveDir = (0,0);
-			}
-			else if (vel.xy.Length() > 0)
-			{
-				prevMoveDir = Level.Vec2Diff(pos.xy, pos.xy + vel.xy);
-			}
-			spriteRotation = (prevMoveDir == (0,0)) ? 0 : atan2(prevMoveDir.y, prevMoveDir.x) - angle;
+			spriteRotation = modelDirection;
 		}
 		else
 		{
@@ -595,8 +575,8 @@ class ToM_AlicePlayer : DoomPlayer
 				// current movement, let them brake:
 				let hvel = ToM_UtilsP.RelativeToGlobalCoords(self, vel, false);
 				vector2 movevel;
-				moveVel.x = ToM_UtilsP.LinearMap(cmd.forwardmove, -12800, 12800, -hvel.x, hvel.x, true);
-				moveVel.y = ToM_UtilsP.LinearMap(cmd.sidemove, -12800, 12800, -hvel.y, hvel.y, true);
+				moveVel.x = ToM_UtilsP.LinearMap(cmd.forwardmove, -ToM_MaxMoveInput, ToM_MaxMoveInput, -hvel.x, hvel.x, true);
+				moveVel.y = ToM_UtilsP.LinearMap(cmd.sidemove, -ToM_MaxMoveInput, ToM_MaxMoveInput, -hvel.y, hvel.y, true);
 				if ( (movevel.x > 0 && hvel.x < 0 || movevel.x < 0 && hvel.x > 0) || (movevel.x > 0 && hvel.x < 0 || movevel.x < 0 && hvel.x > 0) )
 				{
 					//console.printf("forwardmove/sidemove: %.2f, %.2f | vel.xy: %.2f, %.2f", movevel.x, movevel.y, hvel.x, hvel.y);

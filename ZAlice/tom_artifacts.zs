@@ -427,19 +427,60 @@ class ToM_RageBoxSelector : ToM_ArtifactSelector
 
 class ToM_GrowthPotion : PowerupGiver
 {
+	int waitBounce;
+
 	Default
 	{
 		Powerup.Type "ToM_GrowthPotionEffect";
 		Powerup.Duration -30;
-		Inventory.Pickupmessage "Growth potion!";
+		Inventory.Pickupmessage "You've eaten the cake!";
 		+INVENTORY.AUTOACTIVATE
+		scale 0.15;
 	}
 	
 	States
 	{
 	Spawn:
-		APOT Z -1;
-		stop;
+		CAKG AABBCCDDEEFFGGHHIIJ 1
+		{
+			if (waitBounce >= 105)
+			{
+				waitBounce = 0;
+				return ResolveState("Shrink");
+			}
+			if (waitBounce <= 18 && waitBounce % 4 == 0)
+			{
+				for (int i = 0; i < 8; i++)
+				{
+					A_SpawnParticle("FFCCCC",
+						SPF_RELATIVE|SPF_FULLBRIGHT|SPF_REPLACE,
+						lifetime: 18,
+						size: 6,
+						angle: 45*i,
+						xoff: (18 - waitbounce) * 0.5,
+						zoff: waitBounce * 2,
+						velx: 3,
+						velz: 3,
+						accelx: -0.1,
+						accelz: -0.3,
+						sizestep: -0.05
+					);
+				}
+			}
+			scale.y = default.scale.y + default.scale.y * -0.2 * ToM_UtilsP.SinePulse(counter: waitBounce);
+			scale.x = default.scale.x + default.scale.x * 0.2 * ToM_UtilsP.SinePulse(counter: waitBounce-2);
+			waitBounce++;
+			return ResolveState(null);
+		}
+		wait;
+	Shrink:
+		CAKG HFDBA 2 { spriteOffset.y -= 4; }
+		CAKG AAAAA 1 { spriteOffset.y -= 1; }
+		CAKG AAAAA 1 {spriteOffset.y += 5; }
+		CAKG A 1 {spriteOffset.y -= 4; }
+		CAKG AA 1 {spriteOffset.y += 2; }
+		CAKG A 20;
+		goto Spawn;
 	}
 }
 
@@ -486,7 +527,7 @@ class ToM_GrowthPotionEffect : Powerup
 	Default
 	{
 		Powerup.duration -40;
-		Inventory.Icon "APOTZ0";
+		Inventory.Icon "CAKGA0";
 	}
 
 	override void InitEffect()

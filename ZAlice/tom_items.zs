@@ -15,7 +15,7 @@ class ToM_InventoryToken : Inventory abstract
 	override void DoEffect() 
 	{
 		super.DoEffect();
-		if (!owner || (owner.player && ToM_Mainhandler.IsVoodooDoll(PlayerPawn(owner)))) 
+		if (!owner || (owner.player && ToM_UtilsP.IsVoodooDoll(PlayerPawn(owner)))) 
 		{
 			Destroy();
 			return;

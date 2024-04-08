@@ -680,8 +680,18 @@ class ToM_BaseWeapon : Weapon abstract
 
 class ToM_KickWeapon : CustomInventory
 {
-	state s_kicking;
 	protected double prekickspeed;
+	protected ToM_AlicePlayer alice;
+	protected State s_standing;
+	protected State s_idlestates;
+	protected State s_walking;
+	protected State s_finishWalking;
+	protected State s_kick;
+
+	const PITCHTH0 = 90.0;
+	const PITCHTH1 = 30.0;
+	const PITCHTH2 = -20.0;
+	const PITCHTH3 = -90.0;
 
 	Default
 	{
@@ -694,40 +704,127 @@ class ToM_KickWeapon : CustomInventory
 	{
 		A_CustomPunch(30, true, CPF_NOTURN, pufftype: "ToM_Kickpuff", range: 80);
 	}
+
+	action void A_AliceStomp()
+	{
+		let growPot = ToM_GrowthPotionEffect(FindInventory('ToM_GrowthPotionEffect'));
+		if (growPot)
+		{
+			growPot.DoStepDamage(self, 320);
+			let hi = Spawn("ToM_HorseImpact", (pos.xy, floorz));
+			if (hi)
+			{
+				hi.scale.x = radius * ToM_GrowthPotionEffect.GROWFACTOR * 2;
+			}
+		}
+	}
+
+	bool IsPlayerMoving()
+	{
+		if (!alice)
+			return false;
+		return alice.IsPlayerMoving();
+	}
+
+	override void BeginPlay()
+	{
+		Super.BeginPlay();
+		s_standing = FindState("Standing");
+		s_idlestates = FindState("IdleStates");
+		s_walking = FindState("Walking");
+		s_finishWalking = FindState("FinishWalking");
+		s_kick = FindState("Kick");
+	}
 	
 	override void Tick() {}
 	
 	override void DoEffect()
 	{
 		super.DoEffect();
-		
-		if (!owner || !owner.player)
+
+		alice = ToM_AlicePlayer(owner);
+		if (!alice || !alice.player || ToM_UtilsP.IsVoodooDoll(alice))
 		{
 			Destroy();
 			return;
 		}
 		
-		if (owner.health <= 0)
+		if (alice.health <= 0)
 			return;
 		
-		let player = owner.player;
-		PSprite psp;
-		if (player.cmd.buttons & BT_USER4)
+		let player = alice.player;
+		PSprite plegs = player.FindPSprite(APSP_Legs);
+		if (!plegs)
 		{
-			if (!s_kicking)
-				s_kicking = FindState("Kick");
-				
-			psp = player.FindPSprite(APSP_Kick);
-			if (psp)
-				return;
-			
-			psp = player.GetPSprite(APSP_Kick);
-			psp.caller = self;
-			psp.SetState(FindState("Kick"));
+			plegs = player.GetPSprite(APSP_Legs);
+			plegs.caller = self;
+			plegs.pivot = (0.5, 0.86);
+			plegs.bAddWeapon = false;
+			plegs.bAddBob = false;
+			plegs.SetState(s_standing);
 		}
-		if (psp)
+		if (plegs)
 		{
-			psp.y = WEAPONTOP + ToM_UtilsP.LinearMap(owner.pitch, 90, -80, 0, 100, true);
+			plegs.bInterpolate = true;
+
+			// Adjust y position relative to camera pitch:
+			double ofsY;
+			if (alice.pitch >= PITCHTH1)
+			{
+				ofsY = ToM_UtilsP.LinearMap(alice.pitch, PITCHTH0, PITCHTH1, 30, 217, true);
+			}
+			else if (alice.pitch >= PITCHTH2)
+			{
+				ofsY = ToM_UtilsP.LinearMap(alice.pitch, PITCHTH1, PITCHTH2, 217, 225, true);
+			}
+			else
+			{
+				ofsY = ToM_UtilsP.LinearMap(alice.pitch, PITCHTH2, PITCHTH3, 225, 320, true);
+			}
+			plegs.y = ofsY;
+			// Adjust scale based on bobbing if moving on the ground:
+			double bobfac = 0;
+			if (player.onground)
+			{
+				bobfac = player.viewz - (alice.pos.z + alice.player.mo.ViewHeight + player.crouchviewdelta);
+			}
+			double sc = ToM_UtilsP.LinearMap(bobfac, -9, 9, 1.05, 0.95);
+			// Slightly reduce scale with pitch as well:
+			//double pitchFac =  ToM_UtilsP.LinearMap(plegs.y, yOfs.x, yOfs.y, 1, 0.8, true);
+			plegs.scale = (sc, sc);// * pitchFac;
+
+			// Adjust angle based on direction:
+			double faceDir = 0;
+			if (alice.vel.xy.Length() > 5)
+			{
+				facedir = Normalize180(alice.modelDirection);
+				if (faceDir > 90)
+					faceDir -= 180;
+				else if (faceDir < -90)
+					faceDir += 180;
+			}
+			double newAngle = Clamp(faceDir, -90, 90);
+			plegs.rotation = newAngle;
+			
+			// kicking/stomping:
+			if (player.cmd.buttons & BT_USER4 && !InStateSequence(plegs.curstate, s_kick) && (!owner.FindInventory('ToM_GrowthPotionEffect') || owner.pos.z <= floorz))
+			{
+				plegs.SetState(s_kick);
+			}
+
+			// moving:
+			if (InStateSequence(plegs.curstate, s_idlestates) && IsPlayerMoving())
+			{
+				{
+					plegs.SetState(s_walking);
+				}
+			}
+
+			// stopped moving:
+			if (InStateSequence(plegs.curstate, s_walking) && !IsPlayerMoving())
+			{
+				plegs.SetState(s_finishWalking);
+			}
 		}
 	}
 	
@@ -736,25 +833,72 @@ class ToM_KickWeapon : CustomInventory
 	Use:
 		TNT1 A 0;
 		fail;
+	IdleStates:
+		FinishWalking:
+			FEX1 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
+			FEX2 ABCDEFGHI 1;
+			TNT1 A 0 { return ResolveState("Standing"); }
+		FinishStomp:
+			FET1 ABCDEFGHIJKLMNOPQRSTUV 1;
+			TNT1 A 0 { return ResolveState("Standing"); }
+		FinishKick:
+			FEL1 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
+			FEL2 ABCD 1;
+			TNT1 A 0 { return ResolveState("Standing"); }
+		Standing:
+			FEA1 A -1;
+			stop;
+	Walking:
+		FEW1 # 1
+		{
+			let psp = player.FindPSprite(OverlayID());
+			if (psp)
+			{
+
+				int curFrame = psp.frame;
+				curFrame += (player.cmd.forwardmove > 0)? 1 : -1;
+				if (curFrame > 19)	curframe = 0;
+				if (curFrame < 0)	curframe = 19;
+				psp.frame = curframe;
+
+				psp.tics = ToM_UtilsP.LinearMap(vel.xy.Length(), 3, 17, 4, 1, true);
+			}
+			return ResolveState(null);
+		}
+		loop;
 	Kick:
 		TNT1 A 0
 		{
-			A_OverlayFlags(OverlayID(), PSPF_AddWeapon, false);
-			A_OverlayOffset(OverlayID(), -20, WEAPONTOP);
 			invoker.prekickspeed = speed;
 			speed *= 0.1;
+			if (FindInventory('ToM_GrowthPotionEffect'))
+			{
+				return ResolveState("Stomp");
+			}
+			return ResolveState(null);
 		}
-		AKIK AB 1;
+		FEK1 AB 1;
 		TNT1 A 0 A_StartSound("weapons/kick/whip", CHAN_AUTO);
-		AKIK CDEF 1;
-		AKIK G 2 A_AliceKick();
-		AKIK HIJKLM 2;
+		FEK1 CD 1;
+		FEK1 E 2 A_AliceKick();
+		FEK1 FGHIJLKM 1;
 		TNT1 A 0 
 		{
 			speed = invoker.prekickspeed;
 		}
-		AKIK NO 2;
-		stop;
+		FEK1 NOPQR 1;
+		TNT1 A 0 { return ResolveState("FinishKick"); }
+	Stomp:
+		FES1 ABCDEFGHIJKLMNO 1;
+		FES1 P 2 A_AliceStomp();
+		FES1 QRSTUVWXYZ 1;
+		FES2 ABCD 1;
+		TNT1 A 0 
+		{
+			speed = invoker.prekickspeed;
+		}
+		FES2 EFGH 1;
+		goto FinishStomp;
 	}
 }
 

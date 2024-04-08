@@ -126,6 +126,7 @@ kickwall4 "sounds/kick/on_blunt04.ogg"
 kickflesh1 "sounds/kick/kick_imp_default01.ogg"
 kickflesh2 "sounds/kick/kick_imp_default02.ogg"
 kickflesh3 "sounds/kick/kick_imp_default03.ogg"
+weapons/kick/stomp "sounds/hhorse/hobbytest_at05_impact.ogg"
 
 
 // KNIFE

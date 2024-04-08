@@ -13,15 +13,18 @@ enum ToM_ParticlesQuality
 
 enum ToM_PSprite_Layers
 {
-	APSP_KickDo = -501,
-	APSP_Kick = -500,
-	APSP_BottomParticle = -300,
-	APSP_UnderLayer = -10,
-	APSP_LeftHand = 3,
-	APSP_Overlayer = 5,
-	APSP_CARD1 = 21,
-	APSP_CARD2 = 22,
-	APSP_CARD3 = 20,
-	APSP_TopFX = 50,
-	APSP_TopParticle = 300,
+	APSP_Legs 			= -999,
+	APSP_KickDo 		= -501,
+	APSP_Kick 			= -500,
+	APSP_BottomParticle	= -300,
+	APSP_UnderLayer 	= -10,
+	APSP_LeftHand		= 3,
+	APSP_Overlayer		= 5,
+	APSP_CARD1			= 21,
+	APSP_CARD2			= 22,
+	APSP_CARD3			= 20,
+	APSP_TopFX			= 50,
+	APSP_TopParticle	= 300,
 }
+
+const ToM_MaxMoveInput = 12800;

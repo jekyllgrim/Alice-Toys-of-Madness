@@ -155,6 +155,41 @@ class ToM_UtilsP
 		
 		return linenormal;
 	}
+
+	enum ETraceHitTypes
+	{
+		HT_None,
+		HT_ShootableThing,
+		HT_Solid,
+	}
+
+	static play ETraceHitTypes, Actor GetHitType(FLineTraceData tr)
+	{
+		if (tr.HitType == TRACE_HitNone)
+		{
+			return HT_None, null;
+		}
+		if (tr.HitType == TRACE_HitActor)
+		{
+			let victim = tr.HitActor;
+			if (victim)
+			{
+				if(victim.bSHOOTABLE && victim.health > 0 && !victim.bINVULNERABLE)
+				{
+					return HT_ShootableThing, victim;
+				}
+				else if (victim.bSOLID)
+				{
+					return HT_Solid, victim;
+				}
+			}
+		}
+		else if (tr.HitType == TRACE_HitFloor || tr.HitType == TRACE_HitCeiling || tr.HitType == TRACE_HitWall)
+		{
+			return HT_Solid, null;
+		}
+		return HT_None, null;
+	}
 	
 	static play vector3 GetEndOfLOF(Actor checker, double angle, double distance, double pitch, double offsetz)
 	{

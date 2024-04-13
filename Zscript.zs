@@ -10,6 +10,7 @@ version "4.11"
 #include "ZAlice/tom_artifacts.zs"
 #include "ZAlice/tom_player.zs"
 #include "ZAlice/tom_weapon.zs"
+#include "ZAlice/tom_legs.zs"
 #include "ZAlice/tom_hud.zs"
 
 #include "ZAlice/w_knife.zs"

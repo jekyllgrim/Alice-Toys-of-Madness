@@ -749,37 +749,37 @@ class ToM_AlicePlayer : DoomPlayer
 	Melee:
 		stop;
 	Missile:	
-	Attack_Knife:
-		M006 UVWXYZ 1;
-		M007 ABCDEFGHIJKLMNO 1;
-		#### # 0 { return spawnstate; }
-	Attack_Horse:
-		M007 PQRSTUVWXYZ 2;
-		M008 ABCDE 2;
-		#### # 0 { return spawnstate; }
-	Attack_Cards:
-		M008 HIJKLMNOPQRSTU 2;
-		#### # 0 { return spawnstate; }
-	Attack_PGrinder:
-		M008 F 20;
-		#### # 0 { return spawnstate; }
-	Attack_Teapot:
-		M008 VWXYZ 1;
-		M009 ABC 1;
-		M009 BA 2;
-		M008 ZYXW 2;
-		M008 V 10;
-		#### # 0 { return spawnstate; }
-	Attack_Eyestaff:
-		M009 D 20;
-		#### # 0 { return spawnstate; }
-	Attack_Blunderbuss:
-		M009 FGHIJKLMNOPQRSTUVWXYZ 2;
-		M010 ABCDE 2;
-		M010 FGHIJKLMNOPQRSTUVWXYZ 1;
-		M011 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
-		#### # 0 { return spawnstate; }
-		stop;
+		Attack_Knife:
+			M006 UVWXYZ 1;
+			M007 ABCDEFGHIJKLMNO 1;
+			#### # 0 { return spawnstate; }
+		Attack_Horse:
+			M007 PQRSTUVWXYZ 2;
+			M008 ABCDE 2;
+			#### # 0 { return spawnstate; }
+		Attack_Cards:
+			M008 HIJKLMNOPQRSTU 2;
+			#### # 0 { return spawnstate; }
+		Attack_PGrinder:
+			M008 F 20;
+			#### # 0 { return spawnstate; }
+		Attack_Teapot:
+			M008 VWXYZ 1;
+			M009 ABC 1;
+			M009 BA 2;
+			M008 ZYXW 2;
+			M008 V 10;
+			#### # 0 { return spawnstate; }
+		Attack_Eyestaff:
+			M009 D 20;
+			#### # 0 { return spawnstate; }
+		Attack_Blunderbuss:
+			M009 FGHIJKLMNOPQRSTUVWXYZ 2;
+			M010 ABCDE 2;
+			M010 FGHIJKLMNOPQRSTUVWXYZ 1;
+			M011 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
+			#### # 0 { return spawnstate; }
+			stop;
 	
 	Jump:
 		M006 LMNO 1;

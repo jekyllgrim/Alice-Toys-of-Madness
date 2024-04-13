@@ -948,44 +948,36 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 				vector3 vec = Vec3To(target) + (0,0,target.height * 0.75);
 				vel = vec.Unit() * KV_RECALLSPEED;
 				
-				TextureID tex = TexMan.CheckForTexture("SPRKC0", TexMan.Type_Any);
-				if (tex && knifemodel)
+				if (knifemodel)
 				{
 					A_FaceTarget(flags:FAF_MIDDLE);
 					knifemodel.angle = angle + 180;
 					knifemodel.pitch -= 10;
-					double psize = 8; //particle size
-					// make it larger for consoleplayer if it's their knife
+					FSpawnParticleParams pp;
+					pp.color1 = "";
+					pp.texture = TexMan.CheckForTexture("SPRKC0", TexMan.Type_Any);
+					pp.size = 8;
+					// make particle larger for consoleplayer if it's their knife
 					// and it's far away:
 					if (target.player && target.player == players[consoleplayer])
 					{
-						psize = ToM_UtilsP.LinearMap(Distance3D(target), target.radius, 1024, 10, 40);
-						psize = Clamp(psize, 8, 40);
+						double size = ToM_UtilsP.LinearMap(Distance3D(target), target.radius, 1024, 10, 40);
+						pp.size = Clamp(size, 8, 40);
 					}
+					pp.sizestep = pp.size * -0.05;
+					pp.lifetime = 64;
+					pp.flags = SPF_FULLBRIGHT;
+					pp.style = STYLE_Add;
+					pp.startalpha = 0.5;
+					pp.fadestep = -1;
+					double ho = 16;
+					double v = 1.5;
 					for (int i = 3; i > 0; i--)
 					{
-						double v = 1.5;
-						vector3 pvel = (frandom[knifepart](-v,v),frandom[knifepart](-v,v),frandom[knifepart](-v,v));
-						vector3 paccel = pvel * -0.05;
-						A_SpawnParticleEx(
-							"FFFFFF",
-							tex,
-							style: Style_ADD,
-							flags:SPF_FULLBRIGHT,
-							lifetime: 64,
-							size: psize,
-							xoff: frandom[knifepart](-16,16),
-							yoff: frandom[knifepart](-16,16),
-							zoff: frandom[knifepart](-16,16),
-							velx: pvel.x,
-							vely: pvel.y,
-							velz: pvel.z,
-							accelx: paccel.x,
-							accely: paccel.y,
-							accelz: paccel.z,
-							startalphaf: 0.5,
-							sizestep: psize * -0.05
-						);
+						pp.vel = (frandom[knifepart](-v,v),frandom[knifepart](-v,v),frandom[knifepart](-v,v));
+						pp.accel = pp.vel * -0.05;
+						pp.pos = pos + (frandom[knifepart](-ho,ho), frandom[knifepart](-ho,ho), frandom[knifepart](-ho,ho));
+						Level.SpawnParticle(pp);
 					}
 				}
 				

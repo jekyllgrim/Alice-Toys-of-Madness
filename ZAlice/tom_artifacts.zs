@@ -622,9 +622,9 @@ class ToM_GrowthPotionEffect : Powerup
 		}
 	}
 
-	void DoStepDamage(Actor source, double atkdist = 256)
+	static void DoStepDamage(Actor source, int damage = 15, double distance = 256)
 	{
-		BlockThingsIterator itr = BlockThingsIterator.Create(source,atkdist);
+		BlockThingsIterator itr = BlockThingsIterator.Create(source,distance);
 		while (itr.next()) {
 			let next = itr.thing;
 			if (!next || next == source)
@@ -635,14 +635,18 @@ class ToM_GrowthPotionEffect : Powerup
 			double zdiff = abs(source.pos.z - next.pos.z);
 			if (zdiff > 32)
 				continue;
-			double dist = source.Distance3D(next);
-			if (dist > atkdist)
+			if (source.Distance3D(next) > distance)
 				continue;
-			next.DamageMobj(source,source,15,'normal',DMG_THRUSTLESS|DMG_NO_FACTOR);
+			next.DamageMobj(source, source, damage,'normal',DMG_THRUSTLESS|DMG_NO_FACTOR);
 			next.vel.z += 4;
 		}
-		source.A_Quake(2,5,0,atkdist,"");
-		source.A_StartSound("growpotion/giantstep", CHAN_AUTO);
+		source.A_Quake(2, 5, 0, distance, "");
+		let hi = Spawn("ToM_HorseImpact", (source.pos.xy, source.floorz));
+		if (hi)
+		{
+			hi.A_StartSound("growpotion/giantstep", CHAN_AUTO);
+			hi.scale.x = distance;
+		}
 	}
 	
 	override void DoEffect()
@@ -731,7 +735,7 @@ class ToM_GrowthPotionEffect : Powerup
 				stepCycle++;
 				if (stepCycle % 20 == 0) {
 					//do the damage:
-					DoStepDamage(pmo);
+					DoStepDamage(pmo, damage: 20);
 				}
 			}
 			else

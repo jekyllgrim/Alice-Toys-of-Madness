@@ -108,16 +108,7 @@ class ToM_KickWeapon : CustomInventory
 
 	action void A_AliceStomp()
 	{
-		let growPot = ToM_GrowthPotionEffect(FindInventory('ToM_GrowthPotionEffect'));
-		if (growPot)
-		{
-			growPot.DoStepDamage(self, 320);
-			let hi = Spawn("ToM_HorseImpact", (pos.xy, floorz));
-			if (hi)
-			{
-				hi.scale.x = radius * ToM_GrowthPotionEffect.GROWFACTOR * 1.2;
-			}
-		}
+		ToM_GrowthPotionEffect.DoStepDamage(self, damage: 60, distance: 160);
 	}
 
 	bool IsPlayerMoving()

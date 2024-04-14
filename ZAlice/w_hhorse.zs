@@ -145,56 +145,39 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				}
 			}
 
-			TextureID ptex = TexMan.CheckForTexture("SPRKA0");
+			FSpawnParticleParams pp;
+			pp.texture = TexMan.CheckForTexture("SPRKA0");
+			pp.flags = SPF_FULLBRIGHT|SPF_ROLL;
+			pp.style = STYLE_Add;
+			pp.color1 = "";
+			pp.startalpha = 1;
+			pp.fadestep = -1;
 			for (int i = random[sfx](30,40); i > 0; i--)
 			{
-				int life = random[psfx](40, 50);
-				double fwVel = frandom[psfx](0.5, 3);
-				double sideVel = frandom[psfx](-0.5, 0.5);
-				double upVel = frandom[psfx](0.5, 2);
-				double fwAccel = fwVel / life * 0.5;
-				double sideAccel = sideVel * -0.5;
-				double upAccel = upVel * 0.1;
-				double psize = random[psfx](10, 18);
-				double pSizeStep = psize / life * -0.5;
-				//double pRollVel = frandom[psfx](-8,8),
-				hi.A_SpawnParticleEx(
-					"",
-					ptex,
-					Style_Add,
-					SPF_FULLBRIGHT|SPF_RELATIVE|SPF_ROLL,
-					lifetime: life,
-					size: psize,
-					angle: random[psfx](0, 359),
-					xoff: random[psfx](0, rad),
-					velx: fwVel,
-					vely: sideVel,
-					velz: upVel,
-					accelx: fwAccel,
-					accely: sideAccel,
-					//accelz: upAccel,
-					sizestep: pSizeStep,
-					startroll: random[psfx](0, 359)/*,
-					rollvel: frandom[psfx](-8,8),
-					rollacc: */
-				);
+				pp.pos = pos + (random[psfx](-rad, rad), random[psfx](-rad, rad), 0);
+				pp.lifetime = random[psfx](40, 50);
+				Vector2 hvel = (frandom[psfx](0.5, 3), frandom[psfx](-0.5, 0.5));
+				double hangle = frandom[psfx](0, 360);
+				pp.vel.z = frandom[psfx](0.5, 2);
+				pp.vel.xy = Actor.RotateVector(hvel, hangle);
+				pp.accel.xy = Actor.RotateVector((hvel.x / pp.lifetime * 0.5, hvel.y * -0.5), hangle);
+				pp.size = random[psfx](10, 18);
+				pp.sizestep = (pp.size / pp.lifetime) * -0.5;
+				Level.SpawnParticle(pp);
 			}
 		}
 
 		int reps = ToM_Utils.LinearMap(fallAttackForce, 40, 1, 5, 1, true);
-		for (reps; reps > 0; reps--)
+		for (int i = 0; i <= reps; i++)
 		{
 			let iring = ToM_HorseImpact(Spawn("ToM_HorseImpact", ipos));
-			double sfac = reps * 0.1;
-			//console.printf("reps: %d | sfac: %.2f", reps, sfac);
-			iring.scale.x = rad * sfac;
+			iring.scale.x = rad * ToM_Utils.LinearMap(i, 0, reps, 0.3, 1.0);
+			iring.scale.y = iring.scale.x;
 		}
 
 		if (fallAttackForce >= 29 && pos.z <= floorz)
 		{
-			let hid = Spawn("ToM_HorseImpactDebris", pos);
-			if (hid)
-				hid.Warp(self, ipos.x, ipos.y, ipos.z);
+			let hid = Spawn("ToM_HorseImpactDebris", ipos);
 		}
 
 		vel.z = 5;

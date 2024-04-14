@@ -523,18 +523,9 @@ class ToM_AlicePlayer : DoomPlayer
 			super.FallAndSink(grav, oldfloorz);
 		}
 
-		if (pos.z <= floorz && vel.z <= -8.0)
+		if (pos.z <= floorz && vel.z <= -8.0 && FindInventory('ToM_GrowthPotionEffect'))
 		{
-			let growPot = ToM_GrowthPotionEffect(FindInventory('ToM_GrowthPotionEffect'));
-			if (growPot)
-			{
-				growPot.DoStepDamage(self, 512);
-				let hi = Spawn("ToM_HorseImpact", (pos.xy, floorz));
-				if (hi)
-				{
-					hi.scale.x = radius * ToM_GrowthPotionEffect.GROWFACTOR * 2;
-				}
-			}
+			ToM_GrowthPotionEffect.DoStepDamage(self, damage: 108, distance: 320);
 		}
 	}
 

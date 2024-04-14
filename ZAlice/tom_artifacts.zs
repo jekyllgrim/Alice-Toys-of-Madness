@@ -173,7 +173,7 @@ class ToM_RageBox : Actor replaces Berserk
 	{
 		if (target && target.player)
 		{
-			let diff = LevelLocals.Vec3Diff(pos + (0,0,24), target.pos + (0,0, ToM_UtilsP.GetPlayerAtkHeight(target.player.mo)));
+			let diff = LevelLocals.Vec3Diff(pos + (0,0,24), target.pos + (0,0, ToM_Utils.GetPlayerAtkHeight(target.player.mo)));
 			smokedir = diff.unit();
 			
 			ToM_WhiteSmoke.Spawn(
@@ -467,8 +467,8 @@ class ToM_GrowthPotion : PowerupGiver
 					);
 				}
 			}
-			scale.y = default.scale.y + default.scale.y * -0.2 * ToM_UtilsP.SinePulse(counter: waitBounce);
-			scale.x = default.scale.x + default.scale.x * 0.2 * ToM_UtilsP.SinePulse(counter: waitBounce-2);
+			scale.y = default.scale.y + default.scale.y * -0.2 * ToM_Utils.SinePulse(counter: waitBounce);
+			scale.x = default.scale.x + default.scale.x * 0.2 * ToM_Utils.SinePulse(counter: waitBounce-2);
 			waitBounce++;
 			return ResolveState(null);
 		}

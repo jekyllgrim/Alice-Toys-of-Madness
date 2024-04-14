@@ -483,7 +483,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 			// Calculate how long it'll take the jack to reach
 			// its victim (between JMINFLYTIME-JMAXFLYTIME,
 			// depending on the distance):
-			double flytime = ToM_UtilsP.LinearMap(dist, 32, JMAXSEEKDIST, JMINFLYTIME, JMAXFLYTIME);
+			double flytime = ToM_Utils.LinearMap(dist, 32, JMAXSEEKDIST, JMINFLYTIME, JMAXFLYTIME);
 			flytime = Clamp(flytime, JMINFLYTIME, JMAXFLYTIME);
 			
 			// fly, baby!
@@ -614,7 +614,7 @@ class ToM_JackBall : ToM_BaseActor
 
 		// Vertical position:
 		double top = master.height * 1.2;
-		double ofsZ = top * ToM_UtilsP.SinePulse(counter:age);
+		double ofsZ = top * ToM_Utils.SinePulse(counter:age);
 		posOffset.z = master.pos.z + ofsZ;
 
 		if (ofsZ <= 0.1)
@@ -628,13 +628,13 @@ class ToM_JackBall : ToM_BaseActor
 		// Apply bouncy scale:
 		if (ofsZ <= top*0.2)
 		{
-			scale.x = ToM_UtilsP.LinearMap(ofsZ, 0, top*0.2, default.scale.x*1.4, default.scale.x);
-			scale.y = ToM_UtilsP.LinearMap(ofsZ, 0, top*0.2, default.scale.y*0.65, default.scale.y);
+			scale.x = ToM_Utils.LinearMap(ofsZ, 0, top*0.2, default.scale.x*1.4, default.scale.x);
+			scale.y = ToM_Utils.LinearMap(ofsZ, 0, top*0.2, default.scale.y*0.65, default.scale.y);
 		}
 		else
 		{
-			scale.x = ToM_UtilsP.LinearMap(ofsZ, top*0.2, top*0.6, default.scale.x, default.scale.x*0.75, true);
-			scale.y = ToM_UtilsP.LinearMap(ofsZ, top*0.2, top*0.6, default.scale.y, default.scale.y*1.15, true);
+			scale.x = ToM_Utils.LinearMap(ofsZ, top*0.2, top*0.6, default.scale.x, default.scale.x*0.75, true);
+			scale.y = ToM_Utils.LinearMap(ofsZ, top*0.2, top*0.6, default.scale.y, default.scale.y*1.15, true);
 		}
 	}
 

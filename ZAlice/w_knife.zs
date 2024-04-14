@@ -713,7 +713,7 @@ class ToM_KnifePuff : ToM_BasePuff
 			let weap = ToM_Knife(target.player.readyweapon);
 			if (weap)
 			{
-				int forcePainChance = ToM_UtilsP.LinearMap(weap.combo, 0, 5, 15, 80);
+				int forcePainChance = ToM_Utils.LinearMap(weap.combo, 0, 5, 15, 80);
 				bFORCEPAIN = (random[knifepain](0, 100) <= forcePainChance);
 			}
 		}
@@ -961,7 +961,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 					// and it's far away:
 					if (target.player && target.player == players[consoleplayer])
 					{
-						double size = ToM_UtilsP.LinearMap(Distance3D(target), target.radius, 1024, 10, 40);
+						double size = ToM_Utils.LinearMap(Distance3D(target), target.radius, 1024, 10, 40);
 						pp.size = Clamp(size, 8, 40);
 					}
 					pp.sizestep = pp.size * -0.05;

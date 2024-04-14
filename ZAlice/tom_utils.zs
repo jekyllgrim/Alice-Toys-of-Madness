@@ -1,4 +1,4 @@
-class ToM_UtilsP
+class ToM_Utils
 {
 	const PI = 3.141592653589793;
 
@@ -134,14 +134,14 @@ class ToM_UtilsP
 		else if ((l.delta.x*l.delta.y) >= 0)
 		{
 			// ST_POSITIVE:
-			p1 = ToM_UtilsP.PointOnLineSide((left,top),l);
-			p2 = ToM_UtilsP.PointOnLineSide((right,bottom),l);
+			p1 = ToM_Utils.PointOnLineSide((left,top),l);
+			p2 = ToM_Utils.PointOnLineSide((right,bottom),l);
 		}
 		else 
 		{
 			// ST_NEGATIVE:
-			p1 = ToM_UtilsP.PointOnLineSide((right,top),l);
-			p2 = ToM_UtilsP.PointOnLineSide((left,bottom),l);
+			p1 = ToM_Utils.PointOnLineSide((right,top),l);
+			p2 = ToM_Utils.PointOnLineSide((left,bottom),l);
 		}
 		return (p1 == p2) ? p1 : -1;
 	}
@@ -150,7 +150,7 @@ class ToM_UtilsP
 	{
 		vector2 linenormal;
 		linenormal = (-lline.delta.y, lline.delta.x).Unit();
-		if (!ToM_UtilsP.PointOnLineSide(ppos, lline))
+		if (!ToM_Utils.PointOnLineSide(ppos, lline))
 			linenormal *= -1;
 		
 		return linenormal;

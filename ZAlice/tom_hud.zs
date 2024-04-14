@@ -436,11 +436,11 @@ class ToM_AliceHUD : BaseStatusBar
 				// From half ammo to full ammo: the cathetus goes from 0 to
 				// circle's radius:
 				if (amtFac > 0.5)
-					triHeight = ToM_UtilsP.LinearMap(amtFac, 0.5, 1.0, 0, rad);
+					triHeight = ToM_Utils.LinearMap(amtFac, 0.5, 1.0, 0, rad);
 				// From half ammo to zero ammo: the cathetus also goes from 
 				// 0 to circle's radius:
 				else
-					triHeight = ToM_UtilsP.LinearMap(amtFac, 0.5, 0.0, 0, rad);
+					triHeight = ToM_Utils.LinearMap(amtFac, 0.5, 0.0, 0, rad);
 				// The Pythagorean theorem is: hypotenuse squared equals 
 				// the sum of its squared catheti (c*c = a*a + b*b).
 				// Since the chord (or rather, half of it) is a cathetus 
@@ -521,7 +521,7 @@ class ToM_AliceHUD : BaseStatusBar
 				amtex = "vessel_runes_strong.png";
 				amLightTex = "vessel_runes_strong_highlights.png";
 			}
-			double amtAlpha = ToM_UtilsP.LinearMap(amt1, 0, am1.maxamount, 0.5, 1);
+			double amtAlpha = ToM_Utils.LinearMap(amt1, 0, am1.maxamount, 0.5, 1);
 			amtex = String.Format("graphics/HUD/%s", amtex);
 			amLightTex = String.Format("graphics/HUD/%s", amLightTex);
 			ToM_DrawImage(amtex, ofs, DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM, alpha: amtAlpha);
@@ -704,7 +704,7 @@ class ToM_AliceHUD : BaseStatusBar
 		}
 		else
 		{
-			double pick = ToM_UtilsP.LinearMap(health, 65, 0, 0, mirrorCrackTex.Size() - 1);
+			double pick = ToM_Utils.LinearMap(health, 65, 0, 0, mirrorCrackTex.Size() - 1);
 			int i = Clamp(round(pick), 0, mirrorCrackTex.Size() - 1);
 			texpath = String.Format("graphics/HUD/%s", mirrorCrackTex[i]);
 		}

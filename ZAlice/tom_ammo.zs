@@ -349,7 +349,7 @@ class ToM_EquipmentSpawner : Inventory
 	bool CheckExistingWeapons(Class<Weapon> checkWeapon) 
 	{
 		//check players' inventories:
-		if (ToM_UtilsP.CheckPlayersHave(checkWeapon))
+		if (ToM_Utils.CheckPlayersHave(checkWeapon))
 			return true;
 			
 		//check the array that contains all spawned weapon classes:
@@ -442,7 +442,7 @@ class ToM_EquipmentSpawner : Inventory
 				// radius around it:
 				else 
 				{	
-					let spawnpos = ToM_UtilsP.FindRandomPosAround(pos, 128, mindist: 32);
+					let spawnpos = ToM_Utils.FindRandomPosAround(pos, 128, mindist: 32);
 					SpawnInvPickup(spawnpos,tospawn2);
 				}
 			}

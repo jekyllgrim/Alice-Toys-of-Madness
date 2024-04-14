@@ -143,7 +143,7 @@ Class ToM_BaseActor : Actor abstract
 			if ( tbox[3] < l.bbox[2] ) continue;
 			if ( tbox[0] < l.bbox[1] ) continue;
 			if ( tbox[1] > l.bbox[0] ) continue;
-			if (ToM_UtilsP.BoxOnLineSide(tbox[0],tbox[1],tbox[2],tbox[3],l) == -1 ) 
+			if (ToM_Utils.BoxOnLineSide(tbox[0],tbox[1],tbox[2],tbox[3],l) == -1 ) 
 				return true;
 		}
 		return false;
@@ -554,7 +554,7 @@ class ToM_ActorLayer : ToM_SmallDebris abstract
 		if (!master.isFrozen())
 		{
 			SetOrigin(master.pos, true);
-			ToM_UtilsP.CopyAppearance(self, master, style: false, size: true);
+			ToM_Utils.CopyAppearance(self, master, style: false, size: true);
 			//console.printf("%s layer alpha: %.2f", master.GetTag(), alpha);
 			if (fade > 0)
 			{

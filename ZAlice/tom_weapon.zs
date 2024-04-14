@@ -92,7 +92,7 @@ class ToM_BaseWeapon : Weapon abstract
 		mat = mat.multiplyVector3((forward, -leftright, updown));
 		vector3 offsetPos = mat.asVector3(false);
 		
-		vector3 shooterPos = (pos.xy, ToM_UtilsP.GetPlayerAtkHeight(player.mo, absolute:true));
+		vector3 shooterPos = (pos.xy, ToM_Utils.GetPlayerAtkHeight(player.mo, absolute:true));
 		offsetPos = level.vec3offset(offsetPos, shooterPos);
 		
 		// Get velocity
@@ -100,7 +100,7 @@ class ToM_BaseWeapon : Weapon abstract
 		if(crosshairConverge)
 		{
 			FLineTraceData lt;
-			LineTrace(a, PLAYERMISSILERANGE, p, 0, ToM_UtilsP.GetPlayerAtkHeight(player.mo), 0, data:lt);
+			LineTrace(a, PLAYERMISSILERANGE, p, 0, ToM_Utils.GetPlayerAtkHeight(player.mo), 0, data:lt);
 			double projrad = GetDefaultByType(proj).radius;			
 			aimPos = (lt.HitLocation.xy - lt.HitDir.xy*projrad, lt.HitLocation.z);
 			
@@ -517,7 +517,7 @@ class ToM_BaseWeapon : Weapon abstract
 			return null;
 		double pitchOfs = pitch;
 		if (pitch != 0 && self.pitch < 0)
-			pitchOfs = ToM_UtilsP.LinearMap(self.pitch, 0, -90, pitchOfs, 0);
+			pitchOfs = ToM_Utils.LinearMap(self.pitch, 0, -90, pitchOfs, 0);
 		return A_FireProjectile(missiletype, angle, useammo, spawnofs_xy, spawnheight, flags, pitchOfs);
 	}
 	
@@ -542,7 +542,7 @@ class ToM_BaseWeapon : Weapon abstract
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
-		if (bTOSSED && ToM_UtilsP.CheckPlayersHave(self.GetClass(), checkAll: true))
+		if (bTOSSED && ToM_Utils.CheckPlayersHave(self.GetClass(), checkAll: true))
 		{
 			if (ammotype1)
 			{
@@ -1157,7 +1157,7 @@ Class ToM_StakeProjectile : ToM_Projectile
 			stuckToSecPlane = true;
 			//if it's two-sided:
 			//check which side we're on:
-			int lside = ToM_UtilsP.PointOnLineSide(pos.xy,tline);
+			int lside = ToM_Utils.PointOnLineSide(pos.xy,tline);
 			string sside = (lside == 0) ? "front" : "back";
 			//we'll attach the stake to the sector on the other side:
 			let targetsector = (lside == 0 && tline.backsector) ? tline.backsector : tline.frontsector;
@@ -1433,7 +1433,7 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 			return;
 		
 		FLineTracedata tr;
-		double atkheight = ToM_UtilsP.GetPlayerAtkHeight(ppawn);
+		double atkheight = ToM_Utils.GetPlayerAtkHeight(ppawn);
 		//owner.LineTrace(owner.angle, 2048, owner.pitch, TRF_SOLIDACTORS, atkheight, data: tr);
 		owner.LineTrace(owner.angle, 320, owner.pitch, TRF_THRUACTORS, atkheight, data: tr);
 		console.printf("trace distance: %1.f", tr.Distance);

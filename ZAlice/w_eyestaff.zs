@@ -94,7 +94,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 		if (alpha <= 0)
 		{
-			alpha = ToM_UtilsP.LinearMap(invoker.charge, 0, ES_FULLCHARGE, 0.0, 1.0);
+			alpha = ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLCHARGE, 0.0, 1.0);
 		}
 		psp.alpha = alpha;
 	}
@@ -139,7 +139,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	action void A_AimCircle(double dist = 350)
 	{
 		
-		double atkheight = ToM_UtilsP.GetPlayerAtkHeight(PlayerPawn(self));
+		double atkheight = ToM_Utils.GetPlayerAtkHeight(PlayerPawn(self));
 		
 		FLineTraceData tr;
 		bool traced = LineTrace(angle, dist, pitch, TRF_THRUACTORS, atkheight, data: tr);
@@ -575,11 +575,11 @@ class ToM_EyestaffProjectile : ToM_Projectile
 	{
 		FSpawnParticleParams trail;
 
-		vector3 projpos = ToM_UtilsP.RelativeToGlobalCoords(self, (-TRAILOFS, -TRAILOFS, 0), isPosition: false);
+		vector3 projpos = ToM_Utils.RelativeToGlobalCoords(self, (-TRAILOFS, -TRAILOFS, 0), isPosition: false);
 		CreateParticleTrail(trail, ppos + projpos, trailvel);
 		Level.SpawnParticle(trail);
 		
-		projpos = ToM_UtilsP.RelativeToGlobalCoords(self, (-TRAILOFS, TRAILOFS, 0), isPosition: false);
+		projpos = ToM_Utils.RelativeToGlobalCoords(self, (-TRAILOFS, TRAILOFS, 0), isPosition: false);
 		CreateParticleTrail(trail, ppos + projpos, trailvel);
 		Level.SpawnParticle(trail);
 	}
@@ -668,7 +668,7 @@ class ToM_EyestaffBurnControl : ToM_ControlToken
 			smoke.flags = SPF_ROLL|SPF_REPLACE;
 			smoke.lifetime = random[sfx](60, 100);
 			smoke.sizestep = smoke.size * 0.03;
-			smoke.startalpha = ToM_UtilsP.LinearMap(timer, 0, duration, 1, 0.15);
+			smoke.startalpha = ToM_Utils.LinearMap(timer, 0, duration, 1, 0.15);
 			smoke.fadestep = -1;
 			smoke.startroll = random[sfx](0, 359);
 			smoke.rollvel = frandom[sfx](-4,4);
@@ -764,7 +764,7 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 		pp.vel.x = frandom[eyec](-hv,hv);
 		pp.vel.y = frandom[eyec](-hv,hv);
 		pp.vel.z = frandom[eyec](-hv,0);
-		for (int i = ToM_UtilsP.LinearMap(charge, 0, ToM_Eyestaff.ES_FULLCHARGE, 1, 7); i > 0; i--)
+		for (int i = ToM_Utils.LinearMap(charge, 0, ToM_Eyestaff.ES_FULLCHARGE, 1, 7); i > 0; i--)
 		{		
 			vector3 ppos = pos;
 			ppos.xy = Vec2Angle(frandom[eye](0, circleRad), random[eye](0, 359));

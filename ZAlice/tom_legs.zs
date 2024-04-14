@@ -36,13 +36,13 @@ class ToM_KickWeapon : CustomInventory
 			invoker.ResetKick();
 		}
 		FLineTraceData tr;
-		double atkheight = ToM_UtilsP.GetPlayerAtkHeight(player.mo);
+		double atkheight = ToM_Utils.GetPlayerAtkHeight(player.mo);
 		LineTrace(angle, 70, invoker.arcKickAngle, TRF_NOSKY, atkheight, data: tr);
 		int hitType;
 		Actor hitactor;
-		[hitType, hitactor] = ToM_UtilsP.GetHitType(tr);
+		[hitType, hitactor] = ToM_Utils.GetHitType(tr);
 
-		if (hitType == ToM_UtilsP.HT_ShootableThing && hitactor && invoker.kickedActors.Find(hitactor) == invoker.kickedActors.Size())
+		if (hitType == ToM_Utils.HT_ShootableThing && hitactor && invoker.kickedActors.Find(hitactor) == invoker.kickedActors.Size())
 		{
 			invoker.kickedActors.Push(hitactor);
 			hitactor.DamageMobj(self, self, 40, 'Normal');
@@ -50,10 +50,10 @@ class ToM_KickWeapon : CustomInventory
 			if (hitactor.bISMONSTER && !hitactor.bDONTTHRUST && !hitactor.bBOSS && !hitactor.bNOGRAVITY && !hitactor.bFLOAT && hitactor.mass <= 400)
 			{
 				//initial push away speed is based on mosnter's mass:
-				double pushspeed = ToM_UtilsP.LinearMap(hitactor.mass, 100, 400, 10, 5);
+				double pushspeed = ToM_Utils.LinearMap(hitactor.mass, 100, 400, 10, 5);
 				pushspeed = Clamp(pushspeed,5,20) * frandom[sfx](0.85,1.2);
 				//bonus Z velocity is based on the players view pitch (so that you can knock monsters further by looking up):
-				double pushz = Clamp(ToM_UtilsP.LinearMap(self.pitch,0,-90,0,10), 0, 10);
+				double pushz = Clamp(ToM_Utils.LinearMap(self.pitch,0,-90,0,10), 0, 10);
 				hitactor.Vel3DFromAngle(
 					pushspeed,
 					self.angle,
@@ -66,13 +66,13 @@ class ToM_KickWeapon : CustomInventory
 		else if (invoker.arcKickAngle <= endPitch)
 		{
 			LineTrace(angle, 70, 0, TRF_NOSKY, atkheight, data: tr);
-			[hitType, hitactor] = ToM_UtilsP.GetHitType(tr);
-			if (hittype == ToM_UtilsP.HT_Solid)
+			[hitType, hitactor] = ToM_Utils.GetHitType(tr);
+			if (hittype == ToM_Utils.HT_Solid)
 			{
 				Vector3 puffpos = tr.hitlocation;
 				if (tr.HitLine)
 				{
-					let norm = ToM_UtilsP.GetLineNormal(pos.xy, tr.HitLine);
+					let norm = ToM_Utils.GetLineNormal(pos.xy, tr.HitLine);
 					puffpos.xy += norm * 8;
 				}
 				let spot = Spawn('ToM_DebugSpot', puffpos);
@@ -152,7 +152,7 @@ class ToM_KickWeapon : CustomInventory
 		super.DoEffect();
 
 		alice = ToM_AlicePlayer(owner);
-		if (!alice || !alice.player || ToM_UtilsP.IsVoodooDoll(alice))
+		if (!alice || !alice.player || ToM_Utils.IsVoodooDoll(alice))
 		{
 			Destroy();
 			return;
@@ -178,15 +178,15 @@ class ToM_KickWeapon : CustomInventory
 		double ofsY;
 		if (alice.pitch >= PITCHTH1)
 		{
-			ofsY = ToM_UtilsP.LinearMap(alice.pitch, PITCHTH0, PITCHTH1, 30, 217, true);
+			ofsY = ToM_Utils.LinearMap(alice.pitch, PITCHTH0, PITCHTH1, 30, 217, true);
 		}
 		else if (alice.pitch >= PITCHTH2)
 		{
-			ofsY = ToM_UtilsP.LinearMap(alice.pitch, PITCHTH1, PITCHTH2, 217, 225, true);
+			ofsY = ToM_Utils.LinearMap(alice.pitch, PITCHTH1, PITCHTH2, 217, 225, true);
 		}
 		else
 		{
-			ofsY = ToM_UtilsP.LinearMap(alice.pitch, PITCHTH2, PITCHTH3, 225, 320, true);
+			ofsY = ToM_Utils.LinearMap(alice.pitch, PITCHTH2, PITCHTH3, 225, 320, true);
 		}
 		plegs.y = ofsY;
 		// Adjust scale based on bobbing if moving on the ground:
@@ -195,9 +195,9 @@ class ToM_KickWeapon : CustomInventory
 		{
 			bobfac = player.viewz - (alice.pos.z + alice.player.mo.ViewHeight + player.crouchviewdelta);
 		}
-		double sc = ToM_UtilsP.LinearMap(bobfac, -9, 9, 1.05, 0.95);
+		double sc = ToM_Utils.LinearMap(bobfac, -9, 9, 1.05, 0.95);
 		// Slightly reduce scale with pitch as well:
-		//double pitchFac =  ToM_UtilsP.LinearMap(plegs.y, yOfs.x, yOfs.y, 1, 0.8, true);
+		//double pitchFac =  ToM_Utils.LinearMap(plegs.y, yOfs.x, yOfs.y, 1, 0.8, true);
 		plegs.scale = (sc, sc);// * pitchFac;
 		
 		// kicking/stomping (not affected by rotation)
@@ -229,7 +229,7 @@ class ToM_KickWeapon : CustomInventory
 		if (moveVel > 5)
 		{
 			facedir = Normalize180(alice.modelDirection);
-			moveOfsY = ToM_UtilsP.LinearMap(abs(faceDir), 180, 0, 0, 40);
+			moveOfsY = ToM_Utils.LinearMap(abs(faceDir), 180, 0, 0, 40);
 			if (faceDir > 90)
 			{
 				faceDir -= 180;
@@ -241,7 +241,7 @@ class ToM_KickWeapon : CustomInventory
 		}
 		double newAngle = Clamp(faceDir, -90, 90);
 		plegs.rotation = newAngle;
-		plegs.y += moveOfsY * ToM_UtilsP.LinearMap(moveVel, 0, 15, 0.0, 1.0, true);
+		plegs.y += moveOfsY * ToM_Utils.LinearMap(moveVel, 0, 15, 0.0, 1.0, true);
 
 		// jumping:
 		if (player.jumptics < 0 && !InStateSequence(plegs.curstate, s_jumping))
@@ -310,7 +310,7 @@ class ToM_KickWeapon : CustomInventory
 				if (curFrame < 0)	curframe = 19;
 				psp.frame = curframe;
 
-				psp.tics = ToM_UtilsP.LinearMap(vel.xy.Length(), 3, 17, 4, 1, true);
+				psp.tics = ToM_Utils.LinearMap(vel.xy.Length(), 3, 17, 4, 1, true);
 			}
 			return ResolveState(null);
 		}

@@ -110,7 +110,7 @@ class ToM_AlicePlayer : DoomPlayer
 
 	void UpdateMovementSpeed(int mintics = 1, int maxtics = 4)
 	{
-//		int targetTics = int(ToM_UtilsP.LinearMap(vel.length(), 0, 10, 8, 1));
+//		int targetTics = int(ToM_Utils.LinearMap(vel.length(), 0, 10, 8, 1));
 //		targetTics = Clamp(targetTics, mintics, maxtics);
 //		A_SetTics(targetTics);
 
@@ -120,16 +120,16 @@ class ToM_AlicePlayer : DoomPlayer
 //			{
 //				if (player.cmd.forwardmove > 0)
 //				{
-//					frame = ToM_UtilsP.LoopRange(frame + 1, 0, lastframe);
+//					frame = ToM_Utils.LoopRange(frame + 1, 0, lastframe);
 //				}
 //				else
 //				{
-//					frame = ToM_UtilsP.LoopRange(frame - 1, 0, lastframe);
+//					frame = ToM_Utils.LoopRange(frame - 1, 0, lastframe);
 //				}
 //			}
 //			else if (player.cmd.sidemove != 0)
 //			{
-//				frame = ToM_UtilsP.LoopRange(frame + 1, 0, lastframe);
+//				frame = ToM_Utils.LoopRange(frame + 1, 0, lastframe);
 //			}
 //		}
 
@@ -345,7 +345,7 @@ class ToM_AlicePlayer : DoomPlayer
 				player.viewz += jumptics * upfac;
 			
 			//else if (jumptics > 0)
-			//	player.viewz += ToM_UtilsP.LinearMap(jumptics, downlim, lim, downlim * downfac, 0, true);
+			//	player.viewz += ToM_Utils.LinearMap(jumptics, downlim, lim, downlim * downfac, 0, true);
 
 			//double vz = player.viewz - pos.z;
 		}
@@ -573,10 +573,10 @@ class ToM_AlicePlayer : DoomPlayer
 				// Compare velocity to controls. If the player is pressing
 				// movement keys in the opposite direction of their
 				// current movement, let them brake:
-				let hvel = ToM_UtilsP.RelativeToGlobalCoords(self, vel, false);
+				let hvel = ToM_Utils.RelativeToGlobalCoords(self, vel, false);
 				vector2 movevel;
-				moveVel.x = ToM_UtilsP.LinearMap(cmd.forwardmove, -ToM_MaxMoveInput, ToM_MaxMoveInput, -hvel.x, hvel.x, true);
-				moveVel.y = ToM_UtilsP.LinearMap(cmd.sidemove, -ToM_MaxMoveInput, ToM_MaxMoveInput, -hvel.y, hvel.y, true);
+				moveVel.x = ToM_Utils.LinearMap(cmd.forwardmove, -ToM_MaxMoveInput, ToM_MaxMoveInput, -hvel.x, hvel.x, true);
+				moveVel.y = ToM_Utils.LinearMap(cmd.sidemove, -ToM_MaxMoveInput, ToM_MaxMoveInput, -hvel.y, hvel.y, true);
 				if ( (movevel.x > 0 && hvel.x < 0 || movevel.x < 0 && hvel.x > 0) || (movevel.x > 0 && hvel.x < 0 || movevel.x < 0 && hvel.x > 0) )
 				{
 					//console.printf("forwardmove/sidemove: %.2f, %.2f | vel.xy: %.2f, %.2f", movevel.x, movevel.y, hvel.x, hvel.y);

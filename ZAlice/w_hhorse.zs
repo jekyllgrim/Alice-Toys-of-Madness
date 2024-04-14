@@ -44,7 +44,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			range, 
 			aimPch, 
 			TRF_NOSKY|TRF_SOLIDACTORS, 
-			ToM_UtilsP.GetPlayerAtkHeight(PlayerPawn(self)), 
+			ToM_Utils.GetPlayerAtkHeight(PlayerPawn(self)), 
 			data: hit
 		);
 		
@@ -121,7 +121,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		//int fallAttackForce = (abs(vel.x) + abs(vel.y)) * 0.5 + abs(vel.z);
 		
 		int rad = 128 + fallAttackForce;
-		vector3 ipos = ToM_UtilsP.RelativeToGlobalCoords(self, (radius + 8, 0, 0));
+		vector3 ipos = ToM_Utils.RelativeToGlobalCoords(self, (radius + 8, 0, 0));
 		ipos.z = floorz;
 		let hi = Spawn("ToM_HorseImpactSpot", ipos);
 		if (hi)
@@ -129,8 +129,8 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			hi.target = self;
 			hi.A_Explode(80 + fallAttackForce, rad, 0);
 			hi.A_StartSound("weapons/hhorse/hitfloor", CHAN_7);
-			double qints = ToM_UtilsP.LinearMap(fallAttackForce, 4, 32, 3, 8, true);
-			int qdur = ToM_UtilsP.LinearMap(fallAttackForce, 4, 32, 15, 40, true);
+			double qints = ToM_Utils.LinearMap(fallAttackForce, 4, 32, 3, 8, true);
+			int qdur = ToM_Utils.LinearMap(fallAttackForce, 4, 32, 15, 40, true);
 			hi.A_Quake(qints, qdur, 0, rad, sfx: "");
 			for (int i = random[sfx](12,16); i > 0; i--)
 			{
@@ -181,7 +181,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			}
 		}
 
-		int reps = ToM_UtilsP.LinearMap(fallAttackForce, 40, 1, 5, 1, true);
+		int reps = ToM_Utils.LinearMap(fallAttackForce, 40, 1, 5, 1, true);
 		for (reps; reps > 0; reps--)
 		{
 			let iring = ToM_HorseImpact(Spawn("ToM_HorseImpact", ipos));

@@ -88,7 +88,7 @@ class ToM_Cards : ToM_BaseWeapon
 		double ang = ANGLESTEP * Clamp(invoker.handVertStep, 1, CARDSTEPS);
 		vector2 coords = (cos(ang) * CARDRAD, sin(ang) * CARDRAD);
 		A_WeaponOffset(coords.x, WEAPONTOP + coords.y);
-		double sc = ToM_UtilsP.LinearMap(coords.y, -CARDRAD, CARDRAD, 1, 1.06);
+		double sc = ToM_Utils.LinearMap(coords.y, -CARDRAD, CARDRAD, 1, 1.06);
 		A_OverlayScale(OverlayID(), sc, sc, WOF_INTERPOLATE);
 	}
 	
@@ -122,7 +122,7 @@ class ToM_Cards : ToM_BaseWeapon
 		let it = BlockThingsIterator.Create(self, dist);
 		Actor closest;
 		double closestDist = dist;
-		double atkheight = ToM_UtilsP.GetPlayerAtkHeight(player.mo);
+		double atkheight = ToM_Utils.GetPlayerAtkHeight(player.mo);
 		vector3 eyes = pos + (0,0,atkheight);
 		while (it.Next())
 		{
@@ -137,7 +137,7 @@ class ToM_Cards : ToM_BaseWeapon
 			if (coords.z > closestDist)
 				continue;
 			
-			double angFac = ToM_UtilsP.LinearMap(coords.z + radius + t.radius, 0, dist, 1.0, 0.1);
+			double angFac = ToM_Utils.LinearMap(coords.z + radius + t.radius, 0, dist, 1.0, 0.1);
 			if (abs(coords.x) > aimAngle*angFac || abs(coords.y) > aimAngle*angFac)
 				continue;
 			
@@ -335,7 +335,7 @@ class ToM_Cards : ToM_BaseWeapon
 		bool ret = super.TryPickup(toucher);
 		if (ret)
 		{
-			vector3 catpos = ToM_UtilsP.FindRandomPosAround(toucher.pos, gridrad: 512, mindist: 80, fovlimit: 45, viewangle: toucher.angle);
+			vector3 catpos = ToM_Utils.FindRandomPosAround(toucher.pos, gridrad: 512, mindist: 80, fovlimit: 45, viewangle: toucher.angle);
 			if (Level.IsPointInLevel(catpos))
 			{
 				let cat = Spawn("ToM_CheshireCat_Talk", catpos);
@@ -593,11 +593,11 @@ class ToM_CardProjectile : ToM_StakeProjectile
 	{
 		FSpawnParticleParams trail;
 
-		vector3 projpos = ToM_UtilsP.RelativeToGlobalCoords(self, (-TRAILOFS, -TRAILOFS, 0), isPosition: false);
+		vector3 projpos = ToM_Utils.RelativeToGlobalCoords(self, (-TRAILOFS, -TRAILOFS, 0), isPosition: false);
 		CreateParticleTrail(trail, ppos + projpos, trailvel);
 		Level.SpawnParticle(trail);
 		
-		projpos = ToM_UtilsP.RelativeToGlobalCoords(self, (-TRAILOFS, TRAILOFS, 0), isPosition: false);
+		projpos = ToM_Utils.RelativeToGlobalCoords(self, (-TRAILOFS, TRAILOFS, 0), isPosition: false);
 		CreateParticleTrail(trail, ppos + projpos, trailvel);
 		Level.SpawnParticle(trail);
 	}

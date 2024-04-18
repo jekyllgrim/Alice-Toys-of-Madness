@@ -288,6 +288,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			if (invoker.charge >= ES_FULLCHARGE)
 			{
 				A_StopCharge();
+				A_PlayerAttackAnim(-1, 'attack_eyestaff', 30, flags: SAF_LOOP);
 				return ResolveState("FireBeam");
 			}
 			if (PressingAttackButton(holdCheck:PAB_HELD))
@@ -301,12 +302,14 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			A_StopCharge();
 			player.SetPsprite(PSP_Flash, ResolveState("FlashEnd"));
 			A_StartSound("weapons/eyestaff/chargeoff", CHAN_WEAPON);
+			A_PlayerAttackAnim(1, 'attack_eyestaff');
 			return ResolveState("Ready");
 		}
 		goto Ready;
 	FireBeam:
 		JEYC A 2
 		{
+			A_PlayerAttackAnim(-1, 'attack_eyestaff', 30, flags: SAF_LOOP|SAF_NOOVERRIDE);
 			A_EyestaffFlash("BeamFlash", frandom[eye](0.3, 1));
 			A_StartSound("weapons/eyestaff/beam", CHAN_WEAPON, CHANF_LOOPING);
 			A_EyestaffRecoil();
@@ -356,7 +359,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		JEYC G -1 bright;
 		stop;
 	AltFire:
-		//TNT1 A 0 A_OverlayPivot(OverlayID(), 1, 1);
+		TNT1 A 0 A_PlayerAttackAnim(-1, 'attack_eyestaff_alt_start');
 		JEYC AAABBBCCCDDDEEE 1 
 		{
 			A_WeaponOffset(-5, 1.4, WOF_ADD);
@@ -368,6 +371,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			if (!PressingAttackButton())
 			{
 				A_RemoveAimCircle();
+				A_PlayerAttackAnim(8, 'attack_eyestaff_alt_end', 40);
 				return ResolveState("AltFireEndFast");
 			}
 			return ResolveState(null);
@@ -375,6 +379,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	AltCharge:
 		JEYC EE 1
 		{
+			A_PlayerAttackAnim(-1, 'attack_eyestaff_alt_start', startframe: 6);
 			A_StartSound("weapons/eyestaff/charge2", CHAN_WEAPON, CHANF_LOOPING);
 			A_AimCircle(400);
 			A_EyestaffFlash("AltFlash");
@@ -387,6 +392,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		TNT1 A 0 A_StopSound(CHAN_WEAPON);
 		JEYC E 2
 		{
+			A_PlayerAttackAnim(-1, 'attack_eyestaff_alt_start', startframe: 6);
 			invoker.charge--;
 			invoker.altCharge++;
 			A_EyestaffFlash("AltFlash");
@@ -400,6 +406,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	AltFireEnd:
 		JEYC E 15
 		{
+			A_PlayerAttackAnim(17, 'attack_eyestaff_alt_end', 25);
 			A_SpawnSkyMissiles();
 			A_StopCharge();
 			player.SetPsprite(PSP_Flash, ResolveState("Null"));

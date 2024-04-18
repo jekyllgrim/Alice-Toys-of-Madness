@@ -183,6 +183,7 @@ Model "ToM_LaserBeam"
 	Model 0 "beam.md3"
 	Skin 0 "beam.png"
 	USEACTORPITCH
+	DONTCULLBACKFACES
 	
 	FrameIndex M000 A 0 0
 }
@@ -193,6 +194,7 @@ Model "ToM_EyestaffBeam"
 	Model 0 "beam_cyl.md3"
 	Skin 0 "beam_cyl.png"
 	USEACTORPITCH
+	DONTCULLBACKFACES
 	
 	FrameIndex M000 A 0 0
 }

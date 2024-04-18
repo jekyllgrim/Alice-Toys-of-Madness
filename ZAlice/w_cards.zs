@@ -472,10 +472,14 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 		loop;
 	Fire:
-		TNT1 A 0 A_StopPSpriteReset();
+		TNT1 A 0 
+		{
+			A_StopPSpriteReset();
+		}
 	Hold:
 		TNT1 A 0 
 		{
+			A_PlayerAttackAnim(-1, 'attack_cards', 30, endframe: 2, interpolateTics: 6);
 			A_FireCardLayer();
 			A_OverlayPivot(OverlayID(), 0, 0);
 			vector2 ofs;
@@ -494,12 +498,17 @@ class ToM_Cards : ToM_BaseWeapon
 			A_CheckReload();
 			A_Refire();
 		}
-		TNT1 A 0 A_ResetPSprite(OverlayID(), 4);
+		TNT1 A 0 
+		{
+			A_ResetPSprite(OverlayID(), 4);
+			A_PlayerAttackAnim(1, 'attack_cards', 30, endframe: 2);
+		}
 		APCR A 4 A_WeaponReady(WRF_NOBOB); 
 		goto Ready;
 	AltFire:
 		APCR A 1 A_RemoveCardLayers();
 	AltHold:
+		TNT1 A 0 A_PlayerAttackAnim(34, 'attack_cards', 24);
 		APCR AIIJJKK 1;
 		APCR LLLL 1
 		{

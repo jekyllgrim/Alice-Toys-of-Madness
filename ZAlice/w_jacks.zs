@@ -196,6 +196,7 @@ class ToM_Jacks : ToM_BaseWeapon
 		AJCK OPQRST 2 A_WeaponReady(WRF_NOFIRE);
 		goto Ready;
 	Fire:
+		TNT1 A 0 A_PlayerAttackAnim(30, 'attack_knife_alt', 30);
 		AJC1 BC 2;
 		AJC1 DDEEFF 1 A_WeaponOffset(2.5, 1, WOF_ADD);
 		AJC1 GGG 1 A_WeaponOffset(-20, 0, WOF_ADD);
@@ -224,6 +225,7 @@ class ToM_Jacks : ToM_BaseWeapon
 		}
 		goto Ready;
 	Altfire:
+		TNT1 A 0 A_PlayerAttackAnim(32, 'attack_cards', 25);
 		AJCK GGGHHH 1 A_WeaponOffset(-4, 1.5, WOF_ADD);
 		AJCK IIIIIJ 1 A_WeaponOffset(-1.5, 1.5, WOF_ADD);
 		AJCK KK 1 A_WeaponOffset(5, -1, WOF_ADD);

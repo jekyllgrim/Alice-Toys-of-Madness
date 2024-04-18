@@ -587,10 +587,14 @@ class ToM_Megasphere : ToM_HealthPickup
 		ToM_Health.flashAlpha 0.4;
 	}
 	
-	override bool TryPickup(in out Actor toucher)
+	override bool Use(bool pickup)
 	{
-		toucher.GiveInventory("ToM_GoldArmor", 1);
-		return super.TryPickup(toucher);
+		if (owner)
+		{
+			owner.GiveInventory("ToM_GoldArmor", 1);
+			return true;
+		}
+		return false;
 	}
 	
 	override string GetPickupNote()

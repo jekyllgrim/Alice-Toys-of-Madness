@@ -490,7 +490,6 @@ class ToM_GrowthPotionEffect : Powerup
 
 	protected double prevHeight;
 	protected vector2 prevScale;
-	protected double prevSpeed;
 	protected double prevViewHeight;
 	protected double prevAttackZOffset;
 	protected vector2 prevWeaponScale;
@@ -499,7 +498,6 @@ class ToM_GrowthPotionEffect : Powerup
 	protected double prevjumpz;
 	protected double prevGravity;
 	
-	protected double targetSpeed;
 	protected double targetHeight;
 	protected double targetViewHeight;
 	protected double targetAttackZOffset;
@@ -560,7 +558,6 @@ class ToM_GrowthPotionEffect : Powerup
 		// record current values:
 		prevHeight = owner.height;
 		prevScale = owner.scale;
-		prevSpeed = owner.speed;
 		prevViewHeight = owner.player.viewHeight;
 		prevAttackZOffset = owner.player.mo.AttackZOffset;
 		
@@ -752,6 +749,7 @@ class ToM_GrowthPotionEffect : Powerup
 			//pmo.A_SetSize(pmo.radius, prevHeight);
 			pmo.scale = prevScale;
 			owner.player.desiredFov = prevZoom;
+			owner.speed /= SPEEDFACTOR;
 			for(PSprite psp = player.psprites; psp; psp = psp.Next)
 			{
 				if (psp)
@@ -759,7 +757,6 @@ class ToM_GrowthPotionEffect : Powerup
 					psp.baseScale = prevWeaponScale;
 				}
 			}
-			pmo.speed = prevSpeed;
 			Destroy();
 		}
 	}

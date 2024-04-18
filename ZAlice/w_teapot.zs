@@ -319,7 +319,11 @@ class ToM_Teapot : ToM_BaseWeapon
 		TNT1 A 1 A_PickReady;
 		wait;
 	Fire:
-		TNT1 A 0 A_TeapotFire;
+		TNT1 A 0 
+		{
+			A_TeapotFire();
+			A_PlayerAttackAnim(35, 'attack_teapot', 20);
+		}
 		TPOT CFG 1 
 		{
 			A_WeaponOffset(4, 4, WOF_ADD);
@@ -407,6 +411,7 @@ class ToM_Teapot : ToM_BaseWeapon
 			{
 				return ResolveState("AltFireEnd");
 			}
+			A_PlayerAttackAnim(-1, 'attack_teapot', 10, endFrame:2, flags:SAF_LOOP|SAF_NOOVERRIDE);
 			
 			let psp = Player.FindPSprite(OverlayID());
 			A_FireSteam();
@@ -428,6 +433,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		{
 			A_StartSound("weapons/teapot/discharge", CHAN_WEAPON, volume: 0.4);
 			A_ResetPSprite(OverlayID(), 6);
+			A_PlayerAttackAnim(1, 'attack_teapot', 0);
 		}
 		TPOT PO 3;
 		TNT1 A 0 A_PickReady();
@@ -464,7 +470,7 @@ class ToM_Teapot : ToM_BaseWeapon
 class ToM_TeaBurnControl : ToM_ControlToken 
 {
 	ToM_ActorLayer burnlayer;
-	protected uint prevtrans;
+	protected TranslationID prevtrans;
 	
 	Default
 	{

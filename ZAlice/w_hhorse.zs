@@ -129,8 +129,8 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			hi.target = self;
 			hi.A_Explode(80 + fallAttackForce, rad, 0);
 			hi.A_StartSound("weapons/hhorse/hitfloor", CHAN_7);
-			double qints = ToM_Utils.LinearMap(fallAttackForce, 4, 32, 3, 8, true);
-			int qdur = ToM_Utils.LinearMap(fallAttackForce, 4, 32, 15, 40, true);
+			double qints = ToM_Utils.LinearMap(fallAttackForce, 4, 32, 1, 4, true);
+			int qdur = ToM_Utils.LinearMap(fallAttackForce, 4, 32, 10, 30, true);
 			hi.A_Quake(qints, qdur, 0, rad, sfx: "");
 			for (int i = random[sfx](12,16); i > 0; i--)
 			{
@@ -249,10 +249,15 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		{
 			A_ResetPSprite();
 			invoker.combo++;
-			if (invoker.combo <= 1)
+			if (invoker.combo <= 1) {
+				A_PlayerAttackAnim(30, 'attack_horse', 25);
 				return ResolveState("RightSwing");
-			if (invoker.combo == 2)
+			}
+			if (invoker.combo == 2) {
+				A_PlayerAttackAnim(30, 'attack_horse', 25);
 				return ResolveState("LeftSwing");
+			}
+			A_PlayerAttackAnim(40, 'attack_horse', 20);
 			return ResolveState("Overhead");
 		}
 	RightSwing:
@@ -406,7 +411,11 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		stop;
 	Altfire:
-		TNT1 A 0 A_StartJumpAttack();
+		TNT1 A 0 
+		{
+			A_StartJumpAttack();
+			A_PlayerAttackAnim(-1, 'attack_horse_alt', 30);//, loopframe: 9, flags: SAF_LOOP);
+		}
 		HHRS KKKKLLLL 1 
 		{
 			A_WeaponOffset(1.2, -4, WOF_ADD);
@@ -451,6 +460,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			if (waterlevel >= 2)
 			{
 				A_StopSound(CHAN_BODY);
+				self.tics = 1;
 				return ResolveState("AltAttackEnd");
 			}
 			if (!player.onGround)
@@ -459,7 +469,11 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			}
 			return ResolveState(null);
 		}
-		TNT1 A 0 A_LandAttack();
+		TNT1 A 0 
+		{
+			A_LandAttack();
+			A_PlayerAttackAnim(45, 'attack_horse_jump_end', 15);
+		}
 		HHRS OOOO 1 A_WeaponOffset(3, -6, WOF_ADD);
 	AltAttackEnd:
 		HHRS OOOOOOOOO 1 

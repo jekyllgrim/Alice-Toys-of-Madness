@@ -138,6 +138,18 @@ class ToM_BaseWeapon : Weapon abstract
 	{
 		return owner.CountInv("ToM_GrowthPotionEffect") ? ToM_GrowthPotionEffect.GROWZOOM : 1;
 	}
+
+	action void A_PlayerAttackAnim(int animTics, Name animName, double framerate = -1, int startFrame = -1, int loopFrame= -1, int endFrame = -1, int interpolateTics = -1, int flags = 0)
+	{
+		let player = self.player;
+		let alice = ToM_AlicePlayer(player.mo);
+		if (alice)
+		{
+			alice.SetState(alice.MissileState);
+			alice.A_SetTics(animTics);
+			alice.SetAnimation(animName, framerate, startFrame, loopFrame, endFrame, interpolateTics, flags);
+		}
+	}
 	
 	action void A_AttackZoom(double step = 0.001, double limit = 0.03, double jitter = 0.002)
 	{

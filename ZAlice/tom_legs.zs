@@ -1,7 +1,6 @@
 
 class ToM_KickWeapon : CustomInventory
 {
-	protected double prekickspeed;
 	protected bool wasKicking;
 	protected ToM_AlicePlayer alice;
 	protected State s_standing;
@@ -201,7 +200,7 @@ class ToM_KickWeapon : CustomInventory
 		// interrupted for whatever reason:
 		if (wasKicking && InStateSequence(s_prevstate, s_kick) && !InStateSequence(plegs.curstate, s_kick))
 		{
-			alice.speed = prekickspeed;
+			owner.speed /= 0.1;
 			ResetKick();
 			wasKicking = false;
 		}
@@ -320,7 +319,6 @@ class ToM_KickWeapon : CustomInventory
 			TNT1 A 0
 			{
 				invoker.wasKicking = true;
-				invoker.prekickspeed = speed;
 				speed *= 0.1;
 				if (FindInventory('ToM_GrowthPotionEffect'))
 				{
@@ -334,7 +332,7 @@ class ToM_KickWeapon : CustomInventory
 			FEK1 FGHIJLKM 1;
 			TNT1 A 0 
 			{
-				speed = invoker.prekickspeed;
+				speed /= 0.1;
 				invoker.wasKicking = false;
 			}
 			FEK1 NOPQR 1;
@@ -346,7 +344,7 @@ class ToM_KickWeapon : CustomInventory
 			FES2 ABCD 1;
 			TNT1 A 0 
 			{
-				speed = invoker.prekickspeed;
+				speed /= 0.1;
 				invoker.wasKicking = false;
 			}
 			FES2 EFGH 1;

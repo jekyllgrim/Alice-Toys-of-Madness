@@ -178,6 +178,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 			A_StartSound("weapons/pgrinder/grindloop", CHAN_7, CHANF_LOOPING);
 			A_StartSound("weapons/pgrinder/windup", CHAN_WEAPON);
 			player.refire++;
+			A_PlayerAttackAnim(-1, 'attack_peppergrinder', 30, flags: SAF_LOOP|SAF_NOOVERRIDE);
 		}
 	Hold:
 		PPGR Z 5
@@ -200,6 +201,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 				let psp = player.FindPSprite(APSP_Righthand);
 				if (psp)
 					psp.Destroy();
+				A_PlayerAttackAnim(1, 'attack_peppergrinder', 0);
 				return ResolveState("Ready");
 			}
 			return ResolveState(null);
@@ -211,6 +213,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 				let psp = player.FindPSprite(APSP_Righthand);
 				if (psp)
 					psp.Destroy();
+				A_PlayerAttackAnim(1, 'attack_peppergrinder', 0);
 				return ResolveState("Ready");
 			}
 			A_ReFire();
@@ -296,6 +299,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		{
 			A_Overlay(APSP_Righthand, "Right.Chargealt");
 			invoker.crunchpitch = 0.9;
+			A_PlayerAttackAnim(40, 'attack_peppergrinder_alt', 30);
 		}
 		PPGR Z 1 
 		{

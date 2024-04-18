@@ -79,6 +79,7 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 		{
 			A_StartSound("weapons/blunderbuss/fire", CHAN_AUTO);
 			A_StartSound("weapons/blunderbuss/pull", CHAN_AUTO);
+			A_PlayerAttackAnim(80, 'attack_blunderbuss', 30);
 		}
 		BBUS BBBBBBBBBBBBBBBBBBBBBBBBB 1
 		{

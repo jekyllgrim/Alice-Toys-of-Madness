@@ -486,7 +486,8 @@ class ToM_Knife : ToM_BaseWeapon
 	Fire:
 		TNT1 A 0 
 		{
-			A_StopPSpriteReset();	
+			A_StopPSpriteReset();
+			A_PlayerAttackAnim(15, 'attack_knife', 40);
 			invoker.combo++;
 			if (invoker.combo % 5 == 0)
 			{
@@ -607,6 +608,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_ResetPSprite(OverlayID());
 			A_SetKnifeSprite("VKNF", "VKRF");
 			A_OverlayPivot(OverlayID(), 0.9, 0.9);
+			A_PlayerAttackAnim(20, 'attack_knife_alt', 40);
 			return ResolveState(null);
 		}
 		#### HHH 1

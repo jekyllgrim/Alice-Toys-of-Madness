@@ -1,3 +1,4 @@
+
 class ToM_LaserBeam : Actor
 {
 	Color shade;
@@ -19,17 +20,17 @@ class ToM_LaserBeam : Actor
 	bool trackPSprite;
 	uint trackPSLayer;
 	
-	bool followAngles;
+	bool followAngles, continuousHit;
 	Property TrackAngles : followAngles;
 	Property TrackWeapon : trackPSprite, trackPSLayer;
 	Property AimFromWeapon : aimWithWeapon; 
 	Property LaserColor : shade;
+	Property ContinuousImpact : continuousHit;
 	
 	Default
 	{
 		Scale 1.0;
 		+NOINTERACTION;
-		+NOBLOCKMAP
 		+INTERPOLATEANGLES;
 		RenderStyle "AddShaded";
 		
@@ -37,6 +38,7 @@ class ToM_LaserBeam : Actor
 		ToM_LaserBeam.TrackAngles true;				// Update with player's view.
 		ToM_LaserBeam.TrackWeapon true, PSP_WEAPON; // Offset by PSprite offsets.
 		ToM_LaserBeam.AimFromWeapon true;			// Fire from weapon "muzzle", only used if TrackWeapon is enabled.
+		ToM_LaserBeam.ContinuousImpact false; 	// If true, calls the OnImpact function every tick the laser is enabled, instead of just once after the laser is fired.
 	}
 	
 	static ToM_LaserBeam Create(Actor source, double fw, double lr, double ud, double angleOffs = 0, double pitchOffs = 0, double maxDist = 2048, class<ToM_LaserBeam> type = "ToM_LaserBeam")
@@ -121,8 +123,8 @@ class ToM_LaserBeam : Actor
 		bInvisible = ontics < 3;
 		if(shade) SetShade(shade);
 		
-		if(ontics == 2)
-		{
+		if( ontics == 2 || (ontics >= 2 && continuousHit) )
+		{ 
 			OnImpact(hitData.hitLocation, hitdata.hitActor);
 		}
 				
@@ -140,9 +142,11 @@ class ToM_LaserBeam : Actor
 		}
 		
 		// Update laser and tracking.
-		curOffs = ToM_BeamzMath.offsetToGlobal(
-			source.angle, source.pitch, source.roll,
-			offsets.x, offsets.y + bob.x, offsets.z - bob.y
+		let aimDir = Quat.FromAngles(source.angle, source.pitch, source.roll);
+		curOffs = aimDir * (
+			offsets.x, 
+		  -(offsets.y + bob.x), 
+			offsets.z - bob.y
 		);
 		
 		vector3 finalPos = level.vec3offset(getSourcePos(), curOffs);
@@ -174,14 +178,12 @@ class ToM_LaserBeam : Actor
 			A_SetPitch(toPitch+90, SPF_INTERPOLATE);
 		}
 		
-		// Credits: This interpolation magic was gleaned from Kodi's KLazer library
-		// code available in PainSlayer 
-		// (https://github.com/jekyllgrim/Painslayer/blob/master/ZPainkiller/klazer/KLAZ_Beam.zsc#L114)
-		
-		// Odd interpolation magic.
-		double prevAngle = source.angle;
-		source.A_SetAngle(source.angle + 0.001, SPF_INTERPOLATE);
-		source.A_SetAngle(prevAngle, SPF_INTERPOLATE);
+		// View Interpolation.	
+		if(source.player) 
+		{
+			if(source.player.cheats & CF_PREDICTING) return;
+			source.player.cheats |= CF_INTERPVIEW;
+		}
 		
 		// Do linetrace to determine aim distance.
 		double zoffs = source.player ? (source.player.viewz-source.pos.z) : source.height * 0.5;
@@ -199,6 +201,6 @@ class ToM_LaserBeam : Actor
 	{
 		Spawn:
 			M000 A -1 Bright;
-		stop;
+			stop;
 	}
 }

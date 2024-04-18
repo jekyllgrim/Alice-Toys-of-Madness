@@ -14,6 +14,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	vector2 altChargeOfs;
 	ToM_ESAimingCircle aimCircle;
 	vector3 aimCirclePos;
+	ToM_OuterBeamPos outerBeamPos;
 	
 	Default
 	{
@@ -51,9 +52,14 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			invoker.beam2.shade = "ffee00";
 			invoker.beam2.scale.x = 1.6;
 		}
+		if (!invoker.outerBeamPos)
+		{
+			invoker.outerBeamPos = ToM_OuterBeamPos(Spawn('ToM_OuterBeamPos', pos));
+			invoker.outerBeamPos.master = self;
+		}
 		if (!invoker.outerBeam)
 		{
-			invoker.outerBeam = ToM_EyestaffBeam(ToM_LaserBeam.Create(self, 32, 4.2, 2, type: "ToM_EyestaffBeam"));
+			invoker.outerBeam = ToM_EyestaffBeam(ToM_LaserBeam.Create(invoker.outerBeamPos, 0, 0, 0, type: "ToM_EyestaffBeam"));
 			invoker.outerBeam.master = self;
 			invoker.outerBeam.bMASTERNOSEE = true;
 		}
@@ -61,6 +67,10 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		invoker.beam1.SetEnabled(true);
 		invoker.beam2.SetEnabled(true);
 		invoker.outerBeam.SetEnabled(true);
+		invoker.outerBeam.source = invoker.outerBeamPos;
+		FLineTraceData bd;
+		LineTrace(angle, PLAYERMISSILERANGE, pitch, TRF_SOLIDACTORS, offsetz: ToM_Utils.GetPlayerAtkHeight(player.mo), data: bd);
+		invoker.outerBeam.startTracking(bd.HitLocation);
 	}
 	
 	action void A_StopBeam()
@@ -76,6 +86,10 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		if (invoker.outerBeam)
 		{
 			invoker.outerBeam.SetEnabled(false);
+		}
+		if (invoker.outerBeamPos)
+		{
+			invoker.outerBeamPos.Destroy();
 		}
 	}
 	
@@ -266,6 +280,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		JEYC A 1
 		{
 			A_EyestaffFlash("BeamFlash");
+			A_PlayerAttackAnim(-1, 'attack_eyestaff', 30, endframe: 1, flags: SAF_LOOP|SAF_NOOVERRIDE);
 		}
 		TNT1 A 0
 		{
@@ -314,6 +329,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	FireEnd:
 		TNT1 A 0 
 		{
+			A_PlayerAttackAnim(20, 'attack_eyestaff_alt_end', 30, interpolateTics:6);
 			A_StopBeam();
 			A_StopSound(CHAN_WEAPON);
 			player.SetPsprite(PSP_Flash, ResolveState("FlashEnd"));
@@ -479,8 +495,10 @@ class ToM_EyestaffBeam : ToM_LaserBeam
 	{
 		vector3 srcPos = (source.pos.xy, source.pos.z + (source.height * 0.5));
 		// bob only first-person views:
-		if(source.player && !bMASTERNOSEE) 
+		if(!bMASTERNOSEE && source.player && source.player.camera == source && !(source.player.cheats & CF_CHASECAM)) 
+		{
 			srcPos.z = source.player.viewz;
+		}
 		
 		return srcPos;
 	}
@@ -824,5 +842,27 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 			return ResolveState(null);
 		}
 		wait;
+	}
+}
+
+class ToM_OuterBeamPos : ToM_BaseActor
+{
+	Default
+	{
+		+NOBLOCKMAP
+	}
+
+	override void Tick()
+	{
+		if (!master)
+		{
+			Destroy();
+			return;
+		}
+
+		Vector3 ofs;
+		ofs.xy = Actor.RotateVector((master.radius+14, -9.5), master.angle);
+		ofs.z = master.height*0.46;
+		SetOrigin(master.pos + ofs + master.vel, true);
 	}
 }

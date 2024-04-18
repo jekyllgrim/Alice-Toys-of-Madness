@@ -1,4 +1,4 @@
-version "4.11"
+version "4.12"
 
 #include "ZAlice/tom_constants.zs"
 #include "ZAlice/tom_utils.zs"
@@ -26,7 +26,6 @@ version "4.11"
 #include "ZAlice/tom_debugstuff.zs"
 
 #include "ZAlice/StatusBarScreen/StatusScreen_base.zsc"
-#include "ZAlice/GZBeamz/laser_math.zsc"
 #include "ZAlice/GZBeamz/laser_base.zsc"
 #include "ZAlice/ToM_Gutamatics/GlobalMaths.zsc"
 #include "ZAlice/ToM_Gutamatics/Matrix.zsc"

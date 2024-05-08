@@ -229,6 +229,9 @@ class ToM_Mainhandler : EventHandler
 			e.Replacement = "ToM_Blunderbuss"; 
 			break;
 			
+		case 'ArmorBonus':
+			e.Replacement = "ToM_ArmorBonus"; 
+			break;
 		case 'GreenArmor':
 			e.Replacement = "ToM_SilverArmor"; 
 			break;
@@ -252,6 +255,9 @@ class ToM_Mainhandler : EventHandler
 			break;
 		case 'Blursphere':
 			e.Replacement = "ToM_Invisibility"; 
+			break;
+		case 'InvulnerabilitySphere':
+			e.Replacement = "ToM_GrowthPotion"; 
 			break;
 
 		case 'Clip':

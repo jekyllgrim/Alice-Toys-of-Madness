@@ -1,13 +1,6 @@
 class ToM_HobbyHorse : ToM_BaseWeapon
 {
 	int combo;
-
-	protected array < Actor > swingVictims; //actors hit by the attack
-	protected vector2 swingOfs;
-	protected vector2 swingStep;
-	protected int swingSndCounter; //delay the attack sound...
-	const SWINGSTAGGER = 8; // ...by this much
-
 	int fallAttackForce;
 	
 	Default
@@ -19,79 +12,31 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		Weapon.slotnumber 1;
 		Weapon.slotpriority 1;
 	}
-	
-	// Set up the swing: initial coords and the step:
-	action void A_PrepareSwing(double startX, double startY, double stepX, double stepY)
+
+	action void A_PrepareHorseSwing(Vector2 eye1start, Vector2 eye2start)
 	{
-		invoker.swingVictims.Clear();
-		invoker.swingOfs = (startX, startY);
-		invoker.swingStep = (stepX, stepY);
+		A_PrepareSwing(eye1start.x, eye1start.y, 0);
+		A_PrepareSwing(eye2start.x, eye2start.y, 1);
 	}
 	
 	// Do the attack and move the offset one step as defined above:
-	action void A_SwingAttack(int damage, double range = 64, class<Actor> pufftype = 'ToM_HorsePuff')
+	action void A_HorseSwing(int damage, double stepX, double stepY)
 	{
-		// Get the screen-relative angle/pitch using Gutamatics:
-		ToM_GM_Quaternion view = ToM_GM_Quaternion.createFromAngles(angle, pitch, roll);
-		ToM_GM_Quaternion ofs = ToM_GM_Quaternion.createFromAngles(invoker.swingOfs.x, invoker.swingOfs.y, 0);
-		ToM_GM_Quaternion res = view.multiplyQuat(ofs);
-		double aimAng, aimPch;
-		[aimAng, aimPch] = res.toAngles();
-		
-		FLineTraceData hit;
-		LineTrace(
-			aimAng, 
-			range, 
-			aimPch, 
-			TRF_NOSKY|TRF_SOLIDACTORS, 
-			ToM_Utils.GetPlayerAtkHeight(PlayerPawn(self)), 
-			data: hit
-		);
-		
-		let type = hit.HitType;
-		// Do this if we hit geometry:
-		if (type == TRACE_HitFloor || type == TRACE_HitCeiling || type == TRACE_HitWall)
-		{
-			if (invoker.swingSndCounter <= 0)
-			{
-				invoker.swingSndCounter = SWINGSTAGGER;
-				A_StartSound("weapons/hhorse/hitwall", CHAN_AUTO);
-				int val = 1 * invoker.combo;
-				A_QuakeEx(val, val, val, 6, 0, 32, "");
-			}
-		}
-		
-		// Do this if we hit an actor:
-		else if (type == TRACE_HitActor)
-		{
-			let victim = hit.HitActor;
-			// Check the victim is valid and not yet in the array:
-			if (victim && (victim.bSHOOTABLE || victim.bSOLID) && victim.health > 0 && invoker.swingVictims.Find(victim) == invoker.swingVictims.Size())
-			{
-				invoker.swingVictims.Push(victim);
-				// Can be damaged:
-				if (!victim.bDORMANT && victim.bSHOOTABLE)
-				{
-					victim.DamageMobj(self, self, damage, 'normal', angle: self.angle + 180);
-					A_StartSound("weapons/hhorse/hitflesh", CHAN_WEAPON);
-					// Bleed:
-					if (!victim.bNOBLOOD)
-					{
-						victim.TraceBleed(damage, self);
-						victim.SpawnBlood(hit.HitLocation, AngleTo(victim), damage);
-					}
-				}
-				// Can't be damaged:
-				else
-					A_StartSound("weapons/hhorse/hitwall", CHAN_AUTO);
-			}
-		}
-		// Debug spot:
-		// let spot = Spawn("ToM_DebugSpot", hit.hitlocation);
-		// spot.A_SetHealth(1);
-		
-		// Add a step:
-		invoker.swingOfs += invoker.swingStep;
+		A_SwingAttack(damage, stepX, stepY,
+			range: 70, 
+			quakeIntensity: invoker.combo, 
+			solidSound: "weapons/hhorse/hitwall",
+			fleshsound: "weapons/hhorse/hitflesh",
+			pufftype: 'ToM_HorsePuff',
+			trailcolor: 0xFFDD0000,
+			trailsize: 15,
+			shrink: false,
+			id: 0);
+		A_SwingAttack(0, stepX, stepY,
+			range: 70, 
+			trailcolor: 0xFFDD0000,
+			trailsize: 15,
+			id: 1);
 	}
 
 	action void A_StartJumpAttack()
@@ -250,14 +195,14 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_ResetPSprite();
 			invoker.combo++;
 			if (invoker.combo <= 1) {
-				A_PlayerAttackAnim(30, 'attack_horse', 25);
+				A_PlayerAttackAnim(30, 'attack_horse', 15);
 				return ResolveState("RightSwing");
 			}
 			if (invoker.combo == 2) {
-				A_PlayerAttackAnim(30, 'attack_horse', 25);
+				A_PlayerAttackAnim(30, 'attack_horse', 15);
 				return ResolveState("LeftSwing");
 			}
-			A_PlayerAttackAnim(40, 'attack_horse', 20);
+			A_PlayerAttackAnim(40, 'attack_horse', 10);
 			return ResolveState("Overhead");
 		}
 	RightSwing:
@@ -274,26 +219,26 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
-			A_PrepareSwing(-25, -10, 14, 4);
+			A_PrepareHorseSwing((-25, -10), (-20, -20));
 			A_StartSound("weapons/hhorse/swing", CHAN_AUTO);
 			A_CameraSway(4, 0, 6);
 		}
 		HHRS BB 1 
 		{
-			A_SwingAttack(30);
+			A_HorseSwing(30, 14, 4);
 			A_WeaponOffset(-35, 12, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
-		TNT1 A 0 A_Overlay(APSP_Overlayer, "RightSwingTrail");
+		//TNT1 A 0 A_Overlay(APSP_Overlayer, "RightSwingTrail");
 		HHRS DD 1 
 		{
-			A_SwingAttack(30);
+			A_HorseSwing(30, 14, 4);
 			A_WeaponOffset(-50, 22, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		HHRS DDD 1 
 		{
-			A_SwingAttack(30);
+			A_HorseSwing(30, 14, 4);
 			A_WeaponOffset(-50, 22, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 4, WOF_ADD);
 		}
@@ -324,26 +269,26 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
-			A_PrepareSwing(25, -10, -15, 5);
+			A_PrepareHorseSwing((25, -10), (20, -20));
 			A_StartSound("weapons/hhorse/swing", CHAN_AUTO);
 			A_CameraSway(-4, 0, 6);
 		}
 		HHRS FF 1 
 		{
-			A_SwingAttack(30);
+			A_HorseSwing(30, -15, 5);
 			A_WeaponOffset(35, 12, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
-		TNT1 A 0 A_Overlay(APSP_Overlayer, "LeftSwingTrail");
+		//TNT1 A 0 A_Overlay(APSP_Overlayer, "LeftSwingTrail");
 		HHRS HH 1 
 		{
-			A_SwingAttack(30);
+			A_HorseSwing(30, -15, 5);
 			A_WeaponOffset(45, 18, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		HHRS HHH 1 
 		{
-			A_SwingAttack(30);
+			A_HorseSwing(30, -15, 5);
 			A_WeaponOffset(45, 18, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
@@ -376,21 +321,21 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
-			A_PrepareSwing(-5, -30, 1.5, 16);
+			A_PrepareHorseSwing((-2, -30), (-18, -30));
 			A_StartSound("weapons/hhorse/heavyswing", CHAN_AUTO);
 			A_CameraSway(0, 5, 7);
-			A_Overlay(APSP_Overlayer, "OverheadTrail");
+			//A_Overlay(APSP_Overlayer, "OverheadTrail");
 		}
 		HHRS NOO 1 
 		{
-			A_SwingAttack(60);
+			A_HorseSwing(60, 1.5, 16);
 			A_WeaponOffset(-24, 35, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.1, WOF_ADD);
 			A_ScalePSprite(OverlayID(), -0.003, -0.003, WOF_ADD);
 		}
 		HHRS OO 1 
 		{
-			A_SwingAttack(60);
+			A_HorseSwing(60, 1.5, 16);
 			A_WeaponOffset(-24, 35, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.1, WOF_ADD);
 			A_ScalePSprite(OverlayID(), -0.003, -0.003, WOF_ADD);
@@ -430,13 +375,14 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 
 		{
-			//A_PrepareSwing(-5, -30, 1.5, 16);
+			A_PrepareHorseSwing((-2, -30), (-18, -30));
 			A_StartSound("weapons/hhorse/altswing", CHAN_AUTO);
 			A_CameraSway(0, 5, 7);
 			//A_Overlay(APSP_Overlayer, "OverheadTrail");
 		}
 		HHRS NNNOOOOOOO 1 
 		{
+			A_HorseSwing(0, 0.5, 8);
 			A_WeaponOffset(-4, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.03, WOF_ADD);
 			A_ScalePSprite(OverlayID(), -0.001, -0.001, WOF_ADD);
@@ -449,7 +395,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			{
 				A_WeaponOffset(Clamp(psp.x-2, -68, 0), Clamp(psp.y+2, 32, 68), WOF_INTERPOLATE);
 			}
-			//invoker.fallAttackForce++;
+			A_HorseSwing(0, 0.05, 0.5);
 			if (tom_debugmessages)
 				console.printf("fall attack force: %d", invoker.fallAttackForce);
 			if (invoker.fallAttackForce > 25)

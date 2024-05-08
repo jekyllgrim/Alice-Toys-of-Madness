@@ -98,8 +98,8 @@ class ToM_Utils
 	static clearscope int PointOnLineSide( Vector2 p, Line l ) 
 	{
 		if ( !l ) return 0;
-		return (((p.y-l.v1.p.y)*l.delta.x+(l.v1.p.x-p.x)*l.delta.y) > double.epsilon);	
-		//return LevelLocals.PointOnLineSide(p, l);
+		//return (((p.y-l.v1.p.y)*l.delta.x+(l.v1.p.x-p.x)*l.delta.y) > double.epsilon);	
+		return LevelLocals.PointOnLineSide(p, l);
 	}
 	
 	//Returns -1 if the box (normally an actor's radius) intersects a linedef:
@@ -174,7 +174,7 @@ class ToM_Utils
 			let victim = tr.HitActor;
 			if (victim)
 			{
-				if(victim.bSHOOTABLE && victim.health > 0 && !victim.bINVULNERABLE)
+				if(victim.bSHOOTABLE && !victim.bDORMANT && victim.health > 0 && !victim.bINVULNERABLE)
 				{
 					return HT_ShootableThing, victim;
 				}
@@ -210,6 +210,65 @@ class ToM_Utils
 			endpos = tr.HitLocation;
 		}
 		return endpos;
+	}
+	
+	static void DrawParticlesFromTo(Vector3 from, Vector3 to, 
+									double density = 8, 
+									double size = 10, 
+									int lifetime = 10, 
+									double posOfs = 2, 
+									String texture = "",
+									Color pcolor = 0xFFCCCCFF,
+									int style = STYLE_Add,
+									bool shrink = false,
+									PlayerInfo playerSource = null)
+	{
+		let diff = Level.Vec3Diff(from, to); // difference between two points
+		let dir = diff.Unit(); // direction from point 1 to point 2
+		int steps = floor(diff.Length() / density); // how many steps to take:
+
+		// Generic particle properties:
+		posOfs = abs(posOfs);
+		FSpawnParticleParams pp;
+		if (texture)
+		{
+			TextureID tex = TexMan.CheckForTexture(texture);
+			if (tex && tex.IsValid())
+			{
+				pp.texture = tex;
+			}
+		}
+		pp.color1 = pcolor;
+		pp.flags = SPF_FULLBRIGHT|SPF_REPLACE;
+		pp.lifetime = lifetime;
+		pp.size = size;
+		pp.style = style;
+		pp.startalpha = 1;
+		if (!shrink)
+		{
+			pp.fadestep = -1;
+		}
+		else
+		{
+			pp.sizestep = -(pp.size / pp.lifetime);
+		}
+		if (playerSource && playerSource.mo)
+		{
+			pp.vel = playerSource.mo.vel;
+		}
+		Vector3 partPos = from; //initial position
+		for (int i = 0; i <= steps; i++)
+		{
+			pp.pos = partPos;
+			if (posOfs > 0)
+			{
+				pp.pos + (frandom[drawparts](-posOfs,posOfs), frandom[drawparts](-posOfs,posOfs), frandom[drawparts](-posOfs,posOfs));
+			}
+			// spawn the particle:
+			Level.SpawnParticle(pp);
+			// Move position from point 1 topwards point 2:
+			partPos += dir*density;
+		}
 	}
 
 	static play vector3 FindRandomPosAround(vector3 actorpos, double rad = 512, double mindist = 16, double fovlimit = 0, double viewangle = 0, bool checkheight = false)
@@ -311,11 +370,18 @@ class ToM_Utils
 	{
 		if (!mo)
 			return (0,0,0);
+		
+		return RelativeToGlobalOffset(mo.pos, (mo.angle, mo.pitch, mo.roll), offset, isPosition);
+	}
 
-		Quat dir = Quat.FromAngles(mo.angle, mo.pitch, mo.roll);
+	static play Vector3 RelativeToGlobalOffset(Vector3 startpos, Vector3 viewAngles, Vector3 offset, bool isPosition = true)
+	{
+		Quat dir = Quat.FromAngles(viewAngles.x, viewAngles.y, viewAngles.z);
 		vector3 ofs = dir * (offset.x, -offset.y, offset.z);
 		if (isPosition)
-			return Level.vec3offset(mo.pos, ofs);
+		{
+			return Level.vec3offset(startpos, ofs);
+		}
 		return ofs;
 	}
 	

@@ -1,6 +1,6 @@
 class ToM_Knife : ToM_BaseWeapon
 {	
-	bool rightSlash; //right slash or left slash?
+	bool LeftSlash; //right slash or left slash?
 	int combo; //combo counter
 	int clawCombo; //claw combo counter
 	
@@ -75,7 +75,7 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			let psp = player.FindPSprite(APSP_LeftHand);
 			if (psp)
-				player.SetPSprite(APSP_LeftHand, ResolveState("ClawRightSlash"));
+				player.SetPSprite(APSP_LeftHand, ResolveState("ClawLeftSlash"));
 		}
 	}	
 	
@@ -97,12 +97,50 @@ class ToM_Knife : ToM_BaseWeapon
 	
 	action void A_KnifeSlash(double damage = 10)
 	{
-		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_KnifePuff", range: 80);
+		double range = 80;
+		if (CountInv('ToM_GrowthPotionEffect'))
+		{
+			range *= ToM_GrowthPotionEffect.VIEWFACTOR;
+		}
+		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_KnifePuff", range: range);
+	}
+
+	const KNIFE_ParticleTrails = 20;
+
+	action void A_PrepareKnifeSwing(Vector2 eye1start, Vector2 eye2start)
+	{
+		for (int i = 0; i < KNIFE_ParticleTrails; i++)
+		{
+			double sx = ToM_Utils.LinearMap(i, 0, KNIFE_ParticleTrails-1, eye1start.x, eye2start.x);
+			double sy = ToM_Utils.LinearMap(i, 0, KNIFE_ParticleTrails-1, eye1start.y, eye2start.y);
+			A_PrepareSwing(sx, sy, i);
+		}
+	}
+
+	action void A_KnifeSwing(int damage, double stepX, double stepY)
+	{
+		for (int i = 0; i < KNIFE_ParticleTrails; i++)
+		{
+			A_SwingAttack(
+				i == 0? damage : 0, 
+				stepX, stepY,
+				range: ToM_Utils.LinearMap(i, 0, KNIFE_ParticleTrails-1, 60, 20),
+				solidSound: i == 0? "weapons/knife/hitwall" : "",
+				fleshsound: i == 0? "weapons/knife/hitflesh" : "",
+				trailcolor: 0xFFFFFFFF,
+				trailsize: 8,
+				id: i);
+		}
 	}
 	
 	action void A_ClawSlash(double damage = 10)
 	{
-		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_ClawPuff", range: 80);
+		double range = 80;
+		if (CountInv('ToM_GrowthPotionEffect'))
+		{
+			range *= ToM_GrowthPotionEffect.VIEWFACTOR;
+		}
+		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_ClawPuff", range: range);
 	}
 	
 	// Throws the knife and saves a pointer to it:
@@ -169,6 +207,7 @@ class ToM_Knife : ToM_BaseWeapon
 			return;
 		
 		knife = null;
+		wasThrown = false;
 		owner.A_StartSound("weapons/knife/restore", CHAN_AUTO);
 		
 		let weap = owner.player.readyweapon;
@@ -178,7 +217,6 @@ class ToM_Knife : ToM_BaseWeapon
 			if (psp && !InStateSequence(psp.curstate, ResolveState("CatchKnife")))
 				psp.SetState(ResolveState("CatchKnife"));
 		}
-		wasThrown = false;
 		
 		if (tom_debugmessages)
 			console.printf("Knife successfully recalled");
@@ -197,6 +235,8 @@ class ToM_Knife : ToM_BaseWeapon
 		// the bool to false:
 		if (wasThrown && !knife)
 		{
+			if (tom_debugmessages)
+				console.printf("Lost pointer to thrown knife; restoring automatically");
 			wasThrown = false;
 		}
 		
@@ -310,17 +350,17 @@ class ToM_Knife : ToM_BaseWeapon
 			}
 		}
 		stop;
-	ClawRightSlash:
+	ClawLeftSlash:
 		VCLW A 0 
 		{
 			A_StopPSpriteReset();
 			invoker.clawCombo++;
-			if (invoker.rightSlash)
+			if (invoker.LeftSlash)
 			{
-				invoker.rightSlash = false;
+				invoker.LeftSlash = false;
 				return ResolveState("ClawDownSlash");
 			}
-			invoker.rightSlash = true;
+			invoker.LeftSlash = true;
 			
 			A_OverlayPivot(OverlayID(), 0.5, 0.5);
 			return ResolveState(null);
@@ -434,7 +474,7 @@ class ToM_Knife : ToM_BaseWeapon
 	Ready:
 		TNT1 A 0 
 		{
-			invoker.rightSlash = false;
+			invoker.LeftSlash = false;
 		}
 		#### A 1 
 		{
@@ -462,7 +502,7 @@ class ToM_Knife : ToM_BaseWeapon
 			{
 				let psl = player.FindPSprite(APSP_LeftHand);
 				if ( psl && 
-					(InStateSequence(psl.curstate, ResolveState("ClawRightSlash")) ||
+					(InStateSequence(psl.curstate, ResolveState("ClawLeftSlash")) ||
 					InStateSequence(psl.curstate, ResolveState("ClawDownSlash")) ) )
 				{
 					A_MoveHandAway(offsetStep: (10, 20), offsetLimit: (50, 140), resetTime: 20);
@@ -493,10 +533,10 @@ class ToM_Knife : ToM_BaseWeapon
 			{
 				return ResolveState("DownSlash");
 			}
-			invoker.rightSlash = !invoker.rightSlash;
-			return invoker.rightSlash ? ResolveState("RightSlash") : ResolveState("LeftSlash");
+			invoker.LeftSlash = !invoker.LeftSlash;
+			return invoker.LeftSlash ? ResolveState("LeftSlash") : ResolveState("RightSlash");
 		}
-	RightSlash:
+	LeftSlash:
 		TNT1 A 0 
 		{
 			A_SetKnifeSprite("VKNF", "VKRF");
@@ -508,21 +548,27 @@ class ToM_Knife : ToM_BaseWeapon
 			A_WeaponOffset(20, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5.5, WOF_ADD);
 		}
-		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
+		#### A 0 
+		{
+			A_StartSound("weapons/knife/swing", CHAN_AUTO);
+			A_PrepareKnifeSwing((-55, 0), (-50, 0));
+		}
 		#### BBB 1
 		{
-			A_WeaponOffset(-60, 0, WOF_ADD);
-			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
+			A_WeaponOffset(-60, 8, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 10, WOF_ADD);
+			A_KnifeSwing(25, 20, 2);
 		}
-		TNT1 A 0 
+		/*TNT1 A 0 
 		{
 			A_KnifeSlash(25);
 			A_SetKnifeSprite("VKNS", "VKRS");
-		}
+		}*/
 		#### CCC 1
 		{
-			A_WeaponOffset(-44, 0, WOF_ADD);
-			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
+			A_WeaponOffset(-44, 5, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
+			A_KnifeSwing(25, 20, 2);
 		}
 		TNT1 A 0 
 		{
@@ -531,7 +577,7 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		#### CCCHHHHAAA 1 A_KnifeReady(WRF_NOBOB);
 		goto ready;
-	LeftSlash:
+	RightSlash:
 		TNT1 A 0 
 		{
 			A_SetKnifeSprite("VKNF", "VKRF");
@@ -543,21 +589,27 @@ class ToM_Knife : ToM_BaseWeapon
 			A_WeaponOffset(-24, -4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
-		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);
+		#### A 0 
+		{
+			A_StartSound("weapons/knife/swing", CHAN_AUTO);
+			A_PrepareKnifeSwing((45, 10), (40, 10));
+		}
 		#### EEE 1
 		{
 			A_WeaponOffset(80, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5, WOF_ADD);
+			A_KnifeSwing(25, -25, -3);
 		}		
-		#### E 0 
+		/*#### E 0 
 		{
 			A_KnifeSlash(25);
 			A_SetKnifeSprite("VKNS", "VKRS");
-		}
+		}*/
 		#### FFF 1
 		{
 			A_WeaponOffset(65, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
+			A_KnifeSwing(25, -20, -4);
 		}
 		#### A 0 
 		{
@@ -574,19 +626,20 @@ class ToM_Knife : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), frandom[wrot](-5,25), WOF_INTERPOLATE);
 		}
 		#### GG 1 A_WeaponOffset(6, -5, WOF_ADD);
-		#### A 0 A_StartSound("weapons/knife/swing", CHAN_AUTO);		
+		#### A 0 
+		{
+			A_StartSound("weapons/knife/swing", CHAN_AUTO);
+			A_PrepareKnifeSwing((-17, -40), (-28, -20));
+		}
 		#### GGH 1 
 		{
 			A_WeaponOffset(-12, 35, WOF_ADD);
-		}
-		TNT1 A 0  
-		{
-			A_KnifeSlash(35);
-			A_SetKnifeSprite("VKNS", "VKRS");
+			A_KnifeSwing(30, 4, 16);
 		}
 		#### HHHH 1 
 		{
 			A_WeaponOffset(-18, 25, WOF_ADD);
+			A_KnifeSwing(30, 4, 16);
 		}
 		TNT1 A 0 
 		{

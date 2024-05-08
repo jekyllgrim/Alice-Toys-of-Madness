@@ -139,6 +139,123 @@ class ToM_BaseWeapon : Weapon abstract
 		return owner.CountInv("ToM_GrowthPotionEffect") ? ToM_GrowthPotionEffect.GROWZOOM : 1;
 	}
 
+	const SWING_MaxIDs = 50;
+	const SWING_SoundStagger = 8;
+	protected ToM_SwingController swingdata[SWING_MaxIDs];
+	protected array <Actor> swingVictims; //actors hit by the attack
+	protected int swingSndCounter; //delay the attack sound
+
+	// Set up the swing: initial coords and the step:
+	action void A_PrepareSwing(double startX, double startY, int id = 0)
+	{
+		id = Clamp(id, 0, SWING_MaxIDs);
+		invoker.swingVictims.Clear();
+		invoker.swingdata[id] = ToM_SwingController.Create((startX, startY));
+	}
+	
+	// Do the attack and move the offset one step as defined above:
+	action void A_SwingAttack(int damage, double stepX, double stepY, double range = 64, double quakeIntensity = 0, Sound solidsound = "", Sound fleshsound = "", class<Actor> pufftype = null, color trailcolor = 0xFFFFFFFF, double trailsize = 12, int trailtics = 6, bool shrink = false, int id = 0)
+	{
+		id = Clamp(id, 0, SWING_MaxIDs);
+		if (CountInv('ToM_GrowthPotionEffect'))
+		{
+			range *= ToM_GrowthPotionEffect.VIEWFACTOR;
+		}
+		ToM_SwingController data = invoker.swingdata[id];
+		if (!data)
+		{
+			Console.Printf("\cgSwing data:\c- Controller does not exist. Aborting.");
+			return;
+		}
+		Vector2 flatOfs = data.ofs;
+		Quat view = Quat.FromAngles(angle, pitch, roll);
+		Quat ofs = Quat.FromAngles(flatOfs.x, flatOfs.y, 0);
+		Quat res = view * ofs;
+		Vector3 dir = res * (1,0,0);
+		double aimYaw = atan2(dir.y, dir.x);
+		double aimPitch = -asin(dir.z);
+	
+		FLineTraceData hit;
+		LineTrace(
+			aimYaw, 
+			range, 
+			aimPitch, 
+			TRF_NOSKY|TRF_SOLIDACTORS, 
+			ToM_Utils.GetPlayerAtkHeight(PlayerPawn(self)), 
+			data: hit
+		);
+
+		// Debug spot:
+		if (tom_debugmessages)
+		{
+			let spot = Spawn("ToM_DebugSpot", hit.hitlocation);
+			spot.A_SetHealth(1);
+			spot.scale *= 0.4;
+			if (damage > 0)
+			{
+				spot.SetShade(0xFFFF0000);
+				spot.scale *= 1.5;
+			}
+		}
+
+		if (damage > 0)
+		{
+			int type; Actor victim;
+			[type, victim] = ToM_Utils.GetHitType(hit);
+			
+			// Do this if we hit geometry:
+			if (type == ToM_Utils.HT_Solid)
+			{
+				if (invoker.swingSndCounter <= 0)
+				{
+					if (solidsound)
+					{
+						invoker.swingSndCounter = SWING_SoundStagger;
+						A_StartSound(solidsound, CHAN_AUTO);
+					}
+					if (quakeIntensity > 0)
+					{
+						A_QuakeEx(quakeIntensity, quakeIntensity, quakeIntensity, 6, 0, 32, "");
+					}
+				}
+			}
+			
+			// Do this if we hit an actor:
+			else if (type == ToM_Utils.HT_ShootableThing && victim && invoker.swingVictims.Find(victim) == invoker.swingVictims.Size())
+			{
+				invoker.swingVictims.Push(victim);
+				victim.DamageMobj(self, self, damage, 'normal', angle: self.angle + 180);
+				if (fleshsound)
+				{
+					A_StartSound(fleshsound, CHAN_WEAPON);
+				}
+				// Bleed:
+				if (!victim.bNOBLOOD)
+				{
+					victim.TraceBleed(damage, self);
+					victim.SpawnBlood(hit.HitLocation, AngleTo(victim), damage);
+				}
+			}
+		}
+		
+		// Add a step:
+		data.Update(flatofs + (stepX, stepY), hit.HitLocation);
+
+		Vector3 from = data.prevPos;
+		Vector3 to = data.pos;
+		if (from != (0,0,0))
+		{
+			ToM_Utils.DrawParticlesFromTo(from, to, 
+				density: 1, 
+				size: trailsize, 
+				lifetime: trailtics, 
+				texture: "LEGYA0", 
+				pcolor: trailcolor, 
+				style: STYLE_Shaded,
+				shrink: shrink);
+		}
+	}
+
 	action void A_PlayerAttackAnim(int animTics, Name animName, double framerate = -1, int startFrame = -1, int loopFrame= -1, int endFrame = -1, int interpolateTics = -1, int flags = 0)
 	{
 		let player = self.player;
@@ -652,6 +769,27 @@ class ToM_BaseWeapon : Weapon abstract
 				Level.SpawnParticle(pp);
 			}
 		}
+	}
+}
+
+class ToM_SwingController play
+{
+	Vector2 ofs;
+	Vector3 pos;
+	Vector3 prevPos;
+
+	static ToM_SwingController Create(Vector2 ofs)
+	{
+		ToM_SwingController ctrl = New('ToM_SwingController');
+		ctrl.ofs = ofs;
+		return ctrl;
+	}
+
+	void Update(Vector2 ofs, Vector3 pos = (0,0,0))
+	{
+		self.ofs = ofs;
+		self.prevPos = self.pos;
+		self.pos = pos;
 	}
 }
 
@@ -1486,7 +1624,7 @@ class ToM_CrosshairSpawner : ToM_InventoryToken
 
 class ToM_PspResetController : Thinker
 {
-	protected PSprite psp;	
+	protected PSprite psp;
 	protected int tics;
 	
 	protected vector2 ofs;

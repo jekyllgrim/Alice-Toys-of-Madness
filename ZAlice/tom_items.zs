@@ -416,6 +416,29 @@ class ToM_GoldArmor : BlueArmor
 	}
 }
 
+class ToM_ArmorBonus : ArmorBonus
+{
+	mixin ToM_CheckParticles;
+	mixin ToM_PickupFlashProperties;
+	mixin ToM_PickupSound;
+	mixin ToM_ComplexPickupmessage;
+	
+	Default
+	{
+		Inventory.icon "ACARM_0";
+		Inventory.pickupsound "pickups/armor/bonus";
+		xscale 0.5;
+		yscale 0.45;
+	}
+	
+	States
+	{
+	Spawn:
+		AARM C -1;
+		stop;
+	}
+}
+
 class ToM_Health : Health abstract
 {
 	mixin ToM_CheckParticles;
@@ -592,9 +615,8 @@ class ToM_Megasphere : ToM_HealthPickup
 		if (owner)
 		{
 			owner.GiveInventory("ToM_GoldArmor", 1);
-			return true;
 		}
-		return false;
+		return true;
 	}
 	
 	override string GetPickupNote()

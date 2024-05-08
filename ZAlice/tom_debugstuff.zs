@@ -13,13 +13,16 @@ class ToM_DebugSpot : Actor
 		FloatBobPhase 0;
 		alpha 2;
 		health 3;
-		translation "1:255=%[0.00,1.01,0.00]:[1.02,2.00,0.00]";
+		Renderstyle 'Shaded';
+		StencilColor "00FF00";
 	}
 	
 	override void Tick() 
 	{
-		if (GetAge() > 35 * health)
+		if (GetAge() > TICRATE * health)
+		{
 			Destroy();
+		}
 	}
 	
 	states 

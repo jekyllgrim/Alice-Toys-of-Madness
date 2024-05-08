@@ -479,7 +479,7 @@ class ToM_GrowthPotion : PowerupGiver
 		CAKG AAAAA 1 {spriteOffset.y += 5; }
 		CAKG A 1 {spriteOffset.y -= 4; }
 		CAKG AA 1 {spriteOffset.y += 2; }
-		CAKG A 20;
+		CAKG A 5;
 		goto Spawn;
 	}
 }

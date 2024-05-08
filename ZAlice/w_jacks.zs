@@ -485,12 +485,11 @@ class ToM_RealSeeker : ToM_JackProjectile
 			// Calculate how long it'll take the jack to reach
 			// its victim (between JMINFLYTIME-JMAXFLYTIME,
 			// depending on the distance):
-			double flytime = ToM_Utils.LinearMap(dist, 32, JMAXSEEKDIST, JMINFLYTIME, JMAXFLYTIME);
-			flytime = Clamp(flytime, JMINFLYTIME, JMAXFLYTIME);
+			double flytime = ToM_Utils.LinearMap(dist, 32, JMAXSEEKDIST, JMINFLYTIME, JMAXFLYTIME, clampit: true);
 			
 			// fly, baby!
 			vel.xy = dir * dist / flytime;
-			vel.z = (vdiff + 0.5 * flytime*flytime) / flytime;
+			vel.z = (vdiff + 0.5 * flytime**2) / flytime;
 			vel *= GetGravity();
 			
 			if (tom_debugmessages)

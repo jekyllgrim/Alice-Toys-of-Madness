@@ -359,9 +359,14 @@ weapons/jackbomb/throw			"sounds/jackbomb/jackbomb_toss.wav"
 // ITEMS
 
 pickups/weapon					"sounds/pickups/weaponpickup.ogg"
-pickups/armor/light		"sounds/pickups/pickup_armor_light.ogg"
-$pitchset pickups/armor/heavy 0.8
-pickups/armor/heavy		"sounds/pickups/pickup_armor_light.ogg"
+pickups/armor/light				"sounds/pickups/pickup_armor_light.ogg"
+pickups/armor/heavy				"sounds/pickups/pickup_armor_light.ogg"
+$pitchset pickups/armor/heavy 0.85
+pickups/armor/bonus				"sounds/pickups/pickup_armor_light.ogg"
+$pitchset pickups/armor/bonus 1.2
+$volume pickups/armor/light 0.45
+$volume pickups/armor/heavy 0.45
+$volume pickups/armor/bonus 0.45
 
 $random pickups/health/petal { petalhealth1 petalhealth2 petalhealth3 }
 $limit pickups/health/petal 0

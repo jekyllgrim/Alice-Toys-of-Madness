@@ -619,7 +619,7 @@ class ToM_GrowthPotionEffect : Powerup
 		}
 	}
 
-	static void DoStepDamage(Actor source, int damage = 15, double distance = 256)
+	static void DoStepDamage(Actor source, int damage = 15, double distance = 256, bool visualImpact = true)
 	{
 		BlockThingsIterator itr = BlockThingsIterator.Create(source,distance);
 		while (itr.next()) {
@@ -642,7 +642,14 @@ class ToM_GrowthPotionEffect : Powerup
 		if (hi)
 		{
 			hi.A_StartSound("growpotion/giantstep", CHAN_AUTO);
-			hi.scale.x = distance;
+			if (visualImpact)
+			{
+				hi.scale.x = distance;
+			}
+			else
+			{
+				hi.Destroy();
+			}
 		}
 	}
 	
@@ -732,7 +739,7 @@ class ToM_GrowthPotionEffect : Powerup
 				stepCycle++;
 				if (stepCycle % 20 == 0) {
 					//do the damage:
-					DoStepDamage(pmo, damage: 20);
+					DoStepDamage(pmo, damage: 20, visualImpact: false);
 				}
 			}
 			else

@@ -22,21 +22,6 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	// Do the attack and move the offset one step as defined above:
 	action void A_HorseSwing(int damage, double stepX, double stepY)
 	{
-		A_SwingAttack(damage, stepX, stepY,
-			range: 70, 
-			quakeIntensity: invoker.combo, 
-			solidSound: "weapons/hhorse/hitwall",
-			fleshsound: "weapons/hhorse/hitflesh",
-			pufftype: 'ToM_HorsePuff',
-			trailcolor: 0xFFDD0000,
-			trailsize: 15,
-			shrink: false,
-			id: 0);
-		A_SwingAttack(0, stepX, stepY,
-			range: 70, 
-			trailcolor: 0xFFDD0000,
-			trailsize: 15,
-			id: 1);
 		for (int i = 0; i < 2; i++)
 		{
 			A_SwingAttack(
@@ -51,6 +36,47 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				id: i);
 		}
 	}
+
+	const MAXEYEFIRE = 20;
+	uint curFirePos;
+	Vector3 eyeFirePos[MAXEYEFIRE];
+	Vector3 prevViewAngles[MAXEYEFIRE];
+	Vector2 prevHorMove[MAXEYEFIRE];
+
+	action void A_SpawnHorseEyeFire()
+	{
+		A_SpawnPSParticle("HorseReadyParticle", xofs: frandom[hrp](-2,2), yofs: frandom[hrp](-0.5,0.5), maxlayers: MAXEYEFIRE);
+		A_Overlay(APSP_TopParticle-1, "HorseReadyParticleBase", true);
+		//Vector3 fpos = ToM_Utils.RelativeToGlobalOffset((pos.xy, player.viewz), (angle, pitch, roll), (10, 10.5, 5), true);
+		//fpos = Level.Vec3Offset(fpos, vel);
+		//Spawn('ToM_DebugSpot', fpos);
+		//invoker.DrawEyeFireParticles(fpos);
+	}
+
+	void DrawEyeFireParticles(Vector3 newpos)
+	{
+		for (int i = 0; i < MAXEYEFIRE-1; i++)
+		{
+			eyeFirePos[i] = eyeFirePos[i+1];
+		}
+		eyeFirePos[MAXEYEFIRE-1] = newPos;
+		for (int i = 0; i < MAXEYEFIRE-1; i++)
+		{
+			Vector3 from = eyeFirePos[i];
+			Vector3 to = eyeFirePos[i+1];
+			if (from != (0,0,0) && to != (0,0,0))
+			{
+				ToM_Utils.DrawParticlesFromTo(from, to, 
+					density: 0.5, 
+					size: 4,
+					lifetime: 12,
+					vel: (0,0,0.1),
+					texture: "LEGYA0",
+					pcolor: 0xffff0066,
+					renderstyle: STYLE_Shaded,
+					style: PBS_Fullbright|PBS_Fade);
+			}
+		}
 	}
 
 	action void A_StartJumpAttack()
@@ -147,9 +173,6 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		super.DoEffect();
 		if (!owner || !owner.player)
 			return;
-
-		if (swingSndCounter > 0)
-			swingSndCounter--;
 		
 		if (!owner.player.onGround)
 		{
@@ -201,7 +224,88 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		TNT1 A 0 A_Lower;
 		wait;
 	Ready:
-		HHRS A 1 A_WeaponReady();
+		HHRS A 1 
+		{
+			A_WeaponReady();
+			A_SpawnHorseEyeFire();
+		}
+		wait;
+	HorseReadyParticleBase:
+		TNT1 A 0 
+		{
+			A_OverlayFlags(OverlayID(),PSPF_RENDERSTYLE|PSPF_FORCEALPHA,true);
+			A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);
+			A_OverlayRenderstyle(OverlayID(),Style_Add);
+			A_OverlayScale(OverlayID(), 2.2, 2.2);
+		}
+		HHRP A 1 bright
+		{
+			let psp = player.FindPSprite(OverlayID());
+			if (psp)
+			{
+				psp.bInterpolate = true;
+				//psp.scale.x = psp.scale.y = frandom[hrp](2.0, 2.2);
+				psp.alpha = frandom[hrp](0.85, 1.0);
+			}
+			//Vector2 hmove = RotateVector(vel.xy, -angle);
+			//Console.Printf("Forward/back: %.1f | Left/Right: %.1f", hmove.x, hmove.y);
+			psp = player.FindPSprite(PSP_WEAPON);
+			if (!psp || !InStateSequence(psp.curstate, ResolveState("Ready")))
+			{
+				return ResolveState("Null");
+			}
+			return ResolveState(null);
+		}
+		wait;
+	HorseReadyParticle:
+		TNT1 A 0 
+		{
+			A_OverlayFlags(OverlayID(),PSPF_RENDERSTYLE|PSPF_FORCEALPHA,true);
+			A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);
+			A_OverlayRenderstyle(OverlayID(),Style_Add);
+			A_OverlayScale(OverlayID(),2, 2);
+			A_OverlayAlpha(OverlayID(), 0.5);
+			int i = Clamp(OverlayID() - APSP_TopParticle, 0, MAXEYEFIRE-1);
+			invoker.prevViewAngles[i] = (angle, pitch, roll);
+			Vector2 hmove = RotateVector(vel.xy, -angle);
+			invoker.prevHorMove[i] = (hmove.x, hmove.y);
+		}
+		HHRP A 1 bright
+		{
+			let psp = player.FindPSprite(OverlayID());
+			if (psp)
+			{
+				psp.bInterpolate = false;
+				//Console.Printf("Spawning horse particle %d", OverlayID());
+				int i = Clamp(OverlayID() - APSP_TopParticle, 0, MAXEYEFIRE-1);
+				// change position based on angle/pitch:
+				Vector2 pbase = (0, -2);
+				Vector3 v = invoker.prevViewAngles[i];
+				pbase.x += -(v.x - angle);
+				pbase.y += (v.y - pitch);
+				// change position based on movement direction:
+				Vector2 hm = invoker.prevHorMove[i];
+				pbase.x += hm.y;
+				pbase.y *= ToM_Utils.LinearMap(abs(pitch), 0, 90, 1.0, 0.0);
+				// change scale based on movement direction:
+				double sc = ToM_Utils.LinearMap(hm.x, -15, 15, -0.1, 0.2);
+				// update cached values:
+				hm = RotateVector(vel.xy, -angle);
+				invoker.prevViewAngles[i] = (angle, pitch, roll);
+				invoker.prevHorMove[i] = (hm.x, hm.y);
+				// apply values:
+				psp.x += pbase.x;
+				psp.y += pbase.y;
+				psp.scale.x += sc; 
+				psp.scale.y += sc;
+				psp.scale *= 0.95;
+				psp.alpha -= 0.025;
+				if (psp.scale.x <= 0 || psp.scale.y <= 0 || psp.alpha <= 0)
+				{
+					psp.Destroy();
+				}
+			}
+		}
 		wait;
 	Fire:
 		TNT1 A 0 
@@ -223,7 +327,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.1, 0.6);
 		HHRS AAABBBB 1 
 		{
-			A_WeaponOffset(6, 0, WOF_ADD);
+			A_WeaponOffset(6, -13, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -1.2, WOF_ADD);
 		}		
 		HHRS CCCC 1 
@@ -239,20 +343,20 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		HHRS BB 1 
 		{
-			A_HorseSwing(30, 14, 4);
+			A_HorseSwing(50, 14, 4);
 			A_WeaponOffset(-35, 12, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		//TNT1 A 0 A_Overlay(APSP_Overlayer, "RightSwingTrail");
 		HHRS DD 1 
 		{
-			A_HorseSwing(30, 14, 4);
+			A_HorseSwing(50, 14, 4);
 			A_WeaponOffset(-50, 22, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		HHRS DDD 1 
 		{
-			A_HorseSwing(30, 14, 4);
+			A_HorseSwing(50, 14, 4);
 			A_WeaponOffset(-50, 22, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 4, WOF_ADD);
 		}
@@ -273,7 +377,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 1);
 		HHRS AAAEEEE 1 
 		{
-			A_WeaponOffset(-6, 0, WOF_ADD);
+			A_WeaponOffset(-6, -9, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 1.2, WOF_ADD);
 		}
 		HHRS GGGG 1 
@@ -289,20 +393,20 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		HHRS FF 1 
 		{
-			A_HorseSwing(30, -15, 5);
+			A_HorseSwing(50, -15, 5);
 			A_WeaponOffset(35, 12, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		//TNT1 A 0 A_Overlay(APSP_Overlayer, "LeftSwingTrail");
 		HHRS HH 1 
 		{
-			A_HorseSwing(30, -15, 5);
+			A_HorseSwing(50, -15, 5);
 			A_WeaponOffset(45, 18, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		HHRS HHH 1 
 		{
-			A_HorseSwing(30, -15, 5);
+			A_HorseSwing(50, -15, 5);
 			A_WeaponOffset(45, 18, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
@@ -342,14 +446,14 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		HHRS NOO 1 
 		{
-			A_HorseSwing(60, 1.5, 16);
+			A_HorseSwing(65, 1.5, 16);
 			A_WeaponOffset(-24, 35, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.1, WOF_ADD);
 			A_ScalePSprite(OverlayID(), -0.003, -0.003, WOF_ADD);
 		}
 		HHRS OO 1 
 		{
-			A_HorseSwing(60, 1.5, 16);
+			A_HorseSwing(65, 1.5, 16);
 			A_WeaponOffset(-24, 35, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.1, WOF_ADD);
 			A_ScalePSprite(OverlayID(), -0.003, -0.003, WOF_ADD);

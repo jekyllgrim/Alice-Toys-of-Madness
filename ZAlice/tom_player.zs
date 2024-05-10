@@ -44,6 +44,7 @@ class ToM_AlicePlayer : DoomPlayer
 	{
 		+INTERPOLATEANGLES
 		+DECOUPLEDANIMATIONS
+		+DONTTRANSLATE
 		player.StartItem "ToM_Knife", 1;
 		player.Viewheight 51;
 		player.AttackZOffset 18;
@@ -194,7 +195,7 @@ class ToM_AlicePlayer : DoomPlayer
 		}
 		else if (vel.xy.Length() > 0 && IsPlayerMoving())
 		{
-			prevMoveDir = Level.Vec2Diff(pos.xy, pos.xy + vel.xy);
+			prevMoveDir = Level.Vec2Diff(pos.xy, Level.Vec2Offset(pos.xy, vel.xy));
 		}
 		modelDirection = (prevMoveDir == (0,0)) ? 0 : atan2(prevMoveDir.y, prevMoveDir.x) - Normalize180(angle);
 

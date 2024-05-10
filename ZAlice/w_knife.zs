@@ -109,28 +109,55 @@ class ToM_Knife : ToM_BaseWeapon
 
 	action void A_PrepareKnifeSwing(Vector2 eye1start, Vector2 eye2start)
 	{
+		A_PrepareSwing(eye1start.x, eye1start.y, 0);
+		//A_PrepareSwing(eye2start.x, eye2start.y, 1);
+		/*
 		for (int i = 0; i < KNIFE_ParticleTrails; i++)
 		{
 			double sx = ToM_Utils.LinearMap(i, 0, KNIFE_ParticleTrails-1, eye1start.x, eye2start.x);
 			double sy = ToM_Utils.LinearMap(i, 0, KNIFE_ParticleTrails-1, eye1start.y, eye2start.y);
 			A_PrepareSwing(sx, sy, i);
-		}
+		}*/
 	}
 
 	action void A_KnifeSwing(int damage, double stepX, double stepY)
 	{
-		for (int i = 0; i < KNIFE_ParticleTrails; i++)
+		let victim = A_SwingAttack(
+			damage, 
+			stepX, stepY,
+			range: 60,
+			pufftype: 'ToM_KnifePuff',
+			trailcolor: HasRageBox() ? 0xFFCC0000 : 0xFFFFFFFF,
+			trailalpha: 0.65,
+			trailsize: 1.5,
+			trailtics: 15,
+			style: PBS_Fade|PBS_Fullbright|PBS_Untextured,
+			id: 0);
+		/*A_SwingAttack(
+			0, 
+			stepX, stepY,
+			range: 20,
+			trailcolor: 0xFFFFFFFF,
+			trailalpha: 0.5,
+			trailsize: 3,
+			trailtics: 12,
+			style: PBS_Fade|PBS_Fullbright,
+			id: 1);*/
+		/*for (int i = 0; i < KNIFE_ParticleTrails; i++)
 		{
 			A_SwingAttack(
 				i == 0? damage : 0, 
 				stepX, stepY,
-				range: ToM_Utils.LinearMap(i, 0, KNIFE_ParticleTrails-1, 60, 20),
+				range: i == 0? ToM_Utils.LinearMap(i, 0, KNIFE_ParticleTrails-1, 60, 20),
 				solidSound: i == 0? "weapons/knife/hitwall" : "",
 				fleshsound: i == 0? "weapons/knife/hitflesh" : "",
 				trailcolor: 0xFFFFFFFF,
-				trailsize: 8,
+				trailalpha: 1,
+				trailsize: 7,
+				trailtics: 10,
+				style: PBS_Fade|PBS_Fullbright,
 				id: i);
-		}
+		}*/
 	}
 	
 	action void A_ClawSlash(double damage = 10)
@@ -634,12 +661,12 @@ class ToM_Knife : ToM_BaseWeapon
 		#### GGH 1 
 		{
 			A_WeaponOffset(-12, 35, WOF_ADD);
-			A_KnifeSwing(30, 4, 16);
+			A_KnifeSwing(30, 4, 15);
 		}
 		#### HHHH 1 
 		{
 			A_WeaponOffset(-18, 25, WOF_ADD);
-			A_KnifeSwing(30, 4, 16);
+			A_KnifeSwing(30, 4, 10);
 		}
 		TNT1 A 0 
 		{

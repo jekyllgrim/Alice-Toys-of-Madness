@@ -140,7 +140,7 @@ class ToM_BaseWeapon : Weapon abstract
 	}
 
 	const SWING_MaxIDs = 50;
-	const SWING_SoundStagger = 8;
+	const SWING_SoundStagger = 15;
 	protected ToM_SwingController swingdata[SWING_MaxIDs];
 	protected array <Actor> swingVictims; //actors hit by the attack
 	protected int swingSndCounter; //delay the attack sound
@@ -154,7 +154,18 @@ class ToM_BaseWeapon : Weapon abstract
 	}
 	
 	// Do the attack and move the offset one step as defined above:
-	action void A_SwingAttack(int damage, double stepX, double stepY, double range = 64, double quakeIntensity = 0, Sound solidsound = "", Sound fleshsound = "", class<Actor> pufftype = null, color trailcolor = 0xFFFFFFFF, double trailsize = 12, int trailtics = 6, bool shrink = false, int id = 0)
+	action Actor A_SwingAttack(int damage,
+							double stepX, double stepY,
+							double range = 64,
+							class<Actor> pufftype = null,
+							color trailcolor = 0xFFFFFFFF,
+							double trailalpha = 1.0,
+							double trailsize = 12,
+							int trailtics = 6,
+							EParticleBeamStyle style = PBS_Solid,
+							ERenderStyle rstyle = STYLE_Shaded,
+							String texture = "LEGYA0",
+							int id = 0)
 	{
 		id = Clamp(id, 0, SWING_MaxIDs);
 		if (CountInv('ToM_GrowthPotionEffect'))
@@ -164,8 +175,8 @@ class ToM_BaseWeapon : Weapon abstract
 		ToM_SwingController data = invoker.swingdata[id];
 		if (!data)
 		{
-			Console.Printf("\cgSwing data:\c- Controller does not exist. Aborting.");
-			return;
+			Console.Printf("\cgSwing data:\c- Controller \cd%d\c- does not exist. Aborting.", id);
+			return null;
 		}
 		Vector2 flatOfs = data.ofs;
 		Quat view = Quat.FromAngles(angle, pitch, roll);
@@ -198,37 +209,48 @@ class ToM_BaseWeapon : Weapon abstract
 			}
 		}
 
+		Actor victim;
 		if (damage > 0)
 		{
-			int type; Actor victim;
+			int type;
 			[type, victim] = ToM_Utils.GetHitType(hit);
+			Actor puff;
+
+			if (pufftype && type != ToM_Utils.HT_None)
+			{
+				puff = Spawn(pufftype, hit.HitLocation);
+				if (puff)
+				{
+					puff.target = self;
+					puff.A_Face(self, 0, 0);
+					puff.tracer = victim;
+					if (type == ToM_Utils.HT_ShootableThing)
+					{
+						puff.A_StartSound(puff.seesound);
+					}
+					/*else if (type == ToM_Utils.HT_Solid)
+					{
+						puff.A_StartSound(puff.attacksound);
+					}*/
+				}
+			}
 			
 			// Do this if we hit geometry:
-			if (type == ToM_Utils.HT_Solid)
+			if (puff && type == ToM_Utils.HT_Solid && invoker.swingSndCounter <= 0)
 			{
-				if (invoker.swingSndCounter <= 0)
-				{
-					if (solidsound)
-					{
-						invoker.swingSndCounter = SWING_SoundStagger;
-						A_StartSound(solidsound, CHAN_AUTO);
-					}
-					if (quakeIntensity > 0)
-					{
-						A_QuakeEx(quakeIntensity, quakeIntensity, quakeIntensity, 6, 0, 32, "");
-					}
-				}
+				invoker.swingSndCounter = SWING_SoundStagger;
+				puff.A_StartSound(puff.attacksound, CHAN_AUTO);
 			}
 			
 			// Do this if we hit an actor:
 			else if (type == ToM_Utils.HT_ShootableThing && victim && invoker.swingVictims.Find(victim) == invoker.swingVictims.Size())
 			{
 				invoker.swingVictims.Push(victim);
-				victim.DamageMobj(self, self, damage, 'normal', angle: self.angle + 180);
-				if (fleshsound)
+				victim.DamageMobj(puff? puff : self, self, damage, 'normal');
+				/*if (fleshsound)
 				{
 					A_StartSound(fleshsound, CHAN_WEAPON);
-				}
+				}*/
 				// Bleed:
 				if (!victim.bNOBLOOD)
 				{
@@ -245,15 +267,19 @@ class ToM_BaseWeapon : Weapon abstract
 		Vector3 to = data.pos;
 		if (from != (0,0,0))
 		{
-			ToM_Utils.DrawParticlesFromTo(from, to, 
-				density: 1, 
-				size: trailsize, 
-				lifetime: trailtics, 
-				texture: "LEGYA0", 
-				pcolor: trailcolor, 
-				style: STYLE_Shaded,
-				shrink: shrink);
+			ToM_Utils.DrawParticlesFromTo(
+				from, to, 
+				density:	trailsize / 10.0,
+				size:		trailsize,
+				alpha:		trailalpha,
+				lifetime:	trailtics,
+				texture:	texture,
+				pcolor:		trailcolor,
+				renderstyle: rstyle,
+				style:		style);
 		}
+
+		return victim;
 	}
 
 	action void A_PlayerAttackAnim(int animTics, Name animName, double framerate = -1, int startFrame = -1, int loopFrame= -1, int endFrame = -1, int interpolateTics = -1, int flags = 0)
@@ -592,7 +618,7 @@ class ToM_BaseWeapon : Weapon abstract
 	
 	action void A_SpawnPSParticle(stateLabel statename, bool bottom = false, int density = 1, double xofs = 0, double yofs = 0, int chance = 100, int maxlayers = 50)
 	{
-		if (random[pspart](0, 100) > chance)
+		if (chance < 100 && random[pspart](0, 100) > chance)
 			return;
 		state tstate = ResolveState(statename);
 		if (!tstate)
@@ -698,6 +724,11 @@ class ToM_BaseWeapon : Weapon abstract
 		
 		if (!owner || !owner.player)
 			return;
+		
+		if (swingSndCounter)
+		{
+			swingSndCounter--;
+		}
 			
 		let weap = owner.player.readyweapon;
 		

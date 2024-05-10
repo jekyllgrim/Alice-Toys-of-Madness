@@ -27,4 +27,14 @@ enum ToM_PSprite_Layers
 	APSP_TopParticle	= 300,
 }
 
+enum EParticleBeamStyle
+{
+	PBS_Solid			= 1 << 0,
+	PBS_Fade			= 1 << 1,
+	PBS_Shrink			= 1 << 2,
+	PBS_Fullbright		= 1 << 3,
+	PBS_Untextured		= 1 << 4,
+	PBS_MoveToNext		= 1 << 5,
+}
+
 const ToM_MaxMoveInput = 12800;

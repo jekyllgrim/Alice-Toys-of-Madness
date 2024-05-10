@@ -212,25 +212,28 @@ class ToM_Utils
 		return endpos;
 	}
 	
-	static void DrawParticlesFromTo(Vector3 from, Vector3 to, 
-									double density = 8, 
-									double size = 10, 
-									int lifetime = 10, 
-									double posOfs = 2, 
-									String texture = "",
-									Color pcolor = 0xFFCCCCFF,
-									int style = STYLE_Add,
-									bool shrink = false,
+	static void DrawParticlesFromTo(Vector3 from,
+									Vector3 to,
+									double density				= 8,
+									double size					= 10,
+									double alpha				= 1.0,
+									int lifetime				= 10,
+									Vector3 vel					= (0,0,0),
+									double posOfs				= 2,
+									String texture				= "",
+									Color pcolor				= 0xFFCCCCFF,
+									ERenderStyle renderstyle	= STYLE_Add,
+									EParticleBeamStyle style	= PBS_Solid,
 									PlayerInfo playerSource = null)
 	{
+		density = Clamp(density, 0.025, 1024);
 		let diff = Level.Vec3Diff(from, to); // difference between two points
 		let dir = diff.Unit(); // direction from point 1 to point 2
-		int steps = floor(diff.Length() / density); // how many steps to take:
+		int steps = ceil(diff.Length() / density); // how many steps to take:
 
 		// Generic particle properties:
-		posOfs = abs(posOfs);
 		FSpawnParticleParams pp;
-		if (texture)
+		if (!(style & PBS_Untextured) && texture)
 		{
 			TextureID tex = TexMan.CheckForTexture(texture);
 			if (tex && tex.IsValid())
@@ -239,23 +242,29 @@ class ToM_Utils
 			}
 		}
 		pp.color1 = pcolor;
-		pp.flags = SPF_FULLBRIGHT|SPF_REPLACE;
+		pp.flags |= SPF_REPLACE;
 		pp.lifetime = lifetime;
 		pp.size = size;
-		pp.style = style;
-		pp.startalpha = 1;
-		if (!shrink)
+		pp.style = renderstyle;
+		pp.startalpha = alpha;
+		if (style & PBS_Fade)
 		{
 			pp.fadestep = -1;
 		}
-		else
+		if (style & PBS_Shrink)
 		{
 			pp.sizestep = -(pp.size / pp.lifetime);
 		}
+		if (style & PBS_Fullbright)
+		{
+			pp.flags |= SPF_FULLBRIGHT;
+		}
+		pp.vel = vel;
 		if (playerSource && playerSource.mo)
 		{
 			pp.vel = playerSource.mo.vel;
 		}
+		posOfs = abs(posOfs);
 		Vector3 partPos = from; //initial position
 		for (int i = 0; i <= steps; i++)
 		{

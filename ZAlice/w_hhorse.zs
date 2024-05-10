@@ -37,6 +37,20 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			trailcolor: 0xFFDD0000,
 			trailsize: 15,
 			id: 1);
+		for (int i = 0; i < 2; i++)
+		{
+			A_SwingAttack(
+				(i == 0)? damage : 0, 
+				stepX, stepY,
+				range: 70, 
+				pufftype: (i == 0)? 'ToM_HorsePuff' : '',
+				trailcolor: 0xFFDD0000,
+				trailsize: 8,
+				style: PBS_Fade|PBS_Fullbright,
+				rstyle: Style_Add,
+				id: i);
+		}
+	}
 	}
 
 	action void A_StartJumpAttack()

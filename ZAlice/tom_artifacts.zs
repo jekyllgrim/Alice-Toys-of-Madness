@@ -147,8 +147,23 @@ class ToM_Powerup : Powerup abstract
 		{
 			return;
 		}
+		// Painsound is played when the time runs out, every second:
+		if (painsound && (EffectTics <= TICRATE * 5) && (EffectTics % TICRATE == 0))
+		{
+			owner.A_StartSound(painsound, CHAN_AUTO);
+		}
 		Super.Tick();
 		ToM_Tick();
+	}
+
+	override void EndEffect()
+	{
+		// Deathsound is used when the effect runs out:
+		if (deathsound && owner)
+		{
+			owner.A_StartSound(deathsound, CHAN_AUTO);
+		}
+		Super.EndEffect();
 	}
 }
 
@@ -774,6 +789,7 @@ class ToM_Invisibility : PowerupGiver
 	Default
 	{
 		Inventory.pickupmessage "Looking-glass mirror";
+		Inventory.pickupsound "mirror/pickup";
 		Powerup.Duration -40;
 		scale 0.25;
 		+FLOATBOB
@@ -812,6 +828,7 @@ class ToM_InvisibilityEffect : ToM_Powerup
 	Default
 	{
 		Powerup.duration -40;
+		DeathSound "mirror/appear";
 		Inventory.Icon "LGMYA0";
 	}
 
@@ -1050,6 +1067,7 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelector
 		}
 		wait;*/
 		TNT1 A 15;
+		TNT1 A 0 A_StartSound("mirror/disappear", CHAN_AUTO);
 		TNT1 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 1 
 		{
 			let psp = player.FindPSprite(TIP_Arm);

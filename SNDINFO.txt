@@ -379,15 +379,19 @@ $limit pickups/health/bud 0
 budhealth1 "sounds/pickups/health/pickups_rose_magic.ogg"
 budhealth2 "sounds/pickups/health/pickups_rose_magic02.ogg"
 
-pickups/health/flower "sounds/pickups/health/pickups_bottle_small_magic.ogg"
-pickups/health/magicbud "sounds/pickups/health/shrinkflower_close.ogg"
-pickups/health/magicflower "sounds/pickups/health/pickups_bottle_large_magic.ogg"
+pickups/health/flower			"sounds/pickups/health/pickups_bottle_small_magic.ogg"
+pickups/health/magicbud			"sounds/pickups/health/shrinkflower_close.ogg"
+pickups/health/magicflower		"sounds/pickups/health/pickups_bottle_large_magic.ogg"
 
 pickups/ammo	"sounds/pickups/shrinkflower_pop.ogg"
 
-ragebox/activate "sounds/pickups/ragebox_pickup.wav"
-ragebox/scream "sounds/pickups/ragebox_power.wav"
-ragebox/end "sounds/pickups/rage_end.wav"
+ragebox/activate	"sounds/pickups/ragebox_pickup.wav"
+ragebox/scream		"sounds/pickups/ragebox_power.wav"
+ragebox/end			"sounds/pickups/rage_end.wav"
+
+mirror/pickup		"sounds/pickups/mirror_pickup.ogg"
+mirror/disappear	"sounds/pickups/mirror_use.ogg"
+mirror/appear		"sounds/pickups/mirror_end.ogg"
 
 $random growpotion/giantstep { giantstep1 giantstep2 giantstep3 }
 giantstep1	"sounds/player/giant_step01.ogg"

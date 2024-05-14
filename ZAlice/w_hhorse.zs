@@ -29,7 +29,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				stepX, stepY,
 				range: 70, 
 				pufftype: (i == 0)? 'ToM_HorsePuff' : '',
-				trailcolor: 0xFFDD0000,
+				trailcolor: 0xff00BB,
 				trailsize: 8,
 				style: PBS_Fade|PBS_Fullbright,
 				rstyle: Style_Add,
@@ -38,22 +38,100 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	}
 
 	const MAXEYEFIRE = 20;
-	uint curFirePos;
-	Vector3 eyeFirePos[MAXEYEFIRE];
-	Vector3 prevViewAngles[MAXEYEFIRE];
-	Vector2 prevHorMove[MAXEYEFIRE];
+	/*uint curFirePos;
+	Vector3 eyeFirePos[MAXEYEFIRE];*/
+	protected Vector3 prevViewAngles[MAXEYEFIRE];
+	protected Vector2 prevHorMove[MAXEYEFIRE];
+	protected Vector2 curHorMove;
+	protected double curPithScale;
 
 	action void A_SpawnHorseEyeFire()
 	{
-		A_SpawnPSParticle("HorseReadyParticle", xofs: frandom[hrp](-2,2), yofs: frandom[hrp](-0.5,0.5), maxlayers: MAXEYEFIRE);
+		invoker.curHorMove = RotateVector(vel.xy, -angle);
+		invoker.curPithScale = ToM_Utils.LinearMap(abs(pitch), 0, 90, 1.0, 0.0);
+		A_SpawnPSParticle("HorseReadyParticle", xofs: frandom[hrp](-2,2), yofs: frandom[hrp](-2,2), maxlayers: MAXEYEFIRE);
+		A_SpawnPSParticle("HorseReadyParticle", bottom: true, xofs: frandom[hrp](-2,2), yofs: frandom[hrp](-2,2), maxlayers: MAXEYEFIRE);
 		A_Overlay(APSP_TopParticle-1, "HorseReadyParticleBase", true);
-		//Vector3 fpos = ToM_Utils.RelativeToGlobalOffset((pos.xy, player.viewz), (angle, pitch, roll), (10, 10.5, 5), true);
-		//fpos = Level.Vec3Offset(fpos, vel);
+		/*Vector3 fpos = ToM_Utils.RelativeToGlobalOffset((pos.xy, player.viewz), (angle, pitch, roll), (10, 10.5, 5), true);
+		fpos = Level.Vec3Offset(fpos, vel);
 		//Spawn('ToM_DebugSpot', fpos);
-		//invoker.DrawEyeFireParticles(fpos);
+		invoker.DrawEyeFireParticles(fpos);*/
 	}
 
-	void DrawEyeFireParticles(Vector3 newpos)
+	action void A_MoveHorseEyeFire()
+	{
+		int ovid = OverlayID();
+		let psp = player.FindPSprite(ovid);
+		if (!psp) return;
+
+		// first-time setup (alpha check is used to determine
+		// if this has been done yet):
+		if (psp.alpha >= 1.0)
+		{
+			A_OverlayFlags(ovid,PSPF_RENDERSTYLE|PSPF_FORCESTYLE|PSPF_FORCEALPHA,true);
+			A_OverlayPivotAlign(ovid,PSPA_CENTER,PSPA_CENTER);
+			A_OverlayRenderstyle(ovid,Style_Add);
+			psp.scale = (1.5,1.5);
+			psp.alpha = 0.3;
+			psp.bInterpolate = false;
+			if (ovid > 0)
+			{
+				int i = Clamp(ovid - APSP_TopParticle, 0, MAXEYEFIRE-1);
+				invoker.prevViewAngles[i] = (angle, pitch, roll);
+				invoker.prevHorMove[i] = invoker.curHorMove;
+			}
+		}
+
+		//Console.Printf("Spawning horse particle %d", OverlayID());
+		int i = Clamp(ovid + (ovid > 0? -APSP_TopParticle : APSP_BottomParticle), 0, MAXEYEFIRE-1);
+		// Update values only on the top layer:
+		if (ovid > 0)
+		{
+			// change position based on angle/pitch:
+			Vector2 pbase = (0, -2);
+			Vector3 v = invoker.prevViewAngles[i];
+			pbase.x += -(v.x - angle);
+			pbase.y += (v.y - pitch);
+			// change position based on movement direction
+			// (Y is forward/backward, X is left/right):
+			Vector2 hm = invoker.prevHorMove[i];
+			double pitchSc = invoker.curPithScale;
+			pbase.x += hm.y;
+			pbase.y += hm.x * (1.0 - pitchSc);
+			pbase.y *= invoker.curPithScale;
+			// change scale based on movement direction:
+			double sc = ToM_Utils.LinearMap(hm.x, -15, 15, -0.1, 0.2);
+			hm = invoker.curHorMove;
+			// update cached values:
+			invoker.prevViewAngles[i] = (angle, pitch, roll);
+			invoker.prevHorMove[i] = hm;
+			// apply values to this layer:
+			psp.x += pbase.x;
+			psp.y += pbase.y;
+			psp.scale += (sc, sc);
+			psp.scale *= 0.95;
+			psp.alpha -= 0.015;
+		}
+		// Copy values on bottom layer from top layer:
+		else
+		{
+			let pspTop = player.FindPSprite(ovid + APSP_TopParticle - APSP_BottomParticle);
+			if (pspTop)
+			{
+				psp.x = pspTop.x + 15;
+				psp.y = pspTop.y + 5;
+				psp.scale = pspTop.scale;
+				psp.alpha = pspTop.alpha;
+			}
+		}
+
+		if (psp.scale.x <= 0 || psp.scale.y <= 0 || psp.alpha <= 0)
+		{
+			psp.Destroy();
+		}
+	}
+
+	/*void DrawEyeFireParticles(Vector3 newpos)
 	{
 		for (int i = 0; i < MAXEYEFIRE-1; i++)
 		{
@@ -77,7 +155,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 					style: PBS_Fullbright|PBS_Fade);
 			}
 		}
-	}
+	}*/
 
 	action void A_StartJumpAttack()
 	{
@@ -243,9 +321,9 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			let psp = player.FindPSprite(OverlayID());
 			if (psp)
 			{
-				psp.bInterpolate = true;
-				//psp.scale.x = psp.scale.y = frandom[hrp](2.0, 2.2);
-				psp.alpha = frandom[hrp](0.85, 1.0);
+				psp.bInterpolate = false;
+				psp.scale.x = psp.scale.y = 1.9 + 0.3 * ToM_Utils.SinePulse();
+				psp.alpha = 0.4 + 0.2 * ToM_Utils.SinePulse();
 			}
 			//Vector2 hmove = RotateVector(vel.xy, -angle);
 			//Console.Printf("Forward/back: %.1f | Left/Right: %.1f", hmove.x, hmove.y);
@@ -258,54 +336,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		wait;
 	HorseReadyParticle:
-		TNT1 A 0 
-		{
-			A_OverlayFlags(OverlayID(),PSPF_RENDERSTYLE|PSPF_FORCEALPHA,true);
-			A_OverlayPivotAlign(OverlayID(),PSPA_CENTER,PSPA_CENTER);
-			A_OverlayRenderstyle(OverlayID(),Style_Add);
-			A_OverlayScale(OverlayID(),2, 2);
-			A_OverlayAlpha(OverlayID(), 0.5);
-			int i = Clamp(OverlayID() - APSP_TopParticle, 0, MAXEYEFIRE-1);
-			invoker.prevViewAngles[i] = (angle, pitch, roll);
-			Vector2 hmove = RotateVector(vel.xy, -angle);
-			invoker.prevHorMove[i] = (hmove.x, hmove.y);
-		}
-		HHRP A 1 bright
-		{
-			let psp = player.FindPSprite(OverlayID());
-			if (psp)
-			{
-				psp.bInterpolate = false;
-				//Console.Printf("Spawning horse particle %d", OverlayID());
-				int i = Clamp(OverlayID() - APSP_TopParticle, 0, MAXEYEFIRE-1);
-				// change position based on angle/pitch:
-				Vector2 pbase = (0, -2);
-				Vector3 v = invoker.prevViewAngles[i];
-				pbase.x += -(v.x - angle);
-				pbase.y += (v.y - pitch);
-				// change position based on movement direction:
-				Vector2 hm = invoker.prevHorMove[i];
-				pbase.x += hm.y;
-				pbase.y *= ToM_Utils.LinearMap(abs(pitch), 0, 90, 1.0, 0.0);
-				// change scale based on movement direction:
-				double sc = ToM_Utils.LinearMap(hm.x, -15, 15, -0.1, 0.2);
-				// update cached values:
-				hm = RotateVector(vel.xy, -angle);
-				invoker.prevViewAngles[i] = (angle, pitch, roll);
-				invoker.prevHorMove[i] = (hm.x, hm.y);
-				// apply values:
-				psp.x += pbase.x;
-				psp.y += pbase.y;
-				psp.scale.x += sc; 
-				psp.scale.y += sc;
-				psp.scale *= 0.95;
-				psp.alpha -= 0.025;
-				if (psp.scale.x <= 0 || psp.scale.y <= 0 || psp.alpha <= 0)
-				{
-					psp.Destroy();
-				}
-			}
-		}
+		HHRP A 1 bright A_MoveHorseEyeFire();
 		wait;
 	Fire:
 		TNT1 A 0 

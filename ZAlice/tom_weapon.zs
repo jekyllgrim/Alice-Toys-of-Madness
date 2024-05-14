@@ -8,7 +8,8 @@ class ToM_BaseWeapon : Weapon abstract
 	protected vector2 targOfs; //used by DampedRandomOffset
 	protected vector2 shiftOfs; //used by DampedRandomOffset
 	protected int idleCounter; //used by idle animations 
-	protected int particleLayer; //used by multi-layer particle effects
+	protected int particleLayer_bottom; //used by multi-layer particle effects
+	protected int particleLayer_top; //used by multi-layer particle effects
 	protected double atkzoom;
 	
 	protected state kickstate;
@@ -626,12 +627,26 @@ class ToM_BaseWeapon : Weapon abstract
 		int startlayer = bottom ? APSP_BottomParticle : APSP_TopParticle;
 		for (int i = 0; i < density; i++) 
 		{
-			int layer = startlayer+invoker.particleLayer;
+			int layer = startlayer + (bottom ? invoker.particleLayer_bottom : invoker.particleLayer_top);
 			player.SetPSprite(layer, tstate);
-			A_OverlayOffset(layer,frandom[pspart](-xofs,xofs),frandom[pspart](-yofs, yofs), WOF_ADD);
-			invoker.particleLayer++;
-			if (invoker.particleLayer >= maxlayers)
-				invoker.particleLayer = 0;
+			A_OverlayOffset(layer,frandom[pspart](-xofs,xofs),frandom[pspart](-yofs, yofs));
+			if (bottom)
+			{
+				invoker.particleLayer_bottom++;
+				if (invoker.particleLayer_bottom >= maxlayers)
+				{
+					invoker.particleLayer_bottom = 0;
+				}
+			}
+			else
+			{
+				invoker.particleLayer_top++;
+				if (invoker.particleLayer_top >= maxlayers)
+				{
+					invoker.particleLayer_top = 0;
+				}
+			}
+			//Console.Printf("Creating layer %d", layer);
 		}
 	}
 	

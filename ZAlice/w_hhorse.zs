@@ -44,11 +44,13 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	protected Vector2 prevHorMove[MAXEYEFIRE];
 	protected Vector2 curHorMove;
 	protected double curPithScale;
+	protected double curPithScaleInv;
 
 	action void A_SpawnHorseEyeFire()
 	{
 		invoker.curHorMove = RotateVector(vel.xy, -angle);
 		invoker.curPithScale = ToM_Utils.LinearMap(abs(pitch), 0, 90, 1.0, 0.0);
+		invoker.curPithScaleInv = ToM_Utils.LinearMap(pitch, -90, 90, -1.0, 1.0);
 		A_SpawnPSParticle("HorseReadyParticle", xofs: frandom[hrp](-2,2), yofs: frandom[hrp](-2,2), maxlayers: MAXEYEFIRE);
 		A_SpawnPSParticle("HorseReadyParticle", bottom: true, xofs: frandom[hrp](-2,2), yofs: frandom[hrp](-2,2), maxlayers: MAXEYEFIRE);
 		A_Overlay(APSP_TopParticle-1, "HorseReadyParticleBase", true);
@@ -58,7 +60,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		invoker.DrawEyeFireParticles(fpos);*/
 	}
 
-	action void A_MoveHorseEyeFire()
+	action void A_AnimateHorseEyeFire()
 	{
 		int ovid = OverlayID();
 		let psp = player.FindPSprite(ovid);
@@ -82,34 +84,35 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			}
 		}
 
-		//Console.Printf("Spawning horse particle %d", OverlayID());
-		int i = Clamp(ovid + (ovid > 0? -APSP_TopParticle : APSP_BottomParticle), 0, MAXEYEFIRE-1);
 		// Update values only on the top layer:
 		if (ovid > 0)
 		{
-			// change position based on angle/pitch:
-			Vector2 pbase = (0, -2);
-			Vector3 v = invoker.prevViewAngles[i];
-			pbase.x += -(v.x - angle);
-			pbase.y += (v.y - pitch);
-			// change position based on movement direction
-			// (Y is forward/backward, X is left/right):
-			Vector2 hm = invoker.prevHorMove[i];
-			double pitchSc = invoker.curPithScale;
-			pbase.x += hm.y;
-			pbase.y += hm.x * (1.0 - pitchSc);
-			pbase.y *= invoker.curPithScale;
-			// change scale based on movement direction:
-			double sc = ToM_Utils.LinearMap(hm.x, -15, 15, -0.1, 0.2);
-			hm = invoker.curHorMove;
+			int i = Clamp(ovid - APSP_TopParticle, 0, MAXEYEFIRE-1);
+			Vector3 baseMove = (0, 0, -2); //scale/depth (forward/backward), horizontal, vertical
+			Vector2 hm = invoker.prevHorMove[i] * 0.5; //X - relative forward, Y - relative sideways
+			Vector3 vm = invoker.prevViewAngles[i];
+			double psc = invoker.curPithScale; //normalized (abs) pitch (0.0 - 1.0)
+			double pscInv = invoker.curPithScaleInv; //normalized pitch (-1.0 - 1.0)
+
+			baseMove.y += hm.y  - (vm.x - angle);
+			baseMove.z += (vm.y - pitch);
+			baseMove.x += hm.x;
+
+			Vector3 finalMove;
+			finalMOve.y = baseMove.y; //horizonal movement is unchanged
+			finalMove.z = baseMove.x * pscInv + baseMove.z * psc; //vertical movement relative to pitch
+			finalMove.x = baseMove.x * psc + baseMove.z * pscInv; //depth movement relative to pitch
+
+			psp.x += finalMove.y; //horizontal
+			psp.y += finalMove.z; //vertical
+			double sc = ToM_Utils.LinearMap(finalMove.x, -15, 15, -0.2, 0.2); // depth
+			psp.scale.x += sc;
+			psp.scale.y += sc;
+			
 			// update cached values:
 			invoker.prevViewAngles[i] = (angle, pitch, roll);
-			invoker.prevHorMove[i] = hm;
-			// apply values to this layer:
-			psp.x += pbase.x;
-			psp.y += pbase.y;
-			psp.scale += (sc, sc);
-			psp.scale *= 0.95;
+			invoker.prevHorMove[i] = invoker.curHorMove;
+
 			psp.alpha -= 0.015;
 		}
 		// Copy values on bottom layer from top layer:
@@ -336,7 +339,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		wait;
 	HorseReadyParticle:
-		HHRP A 1 bright A_MoveHorseEyeFire();
+		HHRP A 1 bright A_AnimateHorseEyeFire();
 		wait;
 	Fire:
 		TNT1 A 0 

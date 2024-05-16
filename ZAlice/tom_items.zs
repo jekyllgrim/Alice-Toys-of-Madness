@@ -763,3 +763,95 @@ class ToM_JackBombProjectile : ToM_Projectile
 		stop;
 	}
 }
+
+class ToM_Backpack : Backpack
+{
+	array <ToM_Ammo> floatingAmmo;
+	static const class<ToM_Ammo> floatingAmmoClasses[] =
+	{
+		'ToM_WeakMana',
+		'ToM_WeakManaBig',
+		'ToM_MediumMana',
+		'ToM_MediumManaBig',
+		'ToM_StrongMana',
+		'ToM_StrongManaBig'
+	};
+
+	Default
+	{
+		+FORCEXYBILLBOARD
+		+Inventory.AUTOACTIVATE
+		Inventory.pickupsound "pickups/generic";
+		xscale 0.75;
+		yscale 0.625;
+	}
+
+	override void PostBeginPlay()
+	{
+		Super.PostBeginPlay();
+		for (int i = 0; i < floatingAmmoClasses.Size(); i++)
+		{
+			class<ToM_Ammo> amcls = floatingAmmoClasses[i];
+			let am = ToM_Ammo(Spawn(amcls, pos));
+			if (am)
+			{
+				am.bSPECIAL = false;
+				am.bNOINTERACTION = true;
+				am.A_ChangeLinkFlags(true);
+				am.scale *= 0.2;
+				am.alpha *= 0.75;
+				am.FloatBobStrength = 0.2;
+				floatingAmmo.Push(am);
+			}
+		}
+		double angStep = 360.0 / floatingAmmo.Size();
+		double wangle = 0;
+		foreach (am : floatingAmmo)
+		{
+			am.Warp(self, 10, zofs: 12, angle: wangle, flags: WARPF_USECALLERANGLE|WARPF_NOCHECKPOSITION);
+			am.roll = wangle*2;
+			wangle += angStep;
+		}
+	}
+
+	override void Tick()
+	{
+		Super.Tick();
+		if (!owner && !isFrozen())
+		{
+			foreach (am : floatingAmmo)
+			{
+				am.Warp(self, 14, zofs: 40, angle: 3, flags: WARPF_USECALLERANGLE|WARPF_NOCHECKPOSITION|WARPF_INTERPOLATE);
+				am.roll += 2;
+				FSpawnParticleParams p;
+				p.lifetime = 25;
+				p.color1 =  am.particleColor;
+				p.texture = TexMan.CheckForTexture("LENYA0");
+				p.style = STYLE_AddShaded;
+				p.flags = SPF_FULLBRIGHT;
+				p.pos = am.pos + (0, 0, am.WorldOffset.z + am.height * 0.25);
+				p.size = 6;
+				p.sizestep = p.size / double(-p.lifetime);
+				p.startalpha = am.alpha;
+				p.fadestep = -1;
+				Level.SpawnParticle(p);
+			}
+		}
+	}
+
+	override bool TryPickup (in out Actor toucher)
+	{
+		foreach (am : floatingAmmo)
+		{
+			am.A_ChangeLinkFlags(sector: true);
+		}
+		return Super.TryPickup(toucher);
+	}
+
+	States {
+	Spawn:
+		AMPA A 15;
+		AMPA BCDEFGHIJ 3;
+		loop;
+	}
+}

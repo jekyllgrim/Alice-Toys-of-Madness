@@ -358,6 +358,7 @@ weapons/jackbomb/throw			"sounds/jackbomb/jackbomb_toss.wav"
 
 // ITEMS
 
+pickups/generic					"sounds/pickups/weapon_pickup.wav"
 pickups/weapon					"sounds/pickups/weaponpickup.ogg"
 pickups/armor/light				"sounds/pickups/pickup_armor_light.ogg"
 pickups/armor/heavy				"sounds/pickups/pickup_armor_light.ogg"

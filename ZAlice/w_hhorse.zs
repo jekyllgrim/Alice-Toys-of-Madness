@@ -41,16 +41,12 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	/*uint curFirePos;
 	Vector3 eyeFirePos[MAXEYEFIRE];*/
 	protected Vector3 prevViewAngles[MAXEYEFIRE];
-	protected Vector2 prevHorMove[MAXEYEFIRE];
-	protected Vector2 curHorMove;
-	protected double curPithScale;
-	protected double curPithScaleInv;
+	protected Vector3 prevRelMove[MAXEYEFIRE];
+	protected Vector3 curRelMove;
 
 	action void A_SpawnHorseEyeFire()
 	{
-		invoker.curHorMove = RotateVector(vel.xy, -angle);
-		invoker.curPithScale = ToM_Utils.LinearMap(abs(pitch), 0, 90, 1.0, 0.0);
-		invoker.curPithScaleInv = ToM_Utils.LinearMap(pitch, -90, 90, -1.0, 1.0);
+		invoker.curRelMove = (RotateVector(vel.xy, -angle), vel.z);
 		A_SpawnPSParticle("HorseReadyParticle", xofs: frandom[hrp](-2,2), yofs: frandom[hrp](-2,2), maxlayers: MAXEYEFIRE);
 		A_SpawnPSParticle("HorseReadyParticle", bottom: true, xofs: frandom[hrp](-2,2), yofs: frandom[hrp](-2,2), maxlayers: MAXEYEFIRE);
 		A_Overlay(APSP_TopParticle-1, "HorseReadyParticleBase", true);
@@ -80,7 +76,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			{
 				int i = Clamp(ovid - APSP_TopParticle, 0, MAXEYEFIRE-1);
 				invoker.prevViewAngles[i] = (angle, pitch, roll);
-				invoker.prevHorMove[i] = invoker.curHorMove;
+				invoker.prevRelMove[i] = invoker.curRelMove;
 			}
 		}
 
@@ -88,30 +84,24 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		if (ovid > 0)
 		{
 			int i = Clamp(ovid - APSP_TopParticle, 0, MAXEYEFIRE-1);
-			Vector3 baseMove = (0, 0, -2); //scale/depth (forward/backward), horizontal, vertical
-			Vector2 hm = invoker.prevHorMove[i] * 0.5; //X - relative forward, Y - relative sideways
+			Vector3 hm = invoker.prevRelMove[i] * 0.5; //X - relative forward, Y - relative sideways
 			Vector3 vm = invoker.prevViewAngles[i];
-			double psc = invoker.curPithScale; //normalized (abs) pitch (0.0 - 1.0)
-			double pscInv = invoker.curPithScaleInv; //normalized pitch (-1.0 - 1.0)
 
-			baseMove.y += hm.y  - (vm.x - angle);
-			baseMove.z += (vm.y - pitch);
-			baseMove.x += hm.x;
+			Vector3 baseMove = (0, 0, -2); //scale/depth (forward/backward), horizontal, vertical
+			baseMove.x += hm.x; //forward/back
+			baseMove.y += hm.y - (vm.x - angle); //horizontal
+			baseMove.z += vm.y - pitch + hm.z*0.5; //vertical
 
-			Vector3 finalMove;
-			finalMOve.y = baseMove.y; //horizonal movement is unchanged
-			finalMove.z = baseMove.x * pscInv + baseMove.z * psc; //vertical movement relative to pitch
-			finalMove.x = baseMove.x * psc + baseMove.z * pscInv; //depth movement relative to pitch
+			Vector2 ofs, sc;
+			[ofs, sc] = ToM_Utils.WorldToPSpriteCoords(baseMove.x, baseMove.y, baseMove.z, self.pitch, 0.2);
 
-			psp.x += finalMove.y; //horizontal
-			psp.y += finalMove.z; //vertical
-			double sc = ToM_Utils.LinearMap(finalMove.x, -15, 15, -0.2, 0.2); // depth
-			psp.scale.x += sc;
-			psp.scale.y += sc;
+			psp.x += ofs.x; //horizontal
+			psp.y += ofs.y; //vertical
+			psp.scale += sc;
 			
 			// update cached values:
 			invoker.prevViewAngles[i] = (angle, pitch, roll);
-			invoker.prevHorMove[i] = invoker.curHorMove;
+			invoker.prevRelMove[i] = invoker.curRelMove;
 
 			psp.alpha -= 0.015;
 		}

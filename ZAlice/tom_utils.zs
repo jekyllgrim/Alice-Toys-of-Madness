@@ -375,7 +375,7 @@ class ToM_Utils
 	// Converts offsets into relative offsets, by Lewisk3.
 	// If 'isPosition' is TRUE, adds actor's position to the result.
 	// Set to FALSE when used for relative velocity.
-	static play vector3 RelativeToGlobalCoords(actor mo, vector3 offset, bool isPosition = true)
+	static clearscope vector3 RelativeToGlobalCoords(actor mo, vector3 offset, bool isPosition = true)
 	{
 		if (!mo)
 			return (0,0,0);
@@ -383,7 +383,7 @@ class ToM_Utils
 		return RelativeToGlobalOffset(mo.pos, (mo.angle, mo.pitch, mo.roll), offset, isPosition);
 	}
 
-	static play Vector3 RelativeToGlobalOffset(Vector3 startpos, Vector3 viewAngles, Vector3 offset, bool isPosition = true)
+	static clearscope Vector3 RelativeToGlobalOffset(Vector3 startpos, Vector3 viewAngles, Vector3 offset, bool isPosition = true)
 	{
 		Quat dir = Quat.FromAngles(viewAngles.x, viewAngles.y, viewAngles.z);
 		vector3 ofs = dir * (offset.x, -offset.y, offset.z);
@@ -393,6 +393,29 @@ class ToM_Utils
 		}
 		return ofs;
 	}
+
+	// Converts world offsets to PSprite movement.
+	// Used by PSprites that are meant to move in the same
+	// direction as world vel.
+	// Returns Vector2 to apply to PSprite's x and y,
+	// and a Vector2 to apply to PSprite's scale
+	// to imitate the movement.
+	static clearscope Vector2, Vector2 WorldToPSpriteCoords(double forwardBack, double leftright, double updown, double pitch, double depthScale = 1.0)
+	{
+		double normPitch = ToM_Utils.LinearMap(pitch, -90, 90, -1.0, 1.0, true); //pscInv
+		double invPitch = 1.0 - abs(normPitch); //psc
+		Vector3 vec;
+		vec.y = leftright; // horizontal movement - unchanged
+		vec.z = forwardBack * normPitch + updown * invPitch; //vertical movement relative to pitch
+		vec.x = forwardBack * invPitch + updown * normPitch; //depth (scale) movement relative to pitch
+		if (vec.x != 0)
+		{
+			depthScale = abs(depthScale);
+			vec.x = ToM_Utils.LinearMap(vec.x, -15, 15, -depthScale, depthScale);
+		}
+
+		return (vec.y, vec.z), (vec.x, vec.x);
+	} 
 	
 	static play void AlignToPlane(Actor a, SecPlane sec = null, bool ceiling = false) 
 	{

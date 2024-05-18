@@ -767,15 +767,22 @@ class ToM_JackBombProjectile : ToM_Projectile
 class ToM_Backpack : Backpack
 {
 	array <ToM_Ammo> floatingAmmo;
+	int lastblink;
+
 	static const class<ToM_Ammo> floatingAmmoClasses[] =
 	{
 		'ToM_WeakMana',
-		'ToM_WeakManaBig',
+		//'ToM_WeakManaBig',
 		'ToM_MediumMana',
-		'ToM_MediumManaBig',
-		'ToM_StrongMana',
-		'ToM_StrongManaBig'
+		//'ToM_MediumManaBig',
+		'ToM_StrongMana'//,
+		//'ToM_StrongManaBig'
 	};
+
+	array <color> particleColors;
+	uint colorDelay;
+	bool isVisible;
+	TextureID partTex;
 
 	Default
 	{
@@ -789,7 +796,7 @@ class ToM_Backpack : Backpack
 	override void PostBeginPlay()
 	{
 		Super.PostBeginPlay();
-		for (int i = 0; i < floatingAmmoClasses.Size(); i++)
+		/*for (int i = 0; i < floatingAmmoClasses.Size(); i++)
 		{
 			class<ToM_Ammo> amcls = floatingAmmoClasses[i];
 			let am = ToM_Ammo(Spawn(amcls, pos));
@@ -811,22 +818,36 @@ class ToM_Backpack : Backpack
 			am.Warp(self, 10, zofs: 12, angle: wangle, flags: WARPF_USECALLERANGLE|WARPF_NOCHECKPOSITION);
 			am.roll = wangle*2;
 			wangle += angStep;
+		}*/
+
+		for (int i = 0; i < floatingAmmoClasses.Size(); i++)
+		{
+			let def = GetDefaultByType(floatingAmmoClasses[i]);
+			if (def)
+			{
+				particleColors.Push(def.particleColor);
+			}
 		}
 	}
 
 	override void Tick()
 	{
 		Super.Tick();
-		if (!owner && !isFrozen())
+		if (!bNOSECTOR && !isFrozen())
 		{
-			foreach (am : floatingAmmo)
+			if (!partTex || !partTex.IsValid())
+			{
+				partTex = TexMan.CheckForTexture("LENYA0");
+			}
+
+			/*foreach (am : floatingAmmo)
 			{
 				am.Warp(self, 14, zofs: 40, angle: 3, flags: WARPF_USECALLERANGLE|WARPF_NOCHECKPOSITION|WARPF_INTERPOLATE);
 				am.roll += 2;
 				FSpawnParticleParams p;
 				p.lifetime = 25;
 				p.color1 =  am.particleColor;
-				p.texture = TexMan.CheckForTexture("LENYA0");
+				p.texture = partTex;
 				p.style = STYLE_AddShaded;
 				p.flags = SPF_FULLBRIGHT;
 				p.pos = am.pos + (0, 0, am.WorldOffset.z + am.height * 0.25);
@@ -835,23 +856,158 @@ class ToM_Backpack : Backpack
 				p.startalpha = am.alpha;
 				p.fadestep = -1;
 				Level.SpawnParticle(p);
+			}*/
+
+			if (GetAge() % 10 == 0)
+			{
+				isVisible = Distance3D(players[consoleplayer].mo) <= 1024;
+			}
+			if (!isVisible) return;
+
+			if (colorDelay == 0)
+			{
+				colorDelay = random[partcol](10, 100);
+
+				/*FSpawnParticleParams p;
+				int i = random[partcol](0, particleColors.Size() - 1);
+				p.flags = SPF_FULLBRIGHT;
+				p.color1 = particleColors[i];
+				p.size = frandom[partcol](3, 6);
+				p.lifetime = 40;
+				p.startalpha = 1;
+				p.fadestep = -1;
+				p.sizestep = p.size / -p.lifetime;
+				Vector2 hofs = Actor.RotateVector((6, frandom[partcol](-radius*0.7, radius*0.7)), players[consoleplayer].mo.angle + 180);
+				p.pos = pos + (hofs, frandom[partcol](26, 29));
+				p.vel.z = 0.5;
+				Level.SpawnParticle(p);*/
+
+				int i = random[partcol](0, floatingAmmoClasses.Size() - 1);
+				let def = GetDefaultByType(floatingAmmoClasses[i]);
+				TextureID tex = def.FindState("Idle").GetSpriteTexture(0);
+				double pang = players[consoleplayer].mo.angle + 180;
+				Vector2 hofs = Actor.RotateVector((6, frandom[partcol](-radius*0.5, radius*0.5)), pang);
+				Vector2 hdir = Actor.RotateVector((frandom[partcol](0.25, 0.8), 0), pang + frandom[partcol](-70, 70));
+				let v = ToM_ManaShard(
+					VisualThinker.Spawn('ToM_ManaShard', 
+						tex, 
+						pos + (hofs, frandom[partcol](26, 29)), //pos
+						(hdir, frandom[partcol](0.5, 2)), //vel
+						alpha: 0.5,
+						flags: SPF_FULLBRIGHT|SPF_ROLL,
+						roll: frandom[partcol](0,360),
+						scale: def.scale * frandom[partcol](0.15, 0.25),
+						style: STYLE_Add)
+				);
+				v.chest = self;
+				v.particleColor = def.particleColor;
+				v.partTex = partTex;
+			}
+			else
+			{
+				colorDelay--;
 			}
 		}
 	}
 
-	override bool TryPickup (in out Actor toucher)
+	/*override bool TryPickup (in out Actor toucher)
 	{
 		foreach (am : floatingAmmo)
 		{
 			am.A_ChangeLinkFlags(sector: true);
 		}
 		return Super.TryPickup(toucher);
-	}
+	}*/
 
 	States {
 	Spawn:
-		AMPA A 15;
-		AMPA BCDEFGHIJ 3;
-		loop;
+		AMPA A random(3, 35);
+		TNT1 A 0 
+		{
+			int i = 1;
+			while (i == lastblink)
+			{
+				i = random[ammochest](1, 5);
+			}
+			lastblink = i;
+			return FindStateByString("Blink"..i);
+		}
+	Blink1:
+		AMPA BCBD 4;
+		TNT1 A 0 { return spawnstate; }
+	Blink2:
+		AMPA EFEG 4;
+		TNT1 A 0 { return spawnstate; }
+	Blink3:
+		AMPA HIHJ 4;
+		TNT1 A 0 { return spawnstate; }
+	Blink4:
+		AMPA KLKM 4;
+		TNT1 A 0 { return spawnstate; }
+	Blink5:
+		AMPA NONP 4;
+		TNT1 A 0 { return spawnstate; }
+		stop;
+	}
+}
+
+class ToM_ManaShard : VisualThinker
+{
+	Actor chest;
+	color particleColor;
+	double particleOfs;
+	TextureID partTex;
+	double rollstep;
+
+	override void PostBeginPlay()
+	{
+		Super.PostBeginPlay();
+		rollstep = frandom[partcol](-7, 7);
+		Vector2 size = TexMan.GetScaledSize(texture);
+		particleOfs = size.y * scale.y * 0.75;
+	}
+
+	override void Tick()
+	{
+		Super.Tick();
+		if (!chest)
+		{
+			Destroy();
+			return;
+		}
+
+		if (IsFrozen()) return;
+
+		if (pos.z > chest.floorz)
+		{
+			roll += rollstep;
+			vel.z -= 0.1;
+			rollstep *= 0.97;
+		}
+		else
+		{
+			vel.z = 0;
+			vel.xy *= 0.95;
+			rollstep *= 0.9;
+			alpha -= 0.05;
+		}
+
+		FSpawnParticleParams p;
+		p.lifetime = 25;
+		p.color1 =  particleColor;
+		p.texture = partTex;
+		p.style = STYLE_AddShaded;
+		p.flags = SPF_FULLBRIGHT;
+		p.pos = pos + (0,0,particleOfs);
+		p.size = 56 * scale.x;
+		p.sizestep = p.size / double(-p.lifetime);
+		p.startalpha = alpha;
+		p.fadestep = -1;
+		Level.SpawnParticle(p);
+
+		if (alpha <= 0)
+		{
+			Destroy();
+		}
 	}
 }

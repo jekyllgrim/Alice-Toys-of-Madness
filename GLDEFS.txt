@@ -9,3 +9,83 @@ brightmap texture "models/ragebox/ragebox_lit.png"
 {
    map "brightmaps/ragebox_lit.png"
 }
+
+brightmap sprite "AMPAA0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAB0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAC0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAD0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAE0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAF0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAG0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAH0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAI0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAJ0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAK0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAL0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAM0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAN0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAO0"
+{
+	map "brightmaps/ammochest.png"
+}
+
+brightmap sprite "AMPAP0"
+{
+	map "brightmaps/ammochest.png"
+}

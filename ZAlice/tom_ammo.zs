@@ -12,6 +12,7 @@ class ToM_Ammo : Ammo
 	property particleColor : particleColor;
 
 	Actor manashade;
+	double manaBobFactor;
 	
 	Default 
 	{
@@ -38,13 +39,21 @@ class ToM_Ammo : Ammo
 		}
 		return (class<Ammo>)(type);
 	}
+
+	void A_SetManaFrame(int startFrame, int endFrame)
+	{
+		int i = round(ToM_Utils.LinearMap(manaBobFactor, -1, 1, startFrame, endFrame+1));
+		if (i > endFrame) i = startFrame;
+		frame = i;
+	}
 	
 	override void Tick()
 	{
 		super.Tick();
 		if (!owner && !isFrozen())// && InStateSequence(curstate, FindState("Idle")))
 		{
-			WorldOffset.z = BobSin(FloatBobPhase + 0.85 * level.maptime) * FloatBobStrength;
+			manaBobFactor = sin(360.0 * (GetAge() + FloatBobPhase) * 0.01);
+			WorldOffset.z = 8 * manaBobFactor * FloatBobStrength;
 		}
 
 		if (manashade && owner)
@@ -160,8 +169,7 @@ class ToM_WeakMana : ToM_Ammo
 	
 	States {
 	Idle:
-		AMWS A 15;
-		AMWS BCDEFGHI 3;
+		AMWS A 1 NoDelay A_SetManaFrame(0, 8);
 		loop;
 	}
 }
@@ -176,8 +184,7 @@ class ToM_WeakManaBig : ToM_WeakMana
 	
 	States {
 	Idle:
-		AMWB A 15;
-		AMWB BCDEFGHIJKL 2;
+		AMWB A 1 NoDelay A_SetManaFrame(0, 11);
 		loop;
 	}
 }
@@ -203,8 +210,7 @@ class ToM_MediumMana : ToM_Ammo
 	
 	States {
 	Idle:
-		AMMS A 15;
-		AMMS BCDEFGHIJKL 2;
+		AMMS A 1 NoDelay A_SetManaFrame(0, 11);
 		loop;
 	}
 }
@@ -219,8 +225,7 @@ class ToM_MediumManaBig : ToM_MediumMana
 	
 	States {
 	Idle:
-		AMMB A 15;
-		AMMB BCDEFGHIJKL 2;
+		AMMB A 1 NoDelay A_SetManaFrame(0, 11);
 		loop;
 	}
 }
@@ -245,8 +250,7 @@ class ToM_StrongMana : ToM_Ammo
 	
 	States {
 	Idle:
-		AMSS A 15;
-		AMSS BCDEFGHI 3;
+		AMSS A 1 NoDelay A_SetManaFrame(0, 8);
 		loop;
 	}
 }
@@ -261,8 +265,7 @@ class ToM_StrongManaBig : ToM_StrongMana
 	
 	States {
 	Idle:
-		AMSB A 15;
-		AMSB BCDEFGHIJKL 2;
+		AMSB A 1 NoDelay A_SetManaFrame(0, 11);
 		loop;
 	}
 }

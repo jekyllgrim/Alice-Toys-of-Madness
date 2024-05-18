@@ -259,6 +259,9 @@ class ToM_Mainhandler : EventHandler
 		case 'InvulnerabilitySphere':
 			e.Replacement = "ToM_GrowthPotion"; 
 			break;
+		case 'Backpack':
+			e.Replacement = "ToM_Backpack"; 
+			break;
 
 		case 'Clip':
 			e.Replacement = "ToM_AmmoSpawner_RedYellow"; 

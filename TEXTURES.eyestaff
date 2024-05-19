@@ -1,0 +1,66 @@
+Sprite "JEYCP0", 64, 64
+{
+	XScale 4.200
+	YScale 4.800
+	Offset -916, -401
+	Patch "JCPART", 0, 0
+}
+
+Sprite "JEYCQ0", 64, 64
+{
+	XScale 4.200
+	YScale 4.800
+	Offset -1051, -167
+	Patch "JCPART", 0, 0
+}
+
+Sprite "JEYCF0", 309, 294
+{
+	YScale 1.200
+	Offset -116, 64
+	Patch "JEYCF", 0, 0
+}
+
+Sprite "JEYCA0", 309, 294
+{
+	YScale 1.200
+	Offset -116, 64
+	Patch "JEYCA", 0, 0
+}
+
+Sprite "JEYCB0", 309, 294
+{
+	XScale 1.100
+	YScale 1.300
+	Offset -117, 44
+	Patch "JEYCB", 0, 0
+}
+
+Sprite "JEYCC0", 309, 294
+{
+	YScale 1.200
+	Offset -100, 58
+	Patch "JEYCB", 0, 0
+}
+
+Sprite "JEYCD0", 309, 294
+{
+	XScale 1.100
+	YScale 1.400
+	Offset -109, 16
+	Patch "JEYCC", 0, 0
+}
+
+Sprite "JEYCE0", 309, 294
+{
+	YScale 1.200
+	Offset -93, 37
+	Patch "JEYCC", 0, 0
+}
+
+Sprite "JEYCG0", 309, 294
+{
+	YScale 1.200
+	Offset -93, 37
+	Patch "JEYCG", 0, 0
+}

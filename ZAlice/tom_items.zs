@@ -465,7 +465,7 @@ class ToM_HealthPickup : ToM_Health
 	
 	override string GetPickupNote()
 	{
-		return String.Format("(+%d %s)", amount, StringTable.Localize(pickupnote));
+		return String.Format("(\ca+%d %s\c-)", amount, StringTable.Localize(pickupnote));
 	}
 }
 
@@ -865,21 +865,69 @@ class ToM_Backpack : Backpack
 		v.partTex = partTex;
 	}
 
+	enum EManaTypes
+	{
+		MANA_WEAK,
+		MANA_MEDIUM,
+		MANA_STRONG,
+	}
+	int prePickupManaAmounts[3];
+	Actor chestReceiver;
+
+	override bool TryPickup(in out Actor toucher)
+	{
+		if (toucher && toucher.player)
+		{
+			prePickupManaAmounts[MANA_WEAK] = toucher.CountInv('ToM_WeakMana');
+			prePickupManaAmounts[MANA_MEDIUM] = toucher.CountInv('ToM_MediumMana');
+			prePickupManaAmounts[MANA_STRONG] = toucher.CountInv('ToM_StrongMana');
+		}
+		bool ret = Super.TryPickup(toucher);
+		if (ret)
+		{
+			chestReceiver = toucher;
+		}
+		return ret;
+	}
+
+	override bool HandlePickup(Inventory item)
+	{
+		bool ret = Super.HandlePickup(item);
+		if (ret)
+		{
+			chestReceiver = owner;
+		}
+		return ret;
+	}
+
 	override string PickupMessage()
 	{
 		String basemsg = StringTable.Localize(pickupMsg);
-		if (!owner) return basemsg;
+		if (!chestReceiver) return basemsg;
 
 		String note;
-		for (Inventory item = owner.inv; item; item = item.inv)
+		for (int i = 0; i < prePickupManaAmounts.Size(); i++)
 		{
-			bool needComma = (note != "");
-			let mana = ToM_Ammo(item);
-			if (mana && mana.GetParentAmmo() != 'ToM_Ammo')
+			Ammo mana;
+			switch (i)
 			{
-				note.AppendFormat("%s%s \cd+%d\c-", needComma? ", " : "", StringTable.Localize(mana.GetTag()), mana.backpackmaxamount);
+			case MANA_WEAK:
+				mana = Ammo(chestReceiver.FindInventory('ToM_WeakMana'));
+				break;
+			case MANA_MEDIUM:
+				mana = Ammo(chestReceiver.FindInventory('ToM_MediumMana'));
+				break;
+			case MANA_STRONG:
+				mana = Ammo(chestReceiver.FindInventory('ToM_StrongMana'));
+				break;
+			}
+			if (mana)
+			{
+				bool needComma = (note != "");
+				note.AppendFormat("%s%s \cf+%d\c-", needComma? ", " : "", StringTable.Localize(mana.GetTag()), mana.amount - prePickupManaAmounts[i]);
 			}
 		}
+
 		return String.Format("%s (%s)", basemsg, note);
 	}
 

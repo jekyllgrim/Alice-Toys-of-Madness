@@ -376,6 +376,7 @@ class ToM_SilverArmor : GreenArmor
 	mixin ToM_PickupFlashProperties;
 	mixin ToM_PickupSound;
 	mixin ToM_ComplexPickupmessage;
+	int lastblink;
 	
 	Default
 	{
@@ -385,33 +386,54 @@ class ToM_SilverArmor : GreenArmor
 		yscale 0.45;
 	}
 	
-	States
-	{
+	States {
 	Spawn:
-		AARM A -1;
+		ABR1 A 0 NoDelay { return ResolveState("Idle"); }
+		stop;
+	Idle:
+		#### A random(3, 35);
+		#### A 0 
+		{
+			int i = 1;
+			while (i == lastblink)
+			{
+				i = random[ammochest](1, 5);
+			}
+			lastblink = i;
+			return FindStateByString("Blink"..i);
+		}
+	Blink1:
+		#### BCBD 4;
+		#### A 0 { return spawnstate; }
+	Blink2:
+		#### EFEG 4;
+		#### A 0 { return spawnstate; }
+	Blink3:
+		#### HIHJ 4;
+		#### A 0 { return spawnstate; }
+	Blink4:
+		#### KLKM 4;
+		#### A 0 { return spawnstate; }
+	Blink5:
+		#### NONP 4;
+		#### A 0 { return spawnstate; }
 		stop;
 	}
 }
 
-class ToM_GoldArmor : BlueArmor
-{
-	mixin ToM_CheckParticles;
-	mixin ToM_PickupFlashProperties;
-	mixin ToM_PickupSound;
-	mixin ToM_ComplexPickupmessage;
-	
+class ToM_GoldArmor : ToM_SilverArmor
+{	
 	Default
 	{
 		Inventory.icon "ACARM_2";
 		Inventory.pickupsound "pickups/armor/heavy";
-		xscale 0.5;
-		yscale 0.45;
+		Armor.SavePercent 50;
+		Armor.SaveAmount 200;
 	}
 	
-	States
-	{
+	States {
 	Spawn:
-		AARM B -1;
+		ABR2 A 0 NoDelay { return ResolveState("Idle"); }
 		stop;
 	}
 }
@@ -434,7 +456,7 @@ class ToM_ArmorBonus : ArmorBonus
 	States
 	{
 	Spawn:
-		AARM C -1;
+		ABR0 A -1;
 		stop;
 	}
 }

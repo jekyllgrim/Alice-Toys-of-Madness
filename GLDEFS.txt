@@ -10,6 +10,8 @@ brightmap texture "models/ragebox/ragebox_lit.png"
    map "brightmaps/ragebox_lit.png"
 }
 
+// MANA CHEST (backpack)
+
 brightmap sprite "AMPAA0"
 {
 	map "brightmaps/ammochest/AMBAD.png"
@@ -135,4 +137,172 @@ brightmap sprite "AMBAH0"
 brightmap sprite "AMBAI0"
 {
 	map "brightmaps/ammochest/AMBAI.png"
+}
+
+// SILVER ARMOR
+
+brightmap sprite "ABR1A0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1B0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1C0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1D0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1E0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1F0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1G0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1H0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1I0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1J0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1K0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1L0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1M0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1N0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1O0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR1P0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+brightmap sprite "ABR2A0"
+{
+	map "brightmaps/armor/ABR1A0.png"
+}
+
+// GOLD ARMOR
+brightmap sprite "ABR2A0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2B0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2C0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2D0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2E0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2F0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2G0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2H0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2I0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2J0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2K0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2L0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2M0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2N0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2O0"
+{
+	map "brightmaps/armor/ABR2A0.png"
+}
+
+brightmap sprite "ABR2P0"
+{
+	map "brightmaps/armor/ABR2A0.png"
 }

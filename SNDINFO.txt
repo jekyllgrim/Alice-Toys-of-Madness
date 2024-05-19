@@ -385,6 +385,10 @@ pickups/health/magicbud			"sounds/pickups/health/shrinkflower_close.ogg"
 pickups/health/magicflower		"sounds/pickups/health/pickups_bottle_large_magic.ogg"
 
 pickups/ammo	"sounds/pickups/shrinkflower_pop.ogg"
+pickups/manachest "sounds/pickups/shrinkflower_open.ogg"
+$random pickups/manachest/gemspawn { manaGemSpawn1 manaGemSpawn2 }
+manaGemSpawn1 "sounds/pickups/item-jewelry-stones1.wav"
+manaGemSpawn2 "sounds/pickups/item-jewelry-stones2.wav"
 
 ragebox/activate	"sounds/pickups/ragebox_pickup.wav"
 ragebox/scream		"sounds/pickups/ragebox_power.wav"

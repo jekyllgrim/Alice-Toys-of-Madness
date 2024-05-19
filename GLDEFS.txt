@@ -12,80 +12,127 @@ brightmap texture "models/ragebox/ragebox_lit.png"
 
 brightmap sprite "AMPAA0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAB0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAC0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAD0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAE0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAF0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAG0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAH0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAI0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAJ0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAK0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAL0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAM0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAN0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAO0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
 }
 
 brightmap sprite "AMPAP0"
 {
-	map "brightmaps/ammochest.png"
+	map "brightmaps/ammochest/AMBAD.png"
+}
+
+
+
+brightmap sprite "AMBAA0"
+{
+	map "brightmaps/ammochest/AMBAA.png"
+}
+
+brightmap sprite "AMBAB0"
+{
+	map "brightmaps/ammochest/AMBAB.png"
+}
+
+brightmap sprite "AMBAC0"
+{
+	map "brightmaps/ammochest/AMBAC.png"
+}
+
+brightmap sprite "AMBAD0"
+{
+	map "brightmaps/ammochest/AMBAD.png"
+}
+
+brightmap sprite "AMBAE0"
+{
+	map "brightmaps/ammochest/AMBAE.png"
+}
+
+brightmap sprite "AMBAF0"
+{
+	map "brightmaps/ammochest/AMBAF.png"
+}
+
+brightmap sprite "AMBAG0"
+{
+	map "brightmaps/ammochest/AMBAG.png"
+}
+
+brightmap sprite "AMBAH0"
+{
+	map "brightmaps/ammochest/AMBAH.png"
+}
+
+brightmap sprite "AMBAI0"
+{
+	map "brightmaps/ammochest/AMBAI.png"
 }

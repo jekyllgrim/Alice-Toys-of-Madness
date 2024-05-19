@@ -768,15 +768,16 @@ class ToM_Backpack : Backpack
 {
 	array <ToM_Ammo> floatingAmmo;
 	int lastblink;
+	int jiggleStartTic;
 
-	static const class<ToM_Ammo> floatingAmmoClasses[] =
+	static const class<ToM_Ammo> manaClasses[] =
 	{
 		'ToM_WeakMana',
-		//'ToM_WeakManaBig',
+		'ToM_WeakManaBig',
 		'ToM_MediumMana',
-		//'ToM_MediumManaBig',
-		'ToM_StrongMana'//,
-		//'ToM_StrongManaBig'
+		'ToM_MediumManaBig',
+		'ToM_StrongMana',
+		'ToM_StrongManaBig'
 	};
 
 	array <color> particleColors;
@@ -787,8 +788,10 @@ class ToM_Backpack : Backpack
 	Default
 	{
 		+FORCEXYBILLBOARD
+		+ROLLSPRITE
 		+Inventory.AUTOACTIVATE
-		Inventory.pickupsound "pickups/generic";
+		Inventory.pickupsound "pickups/manachest";
+		Inventory.pickupmessage "$TOM_ITEM_BACKPACK";
 		xscale 0.75;
 		yscale 0.625;
 	}
@@ -796,33 +799,10 @@ class ToM_Backpack : Backpack
 	override void PostBeginPlay()
 	{
 		Super.PostBeginPlay();
-		/*for (int i = 0; i < floatingAmmoClasses.Size(); i++)
-		{
-			class<ToM_Ammo> amcls = floatingAmmoClasses[i];
-			let am = ToM_Ammo(Spawn(amcls, pos));
-			if (am)
-			{
-				am.bSPECIAL = false;
-				am.bNOINTERACTION = true;
-				am.A_ChangeLinkFlags(true);
-				am.scale *= 0.2;
-				am.alpha *= 0.75;
-				am.FloatBobStrength = 0.2;
-				floatingAmmo.Push(am);
-			}
-		}
-		double angStep = 360.0 / floatingAmmo.Size();
-		double wangle = 0;
-		foreach (am : floatingAmmo)
-		{
-			am.Warp(self, 10, zofs: 12, angle: wangle, flags: WARPF_USECALLERANGLE|WARPF_NOCHECKPOSITION);
-			am.roll = wangle*2;
-			wangle += angStep;
-		}*/
 
-		for (int i = 0; i < floatingAmmoClasses.Size(); i++)
+		for (int i = 0; i < manaClasses.Size(); i++)
 		{
-			let def = GetDefaultByType(floatingAmmoClasses[i]);
+			let def = GetDefaultByType(manaClasses[i]);
 			if (def)
 			{
 				particleColors.Push(def.particleColor);
@@ -833,97 +813,90 @@ class ToM_Backpack : Backpack
 	override void Tick()
 	{
 		Super.Tick();
-		if (!bNOSECTOR && !isFrozen())
+		if (!(owner || bNOSECTOR) && !isFrozen())
 		{
-			if (!partTex || !partTex.IsValid())
-			{
-				partTex = TexMan.CheckForTexture("LENYA0");
-			}
-
-			/*foreach (am : floatingAmmo)
-			{
-				am.Warp(self, 14, zofs: 40, angle: 3, flags: WARPF_USECALLERANGLE|WARPF_NOCHECKPOSITION|WARPF_INTERPOLATE);
-				am.roll += 2;
-				FSpawnParticleParams p;
-				p.lifetime = 25;
-				p.color1 =  am.particleColor;
-				p.texture = partTex;
-				p.style = STYLE_AddShaded;
-				p.flags = SPF_FULLBRIGHT;
-				p.pos = am.pos + (0, 0, am.WorldOffset.z + am.height * 0.25);
-				p.size = 6;
-				p.sizestep = p.size / double(-p.lifetime);
-				p.startalpha = am.alpha;
-				p.fadestep = -1;
-				Level.SpawnParticle(p);
-			}*/
-
 			if (GetAge() % 10 == 0)
 			{
-				isVisible = Distance3D(players[consoleplayer].mo) <= 1024;
+				isVisible = Distance3D(players[consoleplayer].mo) <= 400;
 			}
-			if (!isVisible) return;
 
-			if (colorDelay == 0)
+			if (InStateSequence(curstate, FindState("Jiggle")))
 			{
-				colorDelay = random[partcol](10, 100);
-
-				/*FSpawnParticleParams p;
-				int i = random[partcol](0, particleColors.Size() - 1);
-				p.flags = SPF_FULLBRIGHT;
-				p.color1 = particleColors[i];
-				p.size = frandom[partcol](3, 6);
-				p.lifetime = 40;
-				p.startalpha = 1;
-				p.fadestep = -1;
-				p.sizestep = p.size / -p.lifetime;
-				Vector2 hofs = Actor.RotateVector((6, frandom[partcol](-radius*0.7, radius*0.7)), players[consoleplayer].mo.angle + 180);
-				p.pos = pos + (hofs, frandom[partcol](26, 29));
-				p.vel.z = 0.5;
-				Level.SpawnParticle(p);*/
-
-				int i = random[partcol](0, floatingAmmoClasses.Size() - 1);
-				let def = GetDefaultByType(floatingAmmoClasses[i]);
-				TextureID tex = def.FindState("Idle").GetSpriteTexture(0);
-				double pang = players[consoleplayer].mo.angle + 180;
-				Vector2 hofs = Actor.RotateVector((6, frandom[partcol](-radius*0.5, radius*0.5)), pang);
-				Vector2 hdir = Actor.RotateVector((frandom[partcol](0.25, 0.8), 0), pang + frandom[partcol](-70, 70));
-				let v = ToM_ManaShard(
-					VisualThinker.Spawn('ToM_ManaShard', 
-						tex, 
-						pos + (hofs, frandom[partcol](26, 29)), //pos
-						(hdir, frandom[partcol](0.5, 2)), //vel
-						alpha: 0.5,
-						flags: SPF_FULLBRIGHT|SPF_ROLL,
-						roll: frandom[partcol](0,360),
-						scale: def.scale * frandom[partcol](0.15, 0.25),
-						style: STYLE_Add)
-				);
-				v.chest = self;
-				v.particleColor = def.particleColor;
-				v.partTex = partTex;
-			}
-			else
-			{
-				colorDelay--;
+				int fr = int(round(ToM_Utils.LinearMap(roll, -5, 5, 0, 6, true)));
+				frame = fr;
+				int time = level.time - jiggleStartTic;
+				roll = sin(360.0 * time * 0.05) * 5;
+				spriteOffset.y = -abs(roll)*0.5;
+				if (abs(roll) >= 5)
+				{
+					//A_StartSound("pickups/manachest/gemspawn", CHAN_AUTO, volume: 0.4, pitch:frandom[managem](1, 1.08));
+					SpawnManaGem(-roll, -roll * 12 + frandom[managem](-15, 15));
+				}
 			}
 		}
 	}
 
-	/*override bool TryPickup (in out Actor toucher)
+	void SpawnManaGem(double horOffset = 0, double angdir = 0)
 	{
-		foreach (am : floatingAmmo)
+		if (!partTex || !partTex.IsValid())
 		{
-			am.A_ChangeLinkFlags(sector: true);
+			partTex = TexMan.CheckForTexture("LENYA0");
 		}
-		return Super.TryPickup(toucher);
-	}*/
+
+		int i = random[managem](0, manaClasses.Size() - 1);
+		let def = GetDefaultByType(manaClasses[i]);
+		TextureID tex = def.FindState("Idle").GetSpriteTexture(0);
+		double pang = players[consoleplayer].mo.angle + 180;
+		Vector2 hofs = Actor.RotateVector((6, horOffset), pang);
+		Vector2 hdir = Actor.RotateVector((frandom[managem](0.25, 0.8), 0), pang + angdir);
+		let v = ToM_ManaShard(
+			VisualThinker.Spawn('ToM_ManaShard', 
+				tex, 
+				pos + (hofs, frandom[managem](26, 29)), //pos
+				(hdir, frandom[managem](0.5, 2)), //vel
+				alpha: 0.5,
+				flags: SPF_FULLBRIGHT|SPF_ROLL,
+				roll: frandom[managem](0,360),
+				scale: def.scale * frandom[managem](0.15, 0.25),
+				style: STYLE_Add)
+		);
+		v.chest = self;
+		v.particleColor = def.particleColor;
+		v.partTex = partTex;
+	}
+
+	override string PickupMessage()
+	{
+		String basemsg = StringTable.Localize(pickupMsg);
+		if (!owner) return basemsg;
+
+		String note;
+		for (Inventory item = owner.inv; item; item = item.inv)
+		{
+			bool needComma = (note != "");
+			let mana = ToM_Ammo(item);
+			if (mana && mana.GetParentAmmo() != 'ToM_Ammo')
+			{
+				note.AppendFormat("%s%s \cd+%d\c-", needComma? ", " : "", StringTable.Localize(mana.GetTag()), mana.backpackmaxamount);
+			}
+		}
+		return String.Format("%s (%s)", basemsg, note);
+	}
 
 	States {
 	Spawn:
-		AMPA A random(3, 35);
+		AMPA A random(3, 35) NoDelay
+		{
+			A_SetRoll(0, SPF_INTERPOLATE);
+			spriteOffset.y = 0;
+		}
 		TNT1 A 0 
 		{
+			if (isVisible && random[ammochest](0, 100) >= 75)
+			{
+				jiggleStartTic = level.maptime;
+				return ResolveState("Jiggle");
+			}
 			int i = 1;
 			while (i == lastblink)
 			{
@@ -948,6 +921,17 @@ class ToM_Backpack : Backpack
 		AMPA NONP 4;
 		TNT1 A 0 { return spawnstate; }
 		stop;
+	Jiggle:
+		AMBA # random(25, 50);
+		AMBA # 1
+		{
+			if (abs(roll) < 0.1)
+			{
+				return spawnstate;
+			}
+			return ResolveState(null);
+		}
+		wait;
 	}
 }
 

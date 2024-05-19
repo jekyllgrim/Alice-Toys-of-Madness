@@ -3,7 +3,6 @@ class ToM_Ammo : Ammo
 	mixin ToM_CheckParticles;
 	mixin ToM_PickupFlashProperties;
 	mixin ToM_PickupSound;
-	mixin ToM_ComplexPickupmessage;
 	
 	class<Ammo> bigPickupClass;
 	property bigPickupClass : bigPickupClass;
@@ -33,7 +32,7 @@ class ToM_Ammo : Ammo
 	{
 		class<Object> type = GetClass();
 
-		while (type.GetParentClass() && type.GetParentClass() != "Ammo" && type.GetParentClass() != "ToM_Ammo")
+		while (type.GetParentClass() && type.GetParentClass() != "ToM_Ammo")
 		{
 			type = type.GetParentClass();
 		}
@@ -50,16 +49,21 @@ class ToM_Ammo : Ammo
 	override void Tick()
 	{
 		super.Tick();
-		if (!owner && !isFrozen())// && InStateSequence(curstate, FindState("Idle")))
+		if (!(owner || bNOSECTOR) && !isFrozen())
 		{
 			manaBobFactor = sin(360.0 * (GetAge() + FloatBobPhase) * 0.01);
 			WorldOffset.z = 8 * manaBobFactor * FloatBobStrength;
 		}
 
-		if (manashade && owner)
+		if (manashade && (owner || bNOSECTOR))
 		{
 			manashade.Destroy();
 		}
+	}
+
+	override string PickupMessage()
+	{
+		return String.Format("%s \cf+%d\c-", StringTable.Localize(pickupMsg), amount);
 	}
 
 	void SpawnManaParticles()
@@ -154,6 +158,7 @@ class ToM_WeakMana : ToM_Ammo
 	Default
 	{
 		Inventory.pickupmessage "$TOM_MANA_WEAK";
+		Tag "$TOM_MANA_WEAK";
 		inventory.amount 10;
 		inventory.maxamount 300;
 		ammo.backpackamount 100;
@@ -162,14 +167,9 @@ class ToM_WeakMana : ToM_Ammo
 		ToM_Ammo.particleColor "ffb100";
 	}
 	
-	override string GetPickupNote()
-	{
-		return String.Format("+%d", amount);
-	}
-	
 	States {
 	Idle:
-		AMWS A 1 NoDelay A_SetManaFrame(0, 8);
+		AMWS A 1 A_SetManaFrame(0, 8);
 		loop;
 	}
 }
@@ -184,7 +184,7 @@ class ToM_WeakManaBig : ToM_WeakMana
 	
 	States {
 	Idle:
-		AMWB A 1 NoDelay A_SetManaFrame(0, 11);
+		AMWB A 1 A_SetManaFrame(0, 11);
 		loop;
 	}
 }
@@ -195,6 +195,7 @@ class ToM_MediumMana : ToM_Ammo
 	Default
 	{
 		Inventory.pickupmessage "$TOM_MANA_MEDIUM";
+		Tag "$TOM_MANA_MEDIUM";
 		inventory.amount 25;
 		inventory.maxamount 300;
 		ammo.backpackamount 100;
@@ -203,14 +204,9 @@ class ToM_MediumMana : ToM_Ammo
 		ToM_Ammo.particleColor "8df500";
 	}
 	
-	override string GetPickupNote()
-	{
-		return String.Format("+%d", amount);
-	}
-	
 	States {
 	Idle:
-		AMMS A 1 NoDelay A_SetManaFrame(0, 11);
+		AMMS A 1 A_SetManaFrame(0, 11);
 		loop;
 	}
 }
@@ -225,7 +221,7 @@ class ToM_MediumManaBig : ToM_MediumMana
 	
 	States {
 	Idle:
-		AMMB A 1 NoDelay A_SetManaFrame(0, 11);
+		AMMB A 1 A_SetManaFrame(0, 11);
 		loop;
 	}
 }
@@ -235,6 +231,7 @@ class ToM_StrongMana : ToM_Ammo
 	Default
 	{
 		Inventory.pickupmessage "$TOM_MANA_STRONG";
+		Tag "$TOM_MANA_STRONG";
 		inventory.amount 10;
 		inventory.maxamount 300;
 		ammo.backpackamount 100;
@@ -243,14 +240,9 @@ class ToM_StrongMana : ToM_Ammo
 		ToM_Ammo.particleColor "9734ab";
 	}
 	
-	override string GetPickupNote()
-	{
-		return String.Format("+%d", amount);
-	}
-	
 	States {
 	Idle:
-		AMSS A 1 NoDelay A_SetManaFrame(0, 8);
+		AMSS A 1 A_SetManaFrame(0, 8);
 		loop;
 	}
 }
@@ -265,7 +257,7 @@ class ToM_StrongManaBig : ToM_StrongMana
 	
 	States {
 	Idle:
-		AMSB A 1 NoDelay A_SetManaFrame(0, 11);
+		AMSB A 1 A_SetManaFrame(0, 13);
 		loop;
 	}
 }

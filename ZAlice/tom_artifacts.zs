@@ -443,6 +443,7 @@ class ToM_RageBoxSelector : ToM_ArtifactSelector
 class ToM_GrowthPotion : PowerupGiver
 {
 	int waitBounce;
+	TextureID partTex;
 
 	Default
 	{
@@ -465,12 +466,16 @@ class ToM_GrowthPotion : PowerupGiver
 			}
 			if (waitBounce <= 18 && waitBounce % 4 == 0)
 			{
+				if (!partTex || !partTex.isValid())
+				{
+					partTex = TexMan.CheckForTexture('LENYA0');
+				}
 				for (int i = 0; i < 8; i++)
 				{
-					A_SpawnParticle("FFCCCC",
+					A_SpawnParticleEx("FFCCCC", partTex,
 						SPF_RELATIVE|SPF_FULLBRIGHT|SPF_REPLACE,
 						lifetime: 18,
-						size: 6,
+						size: 4,
 						angle: 45*i,
 						xoff: (18 - waitbounce) * 0.5,
 						zoff: waitBounce * 2,
@@ -1160,5 +1165,70 @@ class ToM_ReflectionCamera : Actor
 		A_SetRoll(ppawn.roll, SPF_INTERPOLATE);
 		A_SetAngle(ppawn.angle + 180, SPF_INTERPOLATE);
 		A_SetPitch(-ppawn.pitch, SPF_INTERPOLATE);
+	}
+}
+
+class ToM_Infrared : Infrared
+{
+	array <int> blinks;
+
+	Default
+	{
+		XScale 0.2;
+		YScale 0.16667;
+	}
+
+	States {
+	CogReset:
+		HGL1 DCBA 4;
+		HGL1 DCBA 4;
+		HGL1 DCBA 4;
+		HGL1 DCBA 4;
+		HGL1 A 20;
+	Spawn:
+		HGL1 A 15;
+		TNT1 A 0 
+		{
+			if (blinks.Size() >= 9)
+			{
+				blinks.Clear();
+				return FindState("CogReset");
+			}
+			int i = 1;
+			while (blinks.Find(i) != blinks.Size())
+			{
+				i = random[lightamp](1, 9);
+			}
+			blinks.Push(i);
+			return FindStateByString("Blink"..i);
+		}
+	Blink1:
+		HGL1 EFGH 3;
+		goto Spawn;
+	Blink2:
+		HGL1 IJKL 3;
+		goto Spawn;
+	Blink3:
+		HGL1 MNOP 3;
+		goto Spawn;
+	Blink4:
+		HGL1 QRST 3;
+		goto Spawn;
+	Blink5:
+		HGL1 UVWX 3;
+		goto Spawn;
+	Blink6:
+		HGL1 YZ 3;
+		HGL2 AB 3;
+		goto Spawn;
+	Blink7:
+		HGL2 CDEF 3;
+		goto Spawn;
+	Blink8:
+		HGL2 GHIJ 3;
+		goto Spawn;
+	Blink9:
+		HGL2 KLMN 3;
+		goto Spawn;
 	}
 }

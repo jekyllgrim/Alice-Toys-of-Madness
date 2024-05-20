@@ -262,6 +262,9 @@ class ToM_Mainhandler : EventHandler
 		case 'Backpack':
 			e.Replacement = "ToM_Backpack"; 
 			break;
+		case 'Infrared':
+			e.Replacement = "ToM_Infrared"; 
+			break;
 
 		case 'Clip':
 			e.Replacement = "ToM_AmmoSpawner_RedYellow"; 

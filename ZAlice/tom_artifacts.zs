@@ -520,6 +520,7 @@ class ToM_GrowthPotionEffect : Powerup
 	protected double prevGravity;
 	
 	protected double targetHeight;
+	protected bool heightChangeSuccess;
 	protected double targetViewHeight;
 	protected double targetAttackZOffset;
 	protected vector2 targetScale;
@@ -583,17 +584,17 @@ class ToM_GrowthPotionEffect : Powerup
 		prevAttackZOffset = owner.player.mo.AttackZOffset;
 		
 		// target height (to be set in DoEffect):
-		targetHeight = prevHeight;//prevHeight * GROWFACTOR;
+		targetHeight = prevHeight * GROWFACTOR;
 		
 		// target scale and scale step (to be set in DoEffect):
-		targetScale = prevScale * GROWWEAPON;
+		targetScale = prevScale * VIEWFACTOR;
 		scaleStep.x = (targetScale.x - prevScale.x) / GROWTIME;
 		scaleStep.y = (targetScale.y - prevScale.y) / GROWTIME;
 		
 		// target weapon scale and weapon scale step:
 		if (weap)
 		{
-			targetweaponScale = prevweaponScale * GROWFACTOR;
+			targetweaponScale = prevweaponScale * GROWWEAPON;
 			weaponScaleStep.x = (targetweaponScale.x - prevweaponScale.x) / GROWTIME;
 			weaponScaleStep.y = (targetweaponScale.y - prevweaponScale.y) / GROWTIME;
 		}
@@ -720,22 +721,20 @@ class ToM_GrowthPotionEffect : Powerup
 		//console.printf("player fov: %.1f desired: %.1f", owner.player.fov, owner.player.desiredfov);
 		
 		// gradually modify weapon scale:
-		for(PSprite psp = player.psprites; psp; psp = psp.Next)
+		curWeaponScale.x = Clamp(
+			curWeaponScale.x + weaponScaleStep.x * stepFactor, 
+			prevWeaponScale.x, 
+			targetWeaponScale.x
+		);
+		curWeaponScale.y = Clamp(
+			curWeaponScale.y + weaponScaleStep.y * stepFactor, 
+			prevWeaponScale.y, 
+			targetWeaponScale.y
+		);
+		if (weap)
 		{
-			if (psp)
-			{
-				curWeaponScale.x = Clamp(
-					curWeaponScale.x + weaponScaleStep.x * stepFactor, 
-					prevWeaponScale.x, 
-					targetWeaponScale.x
-				);
-				curWeaponScale.y = Clamp(
-					curWeaponScale.y + weaponScaleStep.y * stepFactor, 
-					prevWeaponScale.y, 
-					targetWeaponScale.y
-				);
-				psp.baseScale = curWeaponScale;
-			}
+			weap.WeaponScaleX = curWeaponScale.x;
+			weap.WeaponScaleY = curWeaponScale.Y;
 		}
 		
 		// gradually modify scale:
@@ -749,8 +748,18 @@ class ToM_GrowthPotionEffect : Powerup
 		);
 		
 		// keep trying to instantly change size:
-		//if (pmo.height < targetHeight)
-			//pmo.A_SetSize(pmo.radius, targetHeight, true);
+		if (!heightChangeSuccess && pmo.height < targetHeight)
+		{
+			pmo.A_SetSize(pmo.radius, targetHeight, true);
+			if (!pmo.TestMobjLocation())
+			{
+				pmo.A_SetSize(pmo.radius, prevHeight);
+			}
+			else
+			{
+				heightChangeSuccess = true;
+			}
+		}
 		
 		// Walking:
 		if (!finishEffect)
@@ -769,24 +778,37 @@ class ToM_GrowthPotionEffect : Powerup
 		
 		else if (player.viewHeight <= prevViewHeight)
 		{
+			Destroy();
+		}
+	}
+
+	override void OnDestroy()
+	{
+		if (owner && owner.player)
+		{
+			let pmo = owner.player.mo;
+			let weap = owner.player.readyweapon;
 			pmo.jumpz = prevjumpz;
 			owner.gravity = prevGravity;
 			owner.player.mo.ViewBobSpeed = prevViewBobSpeed;
-			player.viewHeight = prevViewHeight;
+			owner.player.viewHeight = prevViewHeight;
+			pmo.attackZOffset = prevAttackZOffset;
 			pmo.viewHeight = prevViewHeight;
-			//pmo.A_SetSize(pmo.radius, prevHeight);
+			pmo.A_SetSize(pmo.radius, prevHeight);
 			pmo.scale = prevScale;
 			owner.player.desiredFov = prevZoom;
 			owner.speed /= SPEEDFACTOR;
-			for(PSprite psp = player.psprites; psp; psp = psp.Next)
+			for (Inventory item = owner.inv; item; item = item.inv)
 			{
-				if (psp)
+				let weap = Weapon(item);
+				if (weap)
 				{
-					psp.baseScale = prevWeaponScale;
+					weap.WeaponScaleX = prevWeaponScale.x;
+					weap.WeaponScaleY = prevWeaponScale.y;
 				}
 			}
-			Destroy();
 		}
+		Super.OnDestroy();
 	}
 }
 

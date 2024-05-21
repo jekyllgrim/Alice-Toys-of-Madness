@@ -29,6 +29,7 @@ class ToM_AliceHUD : BaseStatusBar
 		
 		return ofs;
 	}
+
 	
 	bool IsAspectCorrected()
 	{
@@ -204,6 +205,7 @@ class ToM_AliceHUD : BaseStatusBar
 			if (!pwr)
 				continue;
 
+			// DON'T FORGET TO UNCOMMENT once all powerups have icons set up
 			/*let icon = pwr.GetPowerupIcon();
 			if (!icon || !icon.IsValid())
 				continue;*/

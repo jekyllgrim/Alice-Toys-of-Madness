@@ -372,10 +372,11 @@ class ToM_Utils
 		return h;
 	}
 	
-	// Converts offsets into relative offsets, by Lewisk3.
-	// If 'isPosition' is TRUE, adds actor's position to the result.
-	// Set to FALSE when used for relative velocity.
-	static clearscope vector3 RelativeToGlobalCoords(actor mo, vector3 offset, bool isPosition = true)
+	// Converts offsets into relative offsets
+	// mo: the actor to offset from
+	// offset: desired relative offset as (forward/back, right/left, up/down)
+	// isPosition: if TRUE, adds actor's position to the result. Set to FALSE when used for relative velocity.
+	static clearscope Vector3 RelativeToGlobalCoords(actor mo, vector3 offset, bool isPosition = true)
 	{
 		if (!mo)
 			return (0,0,0);
@@ -383,13 +384,17 @@ class ToM_Utils
 		return RelativeToGlobalOffset(mo.pos, (mo.angle, mo.pitch, mo.roll), offset, isPosition);
 	}
 
+	// Same as above, but doesn't take an actor pointer.
+	// startPos: original position to operate around
+	// viewAngles: (angle, pitch, roll) of the desired actor. viewAngle/viewPitch/viewRoll can be added or used instead.
+	// isPosition: if TRUE, adds startpos to the final result.
 	static clearscope Vector3 RelativeToGlobalOffset(Vector3 startpos, Vector3 viewAngles, Vector3 offset, bool isPosition = true)
 	{
 		Quat dir = Quat.FromAngles(viewAngles.x, viewAngles.y, viewAngles.z);
 		vector3 ofs = dir * (offset.x, -offset.y, offset.z);
 		if (isPosition)
 		{
-			return Level.vec3offset(startpos, ofs);
+			return Level.Vec3offset(startpos, ofs);
 		}
 		return ofs;
 	}

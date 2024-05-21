@@ -459,9 +459,8 @@ class ToM_PepperPuff : ToM_BasePuff
 	States
 	{
 	Spawn:
-		TNT1 A 1
+		TNT1 A 1 NoDelay
 		{
-			Console.Printf("spawning pepper puff");
 			A_StartSound("weapons/pgrinder/projdie", CHAN_AUTO, attenuation: 6);
 			for (int i = random[ppsfx](8,12); i > 0; i --) {
 				double vx = frandom[ppgr](1,4);
@@ -476,7 +475,7 @@ class ToM_PepperPuff : ToM_BasePuff
 					velz: frandom[ppsfx](2,6),
 					accelx: -vx * 0.05,
 					accelz: -0.5,
-					sizestep: 0.08
+					sizestep: -0.08
 				);
 			}
 			FSpawnParticleParams sm;

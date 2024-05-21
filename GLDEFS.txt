@@ -2,7 +2,14 @@ Material Sprite "LGMRC0"
 {
 	Shader "shaders/Alice_CamTexWeapon.fp"
 	Texture camTex "AliceWeapon.camtex"
-	Texture maskTex "graphics/mirror_mask.png"
+	Texture maskTex "materials/mirror_mask.png"
+}
+
+HardwareShader PostProcess Scene
+{
+    Name "Alice_ScreenWarp"
+    Shader "shaders/Alice_ScreenWarp.fp" 330
+    Texture NormalTexture "materials/stained_glass_normal.png"
 }
 
 brightmap texture "models/ragebox/ragebox_lit.png"

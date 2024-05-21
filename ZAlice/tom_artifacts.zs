@@ -1177,6 +1177,8 @@ class ToM_Infrared : Infrared
 	{
 		XScale 0.2;
 		YScale 0.16667;
+		Powerup.Type "ToM_MadVisionEffect";
+		Powerup.Duration -40;
 	}
 
 	States {
@@ -1231,5 +1233,37 @@ class ToM_Infrared : Infrared
 	Blink9:
 		HGL2 KLMN 3;
 		goto Spawn;
+	}
+}
+
+class ToM_MadVisionEffect : Powerup
+{
+	override void InitEffect()
+	{
+		Super.InitEffect();
+		if (owner && owner.player && owner.player == players[consoleplayer])
+		{
+			PPShader.SetEnabled("Alice_ScreenWarp", true);
+		}
+	}
+
+	override void DoEffect()
+	{
+		Super.DoEffect();
+		if (owner)
+		{
+			//owner.player.extralight = Clamp(owner.player.extralight + 4, 0, 200);
+			owner.player.fixedlightlevel = -1;
+			Console.Printf("fixedlightlevel: %d", owner.player.fixedlightlevel);
+		}
+	}
+
+	override void EndEffect()
+	{
+		if (owner && owner.player && owner.player == players[consoleplayer])
+		{
+			PPShader.SetEnabled("Alice_ScreenWarp", false);
+		}
+		Super.EndEffect();
 	}
 }

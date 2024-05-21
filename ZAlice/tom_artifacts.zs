@@ -472,7 +472,8 @@ class ToM_GrowthPotion : PowerupGiver
 				}
 				for (int i = 0; i < 8; i++)
 				{
-					A_SpawnParticleEx("FFCCCC", partTex,
+					A_SpawnParticleEx(0xFFCCCC, partTex,
+						STYLE_AddShaded,
 						SPF_RELATIVE|SPF_FULLBRIGHT|SPF_REPLACE,
 						lifetime: 18,
 						size: 4,

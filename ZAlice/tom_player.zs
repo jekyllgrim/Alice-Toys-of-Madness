@@ -84,10 +84,17 @@ class ToM_AlicePlayer : DoomPlayer
 		twohanded = weap && weap.IsTwoHanded;
 
 		// swimming
+		double minFr = 15;
+		double maxFr = 40;
+		if (FindInventory('ToM_GrowthPotionEffect'))
+		{
+			minFr *= ToM_GrowthPotionEffect.SPEEDFACTOR;
+			maxFr *= ToM_GrowthPotionEffect.SPEEDFACTOR;
+		}
 		if (waterLevel >= 2)
 		{
 			SetAnimation('swim_loop', flags:SAF_LOOP|SAF_NOOVERRIDE);
-			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 3, 18, 15, 40));
+			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 3, 18, minFr, maxFr));
 		}
 		// falling (not jumping)
 		else if (!player.onground && !IsPlayerFlying())
@@ -107,13 +114,13 @@ class ToM_AlicePlayer : DoomPlayer
 		else if (hvel <= 7.5)
 		{
 			SetAnimation(twohanded? 'walk_bigweapon' : 'walk_smallweapon', flags:SAF_LOOP|SAF_NOOVERRIDE);
-			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 2, 7.5, 15, 40));
+			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 2, 7.5, minFr, maxFr));
 		}
 		// running
 		else
 		{
 			SetAnimation(twohanded? 'run_bigweapon' : 'run_smallweapon', flags:SAF_LOOP|SAF_NOOVERRIDE);
-			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 7.5, 20, 15, 40));
+			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 7.5, 20, minFr, maxFr));
 		}
 	}
 

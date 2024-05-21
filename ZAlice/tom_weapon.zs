@@ -157,7 +157,7 @@ class ToM_BaseWeapon : Weapon abstract
 	// Do the attack and move the offset one step as defined above:
 	action Actor A_SwingAttack(int damage,
 							double stepX, double stepY,
-							double range = 64,
+							double range = 0,
 							class<Actor> pufftype = null,
 							color trailcolor = 0xFFFFFFFF,
 							double trailalpha = 1.0,
@@ -169,9 +169,10 @@ class ToM_BaseWeapon : Weapon abstract
 							int id = 0)
 	{
 		id = Clamp(id, 0, SWING_MaxIDs);
+		if (range == 0) range = self.MeleeRange;
 		if (CountInv('ToM_GrowthPotionEffect'))
 		{
-			range *= ToM_GrowthPotionEffect.VIEWFACTOR;
+			range *= 1.2;
 		}
 		ToM_SwingController data = invoker.swingdata[id];
 		if (!data)

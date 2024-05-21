@@ -1025,9 +1025,9 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 	Recall:
 		TNT1 A 1
 		{
-			if (target) 
+			if (target && target.player)
 			{
-				vector3 vec = Vec3To(target) + (0,0,target.height * 0.75);
+				vector3 vec = Vec3To(target) + (0, 0, target.player.viewz - 10 - target.pos.z);
 				vel = vec.Unit() * KV_RECALLSPEED;
 				
 				if (knifemodel)
@@ -1063,7 +1063,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 					}
 				}
 				
-				if (Distance3D(target) <= 64) 
+				if (Distance2D(target) <= 64 && abs(pos.z - target.player.viewz) <= 64 )
 				{
 					let kn = ToM_Knife(target.FindInventory("ToM_Knife"));
 					if (kn)

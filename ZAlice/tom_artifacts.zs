@@ -873,14 +873,16 @@ class StatPrinter : Inventory
 
 class ToM_Invisibility : PowerupGiver
 {
+	double pickupBobFactor;
+
 	Default
 	{
 		Inventory.pickupmessage "Looking-glass mirror";
 		Inventory.pickupsound "mirror/pickup";
 		Powerup.Duration -40;
 		scale 0.25;
-		+FLOATBOB
 		+INVENTORY.AUTOACTIVATE
+		FloatBobStrength 0.5;
 	}
 
 	override bool Use (bool pickup)
@@ -896,7 +898,14 @@ class ToM_Invisibility : PowerupGiver
 	States
 	{
 	Spawn:
-		LGMY ABCDEFGHIJKLMN 2;
+		LGMY # 1
+		{
+			pickupBobFactor = sin(360.0 * (GetAge() + FloatBobPhase) * 0.015);
+			WorldOffset.z = 8 * pickupBobFactor * FloatBobStrength;
+			int i = round(ToM_Utils.LinearMap(pickupBobFactor, -1, 1, 0, 14));
+			if (i >= 14) i = 0;
+			frame = i;
+		}
 		loop;
 	}
 }

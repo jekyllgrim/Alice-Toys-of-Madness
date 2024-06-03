@@ -265,6 +265,9 @@ class ToM_Mainhandler : EventHandler
 		case 'Infrared':
 			e.Replacement = "ToM_Infrared"; 
 			break;
+		case 'AllMap':
+			e.Replacement = "ToM_AllMap"; 
+			break;
 
 		case 'Clip':
 			e.Replacement = "ToM_AmmoSpawner_RedYellow"; 

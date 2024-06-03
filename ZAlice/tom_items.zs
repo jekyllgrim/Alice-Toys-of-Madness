@@ -1065,3 +1065,29 @@ class ToM_ManaShard : VisualThinker
 		}
 	}
 }
+
+class ToM_Allmap : AllMap
+{
+	Default
+	{
+		XScale 0.14;
+		YScale 0.116;
+		+ROLLSPRITE
+		+ROLLCENTER
+		Inventory.PickupSound "pickups/allmap";
+		Inventory.PickupMessage "$TOM_ITEM_ALLMAP";
+	}
+
+	States {
+	Spawn:
+		MAGU A 1
+		{
+			double phase = 360.0 * (GetAge() + FloatBobPhase);
+			double bob = sin(phase * 0.01);
+			double bobroll = sin(phase * 0.005);
+			WorldOffset.z = 4 * bob;
+			A_SetRoll(8 * bobroll, SPF_INTERPOLATE);
+		}
+		loop;
+	}
+}

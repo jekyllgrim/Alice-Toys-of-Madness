@@ -356,14 +356,17 @@ weapons/jackbomb/dollpop		"sounds/jackbomb/jackbomb_pop.wav"
 weapons/jackbomb/throw			"sounds/jackbomb/jackbomb_toss.wav"
 
 
-// ITEMS
+//// ITEMS
 
-pickups/generic			"sounds/pickups/weapon_pickup.wav"
-pickups/weapon			"sounds/pickups/weaponpickup.ogg"
+pickups/generic				"sounds/pickups/weapon_pickup.wav"
+pickups/generic/powerup		"sounds/pickups/ingame_powerup.ogg"
+pickups/weapon				"sounds/pickups/weaponpickup.ogg"
+pickups/ammo				"sounds/pickups/shrinkflower_pop.ogg"
+// armor
 pickups/armor/light		"sounds/pickups/armor/pickups_armor_light.ogg"
 pickups/armor/heavy		"sounds/pickups/armor/pickups_armor_heavy.ogg"
 pickups/armor/bonus		"sounds/pickups/armor/pickups_armor_shard.ogg"
-
+// health
 $random pickups/health/petal { petalhealth1 petalhealth2 petalhealth3 }
 $limit pickups/health/petal 0
 petalhealth1 "sounds/pickups/health/pickups_teeth_magic01.ogg"
@@ -378,25 +381,23 @@ budhealth2 "sounds/pickups/health/pickups_rose_magic02.ogg"
 pickups/health/flower			"sounds/pickups/health/pickups_bottle_small_magic.ogg"
 pickups/health/magicbud			"sounds/pickups/health/shrinkflower_close.ogg"
 pickups/health/magicflower		"sounds/pickups/health/pickups_bottle_large_magic.ogg"
-
-pickups/ammo	"sounds/pickups/shrinkflower_pop.ogg"
-pickups/manachest "sounds/pickups/shrinkflower_open.ogg"
-$random pickups/manachest/gemspawn { manaGemSpawn1 manaGemSpawn2 }
-manaGemSpawn1 "sounds/pickups/item-jewelry-stones1.wav"
-manaGemSpawn2 "sounds/pickups/item-jewelry-stones2.wav"
-
+// ragebox
 ragebox/activate	"sounds/pickups/ragebox_pickup.wav"
 ragebox/scream		"sounds/pickups/ragebox_power.wav"
 ragebox/end			"sounds/pickups/rage_end.wav"
-
+// looking glass
 mirror/pickup		"sounds/pickups/mirror_pickup.ogg"
 mirror/disappear	"sounds/pickups/mirror_use.ogg"
 mirror/appear		"sounds/pickups/mirror_end.ogg"
-
+// growth cake
 $random growpotion/giantstep { giantstep1 giantstep2 giantstep3 }
 giantstep1	"sounds/player/giant_step01.ogg"
 giantstep2	"sounds/player/giant_step02.ogg"
 giantstep3	"sounds/player/giant_step03.ogg"
+
+pickups/manachest "sounds/pickups/shrinkflower_open.ogg"
+pickups/allmap	"sounds/pickups/book_open.wav"
+$alias pickups/infrared pickups/generic/powerup
 
 
 //// CHARACTERS

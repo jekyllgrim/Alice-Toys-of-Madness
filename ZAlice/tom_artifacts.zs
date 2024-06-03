@@ -1269,6 +1269,8 @@ class ToM_Infrared : Infrared
 		YScale 0.16667;
 		Powerup.Type "ToM_MadVisionEffect";
 		Powerup.Duration -40;
+		Inventory.PickupSound "pickups/infrared";
+		Inventory.PickupMessage "$TOM_ITEM_INFRARED";
 	}
 
 	States {
@@ -1326,7 +1328,7 @@ class ToM_Infrared : Infrared
 	}
 }
 
-class ToM_MadVisionEffect : Powerup
+class ToM_MadVisionEffect : PowerTorch
 {
 	override void InitEffect()
 	{
@@ -1334,17 +1336,6 @@ class ToM_MadVisionEffect : Powerup
 		if (owner && owner.player && owner.player == players[consoleplayer])
 		{
 			PPShader.SetEnabled("Alice_ScreenWarp", true);
-		}
-	}
-
-	override void DoEffect()
-	{
-		Super.DoEffect();
-		if (owner)
-		{
-			//owner.player.extralight = Clamp(owner.player.extralight + 4, 0, 200);
-			owner.player.fixedlightlevel = -1;
-			Console.Printf("fixedlightlevel: %d", owner.player.fixedlightlevel);
 		}
 	}
 

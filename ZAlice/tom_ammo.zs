@@ -25,7 +25,6 @@ class ToM_Ammo : Ammo
 		FloatBobStrength 0.65;
 		Inventory.pickupsound "pickups/ammo";
 		Renderstyle 'Translucent';
-		alpha 0.999;
 	}
 
 	override Class<Ammo> GetParentAmmo ()

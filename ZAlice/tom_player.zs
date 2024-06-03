@@ -48,6 +48,7 @@ class ToM_AlicePlayer : DoomPlayer
 		player.StartItem "ToM_Knife", 1;
 		player.Viewheight 51;
 		player.AttackZOffset 18;
+		player.DisplayName "Alice";
 		MeleeRange 80;
 	}
 

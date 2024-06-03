@@ -507,7 +507,7 @@ class ToM_GrowthPotion : PowerupGiver
 
 class ToM_GrowthPotionEffect : Powerup
 {
-	bool finishEffect;
+	protected int growthState;
 
 	protected double prevHeight;
 	protected vector2 prevScale;
@@ -536,6 +536,13 @@ class ToM_GrowthPotionEffect : Powerup
 	protected double targetZoom;
 	
 	protected int stepCycle;
+
+	enum EGrowthState
+	{
+		GROWTH_NotStarted,
+		GROWTH_Growing,
+		GROWTH_Shrinking,
+	}
 	
 	const GROWFACTOR = 1.5;
 	const GROWWEAPON = 1.2;
@@ -546,48 +553,72 @@ class ToM_GrowthPotionEffect : Powerup
 	
 	Default
 	{
-		Powerup.duration -40;
+		Powerup.duration -5;
 		Inventory.Icon "CAKGA0";
 	}
 
 	override void InitEffect()
 	{
 		Super.InitEffect();
+		growthState = GROWTH_NotStarted;
+	}
+
+	// Using custom init run from DoEffect() instead of
+	// an InitEffect() override, bceause as of 4.12.2
+	// InitEffect() obtains incorrect information about
+	// the owner when a powerup is received through a
+	// powerup giver placed in the world (pending a bug
+	// report on gzdoom repo).
+	void GrowthInit()
+	{
+		if (growthState != GROWTH_NotStarted) return;
+
 		if (!owner || !owner.player)
 		{
 			Destroy();
 			return;
 		}
-		finishEffect = false;
 
-		owner.bRespawnInvul = false;
-		owner.bInvulnerable = true;
-		
-		prevjumpz = owner.player.mo.jumpz;
-		prevGravity = owner.gravity;
+		growthState = GROWTH_Growing;
 
-		prevViewBobSpeed = owner.player.mo.ViewBobSpeed;
-		owner.player.mo.ViewBobSpeed *= VIEWFACTOR;
+		PlayerInfo player = owner.player;
+		PlayerPawn pmo = owner.player.mo;
 
-		let weap = owner.player.readyweapon;
+		pmo.bRespawnInvul = false;
+	
+		// record current values:
+		prevHeight = pmo.height;
+		prevScale = pmo.scale;
+		prevViewHeight = pmo.viewHeight;
+		prevAttackZOffset = pmo.AttackZOffset;
+		prevjumpz = pmo.jumpz;
+		prevGravity = pmo.gravity;
+		prevViewBobSpeed = pmo.ViewBobSpeed;
+		prevZoom = player.fov;
+		let weap = player.readyweapon;
 		if (weap)
 		{
 			let dweap = GetDefaultByType(weap.GetClass());
 			prevWeaponScale = (dweap.WeaponScaleX, dweap.WeaponScaleY);
 			curWeaponScale = prevWeaponScale;
 		}
-	
-		// record current values:
-		prevHeight = owner.height;
-		prevScale = owner.scale;
-		prevViewHeight = owner.player.viewHeight;
-		prevAttackZOffset = owner.player.mo.AttackZOffset;
+
+		// slower view bob:
+		pmo.ViewBobSpeed *= VIEWFACTOR;
 		
 		// target height (to be set in DoEffect):
 		targetHeight = prevHeight * GROWFACTOR;
+
+		// target AttackZOffset and AttackZOffset step (to be set in DoEffect):
+		targetAttackZOffset = prevAttackZOffset * GROWFACTOR;
+		attackZOffsetStep = (targetAttackZOffset - prevAttackZOffset) / GROWTIME;
+		
+		// target viewheight and viewheight step (to be set in DoEffect):
+		targetViewHeight = targetHeight - (prevHeight - prevViewHeight);
+		viewHeightStep = (targetViewHeight - prevViewHeight) / GROWTIME;
 		
 		// target scale and scale step (to be set in DoEffect):
-		targetScale = prevScale * VIEWFACTOR;
+		targetScale = prevScale * GROWFACTOR;
 		scaleStep.x = (targetScale.x - prevScale.x) / GROWTIME;
 		scaleStep.y = (targetScale.y - prevScale.y) / GROWTIME;
 		
@@ -599,28 +630,21 @@ class ToM_GrowthPotionEffect : Powerup
 			weaponScaleStep.y = (targetweaponScale.y - prevweaponScale.y) / GROWTIME;
 		}
 		
-		// target viewheight and viewheight step (to be set in DoEffect):
-		targetViewHeight = prevViewHeight * VIEWFACTOR;
-		viewHeightStep = (targetViewHeight - prevViewHeight) / GROWTIME;
-
-		// target AttackZOffset and AttackZOffset step (to be set in DoEffect):
-		targetAttackZOffset = targetViewHeight - (prevViewHeight - prevAttackZOffset - prevHeight*0.5) - targetHeight*0.5;
-		attackZOffsetStep = (targetAttackZOffset - prevAttackZOffset) / GROWTIME;
-		
 		// zoom step:
-		prevZoom = owner.player.fov;
 		targetZoom = prevZoom * GROWZOOM;
 		zoomStep = (targetZoom - prevZoom) / GROWTIME;
 		
 		// speed is modified instantly:
-		owner.speed *= SPEEDFACTOR;
+		pmo.speed *= SPEEDFACTOR;
 		
 		if (tom_debugmessages)
 		{
 			console.printf(
 				"Growth potion initialized:\n"
+				"Height: \cD%.1f\c- | step: \cDinstant\c- | target: \cD%.1f\c-\n"
 				"View height: \cD%.1f\c- | step: \cD%.1f\c- | target: \cD%.1f\c-\n"
 				"AttackZOffset: \cD%.1f\c- | step: \cD%.1f\c- | target: \cD%.1f\c-",
+				prevHeight, targetHeight,
 				prevViewHeight, viewHeightStep, targetViewHeight,
 				prevAttackZOffset, attackZOffsetStep, targetAttackZOffset
 			);
@@ -635,43 +659,9 @@ class ToM_GrowthPotionEffect : Powerup
 			return;
 		}
 
-		if (!finishEffect && (EffectTics == 0 || (EffectTics > 0 && --EffectTics == 0)))
+		if (growthState == GROWTH_Growing && (EffectTics == 0 || (EffectTics > 0 && --EffectTics == 0)))
 		{
-			finishEffect = true;
-		}
-	}
-
-	static void DoStepDamage(Actor source, int damage = 15, double distance = 256, bool visualImpact = true)
-	{
-		BlockThingsIterator itr = BlockThingsIterator.Create(source,distance);
-		while (itr.next()) {
-			let next = itr.thing;
-			if (!next || next == source)
-				continue;
-			bool isValid = ((next.bSHOOTABLE || next.bVULNERABLE) && (next.bIsMonster ||next.player) && next.health > 0);
-			if (!isValid)
-				continue;
-			double zdiff = abs(source.pos.z - next.pos.z);
-			if (zdiff > 32)
-				continue;
-			if (source.Distance3D(next) > distance)
-				continue;
-			next.DamageMobj(source, source, damage,'normal',DMG_THRUSTLESS|DMG_NO_FACTOR);
-			next.vel.z += 4;
-		}
-		source.A_Quake(2, 5, 0, distance, "");
-		let hi = Spawn("ToM_HorseImpact", (source.pos.xy, source.floorz));
-		if (hi)
-		{
-			hi.A_StartSound("growpotion/giantstep", CHAN_AUTO);
-			if (visualImpact)
-			{
-				hi.scale.x = distance;
-			}
-			else
-			{
-				hi.Destroy();
-			}
+			growthState = GROWTH_Shrinking;
 		}
 	}
 	
@@ -681,7 +671,9 @@ class ToM_GrowthPotionEffect : Powerup
 		if (!owner || !owner.player)
 			return;
 		
-		owner.bInvulnerable = !finishEffect;
+		GrowthInit();
+		
+		owner.bInvulnerable = (growthState == GROWTH_Growing);
 		
 		if (owner.isFrozen())
 			return;
@@ -693,24 +685,19 @@ class ToM_GrowthPotionEffect : Powerup
 		pmo.jumpz = (player.viewHeight >= ceilingz)? 0 : prevjumpz;
 		owner.gravity = player.jumptics != 0 ? prevGravity / 2 : prevGravity;
 		
-		double stepFactor = finishEffect ? -2 : 1;
+		double stepFactor = (growthState == GROWTH_Shrinking)? -2 : 1;
 		
 		// gradually modify viewheight:
-		player.viewHeight = Clamp(
-			player.viewHeight + viewHeightStep * stepFactor,
-			prevViewHeight, targetViewHeight
-		);
 		pmo.viewHeight = Clamp(
 			pmo.viewHeight + viewHeightStep * stepFactor,
 			prevViewHeight, targetViewHeight
 		);
+		player.viewHeight = pmo.viewHeight;
 
 		pmo.AttackZOffset = Clamp(
 			pmo.AttackZOffset + attackZOffsetStep * stepFactor,
 			prevAttackZOffset, targetAttackZOffset
 		);
-		
-		//console.printf("attackZOffset: %.2f | viewheight: %.2f", pmo.attackZOffset, player.viewHeight);
 	
 		// gradually modify zoom:
 		owner.player.desiredFov = Clamp(
@@ -718,7 +705,6 @@ class ToM_GrowthPotionEffect : Powerup
 			1, 
 			targetZoom
 		);
-		//console.printf("player fov: %.1f desired: %.1f", owner.player.fov, owner.player.desiredfov);
 		
 		// gradually modify weapon scale:
 		curWeaponScale.x = Clamp(
@@ -762,7 +748,7 @@ class ToM_GrowthPotionEffect : Powerup
 		}
 		
 		// Walking:
-		if (!finishEffect)
+		if (growthState == GROWTH_Growing)
 		{
 			if (pmo.player.onground && pmo.Vel.Length() > 4) 
 			{
@@ -773,12 +759,48 @@ class ToM_GrowthPotionEffect : Powerup
 				}
 			}
 			else
+			{
 				stepCycle = 0;
+			}
 		}
 		
-		else if (player.viewHeight <= prevViewHeight)
+		else if (pmo.viewHeight <= prevViewHeight)
 		{
 			Destroy();
+		}
+	}
+
+	static void DoStepDamage(Actor source, int damage = 15, double distance = 256, bool visualImpact = true)
+	{
+		BlockThingsIterator itr = BlockThingsIterator.Create(source,distance);
+		while (itr.next()) {
+			let next = itr.thing;
+			if (!next || next == source)
+				continue;
+			bool isValid = ((next.bSHOOTABLE || next.bVULNERABLE) && (next.bIsMonster ||next.player) && next.health > 0);
+			if (!isValid)
+				continue;
+			double zdiff = abs(source.pos.z - next.pos.z);
+			if (zdiff > 32)
+				continue;
+			if (source.Distance3D(next) > distance)
+				continue;
+			next.DamageMobj(source, source, damage,'normal',DMG_THRUSTLESS|DMG_NO_FACTOR);
+			next.vel.z += 4;
+		}
+		source.A_Quake(2, 5, 0, distance, "");
+		let hi = Spawn("ToM_HorseImpact", (source.pos.xy, source.floorz));
+		if (hi)
+		{
+			hi.A_StartSound("growpotion/giantstep", CHAN_AUTO);
+			if (visualImpact)
+			{
+				hi.scale.x = distance;
+			}
+			else
+			{
+				hi.Destroy();
+			}
 		}
 	}
 
@@ -788,27 +810,64 @@ class ToM_GrowthPotionEffect : Powerup
 		{
 			let pmo = owner.player.mo;
 			let weap = owner.player.readyweapon;
-			pmo.jumpz = prevjumpz;
-			owner.gravity = prevGravity;
-			owner.player.mo.ViewBobSpeed = prevViewBobSpeed;
-			owner.player.viewHeight = prevViewHeight;
-			pmo.attackZOffset = prevAttackZOffset;
-			pmo.viewHeight = prevViewHeight;
+
 			pmo.A_SetSize(pmo.radius, prevHeight);
+			pmo.jumpz = prevjumpz;
+			pmo.gravity = prevGravity;
+			pmo.ViewBobSpeed = prevViewBobSpeed;
+			pmo.viewHeight = prevViewHeight;
+			pmo.player.viewHeight = pmo.viewHeight;
+			pmo.attackZOffset = prevAttackZOffset;
 			pmo.scale = prevScale;
-			owner.player.desiredFov = prevZoom;
-			owner.speed /= SPEEDFACTOR;
+			pmo.player.desiredFov = prevZoom;
+			pmo.speed /= SPEEDFACTOR;
 			for (Inventory item = owner.inv; item; item = item.inv)
 			{
 				let weap = Weapon(item);
 				if (weap)
 				{
-					weap.WeaponScaleX = prevWeaponScale.x;
-					weap.WeaponScaleY = prevWeaponScale.y;
+					weap.WeaponScaleX = weap.default.WeaponScaleX;
+					weap.WeaponScaleY = weap.default.WeaponScaleY;
 				}
+			}
+			if (tom_debugmessages)
+			{
+				console.printf(
+					"Growth potion ended:\n"
+					"height: \cD%.1f\c- | was: \cD%.1f\c-\n"
+					"View height: \cD%.1f\c- | was: \cD%.1f\c-\n"
+					"AttackZOffset: \cD%.1f\c- | was: \cD%.1f\c-",
+					pmo.height, targetHeight,
+					pmo.viewHeight, targetViewHeight,
+					pmo.attackZOffset, targetAttackZOffset
+				);
 			}
 		}
 		Super.OnDestroy();
+	}
+}
+
+class StatPrinter : Inventory
+{
+	override void DoEffect()
+	{
+		if (!owner || !owner.player)
+		{
+			Destroy();
+			return;
+		}
+
+		let player = owner.player;
+		let pmo = player.mo;
+		Console.MidPrint(smallfont, 
+			String.Format(
+				"Viewheight: \cd%.2f (\cd%.2f) \n"
+				"Height: \cd%.2f \n"
+				"AttackZ: \cd%.2f \n",
+				pmo.viewheight, player.viewheight,
+				pmo.height,
+				pmo.attackZOffset)
+		);
 	}
 }
 

@@ -667,7 +667,9 @@ class ToM_AliceHUD : BaseStatusBar
 		TextureID face = FaceController.GetFaceTexture();
 		if (face.isValid())
 		{
-			ToM_DrawTexture(face, pos + ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER, alpha:CPlayer.mo.alpha);
+			Vector2 size = TexMan.GetScaledSize(face);
+			double scaleFac = CPlayer.mo.scale.y / CPlayer.mo.default.scale.y;
+			ToM_DrawTexture(face, pos + ofs + (0, size.y*0.5), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER_BOTTOM, alpha:CPlayer.mo.alpha, scale: (scaleFac, scaleFac));
 		}
 
 		Screen.EnableStencil(false);

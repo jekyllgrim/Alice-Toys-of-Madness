@@ -370,20 +370,35 @@ class ToM_Inventory : Inventory
 	mixin ToM_ComplexPickupmessage;
 }
 
-class ToM_SilverArmor : GreenArmor
+class ToM_ArmorPickup : BasicArmorPickup abstract
 {
-	mixin ToM_CheckParticles;
-	mixin ToM_PickupFlashProperties;
 	mixin ToM_PickupSound;
 	mixin ToM_ComplexPickupmessage;
+	Default
+	{	
+		Radius 20;
+		Height 16;
+	}
+}
+
+class ToM_SilverArmor : ToM_ArmorPickup
+{
 	int lastblink;
 	
 	Default
 	{
 		Inventory.icon "ACARM_1";
 		Inventory.pickupsound "pickups/armor/light";
+		Inventory.PickupMessage "$TOM_ITEM_ARMOR_MED";
+		Armor.SavePercent 33.335;
+		Armor.SaveAmount 100;
 		xscale 0.5;
 		yscale 0.45;
+	}
+
+	override string GetPickupNote() 
+	{
+		return String.Format("(\cy+%d %s\c-)", saveAmount, StringTable.Localize("$TOM_UNIT_ARMOR"));
 	}
 	
 	States {
@@ -427,6 +442,7 @@ class ToM_GoldArmor : ToM_SilverArmor
 	{
 		Inventory.icon "ACARM_2";
 		Inventory.pickupsound "pickups/armor/heavy";
+		Inventory.PickupMessage "$TOM_ITEM_ARMOR_BIG";
 		Armor.SavePercent 50;
 		Armor.SaveAmount 200;
 	}
@@ -440,8 +456,6 @@ class ToM_GoldArmor : ToM_SilverArmor
 
 class ToM_ArmorBonus : ArmorBonus
 {
-	mixin ToM_CheckParticles;
-	mixin ToM_PickupFlashProperties;
 	mixin ToM_PickupSound;
 	mixin ToM_ComplexPickupmessage;
 	
@@ -449,8 +463,15 @@ class ToM_ArmorBonus : ArmorBonus
 	{
 		Inventory.icon "ACARM_0";
 		Inventory.pickupsound "pickups/armor/bonus";
+		Inventory.PickupMessage "$TOM_ITEM_ARMOR_SMALL";
 		xscale 0.5;
 		yscale 0.45;
+	}
+
+	override void BeginPlay()
+	{
+		Super.BeginPlay();
+		pickupNote = String.Format("(\cy+%d %s\c-)", amount, StringTable.Localize("$TOM_UNIT_ARMOR"));
 	}
 	
 	States
@@ -645,7 +666,7 @@ class ToM_Megasphere : ToM_HealthPickup
 	{
 		string hp = String.Format("+%d %s", amount, StringTable.Localize("$TOM_UNIT_HP"));
 		string ar = String.Format("+200 %s", StringTable.Localize("$TOM_UNIT_ARMOR"));
-		return String.Format("(%s, %s)", hp, ar);
+		return String.Format("(\ca%s\c-, \cy%s\c-)", hp, ar);
 	}
 
 	override void Tick()

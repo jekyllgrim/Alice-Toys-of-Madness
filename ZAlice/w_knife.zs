@@ -31,7 +31,7 @@ class ToM_Knife : ToM_BaseWeapon
 	{
 		String weapname = StringTable.Localize(GetTag());
 		String comment = StringTable.Localize(pickupLines[random[msg](0, pickupLines.Size()-1)]);
-		return String.Format("%s! %s", weapname, comment);
+		return String.Format("%s %s", weapname, comment);
 	}
 	
 	action void A_KnifeReady(int flags = 0)

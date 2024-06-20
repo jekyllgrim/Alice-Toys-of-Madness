@@ -208,7 +208,7 @@ class ToM_Mainhandler : EventHandler
 			e.Replacement = "ToM_HobbyHorse"; 
 			break;
 		case 'Pistol':
-			e.Replacement = "ToM_Cards"; 
+			e.Replacement = "ToM_Knife"; 
 			break;
 		case 'Shotgun':
 			e.Replacement = "ToM_Cards"; 

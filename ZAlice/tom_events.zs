@@ -268,6 +268,9 @@ class ToM_Mainhandler : EventHandler
 		case 'AllMap':
 			e.Replacement = "ToM_AllMap"; 
 			break;
+		case 'Radsuit':
+			e.Replacement = "ToM_Radsuit"; 
+			break;
 
 		case 'Clip':
 			e.Replacement = "ToM_AmmoSpawner_RedYellow"; 

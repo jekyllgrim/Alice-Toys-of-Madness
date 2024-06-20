@@ -140,6 +140,7 @@ class ToM_KickWeapon : CustomInventory
 	override void DoEffect()
 	{
 		super.DoEffect();
+		if (!owner || !self) return;
 
 		alice = ToM_AlicePlayer(owner);
 		if (!alice || !alice.player || ToM_Utils.IsVoodooDoll(alice))
@@ -156,6 +157,7 @@ class ToM_KickWeapon : CustomInventory
 		if (!plegs)
 		{
 			plegs = player.GetPSprite(APSP_Legs);
+			if (!plegs) return; //would this ever happen?
 			plegs.caller = self;
 			plegs.pivot = (0.5, 0.86);
 			plegs.bAddWeapon = false;

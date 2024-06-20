@@ -392,8 +392,8 @@ class ToM_SilverArmor : ToM_ArmorPickup
 		Inventory.PickupMessage "$TOM_ITEM_ARMOR_MED";
 		Armor.SavePercent 33.335;
 		Armor.SaveAmount 100;
-		xscale 0.5;
-		yscale 0.45;
+		XScale 0.5;
+		YScale 0.5 / 1.2;
 	}
 
 	override string GetPickupNote() 
@@ -464,8 +464,8 @@ class ToM_ArmorBonus : ArmorBonus
 		Inventory.icon "ACARM_0";
 		Inventory.pickupsound "pickups/armor/bonus";
 		Inventory.PickupMessage "$TOM_ITEM_ARMOR_SMALL";
-		xscale 0.5;
-		yscale 0.45;
+		XScale 0.5;
+		YScale 0.5 / 1.2;
 	}
 
 	override void BeginPlay()
@@ -502,8 +502,8 @@ class ToM_HealthPickup : ToM_Health
 	Default
 	{
 		ToM_Health.PickupNote "$TOM_UNIT_HP";
-		xscale 0.5;
-		yscale 0.415;
+		XScale 0.5;
+		YScale 0.5 / 1.2;
 	}
 	
 	override string GetPickupNote()
@@ -522,8 +522,8 @@ class ToM_HealthBonus : ToM_HealthPickup
 		Inventory.amount 1;
 		Inventory.maxamount 200;
 		Inventory.Pickupsound "pickups/health/petal";
-		xscale 0.6;
-		yscale 0.5;
+		XScale 0.6;
+		YScale 0.6 / 1.2;
 	}
 	
 	States {
@@ -601,7 +601,7 @@ class ToM_Soulsphere : ToM_HealthPickup
 	override void Tick()
 	{
 		super.Tick();
-		if (owner || isFrozen())
+		if (owner || isFrozen() || bNOSECTOR)
 			return;
 		
 		WorldOffset.z = BobSin(FloatBobPhase + 0.85 * level.maptime) * FloatBobStrength;
@@ -835,8 +835,8 @@ class ToM_Backpack : Backpack
 		+Inventory.AUTOACTIVATE
 		Inventory.pickupsound "pickups/manachest";
 		Inventory.pickupmessage "$TOM_ITEM_BACKPACK";
-		xscale 0.75;
-		yscale 0.625;
+		XScale 0.75;
+		YScale 0.75 / 1.2;
 	}
 
 	override void PostBeginPlay()
@@ -1092,7 +1092,7 @@ class ToM_Allmap : AllMap
 	Default
 	{
 		XScale 0.14;
-		YScale 0.116;
+		YScale 0.14 / 1.2;
 		+ROLLSPRITE
 		+ROLLCENTER
 		Inventory.PickupSound "pickups/allmap";

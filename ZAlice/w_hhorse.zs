@@ -50,10 +50,6 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		A_SpawnPSParticle("HorseReadyParticle", xofs: frandom[hrp](-2,2), yofs: frandom[hrp](-2,2), maxlayers: MAXEYEFIRE);
 		A_SpawnPSParticle("HorseReadyParticle", bottom: true, xofs: frandom[hrp](-2,2), yofs: frandom[hrp](-2,2), maxlayers: MAXEYEFIRE);
 		A_Overlay(APSP_TopParticle-1, "HorseReadyParticleBase", true);
-		/*Vector3 fpos = ToM_Utils.RelativeToGlobalOffset((pos.xy, player.viewz), (angle, pitch, roll), (10, 10.5, 5), true);
-		fpos = Level.Vec3Offset(fpos, vel);
-		//Spawn('ToM_DebugSpot', fpos);
-		invoker.DrawEyeFireParticles(fpos);*/
 	}
 
 	action void A_AnimateHorseEyeFire()
@@ -61,6 +57,12 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		int ovid = OverlayID();
 		let psp = player.FindPSprite(ovid);
 		if (!psp) return;
+		let psw = player.FindPSprite(PSP_WEAPON);
+		if (!psw || !InStateSequence(psw.curstate, ResolveState("Ready")))
+		{
+			psp.Destroy();
+			return;
+		}
 
 		// first-time setup (alpha check is used to determine
 		// if this has been done yet):

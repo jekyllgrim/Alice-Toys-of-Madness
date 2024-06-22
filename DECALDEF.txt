@@ -1,0 +1,107 @@
+decal VKnifeLeft1
+{
+	pic ADECVKL1
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+}
+decal VKnifeLeft2
+{
+	pic ADECVKL2
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+}
+decal VKnifeLeft3
+{
+	pic ADECVKL3
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+}
+decal VKnifeLeft4
+{
+	pic ADECVKL4
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+}
+decalgroup VKnifeLeft
+{
+	VKnifeLeft1 1
+	VKnifeLeft2 1
+	VKnifeLeft3 1
+	VKnifeLeft4 1
+}
+
+decal VKnifeRight1
+{
+	pic ADECVKR1
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+}
+decal VKnifeRight2
+{
+	pic ADECVKR2
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+}
+decal VKnifeRight3
+{
+	pic ADECVKR3
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+}
+decal VKnifeRight4
+{
+	pic ADECVKR4
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+}
+decalgroup VKnifeRight
+{
+	VKnifeRight1 1
+	VKnifeRight2 1
+	VKnifeRight3 1
+	VKnifeRight4 1
+}
+
+decal VKnifeDown1
+{
+	pic ADECVKD1
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+}
+decal VKnifeDown2
+{
+	pic ADECVKD2
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+}
+decal VKnifeDown3
+{
+	pic ADECVKD3
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+}
+decal VKnifeDown4
+{
+	pic ADECVKD4
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+}
+decalgroup VKnifeDown
+{
+	VKnifeDown1 1
+	VKnifeDown2 1
+	VKnifeDown3 1
+	VKnifeDown4 1
+}

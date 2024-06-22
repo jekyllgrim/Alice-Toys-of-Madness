@@ -94,16 +94,6 @@ class ToM_Knife : ToM_BaseWeapon
 		else
 			psp.sprite = GetSpriteIndex(defsprite);
 	}
-	
-	action void A_KnifeSlash(double damage = 10)
-	{
-		double range = 80;
-		if (CountInv('ToM_GrowthPotionEffect'))
-		{
-			range *= ToM_GrowthPotionEffect.VIEWFACTOR;
-		}
-		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_KnifePuff", range: range);
-	}
 
 	const KNIFE_ParticleTrails = 20;
 
@@ -122,7 +112,22 @@ class ToM_Knife : ToM_BaseWeapon
 
 	action void A_KnifeSwing(int damage, double stepX, double stepY)
 	{
-		let victim = A_SwingAttack(
+		let psp = player.FindPSprite(PSP_WEAPON);
+		if (!psp) return;
+		name decaltype;
+		if (InStateSequence(psp.curstate, ResolveState("LeftSlash")))
+		{
+			decaltype = 'VKnifeLeft';
+		}
+		else if (InStateSequence(psp.curstate, ResolveState("RightSlash")))
+		{
+			decaltype = 'VKnifeRight';
+		}
+		else if (InStateSequence(psp.curstate, ResolveState("DownSlash")))
+		{
+			decaltype = 'VKnifeDown';
+		}
+		A_SwingAttack(
 			damage, 
 			stepX, stepY,
 			range: 60,
@@ -132,6 +137,7 @@ class ToM_Knife : ToM_BaseWeapon
 			trailsize: 1.5,
 			trailtics: 15,
 			style: PBS_Fade|PBS_Fullbright|PBS_Untextured,
+			decaltype: decaltype,
 			id: 0);
 	}
 

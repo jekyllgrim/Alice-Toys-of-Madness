@@ -1038,7 +1038,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 			if (target && target.player)
 			{
 				vector3 vec = Vec3To(target) + (0, 0, target.player.viewz - 10 - target.pos.z);
-				vel = min(Distance3D(target), vec.Unit() * KV_RECALLSPEED);
+				vel = vec.Unit() * min(Distance3D(target), KV_RECALLSPEED);
 				
 				if (knifemodel)
 				{

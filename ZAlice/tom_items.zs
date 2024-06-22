@@ -1112,37 +1112,3 @@ class ToM_Allmap : AllMap
 		loop;
 	}
 }
-
-class ToM_Radsuit : Radsuit
-{
-	Default
-	{
-		XScale 0.35;
-		YScale 0.35 / 1.2;
-		+FORCEXYBILLBOARD
-		Inventory.PickupMessage "$TOM_ITEM_RADSUIT";
-		Inventory.PickupSound "pickups/generic/powerup";
-	}
-
-	override void Tick()
-	{
-		Super.Tick();
-		if (owner || isFrozen() || bNOSECTOR) return;
-
-		double phase = 360.0 * (GetAge() + FloatBobPhase);
-		double bob = sin(phase * 0.01);
-		WorldOffset.z = 2.5 * bob;
-	}
-
-	override void PostBeginPlay()
-	{
-		Super.PostBeginPlay();
-		A_AttachLight('0', DynamicLight.PointLight, 0x2776df, 40, 40, DYNAMICLIGHT.LF_ATTENUATE, ofs: (0, 0, 20));
-	}
-
-	States {
-	Spawn:
-		AMTS ABCDEFGHIJKLMNOPQRST 2;
-		loop;
-	}
-}

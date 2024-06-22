@@ -279,6 +279,7 @@ class ToM_RageBoxEffect : ToM_Powerup
 		Powerup.Duration -30;
 		Powerup.Strength 5;
 		Powerup.Color "FF0000", 0.12;
+		Inventory.Icon "APOWRAGE";
 		+Inventory.ALWAYSPICKUP
 	}
 
@@ -554,7 +555,7 @@ class ToM_GrowthPotionEffect : Powerup
 	Default
 	{
 		Powerup.duration -5;
-		Inventory.Icon "CAKGA0";
+		Inventory.Icon "APOWCAKE";
 	}
 
 	override void InitEffect()
@@ -925,7 +926,7 @@ class ToM_InvisibilityEffect : ToM_Powerup
 	{
 		Powerup.duration -40;
 		DeathSound "mirror/appear";
-		Inventory.Icon "LGMYA0";
+		Inventory.Icon "APOWGLAS";
 	}
 
 	void SpawnSoundTarget()
@@ -1330,6 +1331,11 @@ class ToM_Infrared : Infrared
 
 class ToM_MadVisionEffect : PowerTorch
 {
+	Default
+	{
+		Inventory.Icon "APOWVISI";
+	}
+
 	override void InitEffect()
 	{
 		Super.InitEffect();
@@ -1346,5 +1352,48 @@ class ToM_MadVisionEffect : PowerTorch
 			PPShader.SetEnabled("Alice_ScreenWarp", false);
 		}
 		Super.EndEffect();
+	}
+}
+
+class ToM_Radsuit : Radsuit
+{
+	Default
+	{
+		XScale 0.35;
+		YScale 0.35 / 1.2;
+		+FORCEXYBILLBOARD
+		Inventory.PickupMessage "$TOM_ITEM_RADSUIT";
+		Inventory.PickupSound "pickups/generic/powerup";
+		Powerup.Type "ToM_RadSuitEffect";
+	}
+
+	override void Tick()
+	{
+		Super.Tick();
+		if (owner || isFrozen() || bNOSECTOR) return;
+
+		double phase = 360.0 * (GetAge() + FloatBobPhase);
+		double bob = sin(phase * 0.01);
+		WorldOffset.z = 2.5 * bob;
+	}
+
+	override void PostBeginPlay()
+	{
+		Super.PostBeginPlay();
+		A_AttachLight('0', DynamicLight.PointLight, 0x2776df, 40, 40, DYNAMICLIGHT.LF_ATTENUATE, ofs: (0, 0, 20));
+	}
+
+	States {
+	Spawn:
+		AMTS ABCDEFGHIJKLMNOPQRST 2;
+		loop;
+	}
+}
+
+class ToM_RadSuitEffect : PowerIronFeet
+{
+	Default
+	{
+		Inventory.Icon "APOWSHEL";
 	}
 }

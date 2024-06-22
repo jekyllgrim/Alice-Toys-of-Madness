@@ -453,6 +453,7 @@ class ToM_PepperPuff : ToM_BasePuff
 	Default
 	{
 		Damagetype 'Pepper';
+		Decal 'PepperDecal';
 		+PUFFONACTORS
 	}
 	

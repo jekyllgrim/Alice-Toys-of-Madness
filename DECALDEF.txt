@@ -8,7 +8,6 @@ fader ToM_Fader
 
 decal VKnifeLeft1
 {
-	pic ADECHHS1
 	pic ADECVKL1
 	shade "00 00 00"
 	x-scale 0.65
@@ -17,7 +16,6 @@ decal VKnifeLeft1
 }
 decal VKnifeLeft2
 {
-	pic ADECHHS2
 	pic ADECVKL2
 	shade "00 00 00"
 	x-scale 0.65
@@ -26,7 +24,6 @@ decal VKnifeLeft2
 }
 decal VKnifeLeft3
 {
-	pic ADECHHS3
 	pic ADECVKL3
 	shade "00 00 00"
 	x-scale 0.65
@@ -35,7 +32,6 @@ decal VKnifeLeft3
 }
 decal VKnifeLeft4
 {
-	pic ADECHHS4
 	pic ADECVKL4
 	shade "00 00 00"
 	x-scale 0.65
@@ -323,4 +319,41 @@ decalgroup HorseDecalDown
 	HorseDecalDown1 1
 	HorseDecalDown2 1
 	HorseDecalDown3 1
+}
+
+// Pepper grinder
+fader PepperScorchFader
+{
+	DecayStart 5.0
+	DecayTime 3.0
+}
+
+fader PepperFader
+{
+	DecayStart 2.0
+	DecayTime 4.0
+}
+
+decal PepperScorch
+{
+	pic SCORCH1
+	shade "00 00 00"
+	x-scale 0.15
+	y-scale 0.15
+	randomflipx
+	randomflipy
+	animator PepperScorchFader
+}
+
+decal PepperDecal
+{
+	pic ADECPGR
+	lowerdecal PepperScorch
+	opaqueblood
+	x-scale 0.15
+	y-scale 0.15
+	randomflipx
+	randomflipy
+	fullbright
+	animator PepperFader
 }

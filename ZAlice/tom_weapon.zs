@@ -155,7 +155,7 @@ class ToM_BaseWeapon : Weapon abstract
 	}
 	
 	// Do the attack and move the offset one step as defined above:
-	action Actor A_SwingAttack(int damage,
+	action Actor, Actor A_SwingAttack(int damage,
 							double stepX, double stepY,
 							double range = 0,
 							class<Actor> pufftype = null,
@@ -166,6 +166,7 @@ class ToM_BaseWeapon : Weapon abstract
 							EParticleBeamStyle style = PBS_Solid,
 							ERenderStyle rstyle = STYLE_Shaded,
 							String texture = "LEGYA0",
+							name decaltype = 'none',
 							int id = 0)
 	{
 		id = Clamp(id, 0, SWING_MaxIDs);
@@ -178,7 +179,7 @@ class ToM_BaseWeapon : Weapon abstract
 		if (!data)
 		{
 			Console.Printf("\cgSwing data:\c- Controller \cd%d\c- does not exist. Aborting.", id);
-			return null;
+			return null, null;
 		}
 		Vector2 flatOfs = data.ofs;
 		Quat view = Quat.FromAngles(angle, pitch, roll);
@@ -212,11 +213,11 @@ class ToM_BaseWeapon : Weapon abstract
 		}
 
 		Actor victim;
+		Actor puff;
 		if (damage > 0)
 		{
 			int type;
 			[type, victim] = ToM_Utils.GetHitType(hit);
-			Actor puff;
 
 			if (pufftype && type != ToM_Utils.HT_None)
 			{
@@ -230,10 +231,6 @@ class ToM_BaseWeapon : Weapon abstract
 					{
 						puff.A_StartSound(puff.seesound);
 					}
-					/*else if (type == ToM_Utils.HT_Solid)
-					{
-						puff.A_StartSound(puff.attacksound);
-					}*/
 				}
 			}
 			
@@ -242,6 +239,10 @@ class ToM_BaseWeapon : Weapon abstract
 			{
 				invoker.swingSndCounter = SWING_SoundStagger;
 				puff.A_StartSound(puff.attacksound, CHAN_AUTO);
+				if (decaltype != 'none')
+				{
+					puff.A_SprayDecal(decaltype, direction: self.Vec3To(puff));
+				}
 			}
 			
 			// Do this if we hit an actor:
@@ -281,7 +282,7 @@ class ToM_BaseWeapon : Weapon abstract
 				style:		style);
 		}
 
-		return victim;
+		return victim, puff;
 	}
 
 	action void A_PlayerAttackAnim(int animTics, Name animName, double framerate = -1, int startFrame = -1, int loopFrame= -1, int endFrame = -1, int interpolateTics = -1, int flags = 0)

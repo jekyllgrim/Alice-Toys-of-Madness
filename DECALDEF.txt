@@ -8,7 +8,7 @@ fader ToM_Fader
 
 decal VKnifeLeft1
 {
-	pic ADECVKL1
+	pic ADECHHS1
 	shade "00 00 00"
 	x-scale 0.65
 	y-scale 0.65
@@ -16,7 +16,7 @@ decal VKnifeLeft1
 }
 decal VKnifeLeft2
 {
-	pic ADECVKL2
+	pic ADECHHS2
 	shade "00 00 00"
 	x-scale 0.65
 	y-scale 0.65
@@ -24,7 +24,7 @@ decal VKnifeLeft2
 }
 decal VKnifeLeft3
 {
-	pic ADECVKL3
+	pic ADECHHS3
 	shade "00 00 00"
 	x-scale 0.65
 	y-scale 0.65
@@ -32,7 +32,7 @@ decal VKnifeLeft3
 }
 decal VKnifeLeft4
 {
-	pic ADECVKL4
+	pic ADECHHS4
 	shade "00 00 00"
 	x-scale 0.65
 	y-scale 0.65
@@ -221,4 +221,102 @@ decalgroup VClawDown
 	VClawDown2 1
 	VClawDown3 1
 	VClawDown4 1
+}
+
+// Hobby Horse
+
+decal HorseDecalLeft1
+{
+	pic ADECHHS1
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+	animator ToM_Fader
+}
+decal HorseDecalLeft2
+{
+	pic ADECHHS2
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+	animator ToM_Fader
+}
+decal HorseDecalLeft3
+{
+	pic ADECHHS3
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+	animator ToM_Fader
+}
+decalgroup HorseDecalLeft
+{
+	HorseDecalLeft1 1
+	HorseDecalLeft2 1
+	HorseDecalLeft3 1
+}
+
+decal HorseDecalRight1
+{
+	pic ADECHHS1
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+	flipX
+	animator ToM_Fader
+}
+decal HorseDecalRight2
+{
+	pic ADECHHS2
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+	flipX
+	animator ToM_Fader
+}
+decal HorseDecalRight3
+{
+	pic ADECHHS3
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+	flipX
+	animator ToM_Fader
+}
+decalgroup HorseDecalRight
+{
+	HorseDecalRight1 1
+	HorseDecalRight2 1
+	HorseDecalRight3 1
+}
+
+decal HorseDecalDown1
+{
+	pic ADECHHD1
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+	animator ToM_Fader
+}
+decal HorseDecalDown2
+{
+	pic ADECHHD2
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+	animator ToM_Fader
+}
+decal HorseDecalDown3
+{
+	pic ADECHHD3
+	shade "00 00 00"
+	x-scale 0.65
+	y-scale 0.65
+	animator ToM_Fader
+}
+decalgroup HorseDecalDown
+{
+	HorseDecalDown1 1
+	HorseDecalDown2 1
+	HorseDecalDown3 1
 }

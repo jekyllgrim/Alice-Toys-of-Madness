@@ -22,6 +22,21 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	// Do the attack and move the offset one step as defined above:
 	action void A_HorseSwing(int damage, double stepX, double stepY)
 	{
+		let psp = player.FindPSprite(PSP_WEAPON);
+		if (!psp) return;
+		name decaltype;
+		if (InStateSequence(psp.curstate, ResolveState("RightSwing")))
+		{
+			decaltype = 'HorseDecalLeft';
+		}
+		else if (InStateSequence(psp.curstate, ResolveState("LeftSwing")))
+		{
+			decaltype = 'HorseDecalRight';
+		}
+		else
+		{
+			decaltype = 'HorseDecalDown';
+		}
 		for (int i = 0; i < 2; i++)
 		{
 			A_SwingAttack(
@@ -33,6 +48,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				trailsize: 8,
 				style: PBS_Fade|PBS_Fullbright,
 				rstyle: Style_Add,
+				decaltype: (i == 0)? decaltype : 'none',
 				id: i);
 		}
 	}

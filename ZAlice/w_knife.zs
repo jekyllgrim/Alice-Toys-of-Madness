@@ -123,7 +123,7 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			decaltype = 'VKnifeRight';
 		}
-		else if (InStateSequence(psp.curstate, ResolveState("DownSlash")))
+		else
 		{
 			decaltype = 'VKnifeDown';
 		}
@@ -143,6 +143,17 @@ class ToM_Knife : ToM_BaseWeapon
 
 	action void A_ClawSwing(int damage, double stepX, double stepY)
 	{
+		let psp = player.FindPSprite(APSP_LeftHand);
+		if (!psp) return;
+		name decaltype;
+		if (InStateSequence(psp.curstate, ResolveState("ClawLeftSlash")))
+		{
+			decaltype = 'VClawRight';
+		}
+		else
+		{
+			decaltype = 'VClawDown';
+		}
 		for (int i = 0; i < 4; i++)
 		{
 			let victim = A_SwingAttack(
@@ -155,6 +166,7 @@ class ToM_Knife : ToM_BaseWeapon
 				trailsize: 1.5,
 				trailtics: 15,
 				style: PBS_Fade|PBS_Fullbright|PBS_Untextured,
+				decaltype: (i == 0)? decaltype : 'none',
 				id: i);
 		}
 	}

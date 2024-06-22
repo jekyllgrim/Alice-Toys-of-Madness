@@ -1,5 +1,11 @@
 // Vorpal Knife decals:
 
+fader ToM_Fader
+{
+	DecayStart 5.0
+	DecayTime 3.0
+}
+
 decal VKnifeLeft1
 {
 	pic ADECVKL1
@@ -120,10 +126,19 @@ decalgroup VKnifeDown
 	VKnifeDown4 1
 }
 
-fader ToM_Fader
+fader VKnifeThrownFader
 {
-	DecayStart 5.0
+	DecayStart 9.0
 	DecayTime 3.0
+}
+
+decal VKnifeThrown
+{
+	pic ADECVKTH
+	shade "00 00 00"
+	x-scale 0.5
+	y-scale 0.4
+	animator VKnifeThrownFader
 }
 
 // Claw decals:

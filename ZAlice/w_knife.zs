@@ -855,6 +855,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		seesound ""; //Called from the weapon, not here
 		deathsound "";
 		renderstyle "Translucent";
+		decal 'VKnifeThrown';
 		speed 25;
 		damage (20);
 		-NOGRAVITY
@@ -1037,7 +1038,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 			if (target && target.player)
 			{
 				vector3 vec = Vec3To(target) + (0, 0, target.player.viewz - 10 - target.pos.z);
-				vel = vec.Unit() * KV_RECALLSPEED;
+				vel = min(Distance3D(target), vec.Unit() * KV_RECALLSPEED);
 				
 				if (knifemodel)
 				{

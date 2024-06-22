@@ -107,17 +107,17 @@ class ToM_Knife : ToM_BaseWeapon
 
 	const KNIFE_ParticleTrails = 20;
 
-	action void A_PrepareKnifeSwing(Vector2 eye1start, Vector2 eye2start)
+	action void A_PrepareKnifeSwing(Vector2 eye1start)
 	{
 		A_PrepareSwing(eye1start.x, eye1start.y, 0);
-		//A_PrepareSwing(eye2start.x, eye2start.y, 1);
-		/*
-		for (int i = 0; i < KNIFE_ParticleTrails; i++)
-		{
-			double sx = ToM_Utils.LinearMap(i, 0, KNIFE_ParticleTrails-1, eye1start.x, eye2start.x);
-			double sy = ToM_Utils.LinearMap(i, 0, KNIFE_ParticleTrails-1, eye1start.y, eye2start.y);
-			A_PrepareSwing(sx, sy, i);
-		}*/
+	}
+
+	action void A_PrepareClawSwing(Vector2 eye1start, Vector2 eye2start, Vector2 eye3start, Vector2 eye4start)
+	{
+		A_PrepareSwing(eye1start.x, eye1start.y, 0);
+		A_PrepareSwing(eye2start.x, eye2start.y, 1);
+		A_PrepareSwing(eye3start.x, eye3start.y, 2);
+		A_PrepareSwing(eye4start.x, eye4start.y, 3);
 	}
 
 	action void A_KnifeSwing(int damage, double stepX, double stepY)
@@ -133,41 +133,24 @@ class ToM_Knife : ToM_BaseWeapon
 			trailtics: 15,
 			style: PBS_Fade|PBS_Fullbright|PBS_Untextured,
 			id: 0);
-		/*A_SwingAttack(
-			0, 
-			stepX, stepY,
-			range: 20,
-			trailcolor: 0xFFFFFFFF,
-			trailalpha: 0.5,
-			trailsize: 3,
-			trailtics: 12,
-			style: PBS_Fade|PBS_Fullbright,
-			id: 1);*/
-		/*for (int i = 0; i < KNIFE_ParticleTrails; i++)
-		{
-			A_SwingAttack(
-				i == 0? damage : 0, 
-				stepX, stepY,
-				range: i == 0? ToM_Utils.LinearMap(i, 0, KNIFE_ParticleTrails-1, 60, 20),
-				solidSound: i == 0? "weapons/knife/hitwall" : "",
-				fleshsound: i == 0? "weapons/knife/hitflesh" : "",
-				trailcolor: 0xFFFFFFFF,
-				trailalpha: 1,
-				trailsize: 7,
-				trailtics: 10,
-				style: PBS_Fade|PBS_Fullbright,
-				id: i);
-		}*/
 	}
-	
-	action void A_ClawSlash(double damage = 10)
+
+	action void A_ClawSwing(int damage, double stepX, double stepY)
 	{
-		double range = 80;
-		if (CountInv('ToM_GrowthPotionEffect'))
+		for (int i = 0; i < 4; i++)
 		{
-			range *= ToM_GrowthPotionEffect.VIEWFACTOR;
+			let victim = A_SwingAttack(
+				(i == 0)? damage : 0,
+				stepX, stepY,
+				range: 60,
+				pufftype: (i == 0)? 'ToM_ClawPuff' : '',
+				trailcolor: 0xFFCC0000,
+				trailalpha: 0.65,
+				trailsize: 1.5,
+				trailtics: 15,
+				style: PBS_Fade|PBS_Fullbright|PBS_Untextured,
+				id: i);
 		}
-		A_CustomPunch(damage, true, CPF_NOTURN, "ToM_ClawPuff", range: range);
 	}
 	
 	// Throws the knife and saves a pointer to it:
@@ -402,17 +385,22 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayOffset(OverlayID(), -8, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 2.5, WOF_ADD);
 		}
-		TNT1 A 0 A_StartSound("weapons/knife/swingold", CHAN_AUTO, pitch: 0.9);
+		TNT1 A 0 
+		{
+			A_StartSound("weapons/knife/swingold", CHAN_AUTO, pitch: 0.9);
+			A_PrepareClawSwing((65, -10), (66, -7), (67, -4), (68, -1));
+		}
 		VCLW DDD 1
 		{
 			A_OverlayOffset(OverlayID(), 35, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5, WOF_ADD);
+			A_ClawSwing(25, -18, 6);
 		}
-		TNT1 A 0 A_ClawSlash(25);
 		VCLW EEEE 1
 		{
 			A_OverlayOffset(OverlayID(), 20, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
+			A_ClawSwing(25, -18, 2);
 		}
 		TNT1 A 0 A_ResetPSprite(OverlayID(), 8);
 		VCLW FFFF 1;
@@ -435,17 +423,20 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayOffset(OverlayID(), -3, -3.5, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 2.5, WOF_ADD);
 		}
-		TNT1 A 0 A_StartSound("weapons/claw/swing", CHAN_AUTO, pitch: 0.9);
+		TNT1 A 0 
+		{
+			A_StartSound("weapons/claw/swing", CHAN_AUTO, pitch: 0.9);
+			A_PrepareClawSwing((20, -40), (23, -39), (26, -38), (29, -37));
+		}
 		VCLW JJK 1
 		{
 			A_OverlayOffset(OverlayID(), 30, 20, WOF_ADD);
-			//A_RotatePSprite(OverlayID(), -5, WOF_ADD);
+			A_ClawSwing(30, -4, 15);
 		}
-		TNT1 A 0 A_ClawSlash(25);
 		VCLW KKKK 1
 		{
 			A_OverlayOffset(OverlayID(), 30, 30, WOF_ADD);
-			//A_RotatePSprite(OverlayID(), -3, WOF_ADD);
+			A_ClawSwing(30, -4, 15);
 		}
 		TNT1 A 0 A_ResetPSprite(OverlayID(), 8);
 		VCLW LLLL 1;
@@ -578,7 +569,7 @@ class ToM_Knife : ToM_BaseWeapon
 		#### A 0 
 		{
 			A_StartSound("weapons/knife/swing", CHAN_AUTO);
-			A_PrepareKnifeSwing((-55, 0), (-50, 0));
+			A_PrepareKnifeSwing((-55, 0));
 		}
 		#### BBB 1
 		{
@@ -619,7 +610,7 @@ class ToM_Knife : ToM_BaseWeapon
 		#### A 0 
 		{
 			A_StartSound("weapons/knife/swing", CHAN_AUTO);
-			A_PrepareKnifeSwing((45, 10), (40, 10));
+			A_PrepareKnifeSwing((45, 10));
 		}
 		#### EEE 1
 		{
@@ -656,7 +647,7 @@ class ToM_Knife : ToM_BaseWeapon
 		#### A 0 
 		{
 			A_StartSound("weapons/knife/swing", CHAN_AUTO);
-			A_PrepareKnifeSwing((-17, -40), (-28, -20));
+			A_PrepareKnifeSwing((-17, -40));
 		}
 		#### GGH 1 
 		{

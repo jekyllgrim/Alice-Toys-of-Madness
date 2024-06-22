@@ -127,7 +127,7 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			decaltype = 'VKnifeDown';
 		}
-		A_SwingAttack(
+		let victim = A_SwingAttack(
 			damage, 
 			stepX, stepY,
 			range: 60,
@@ -139,6 +139,10 @@ class ToM_Knife : ToM_BaseWeapon
 			style: PBS_Fade|PBS_Fullbright|PBS_Untextured,
 			decaltype: decaltype,
 			id: 0);
+		if (victim && victim.health > 0 && !victim.bNoPain && random[knifepain](0, 100) <= ToM_Utils.LinearMap(invoker.combo, 0, 5, 15, 80))
+		{
+			victim.SetState(victim.FindState("Pain"));
+		}
 	}
 
 	action void A_ClawSwing(int damage, double stepX, double stepY)
@@ -794,20 +798,6 @@ class ToM_KnifePuff : ToM_BasePuff
 		+PUFFONACTORS
 		seesound "weapons/knife/hitflesh";
 		attacksound "weapons/knife/hitwall";
-	}
-	
-	override void PostBeginPlay()
-	{
-		super.PostBeginPlay();
-		if (target && target.player)
-		{
-			let weap = ToM_Knife(target.player.readyweapon);
-			if (weap)
-			{
-				int forcePainChance = ToM_Utils.LinearMap(weap.combo, 0, 5, 15, 80);
-				bFORCEPAIN = (random[knifepain](0, 100) <= forcePainChance);
-			}
-		}
 	}
 }
 

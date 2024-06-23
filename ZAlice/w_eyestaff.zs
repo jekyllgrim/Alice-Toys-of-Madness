@@ -548,6 +548,8 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		xscale 5;
 		yscale 6;
 	}		
+		Decal "EyestaffProjectileDecal";
+	}
 	
 	override void PostBeginPlay()
 	{

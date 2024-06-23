@@ -382,3 +382,17 @@ decal TeapotScorchBurn
 	fullbright
 	animator PepperFader
 }
+
+// Eyestaff projectile
+decal EyestaffProjectileDecal
+{
+	pic SCORCH1
+	lowerdecal TeapotScorch
+	shade "f4 4d de"
+	x-scale 0.5
+	y-scale 0.5
+	randomflipx
+	randomflipy
+	fullbright
+	animator PepperFader
+}

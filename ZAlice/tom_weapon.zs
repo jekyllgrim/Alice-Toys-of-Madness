@@ -258,7 +258,7 @@ class ToM_BaseWeapon : Weapon abstract
 				puff.A_StartSound(puff.attacksound, CHAN_AUTO);
 				if (decaltype != 'none')
 				{
-					puff.A_SprayDecal(decaltype, direction: self.Vec3To(puff));
+					puff.A_SprayDecal(decaltype, 8, direction: -hitnormal);
 				}
 				let tompuff = ToM_BasePuff(puff);
 				if (tompuff)

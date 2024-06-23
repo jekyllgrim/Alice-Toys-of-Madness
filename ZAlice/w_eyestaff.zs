@@ -464,6 +464,23 @@ class ToM_EyestaffPuff : ToM_BasePuff
 	{
 		+NODAMAGETHRUST
 		DamageType 'Eyestaff';
+		ToM_BasePuff.ParticleAmount 15;
+		ToM_BasePuff.ParticleColor 0xf44dde;
+		ToM_BasePuff.ParticleSize 7;
+		ToM_BasePuff.ParticleSpeed 6;
+	}
+
+	States {
+	Crash:
+		TNT1 A 1
+		{
+			if (target)
+			{
+				FLineTraceData tr;
+				SpawnPuffEffects(ToM_Utils.GetNormalFromPos(self, 32, target.angle, target.pitch, tr));
+			}
+		}
+		stop;
 	}
 }
 
@@ -547,7 +564,6 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		alpha 0.5;
 		xscale 5;
 		yscale 6;
-	}		
 		Decal "EyestaffProjectileDecal";
 	}
 	

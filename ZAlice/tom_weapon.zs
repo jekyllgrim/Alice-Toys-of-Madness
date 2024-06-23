@@ -895,7 +895,7 @@ class ToM_BasePuff : ToM_BaseActor
 
 	virtual void SpawnPuffEffects(Vector3 dir, Vector3 origin = (0,0,0))
 	{
-		if (puff_particles <= 0 || !target) return;
+		if (puff_particles <= 0 || waterlevel > 0) return;
 
 		FSpawnParticleParams p;
 		p.flags = SPF_FULLBRIGHT;
@@ -908,12 +908,12 @@ class ToM_BasePuff : ToM_BaseActor
 		double yaw = atan2(dir.y, dir.x);
 		double pch = -atan2(dir.z, dir.xy.Length());
 		Quat orientation = Quat.FromAngles(yaw, pch, 0.0);
-		for (int i = round(puff_particles * random[puffvis](0.8, 1.2)); i > 0; i--)
+		for (int i = round(puff_particles * frandom[puffvis](0.8, 1.2)); i > 0; i--)
 		{
 			p.color1 = color(
-				Clamp(int(puff_partcolor.r * frandom[puffvis](0.9, 1.1)), 0, 255),
-				Clamp(int(puff_partcolor.g * frandom[puffvis](0.9, 1.1)), 0, 255),
-				Clamp(int(puff_partcolor.b * frandom[puffvis](0.9, 1.1)), 0, 255)
+				Clamp(int(puff_partcolor.r * frandom[puffvis](0.7, 1.1)), 0, 255),
+				Clamp(int(puff_partcolor.g * frandom[puffvis](0.7, 1.1)), 0, 255),
+				Clamp(int(puff_partcolor.b * frandom[puffvis](0.7, 1.1)), 0, 255)
 			);
 			p.lifetime = random[puffvis](20, 30);
 			p.size = puff_partsize * frandom[puffvis](0.8, 1.2);
@@ -925,12 +925,6 @@ class ToM_BasePuff : ToM_BaseActor
 			p.accel.z = gravity * -puff_gravity;
 			Level.SpawnParticle(p);
 		}
-		// spawn some debug spots along the vector:
-		/*Spawn('ToM_DebugSpot', origin);
-		Spawn('ToM_DebugSpot', origin + dir * 10);
-		Spawn('ToM_DebugSpot', origin + dir * 20);
-		Spawn('ToM_DebugSpot', origin + dir * 30);
-		Spawn('ToM_DebugSpot', origin + dir * 40);*/
 	}
 
 	States

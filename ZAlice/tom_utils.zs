@@ -191,7 +191,7 @@ class ToM_Utils
 	// Obtains a normal for whatever surface is hit from the
 	// given source actor, using given distance, angle and pitch.
 	// Returns the normal and a bool telling if it was obtained successfully:
-	static play vector3, bool GetNormalFromPos(Actor source, double dist, double angle, double pitch, FLineTraceData normcheck)
+	static play vector3, bool GetNormalFromPos(Actor source, double dist, double angle, double pitch, out FLineTraceData normcheck)
 	{
 		if (!source)
 		{

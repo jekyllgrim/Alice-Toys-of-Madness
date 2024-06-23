@@ -902,6 +902,28 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 	{
 		BeginRecall();
 	}
+
+	override void StickToWall()
+	{
+		Super.StickToWall();
+		FLineTraceData tr;
+		Vector3 dir; bool success;
+		[dir, success] = ToM_Utils.GetNormalFromPos(self, 64, angle, pitch, tr);
+		let puff = ToM_BasePuff(Spawn('ToM_KnifePuff', pos));
+		if (puff)
+		{
+			// hit a plane:
+			if (success)
+			{
+				puff.SpawnPuffEffects(dir, self.pos);
+			}
+			// hit a solid object:
+			else
+			{
+				puff.SpawnPuffEffects(tr.hitDir * -1, self.pos);
+			}
+		}
+	}
 	
 	override void PostBeginPlay()
 	{

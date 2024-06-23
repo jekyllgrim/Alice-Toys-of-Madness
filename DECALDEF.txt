@@ -357,3 +357,28 @@ decal PepperDecal
 	fullbright
 	animator PepperFader
 }
+
+// Teapot Cannon
+decal TeapotScorch
+{
+	pic SCORCH1
+	shade "00 00 00"
+	x-scale 0.85
+	y-scale 0.85
+	randomflipx
+	randomflipy
+	animator PepperScorchFader
+}
+
+decal TeapotScorchBurn
+{
+	pic SCORCH1
+	lowerdecal TeapotScorch
+	shade "65 e9 5b"
+	x-scale 0.5
+	y-scale 0.5
+	randomflipx
+	randomflipy
+	fullbright
+	animator PepperFader
+}

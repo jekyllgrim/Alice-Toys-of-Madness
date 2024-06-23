@@ -592,6 +592,7 @@ class ToM_TeaProjectile : ToM_Projectile
 		alpha 0.7;
 		xscale 0.3;
 		yscale 0.28;
+		Decal "TeapotScorchBurn";
 	}
 	
 	States

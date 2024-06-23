@@ -146,6 +146,7 @@ class ToM_Utils
 		return (p1 == p2) ? p1 : -1;
 	}
 
+	// Obtains a wall normal vector:
 	static clearscope vector2 GetLineNormal(vector2 ppos, Line lline)
 	{
 		vector2 linenormal;
@@ -156,6 +157,57 @@ class ToM_Utils
 		return linenormal;
 	}
 
+	// Obtains a normal vector from FLineTraceData
+	// depending on what it hit:
+	static play vector3 GetNormalFromTrace(FLineTraceData normcheck)
+	{
+		vector3 hitnormal = -normcheck.HitDir;
+		if (normcheck.HitType == TRACE_HitFloor)
+		{
+			if (normcheck.Hit3DFloor) 
+				hitnormal = -normcheck.Hit3DFloor.top.Normal;
+			else 
+				hitnormal = normcheck.HitSector.floorplane.Normal;
+		}
+		else if (normcheck.HitType == TRACE_HitCeiling)
+		{
+			if (normcheck.Hit3DFloor) 
+				hitnormal = -normcheck.Hit3DFloor.bottom.Normal;
+			else 
+				hitnormal = normcheck.HitSector.ceilingplane.Normal;
+		}
+		else if (normcheck.HitType == TRACE_HitWall && normcheck.HitLine)
+		{
+			hitnormal.xy = (-normcheck.HitLine.delta.y, normcheck.HitLine.delta.x).Unit();
+			if (normcheck.LineSide == Line.front)
+			{
+				hitnormal.xy *= -1;
+			}
+			hitnormal.z = 0;
+		}
+		return hitnormal;
+	}
+
+	// Obtains a normal for whatever surface is hit from the
+	// given source actor, using given distance, angle and pitch.
+	// Returns the normal and a bool telling if it was obtained successfully:
+	static play vector3, bool GetNormalFromPos(Actor source, double dist, double angle, double pitch, FLineTraceData normcheck)
+	{
+		if (!source)
+		{
+			return (0,0,0), false;
+		}
+
+		source.LineTrace(angle, dist, pitch, flags: TRF_NOSKY, offsetz: source.height*0.5, data:normcheck);
+		let ht = normcheck.HitType;
+		if (ht != TRACE_HitFloor && ht != TRACE_HitCeiling && ht != TRACE_HitWall)
+		{
+			return (0,0,0), false;
+		}
+
+		return GetNormalFromTrace(normcheck), true;
+	}
+
 	enum ETraceHitTypes
 	{
 		HT_None,
@@ -163,6 +215,9 @@ class ToM_Utils
 		HT_Solid,
 	}
 
+	// Wrapper that tells us if a given linetrace hit
+	// something solid, something shootable, or nothing
+	// and returns an actor pointer if one was obtained:
 	static play ETraceHitTypes, Actor GetHitType(FLineTraceData tr)
 	{
 		if (tr.HitType == TRACE_HitNone)
@@ -191,6 +246,8 @@ class ToM_Utils
 		return HT_None, null;
 	}
 	
+	// Gets a position at the end of a line-of-fire vector
+	// of a given actor using given angle/pitch/distance/offsetz:
 	static play vector3 GetEndOfLOF(Actor checker, double angle, double distance, double pitch, double offsetz)
 	{
 		FLineTraceData tr;
@@ -212,6 +269,7 @@ class ToM_Utils
 		return endpos;
 	}
 	
+	// Draws particles along a vector between two points in space:
 	static void DrawParticlesFromTo(Vector3 from,
 									Vector3 to,
 									double density				= 8,

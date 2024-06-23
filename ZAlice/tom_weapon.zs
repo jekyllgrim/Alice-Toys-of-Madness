@@ -152,6 +152,7 @@ class ToM_BaseWeapon : Weapon abstract
 		id = Clamp(id, 0, SWING_MaxIDs);
 		invoker.swingVictims.Clear();
 		invoker.swingdata[id] = ToM_SwingController.Create((startX, startY));
+		invoker.swingSndCounter = 0;
 	}
 	
 	// Do the attack and move the offset one step as defined above:
@@ -214,6 +215,8 @@ class ToM_BaseWeapon : Weapon abstract
 
 		Actor victim;
 		Actor puff;
+		Vector3 hitnormal = ToM_Utils.GetNormalFromTrace(hit);
+		Vector3 puffpos = hit.hitlocation;
 		if (damage > 0)
 		{
 			int type;
@@ -221,9 +224,23 @@ class ToM_BaseWeapon : Weapon abstract
 
 			if (pufftype && type != ToM_Utils.HT_None)
 			{
-				puff = Spawn(pufftype, hit.HitLocation);
+				puff = Spawn(pufftype, puffpos, ALLOW_REPLACE);
 				if (puff)
 				{
+					if (hit.hittype == TRACE_HitWall)
+					{
+						puffpos += hitnormal * puff.radius;
+					}
+					else if (hit.hittype == TRACE_HitCeiling)
+					{
+						puffpos += hitnormal * puff.height;
+					}
+					else if (hit.hittype == TRACE_HitFloor)
+					{
+						puffpos.z += 1;
+					}
+					puff.SetOrigin(puffpos, false);
+					
 					puff.target = self;
 					puff.A_Face(self, 0, 0);
 					puff.tracer = victim;
@@ -242,6 +259,11 @@ class ToM_BaseWeapon : Weapon abstract
 				if (decaltype != 'none')
 				{
 					puff.A_SprayDecal(decaltype, direction: self.Vec3To(puff));
+				}
+				let tompuff = ToM_BasePuff(puff);
+				if (tompuff)
+				{
+					tompuff.SpawnPuffEffects(hitnormal, puffpos);
 				}
 			}
 			
@@ -272,7 +294,7 @@ class ToM_BaseWeapon : Weapon abstract
 		{
 			ToM_Utils.DrawParticlesFromTo(
 				from, to, 
-				density:	trailsize / 10.0,
+				density:	trailsize * 0.1,
 				size:		trailsize,
 				alpha:		trailalpha,
 				lifetime:	trailtics,
@@ -843,6 +865,18 @@ class ToM_SwingController play
 
 class ToM_BasePuff : ToM_BaseActor
 {
+	int puff_particles;
+	double puff_partvel;
+	double puff_gravity;
+	double puff_partsize;
+	color puff_partcolor;
+
+	property ParticleAmount : puff_particles;
+	property ParticleSpeed : puff_partvel;
+	property ParticleGravity : puff_gravity;
+	property ParticleSize : puff_partsize;
+	property ParticleColor : puff_partcolor;
+
 	Default 
 	{
 		+NOBLOCKMAP
@@ -850,12 +884,59 @@ class ToM_BasePuff : ToM_BaseActor
 		+FORCEXYBILLBOARD
 		+PUFFGETSOWNER
 		+DONTSPLASH
+		radius 1;
+		height 1;
+		ToM_BasePuff.ParticleAmount 0;
+		ToM_BasePuff.ParticleSpeed 3;
+		ToM_BasePuff.ParticleSize 12;
+		ToM_BasePuff.ParticleColor 0xc96b1f;
+		ToM_BasePuff.ParticleGravity 0.5;
 	}
-	
+
+	virtual void SpawnPuffEffects(Vector3 dir, Vector3 origin = (0,0,0))
+	{
+		if (puff_particles <= 0 || !target) return;
+
+		FSpawnParticleParams p;
+		p.flags = SPF_FULLBRIGHT;
+		p.startalpha = 1.0;
+		if (origin == (0,0,0))
+		{
+			origin = pos + (0,0,height*0.5);
+		}
+		p.pos = origin;
+		double yaw = atan2(dir.y, dir.x);
+		double pch = -atan2(dir.z, dir.xy.Length());
+		Quat orientation = Quat.FromAngles(yaw, pch, 0.0);
+		for (int i = round(puff_particles * random[puffvis](0.8, 1.2)); i > 0; i--)
+		{
+			p.color1 = color(
+				Clamp(int(puff_partcolor.r * frandom[puffvis](0.9, 1.1)), 0, 255),
+				Clamp(int(puff_partcolor.g * frandom[puffvis](0.9, 1.1)), 0, 255),
+				Clamp(int(puff_partcolor.b * frandom[puffvis](0.9, 1.1)), 0, 255)
+			);
+			p.lifetime = random[puffvis](20, 30);
+			p.size = puff_partsize * frandom[puffvis](0.8, 1.2);
+			p.sizestep = -(p.size / p.lifetime);
+			double v = 20;
+			Quat offset = Quat.FromAngles(frandom[puffvis](-v, v), frandom[puffvis](-v, v), 0.0);
+			p.vel = orientation * offset * (puff_partvel * frandom[puffvis](0.8, 1.2), 0.0, 0.0);
+			p.accel.xy = (p.vel.xy / -p.lifetime) * 0.5;
+			p.accel.z = gravity * -puff_gravity;
+			Level.SpawnParticle(p);
+		}
+		// spawn some debug spots along the vector:
+		/*Spawn('ToM_DebugSpot', origin);
+		Spawn('ToM_DebugSpot', origin + dir * 10);
+		Spawn('ToM_DebugSpot', origin + dir * 20);
+		Spawn('ToM_DebugSpot', origin + dir * 30);
+		Spawn('ToM_DebugSpot', origin + dir * 40);*/
+	}
+
 	States
 	{
 	Spawn:
-		TNT1 A 1;
+		TNT1 A 1; //BAl1 A 10 bright NoDelay A_SetScale(1.0 / TexMan.GetSize(curstate.GetSpriteTexture(0)));
 		stop;
 	}
 }

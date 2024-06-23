@@ -121,7 +121,7 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		else if (InStateSequence(psp.curstate, ResolveState("RightSlash")))
 		{
-			decaltype = 'VKnifeRight';
+			decaltype = 'VKnifeLeft'; //'VKnifeRight';
 		}
 		else
 		{
@@ -798,6 +798,9 @@ class ToM_KnifePuff : ToM_BasePuff
 		+PUFFONACTORS
 		seesound "weapons/knife/hitflesh";
 		attacksound "weapons/knife/hitwall";
+		ToM_BasePuff.ParticleAmount 20;
+		ToM_BasePuff.ParticleColor 0xd4b856;
+		ToM_BasePuff.ParticleSize 10;
 	}
 }
 

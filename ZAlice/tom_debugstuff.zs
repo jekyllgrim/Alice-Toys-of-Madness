@@ -19,6 +19,10 @@ class ToM_DebugSpot : Actor
 	
 	override void Tick() 
 	{
+		if (vel != (0,0,0))
+		{
+			SetOrigin(Vec3Offset(vel.x, vel.y, vel.z), true);
+		}
 		if (GetAge() > TICRATE * health)
 		{
 			Destroy();

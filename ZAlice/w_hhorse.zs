@@ -618,6 +618,8 @@ class ToM_HorsePuff : ToM_BasePuff
 		+PUFFONACTORS
 		seesound "weapons/hhorse/hitflesh";
 		attacksound "weapons/hhorse/hitwall";
+		ToM_BasePuff.ParticleAmount 4;
+		ToM_BasePuff.ParticleSpeed 3;
 	}
 	
 	override void PostBeginPlay()
@@ -632,7 +634,33 @@ class ToM_HorsePuff : ToM_BasePuff
 			target.A_QuakeEx(val, val, val, 6, 0, 32, "");
 		}
 	}
-	
+
+	override void SpawnPuffEffects(Vector3 dir, Vector3 origin)
+	{
+		if (puff_particles <= 0 || waterlevel > 0) return;
+
+		FSpawnParticleParams p;
+		if (origin == (0,0,0))
+		{
+			origin = pos + (0,0,height*0.5);
+		}
+		double yaw = atan2(dir.y, dir.x);
+		double pch = -atan2(dir.z, dir.xy.Length());
+		Quat orientation = Quat.FromAngles(yaw, pch, 0.0);
+		for (int i = round(puff_particles * frandom[puffvis](0.8, 1.2)); i > 0; i--)
+		{
+			double v = 30;
+			Quat offset = Quat.FromAngles(frandom[puffvis](-v, v), frandom[puffvis](-v, v), 0.0);
+			ToM_WhiteSmoke.Spawn(
+				origin,
+				vel: orientation * offset * (puff_partvel * frandom[puffvis](0.8, 1.2), 0.0, 0.0),
+				scale: 0.18,
+				alpha: 0.8,
+				fade: 0.03
+			);
+		}
+	}
+
 	States
 	{
 	Spawn:

@@ -805,17 +805,15 @@ class ToM_BaseWeapon : Weapon abstract
 	override void Tick()
 	{
 		super.Tick();
-		if (owner || isFrozen())
+		if (owner || isFrozen() || bTossed)
 			return;
-		
-		//WorldOffset.z = BobSin(FloatBobPhase + 0.85 * level.maptime) * FloatBobStrength;
 		
 		if (GetAge() % 10 == 0)
 			canSeePlayer = CheckPlayerSights(true);
 		if (!canSeePlayer)
 			return;
 			
-		if (players[consoleplayer].mo && players[consoleplayer].mo.CountInv(self.GetClass()) <= 0 )
+		if (players[consoleplayer].mo /*&& players[consoleplayer].mo.CountInv(self.GetClass()) <= 0 */)
 		{
 			TextureID tex = TexMan.CheckForTexture("ACWEZ0");
 			double size = TexMan.GetSize(tex);

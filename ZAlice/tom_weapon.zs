@@ -62,6 +62,7 @@ class ToM_BaseWeapon : Weapon abstract
 		weapon.BobRangeY 0.17;
 		weapon.BobSpeed 1.85;
 		scale 0.5;
+		+FLOATBOB
 		FloatBobStrength 0.8;
 		ToM_BaseWeapon.PickupParticleColor "7fa832";
 	}

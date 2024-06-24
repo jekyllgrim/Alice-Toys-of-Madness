@@ -8,6 +8,8 @@ Model ToM_Knife
 	Offset 0 0 64
 	Scale 1.8 1.8 1.8
 	PitchOffset 100
+	ROTATING
+	Rotation-Speed 1
 	FrameIndex M000 A 0 0
 }
 Model ToM_HobbyHorse
@@ -15,6 +17,8 @@ Model ToM_HobbyHorse
 	Model 0 "models/weaponpickups/pickup_horse.obj"
 	Skin 0 "Models/alice/weapons/horsetex.png"
 	Scale 4 4 4
+	ROTATING
+	Rotation-Speed 1
 	FrameIndex M000 A 0 0
 }
 Model ToM_Cards
@@ -22,6 +26,8 @@ Model ToM_Cards
 	Model 0 "models/weaponpickups/pickup_cards.obj"
 	Skin 0 "Models/alice/weapons/playingcards.png"
 	Scale 4 4 4
+	ROTATING
+	Rotation-Speed 1
 	FrameIndex M000 A 0 0
 }
 Model ToM_Jacks
@@ -29,6 +35,8 @@ Model ToM_Jacks
 	Model 0 "models/weaponpickups/pickups_jacks.obj"
 	Skin 0 "Models/jacks/jacks.png"
 	Scale 4 4 4
+	ROTATING
+	Rotation-Speed 1
 	FrameIndex M000 A 0 0
 }
 Model ToM_PepperGrinder
@@ -36,13 +44,17 @@ Model ToM_PepperGrinder
 	Model 0 "models/weaponpickups/pickups_pgrinder.obj"
 	Skin 0 "Models/alice/weapons/pgrindertex.png"
 	Scale 4 4 4
+	ROTATING
+	Rotation-Speed 1
 	FrameIndex M000 A 0 0
 }
 Model ToM_Teapot
 {
 	Model 0 "models/weaponpickups/pickup_teapot.obj"
 	Skin 0 "Models/alice/weapons/teapottex.png"
-	Scale 2.3 2.3 2.3
+	Scale 3 3 3
+	ROTATING
+	Rotation-Speed 1
 	FrameIndex M000 A 0 0
 }
 Model ToM_Eyestaff
@@ -50,6 +62,8 @@ Model ToM_Eyestaff
 	Model 0 "models/weaponpickups/pickup_eyestaff.obj"
 	Skin 0 "Models/alice/weapons/eyestaff.png"
 	Scale 2.5 2.5 2.5
+	ROTATING
+	Rotation-Speed 1
 	FrameIndex M000 A 0 0
 }
 Model ToM_Blunderbuss
@@ -57,6 +71,8 @@ Model ToM_Blunderbuss
 	Model 0 "models/weaponpickups/pickup_blunderbuss.obj"
 	Skin 0 "Models/alice/weapons/blunderbussTex.png"
 	Scale 2.5 2.5 2.5
+	ROTATING
+	Rotation-Speed 1
 	FrameIndex M000 A 0 0
 }
 

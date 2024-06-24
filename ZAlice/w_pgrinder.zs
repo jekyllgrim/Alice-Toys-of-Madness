@@ -82,7 +82,6 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	{
 		double angleofs = frandom[ppgr](-spread,spread);
 		double pitchofs = frandom[ppgr](-spread,spread);
-		A_StartSound("weapons/pgrinder/fire", flags: CHANF_OVERLAP);
 		A_StartSound("weapons/pgrinder/fire", CHAN_WEAPON);
 
 		// spawn projectiles unconditionally:
@@ -318,7 +317,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 			A_OverlayPivot(OverlayID(), 0.1, 0.8);
 		}
 		PPGR YYYY 1 
-		{			
+		{
 			A_RotatePSprite(OverlayID(), -0.85, WOF_ADD);
 			A_ScalePsprite(OverlayID(), 0.03, 0.03, WOF_ADD);
 		}
@@ -477,7 +476,7 @@ class ToM_PepperPuff : ToM_BasePuff
 					size: 4,
 					angle: random[ppsfx](0,359),
 					velx: vx,
-					velz: frandom[ppsfx](2,6),
+					velz: frandom[ppsfx](2,6) * ((pos.z >= ceilingz - height)? 0 : 1.0),
 					accelx: -vx * 0.05,
 					accelz: -0.5,
 					sizestep: -0.08
@@ -487,13 +486,18 @@ class ToM_PepperPuff : ToM_BasePuff
 			sm.color1 = "ff4242";
 			sm.texture = TexMan.CheckForTexture("SMO2A0");
 			sm.flags = SPF_ROLL|SPF_REPLACE;
+			sm.style = STYLE_Add;
 			sm.fadestep = -1;
-			sm.startalpha = 0.5;
+			sm.startalpha = 0.75;
 			sm.pos = pos;
+			double v = 0.5;
 			for (int i = 0; i < 3; i++)
 			{
+				sm.vel.x = frandom[ppsfx](-v, v);
+				sm.vel.y = frandom[ppsfx](-v, v);
+				sm.vel.z = frandom[ppsfx](-v, v);
 				sm.lifetime = random[ppsfx](30,40);
-				sm.size = frandom(10, 14);
+				sm.size = frandom(12, 18);
 				sm.sizestep = 0.1;
 				sm.accel = -(sm.vel / sm.lifetime);
 				sm.startroll = frandom[ppsfx](0,360);

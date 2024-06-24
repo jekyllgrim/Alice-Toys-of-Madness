@@ -282,9 +282,9 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	
 	States
 	{
-	Spawn:
+	/*Spawn:
 		ALHH A -1;
-		stop;
+		stop;*/
 	Select:
 		HHRS A 0 
 		{

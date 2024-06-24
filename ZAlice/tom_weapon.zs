@@ -807,7 +807,7 @@ class ToM_BaseWeapon : Weapon abstract
 		if (owner || isFrozen())
 			return;
 		
-		WorldOffset.z = BobSin(FloatBobPhase + 0.85 * level.maptime) * FloatBobStrength;
+		//WorldOffset.z = BobSin(FloatBobPhase + 0.85 * level.maptime) * FloatBobStrength;
 		
 		if (GetAge() % 10 == 0)
 			canSeePlayer = CheckPlayerSights(true);
@@ -839,6 +839,17 @@ class ToM_BaseWeapon : Weapon abstract
 				Level.SpawnParticle(pp);
 			}
 		}
+	}
+
+	States {
+	Spawn:
+		M000 A 1
+		{
+			/*roll = model_roll;
+			pitch = model_pitch;
+			angle = model_angle;*/
+		}
+		loop;
 	}
 }
 

@@ -350,9 +350,9 @@ class ToM_Cards : ToM_BaseWeapon
 	
 	States
 	{
-	Spawn:
+	/*Spawn:
 		ALCA A -1;
-		stop;
+		stop;*/
 	Select:
 		APCR A 0 
 		{

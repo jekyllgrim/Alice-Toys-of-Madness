@@ -302,9 +302,9 @@ class ToM_Knife : ToM_BaseWeapon
 	
 	States
 	{
-	Spawn:
+	/*Spawn:
 		ALVB A -1;
-		stop;
+		stop;*/
 	ClawHandSelect:
 		VCLW A 1
 		{

@@ -83,6 +83,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		double angleofs = frandom[ppgr](-spread,spread);
 		double pitchofs = frandom[ppgr](-spread,spread);
 		A_StartSound("weapons/pgrinder/fire", flags: CHANF_OVERLAP);
+		A_StartSound("weapons/pgrinder/fire", CHAN_WEAPON);
 
 		// spawn projectiles unconditionally:
 		Actor p1, proj;
@@ -129,6 +130,9 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 				proj.bBOUNCEONCEILINGS = true;
 			}
 		}
+		A_StartSound("weapons/pgrinder/fire", CHAN_WEAPON, CHANF_OVERLAP, startTime: 0.1);
+		A_StartSound("weapons/pgrinder/fire", CHAN_WEAPON, CHANF_OVERLAP, startTime: 0.3);
+		A_StartSound("weapons/pgrinder/fire", CHAN_WEAPON, CHANF_OVERLAP, startTime: 0.6);
 		A_QuakeEX(1,1,0,4,0,1, sfx:"world/null", flags:QF_SCALEDOWN);
 	}
 	

@@ -465,9 +465,10 @@ class ToM_EyestaffPuff : ToM_BasePuff
 		+NODAMAGETHRUST
 		DamageType 'Eyestaff';
 		ToM_BasePuff.ParticleAmount 15;
-		ToM_BasePuff.ParticleColor 0xf44dde;
+		//ToM_BasePuff.ParticleColor 0xf44dde;
 		ToM_BasePuff.ParticleSize 7;
 		ToM_BasePuff.ParticleSpeed 6;
+		ToM_BasePuff.ParticleTexture 'JEYCP0';
 	}
 
 	States {

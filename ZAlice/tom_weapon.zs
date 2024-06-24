@@ -870,14 +870,16 @@ class ToM_BasePuff : ToM_BaseActor
 	double puff_gravity;
 	double puff_partsize;
 	color puff_partcolor;
+	name puff_texture;
 
 	property ParticleAmount : puff_particles;
 	property ParticleSpeed : puff_partvel;
 	property ParticleGravity : puff_gravity;
 	property ParticleSize : puff_partsize;
 	property ParticleColor : puff_partcolor;
+	property ParticleTexture : puff_texture;
 
-	Default 
+	Default
 	{
 		+NOBLOCKMAP
 		+NOGRAVITY
@@ -889,7 +891,7 @@ class ToM_BasePuff : ToM_BaseActor
 		ToM_BasePuff.ParticleAmount 0;
 		ToM_BasePuff.ParticleSpeed 3;
 		ToM_BasePuff.ParticleSize 12;
-		ToM_BasePuff.ParticleColor 0xc96b1f;
+		ToM_BasePuff.ParticleColor 0;
 		ToM_BasePuff.ParticleGravity 0.5;
 	}
 
@@ -898,6 +900,24 @@ class ToM_BasePuff : ToM_BaseActor
 		if (puff_particles <= 0 || waterlevel > 0) return;
 
 		FSpawnParticleParams p;
+		if (puff_texture)
+		{
+			TextureID tex = TexMan.CheckForTexture(puff_texture);
+			if (tex && tex.IsValid())
+			{
+				p.texture = tex;
+				p.style = STYLE_Add;
+			}
+			// neither texture nor color are valid:
+			else if (puff_partcolor == 0)
+			{
+				return;
+			}
+		}
+		if (puff_partcolor == 0)
+		{
+			p.color1 = "";
+		}
 		p.flags = SPF_FULLBRIGHT;
 		p.startalpha = 1.0;
 		if (origin == (0,0,0))
@@ -910,11 +930,14 @@ class ToM_BasePuff : ToM_BaseActor
 		Quat orientation = Quat.FromAngles(yaw, pch, 0.0);
 		for (int i = round(puff_particles * frandom[puffvis](0.8, 1.2)); i > 0; i--)
 		{
-			p.color1 = color(
-				Clamp(int(puff_partcolor.r * frandom[puffvis](0.7, 1.1)), 0, 255),
-				Clamp(int(puff_partcolor.g * frandom[puffvis](0.7, 1.1)), 0, 255),
-				Clamp(int(puff_partcolor.b * frandom[puffvis](0.7, 1.1)), 0, 255)
-			);
+			if (puff_partcolor != 0)
+			{
+				p.color1 = color(
+					Clamp(int(puff_partcolor.r * frandom[puffvis](0.7, 1.1)), 0, 255),
+					Clamp(int(puff_partcolor.g * frandom[puffvis](0.7, 1.1)), 0, 255),
+					Clamp(int(puff_partcolor.b * frandom[puffvis](0.7, 1.1)), 0, 255)
+				);
+			}
 			p.lifetime = random[puffvis](20, 30);
 			p.size = puff_partsize * frandom[puffvis](0.8, 1.2);
 			p.sizestep = -(p.size / p.lifetime);

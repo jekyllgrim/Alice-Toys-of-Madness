@@ -24,7 +24,6 @@ Model ToM_HobbyHorse
 Model ToM_Cards
 {
 	Model 0 "models/weaponpickups/pickup_cards.obj"
-	Skin 0 "Models/alice/weapons/playingcards.png"
 	Scale 4 4 4
 	ROTATING
 	Rotation-Speed 1

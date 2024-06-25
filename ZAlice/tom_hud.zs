@@ -13,6 +13,9 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	protected transient CVar userHudScale;
 	protected transient CVar userOldHudScale;
+
+	const MAXWEAPICONOFS = 74;
+	protected int curWeapIconOfs;
 	
 	vector2 GetSbarOffsets(bool right = false, int shiftX = 32, int shiftY = 24)
 	{
@@ -143,11 +146,9 @@ class ToM_AliceHUD : BaseStatusBar
 	{
 		Super.Draw (state, TicFrac);
 			
-		if (state == HUD_AltHUD || state == HUD_None)
-			return;
+		if (state == HUD_AltHUD || state == HUD_None) return;
 		
 		hudstate = state;
-		
 		vector2 hudres = (640, 400);
 		
 		// Workaround for fullscreen HUD scaling when the user
@@ -159,7 +160,9 @@ class ToM_AliceHUD : BaseStatusBar
 		// manually scaling it with a CVAR check seems to work.
 		
 		if (!userOldHudScale)
+		{
 			userOldHudScale = CVar.GetCVar('hud_oldscale', CPlayer);
+		}
 		
 		// If 'hud_oldscale' is false, we'll rely on normal scaling.
 		if (userOldHudScale.GetBool() == true)
@@ -172,13 +175,15 @@ class ToM_AliceHUD : BaseStatusBar
 			if (userscale > 0.)
 				hudres /= userscale;
 		}
-				
+
 		BeginHUD(1., false /*userOldHudScale.GetBool()*/, int(hudres.x), int(hudres.y));
-		
+
+		UpdateWeaponIconOfs(TicFrac);
 		DrawLeftCorner();
 		DrawRightcorner();
 		DrawKeys();
-		DrawTeapotIcon(pos: (128, -69), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_TOP);
+		DrawWeaponIcons();
+		//DrawTeapotIcon(pos: (128, -69), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_TOP);
 		DrawPowerupClock();
 	}
 
@@ -190,6 +195,101 @@ class ToM_AliceHUD : BaseStatusBar
 		"graphics/hud/timepiece/powerclock_hand4.png",
 		"graphics/hud/timepiece/powerclock_hand5.png"
 	};
+
+	array < class<Weapon> > playerWeapons;
+	const MAXWEAPONSLOTS = 10;
+
+	void WeaponSlotsInit()
+	{
+		let wslots = CPlayer.weapons;
+		for (int i = 1; i <= MAXWEAPONSLOTS; i++)
+		{
+			// Slot 0 is the 10th slot:
+			int sn = i >= MAXWEAPONSLOTS ? 0 : i;
+			int size = wslots.SlotSize(sn);
+			if (size <= 0)
+				continue;
+
+			for (int s = 0; s < size; s++)
+			{
+				class<Weapon> weap = wslots.GetWeapon(sn, s);
+				if (weap)
+				{
+					playerWeapons.Push(weap);
+				}
+			}
+		}
+	}
+
+	Weapon curWeapon;
+	Weapon prevWeapon;
+	void UpdateWeaponIconOfs(double ticfrac)
+	{
+		curWeapIconOfs = Clamp(curWeapIconOfs - ticfrac, 0, MAXWEAPICONOFS);
+
+		Weapon selected = Cplayer.readyweapon;
+		if (!selected) return;
+		Weapon pending = Cplayer.pendingweapon;
+		if (pending == WP_NOCHANGE) pending = null;
+
+		if (!curWeapon || !pending)
+		{
+			curWeapon = selected;
+		}
+		else if (pending && pending != WP_NOCHANGE && pending != curWeapon)
+		{
+			curWeapIconOfs = MAXWEAPICONOFS;
+			prevWeapon = curWeapon;
+			curWeapon = pending;
+		}
+	}
+
+	void DrawWeaponIcons()
+	{
+		Vector2 pos = (144, 0);
+		int flags = DI_SCREEN_LEFT_BOTTOM;
+		if (playerWeapons.Size() <= 0)
+		{
+			WeaponSlotsInit();
+		}
+		ToM_DrawImage("graphics/hud/WeaponIcons/wslots_edgecurl.png", pos, flags|DI_ITEM_RIGHT_BOTTOM);
+		TextureID edgeTex = TexMan.CheckForTexture("graphics/hud/WeaponIcons/wslots_edge.png");
+		TextureID baseTex = TexMan.CheckForTexture("graphics/hud/WeaponIcons/wslots_base.png");
+		Vector2 baseSize = Texman.GetScaledSize(baseTex);
+		for (int i = 0; i < playerWeapons.Size(); i++)
+		{
+			Weapon weap = Weapon(CPlayer.mo.FindInventory(playerWeapons[i]));
+			if (!weap) continue;
+			Vector2 ppos = pos;
+			if (prevWeapon && weap == prevWeapon)
+			{
+				ppos.y += (MAXWEAPICONOFS - curWeapIconOfs);
+			}
+			else if (curWeapon && weap == curWeapon)
+			{
+				ppos.y += curWeapIconOfs;
+			}
+			else
+			{
+				ppos.y += MAXWEAPICONOFS;
+			}
+			
+			ToM_DrawTexture(baseTex, ppos, flags|DI_ITEM_LEFT_BOTTOM);
+			TextureID icon = GetIcon(weap, 0);
+			if (icon && icon.isValid())
+			{
+				Vector2 wpos = ppos + (baseSize.x * 0.5, baseSize.y * -0.5);
+				ToM_DrawTexture(icon, wpos, flags|DI_ITEM_CENTER, box: baseSize - (2, 2));
+				DrawSpecialIconRules(weap, wpos, flags|DI_ITEM_CENTER, box: baseSize - (2, 2));
+			}
+			ToM_DrawTexture(edgeTex, pos, flags|DI_ITEM_LEFT_BOTTOM);
+			pos.x += 4;
+		}
+		ToM_DrawImage("graphics/hud/WeaponIcons/wslots_edgecurl_r.png", pos + (baseSize.x - 4, 0), flags|DI_ITEM_LEFT_BOTTOM);
+	}
+
+	void DrawSpecialIconRules(Weapon weap, Vector2 pos, int flags, Vector2 box = (-1, -1))
+	{}
 
 	array <Powerup> powerups;
 

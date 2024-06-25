@@ -206,7 +206,7 @@ class ToM_RageBox : Actor replaces Berserk
 		}
 	}
 
-	static bool HasRageBox(Actor who)
+	static clearscope bool HasRageBox(Actor who)
 	{
 		return who && (who.CountInv("ToM_RageBoxSelector") || who.CountInv("ToM_RageBoxEffect"));
 	}

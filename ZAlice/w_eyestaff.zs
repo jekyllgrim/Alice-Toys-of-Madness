@@ -28,6 +28,13 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		weapon.ammotype2 "ToM_StrongMana";
 		weapon.ammouse2 2;
 	}
+
+	override void DetachFromOwner()
+	{
+		A_StopCharge();
+		A_StopBeam();
+		A_RemoveAimCircle();
+	}
 	
 	action void A_StopCharge()
 	{

@@ -14,7 +14,7 @@ class ToM_AliceHUD : BaseStatusBar
 	protected transient CVar userHudScale;
 	protected transient CVar userOldHudScale;
 
-	const MAXWEAPICONOFS = 74;
+	const MAXWEAPICONOFS = 70;
 	protected int curWeapIconOfs;
 	
 	vector2 GetSbarOffsets(bool right = false, int shiftX = 32, int shiftY = 24)
@@ -47,24 +47,24 @@ class ToM_AliceHUD : BaseStatusBar
 	// These also incorporate automatic offsets
 	// to account for minimal and full versions of the HUD.
 
-	void ToM_DrawImage(String texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1))
+	void ToM_DrawImage(String texture, Vector2 pos, int flags = 0, double alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1), ERenderStyle style = STYLE_Translucent, Color col = 0xffffffff, int translation = 0, double clipwidth = -1)
 	{
 		if (IsAspectCorrected()) 
 		{
 			scale.y *= noYStretch;
 			pos.y *= noYStretch;
 		}
-		DrawImage(texture, pos, flags, Alpha, box, scale);
+		DrawImage(texture, pos, flags, alpha, box, scale, style, col, translation, clipwidth);
 	}
 	
-	void ToM_DrawTexture(TextureID texture, Vector2 pos, int flags = 0, double Alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1))
+	void ToM_DrawTexture(TextureID texture, Vector2 pos, int flags = 0, double alpha = 1., Vector2 box = (-1, -1), Vector2 scale = (1, 1), ERenderStyle style = STYLE_Translucent, Color col = 0xffffffff, int translation = 0, double clipwidth = -1)
 	{
 		if (IsAspectCorrected()) 
 		{
 			scale.y *= noYStretch;
 			pos.y *= noYStretch;
 		}
-		DrawTexture(texture, pos, flags, Alpha, box, scale);
+		DrawTexture(texture, pos, flags, alpha, box, scale, style, col, translation, clipwidth);
 	}
 
 	void ToM_DrawImageRotated(String texid, Vector2 pos, int flags, double angle, double alpha = 1, Vector2 scale = (1, 1), ERenderStyle style = STYLE_Translucent, Color col = 0xffffffff, int translation = 0)
@@ -291,14 +291,8 @@ class ToM_AliceHUD : BaseStatusBar
 	void DrawSpecialIconRules(Weapon weap, Vector2 pos, int flags, Vector2 box = (-1, -1))
 	{
 		if (!(weap is 'ToM_BaseWeapon')) return;
-		Vector2 size = TexMan.GetScaledSize(GetIcon(weap, 0));
-		// clamp box size to graphic size if graphic's size
-		// is smaller:
-		if (size.x < box.x || size.y < box.y)
-		{
-			box = size;
-		}
 
+		// Teapot heat indicator:
 		let teapot = ToM_Teapot(weap);
 		if (teapot && teapot.heat > 0)
 		{
@@ -315,10 +309,38 @@ class ToM_AliceHUD : BaseStatusBar
 			);
 			ToM_DrawImage("AWICTPOR", pos, flags, box: box);
 			ClearClipRect();
-			if (teapot.overheated && level.maptime % TICRATE == 0)
+			if (teapot.overheated && level.maptime & 8)
 			{
 				ToM_DrawImage("AWICTPOS", pos, flags);
 			}
+		}
+
+		// Vorpal knife combo indicator:
+		let knife = ToM_Knife(weap);
+		if (knife && ToM_RageBox.HasRageBox(CPlayer.mo))
+		{
+			ToM_DrawImage("AWICVKNR", pos, flags, style: STYLE_Add);
+		}
+
+		// Eyestaff charge indicator:
+		let eyestaff = ToM_Eyestaff(weap);
+		if (eyestaff && eyestaff.charge > 0)
+		{
+			double fac = Clamp(double(eyestaff.charge) / eyestaff.ES_FULLCHARGE, 0.0, 1.0);
+			let psp = CPlayer.FindPSprite(PSP_WEAPON);
+			if (psp && psp.curstate.InStateSequence(eyestaff.FindState("FireBeam")))
+			{
+				fac = 1.0;
+			}
+			ToM_DrawImage("AWICEYER", pos, flags, alpha: fac, style: STYLE_Add);
+		}
+
+		// Blunderbuss charge indicator:
+		let bbus = ToM_Blunderbuss(weap);
+		if (bbus && bbus.charge > 0)
+		{
+			double fac = Clamp(bbus.charge / 5.0, 0.0, 1.0);
+			ToM_DrawImage("AWICBBUR", pos, flags, alpha: fac, style: STYLE_Add);
 		}
 	}
 
@@ -336,10 +358,9 @@ class ToM_AliceHUD : BaseStatusBar
 			if (!pwr)
 				continue;
 
-			// DON'T FORGET TO UNCOMMENT once all powerups have icons set up
-			/*let icon = pwr.GetPowerupIcon();
+			let icon = pwr.GetPowerupIcon();
 			if (!icon || !icon.IsValid())
-				continue;*/
+				continue;
 			
 			found = true;
 			if (powerups.Find(pwr) == powerups.Size())

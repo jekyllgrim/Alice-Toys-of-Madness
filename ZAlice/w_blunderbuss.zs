@@ -1,6 +1,6 @@
 class ToM_Blunderbuss : ToM_BaseWeapon
 {
-	protected double charge;
+	double charge;
 	protected double smokescale;
 	protected double smokeofs;
 	protected double smokeroll;

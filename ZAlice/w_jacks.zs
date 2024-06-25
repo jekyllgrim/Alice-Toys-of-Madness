@@ -16,6 +16,7 @@ class ToM_Jacks : ToM_BaseWeapon
 	Default
 	{
 		Tag "$TOM_WEAPON_JACKS";
+		Inventory.Icon "AWICJACK";
 		weapon.slotnumber 3;
 		weapon.ammotype1 "ToM_MediumMana";
 		weapon.ammouse1 6;

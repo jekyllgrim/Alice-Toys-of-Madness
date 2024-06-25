@@ -8,6 +8,7 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 	Default
 	{
 		Tag "Blunderbuss";
+		Inventory.Icon "AWICBBUS";
 		ToM_BaseWeapon.IsTwoHanded true;
 		+WEAPON.NOAUTOFIRE
 		+WEAPON.BFG

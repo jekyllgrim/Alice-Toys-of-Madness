@@ -19,6 +19,7 @@ class ToM_Knife : ToM_BaseWeapon
 	Default 
 	{
 		Tag "$TOM_WEAPON_KNIFE";
+		Inventory.Icon "AWICVKNF";
 		+WEAPON.MELEEWEAPON;
 		+WEAPON.NOAUTOFIRE;
 		//Obituary "";

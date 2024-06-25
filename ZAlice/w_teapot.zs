@@ -24,6 +24,7 @@ class ToM_Teapot : ToM_BaseWeapon
 	Default
 	{
 		Tag "$TOM_WEAPON_TEAPOT";
+		Inventory.Icon "AWICTPOT";
 		weapon.slotnumber 5;
 		weapon.ammotype1 "ToM_MediumMana";
 		weapon.ammouse1 20;

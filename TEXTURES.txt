@@ -28,55 +28,6 @@ Sprite "AMCRX0", 64, 64
 	Patch "PATCHES/AMACROSSH.PNG", 0, 0
 }
 
-Sprite "ALVBA0", 17, 64
-{
-	YScale 1.200
-	Offset 9, 85
-	Patch "ALVBA", 0, 0
-}
-
-Sprite "ALHHA0", 50, 127
-{
-	YScale 1.200
-	Offset 22, 144
-	Patch "ALHHA", 0, 0
-}
-
-Sprite "ALCAA0", 53, 39
-{
-	YScale 1.200
-	Offset 27, 73
-	Patch "ALCAA", 0, 0
-}
-
-Sprite "ALPGA0", 43, 84
-{
-	YScale 1.200
-	Offset 17, 113
-	Patch "ALPGA", 0, 0
-}
-
-Sprite "ALTPA0", 109, 114
-{
-	YScale 1.200
-	Offset 46, 143
-	Patch "ALTPA", 0, 0
-}
-
-Sprite "ALJEA0", 40, 149
-{
-	YScale 1.200
-	Offset 27, 171
-	Patch "ALJEA", 0, 0
-}
-
-Sprite "ALBBA0", 31, 170
-{
-	YScale 1.200
-	Offset 18, 185
-	Patch "ALBBA", 0, 0
-}
-
 Sprite "AROSA0", 80, 132
 {
 	Offset 42, 116

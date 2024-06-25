@@ -9,6 +9,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	Default
 	{
 		Tag "$TOM_WEAPON_PGRINDER";
+		Inventory.Icon "AWICPPGR";
 		ToM_BaseWeapon.IsTwoHanded true;
 		Weapon.slotnumber 4;
 		weapon.ammotype1 "ToM_WeakMana";

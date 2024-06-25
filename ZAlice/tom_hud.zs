@@ -289,7 +289,38 @@ class ToM_AliceHUD : BaseStatusBar
 	}
 
 	void DrawSpecialIconRules(Weapon weap, Vector2 pos, int flags, Vector2 box = (-1, -1))
-	{}
+	{
+		if (!(weap is 'ToM_BaseWeapon')) return;
+		Vector2 size = TexMan.GetScaledSize(GetIcon(weap, 0));
+		// clamp box size to graphic size if graphic's size
+		// is smaller:
+		if (size.x < box.x || size.y < box.y)
+		{
+			box = size;
+		}
+
+		let teapot = ToM_Teapot(weap);
+		if (teapot && teapot.heat > 0)
+		{
+			// Get current heat level as a 0.0-1.0 range:
+			double fac = Clamp(double(teapot.heat) / teapot.HEAT_MAX, 0.0, 1.0);
+			// Align clip rectangle around the box, then 
+			// move it down based on the amount of heat:
+			SetClipRect(
+				pos.x - box.x*0.5,
+				pos.y - box.y*0.5 + box.y * (1.0 - fac),
+				box.x,
+				box.y,
+				flags
+			);
+			ToM_DrawImage("AWICTPOR", pos, flags, box: box);
+			ClearClipRect();
+			if (teapot.overheated && level.maptime % TICRATE == 0)
+			{
+				ToM_DrawImage("AWICTPOS", pos, flags);
+			}
+		}
+	}
 
 	array <Powerup> powerups;
 
@@ -682,58 +713,6 @@ class ToM_AliceHUD : BaseStatusBar
 			vector2 iconsize = TexMan.GetScaledSize(icon) * iscale;
 			ToM_DrawTexture(icon, iconpos, flags: DI_SCREEN_RIGHT_TOP|DI_ITEM_RIGHT_TOP, scale: (iscale, iscale));
 			iconpos.x -= (iconsize.x + hofs);
-		}
-	}
-	
-	void DrawTeapotIcon(double height = 68, vector2 pos = (0,0), int fflags = DI_SCREEN_LEFT_TOP|DI_ITEM_LEFT_TOP)
-	{
-		if (!CPlayer.readyweapon)
-			return;
-		
-		let teapot = ToM_Teapot(CPlayer.readyweapon);
-		if (!teapot)
-			return;
-		
-		pos += GetSbarOffsets();
-		//if (IsAspectCorrected()) pos.y *= noYStretch;
-		
-		ToM_DrawImage("graphics/hud/teapot_base.png", pos, fflags);
-		
-		if (teapot.heat <= 0)
-			return;
-		
-		// Get current heat level as a 0.0-1.0 range:
-		double amtFac = teapot.heat / teapot.HEAT_MAX;
-		// clip distance:
-		double cclip = height - height * amtFac;
-		
-		vector2 cpos = pos;
-		if (IsAspectCorrected())
-		{
-			cpos.y *= noYStretch;
-			//cclip *= noYStretch;
-		}
-		SetClipRect(
-			pos.x,
-			pos.y + cclip,
-			height,
-			height - cclip,
-			fflags
-		);
-		
-		string tex = "teapot_yellow.png";
-		if (teapot.overheated)
-			tex = "teapot_red.png";
-		else if (teapot.heat >= teapot.HEAT_MED)
-			tex = "teapot_orange.png";
-		string ftex = String.Format("graphics/hud/%s",tex);
-		
-		ToM_DrawImage(ftex, pos, fflags);
-		ClearClipRect();
-		
-		if (teapot.overheated)
-		{
-			ToM_DrawImage("ACTPPUFF", pos, fflags);
 		}
 	}
 	

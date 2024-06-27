@@ -55,7 +55,7 @@ class ToM_AlicePlayer : DoomPlayer
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
-		SetAnimation('action', flags:SAF_LOOP|SAF_INSTANT);
+		SetAnimation('basepose', flags:SAF_LOOP|SAF_INSTANT);
 		curWeaponID = AW_NoWeapon;
 		s_jump = ResolveState("Jump");
 		s_airjump = ResolveState("JumpAir");
@@ -109,7 +109,7 @@ class ToM_AlicePlayer : DoomPlayer
 		// standing still
 		else if (hvel <= 0.1)
 		{
-			SetAnimation('basepose', interpolateTics: 10, flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
+			SetAnimation('basepose', interpolateTics: 10, flags:SAF_LOOP|SAF_NOOVERRIDE);
 		}
 		// walking
 		else if (hvel <= 7.5)
@@ -605,7 +605,7 @@ class ToM_AlicePlayer : DoomPlayer
 	States {
 	See:
 	Spawn:
-		M000 A 1 NoDelay UpdateMovementAnimation();
+		M000 A 1 UpdateMovementAnimation();
 		loop;
 
 	Melee:

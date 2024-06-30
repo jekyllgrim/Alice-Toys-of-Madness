@@ -1,6 +1,4 @@
 server int tom_debugmessages = 0;
 
 user int tom_particles = 2;
-
-server float tom_testX = 0;
-server float tom_testY = 0;
+user bool tom_cheshire = true;

@@ -12,15 +12,17 @@ ListMenu "MainMenuTextOnly"
 
 	ToM_DrawMainMenuBackground 0, 0
 
-	Position 85, 30
+	Position 70, 33
 	TextItem  "$MNU_NEWGAME", "", "PlayerclassMenu"
-	Position 40, 113
+	Position 155, 100
 	TextItem  "$MNU_LOADGAME", "", "LoadGameMenu"
-	Position 163, 208
+	Position 30, 160
 	TextItem  "$MNU_SAVEGAME", "", "SaveGameMenu"
-	Position 80, 306
+	Position 85, 235
+	TextItem  "$TOM_MENU_MODSETTINGS", "", "ToM_Settings"
+	Position 115, 325
 	TextItem  "$MNU_OPTIONS", "", "OptionsMenu"
-	Position 236, 393
+	Position 155, 410
 	TextItem  "$MNU_QUITGAME", "", "QuitMenu"
 }
 
@@ -31,4 +33,33 @@ ListMenu "SkillMenu"
 	LineSpacing 56
 	ForceList
 	//StaticTextCentered 440, 32, "$MNU_CHOOSESKILL", "White"
+}
+
+AddOptionMenu "OptionsMenu"
+{
+	Submenu "$TOM_MENU_ALICESETTINGS", "ToM_Settings"
+}
+
+AddOptionMenu "OptionsMenuSimple"
+{
+	Submenu "$TOM_MENU_ALICESETTINGS", "ToM_Settings"
+}
+
+OptionMenu "ToM_Settings"
+{
+	Title "$TOM_MENU_ALICESETTINGS"
+
+	Control "$TOM_MENU_QKICK", "+user4"
+	StaticText ""
+
+	Option "$TOM_MENU_PARTICLES", "tom_particles", "ToM_ParticleIntensity"
+	Option "$TOM_MENU_CHESHIRE", "tom_cheshire", "OnOff"
+}
+
+
+OptionValue "ToM_ParticleIntensity"
+{
+	0, "$TOM_MENU_PARTICLES_OFF"
+	1, "$TOM_MENU_PARTICLES_MIN"
+	2, "$TOM_MENU_PARTICLES_MAX"
 }

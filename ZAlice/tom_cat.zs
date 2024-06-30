@@ -33,6 +33,9 @@ class ToM_CheshireCat : ToM_CheshireCatBase
 	{
 		if (!pmo || ToM_Utils.IsVoodooDoll(pmo)) return;
 
+		let c = CVar.GetCVar('tom_cheshire', pmo.player);
+		if (!c || !c.GetBool()) return;
+
 		int pnumber = pmo.PlayerNumber();
 		talktime = talktime > 0? talktime : S_GetLength(soundToPlay) * TICRATE;
 		let handler = ToM_MainHandler(EventHandler.Find('ToM_MainHandler'));

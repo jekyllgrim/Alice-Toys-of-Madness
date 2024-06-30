@@ -2,7 +2,7 @@ class ToM_SkillMenu : ListMenu
 {
 	override void Drawer()
 	{
-		ToM_StatusBarScreen.Fill("000000",0,0, Screen.GetWidth(), Screen.GetHeight(),1);
+		Screen.Dim(0x000000, 1.0, 0, 0, Screen.GetWidth(), Screen.GetHeight());
 
 		int vHeight = mDesc.mVirtHeight;
 		int vWidth = mDesc.mVirtWidth / 2; //center of the menu
@@ -133,18 +133,17 @@ class ToM_MenuCandleSmokeController ui
 		}
 
 		age++;
-		if (age >= returnsteps)
+		// horizontal movement (removed):
+		/*if (age >= returnsteps)
 		{
 			ofs.x *= 0.95;
 		}
 		else 
 		{
 			ofs.x += ofs_step.x;
-		}
+		}*/
 		ofs.y += ofs_step.y;
 		ofs_step *= 0.999;
-		//ofs += ofs_step;
-		//ofs_step *= 0.99;
 
 		alpha += alpha_step;
 		scale = Clamp(scale + scale_step, 0, 100);
@@ -278,11 +277,13 @@ mixin class ToM_MainMenuDrawer
 		// smoke:
 		let csc = ToM_MenuCandleSmokeController.Create(
 			//pos 
-			(0, 0), (frandom[tomMenu](-0.2,0.2), frandom[tomMenu](-0.4, -0.5)),
+			(frandom[tomMenu](-2.5,2.5), frandom[tomMenu](-2,2)), 
+			//ofs each step
+			(frandom[tomMenu](-0.2,0.2), frandom[tomMenu](-0.4, -0.5)),
 			// scale
 			frandom[tomMenu](0.04, 0.08), -0.002,
 			// alpha
-			frandom[tomMenu](0.025, 0.1), -0.0045,
+			frandom[tomMenu](0.025, 0.1), -0.006,
 			//rotation
 			frandom[tomMenu](0, 360), frandom[tomMenu](-1, -4),
 			//return steps

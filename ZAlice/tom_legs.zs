@@ -22,6 +22,7 @@ class ToM_KickWeapon : CustomInventory
 	{
 		+INVENTORY.UNDROPPABLE
 		+INVENTORY.UNTOSSABLE
+		+INVENTORY.PERSISTENTPOWER
 		Inventory.Maxamount 1;
 	}
 	
@@ -162,6 +163,7 @@ class ToM_KickWeapon : CustomInventory
 			plegs.pivot = (0.5, 0.86);
 			plegs.bAddWeapon = false;
 			plegs.bAddBob = false;
+			plegs.y = 320;
 			plegs.SetState(s_standing);
 		}
 
@@ -277,14 +279,14 @@ class ToM_KickWeapon : CustomInventory
 		FinishWalking:
 			FEX1 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
 			FEX2 ABCDEFGHIJ 1;
-			TNT1 A 0 { return ResolveState("Standing"); }
+			TNT1 A 0 { return invoker.s_standing; }
 		FinishStomp:
 			FET1 ABCDEFGHIJKLMNOPQRSTUV 1;
-			TNT1 A 0 { return ResolveState("Standing"); }
+			TNT1 A 0 { return invoker.s_standing; }
 		FinishKick:
 			FEL1 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
 			FEL2 ABCD 1;
-			TNT1 A 0 { return ResolveState("Standing"); }
+			TNT1 A 0 { return invoker.s_standing; }
 		Standing:
 			FEA1 A -1;
 			stop;

@@ -19,6 +19,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	Default
 	{
 		Tag "$TOM_WEAPON_EYESTAFF";
+		ToM_BaseWeapon.CheshireSound "cheshire/vo/eyestaff";
 		Inventory.Icon "AWICEYES";
 		ToM_BaseWeapon.IsTwoHanded true;
 		Weapon.slotnumber 6;

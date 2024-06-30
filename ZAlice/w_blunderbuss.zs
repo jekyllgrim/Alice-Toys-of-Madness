@@ -8,6 +8,7 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 	Default
 	{
 		Tag "Blunderbuss";
+		ToM_BaseWeapon.CheshireSound "cheshire/vo/blunderbuss";
 		Inventory.Icon "AWICBBUS";
 		ToM_BaseWeapon.IsTwoHanded true;
 		+WEAPON.NOAUTOFIRE

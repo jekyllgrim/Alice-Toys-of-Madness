@@ -2,26 +2,26 @@ class ToM_Mainhandler : EventHandler
 {
 	ToM_HUDFaceController HUDfaces[MAXPLAYERS];
 	array < Class<Weapon> > mapweapons;
-
 	array < Actor > allmonsters;
+	int playerCheshireTimers[MAXPLAYERS];
 	
 	bool IsVoodooDoll(PlayerPawn mo) 
 	{
 		return ToM_Utils.IsVoodooDoll(mo);
 	}
 
-	override void NetworkProcess(consoleevent e)
-	{
-		if (!PlayerInGame[e.Player] || e.Player < 0)
-			return;
-		
-		let plr = players[e.Player].mo;
-		if (!plr)
-			return;
-		
-		string lcname = e.name.MakeLower();		
-
-// 		//FOV test:
+//	override void NetworkProcess(consoleevent e)
+//	{
+//		if (!PlayerInGame[e.Player] || e.Player < 0)
+//			return;
+//		
+//		let plr = players[e.Player].mo;
+//		if (!plr)
+//			return;
+//		
+//		string lcname = e.name.MakeLower();
+//
+// 		FOV test:
 //		if (lcname.IndexOf("weapfov") >= 0)
 //		{
 //			let weap = plr.player.readyweapon;
@@ -38,7 +38,7 @@ class ToM_Mainhandler : EventHandler
 //				console.printf("%s FOVscale: %.2f", weap.GetTag(), weap.FOVScale);
 //			}
 //		}
-	}
+//	}
 	
 	void GiveStartingItems(int playerNumber)
 	{
@@ -52,6 +52,29 @@ class ToM_Mainhandler : EventHandler
 		plr.GiveInventory("ToM_CrosshairSpawner", 1);
 		plr.GiveInventory("ToM_InvReplacementControl", 1);
 		plr.GiveInventory("ToM_KickWeapon", 1);
+	}
+
+	override void WorldTick()
+	{
+		if (gamestate != GS_TITLELEVEL && level.maptime == TICRATE)
+		{
+			Sound snd = (level.levelnum == 1)? "cheshire/vo/firststep" : "cheshire/vo/levelstart";
+			for (int i = 0; i < MAXPLAYERS; i++)
+			{
+				if (!PlayerInGame[i]) continue;
+				PlayerPawn pmo = players[i].mo;
+				if (!pmo) continue;
+				ToM_CheshireCat.SpawnAndTalk(pmo, snd, rad: 700);
+			}
+		}
+
+		for (int i = 0; i < MAXPLAYERS; i++)
+		{
+			if (playerCheshireTimers[i] > 0)
+			{
+				playerCheshireTimers[i] -= 1;
+			}
+		}
 	}
 
 	override void WorldThingSpawned(worldEvent e)
@@ -154,9 +177,11 @@ class ToM_Mainhandler : EventHandler
 		int pn = e.PlayerNumber;
 		if (!PlayerInGame[pn])
 			return;
+
 		let pmo = players[pn].mo;
 		if (!pmo)
 			return;
+
 		if (!HUDfaces[e.PlayerNumber])
 		{
 			HUDfaces[e.PlayerNumber] = ToM_HUDFaceController.Create(players[pn]);
@@ -172,13 +197,20 @@ class ToM_Mainhandler : EventHandler
 	{
 		if (!PlayerInGame[e.PlayerNumber])
 			return;
-		PlayerInfo player = players[e.PlayerNumber];				
+
+		PlayerInfo player = players[e.PlayerNumber];
 		if (player) 
 		{
 			for (int i = 1000; i > 0; i--)
 				player.SetPSprite(i,null);
 			for (int i = -1000; i < 0; i++)
 				player.SetPSprite(i,null);
+		}
+
+		PlayerPawn pmo = player.mo;
+		if (pmo)
+		{
+			ToM_CheshireCat.SpawnAndTalk(pmo, "cheshire/vo/paincomment");
 		}
 	}
 

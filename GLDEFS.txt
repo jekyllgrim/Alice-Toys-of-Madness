@@ -17,6 +17,13 @@ brightmap texture "models/ragebox/ragebox_lit.png"
    map "brightmaps/ragebox_lit.png"
 }
 
+// Cheshire cat
+
+brightmap texture "Models/Characters/Cheshire/cheshire_skin_eyes.png"
+{
+	map "Models/Characters/Cheshire/cheshire_skin_eyes_bright.png"
+}
+
 // MANA CHEST (backpack)
 
 brightmap sprite "AMPAA0"

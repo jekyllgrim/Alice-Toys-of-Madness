@@ -7,6 +7,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	{
 		Tag "$TOM_WEAPON_HORSE";
 		Inventory.Icon "AWICHHRS";
+		ToM_BaseWeapon.CheshireSound "cheshire/vo/billyclub";
 		ToM_BaseWeapon.IsTwoHanded true;
 		+WEAPON.MELEEWEAPON
 		+WEAPON.NOAUTOFIRE

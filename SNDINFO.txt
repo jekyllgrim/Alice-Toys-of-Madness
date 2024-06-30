@@ -400,9 +400,72 @@ pickups/allmap	"sounds/pickups/book_open.wav"
 $alias pickups/infrared pickups/generic/powerup
 
 
-//// CHARACTERS
+//// Cheshire Cat
 
-// Cheshire Cat
-characters/cheshire/spawn "Sounds/CheshireCat/cat_appear.wav"
-characters/cheshire/despawn "Sounds/CheshireCat/cat_disappear.wav"
-characters/cheshire/pickup_cards "Sounds/CheshireCat/cat_54pickup.wav"
+// world:
+cheshire/spawn 					"Sounds/CheshireCat/cat_appear.wav"
+cheshire/despawn 				"Sounds/CheshireCat/cat_disappear.wav"
+
+// weapons:
+cheshire/vo/yourknife 			"sounds/CheshireCat/cat_yourknife.wav"
+cheshire/vo/billyclub 			"sounds/CheshireCat/cat_billyclub.wav"
+cheshire/vo/52pickup 			"sounds/CheshireCat/cat_52pickup.wav"
+cheshire/vo/nastygame 			"sounds/CheshireCat/cat_nastygame.wav"
+cheshire/vo/jackfriend 			"sounds/CheshireCat/cat_jackfriend.wav"
+cheshire/vo/duchessnearby		"sounds/CheshireCat/cat_duchessnearby.wav"
+cheshire/vo/demondice 			"sounds/CheshireCat/cat_demondice.wav"
+cheshire/vo/launchthisrocket 	"sounds/CheshireCat/cat_launchthisrocket.wav"
+cheshire/vo/eyestaff 			"sounds/CheshireCat/cat_eyestaff.ogg"
+cheshire/vo/blunderbuss 		"sounds/CheshireCat/cat_blunderbuss.wav"
+cheshire/vo/witheringcold 		"sounds/CheshireCat/cat_witheringcold.wav"
+
+// items:
+$random cheshire/vo/ragebox
+{
+	cheshire/vo/dressedinrage
+	cheshire/vo/dogsofwar
+	cheshire/vo/annihilate
+}
+cheshire/vo/dressedinrage 		"sounds/CheshireCat/cat_dressedinrage.wav"
+cheshire/vo/dogsofwar 			"sounds/CheshireCat/cat_dogsofwar.wav"
+cheshire/vo/annihilate 			"sounds/CheshireCat/cat_annihilate.wav"
+
+// comments:
+$random cheshire/vo/paincomment
+{
+	cheshire/vo/paincomment1
+	cheshire/vo/paincomment2
+	cheshire/vo/paincomment3
+}
+cheshire/vo/paincomment1 		"sounds/CheshireCat/cat_paincomment1.wav"
+cheshire/vo/paincomment2 		"sounds/CheshireCat/cat_paincomment2.wav"
+cheshire/vo/paincomment3 		"sounds/CheshireCat/cat_paincomment3.wav"
+
+// level startups:
+$random cheshire/vo/levelstart
+{
+	cheshire/vo/doorshavelocks
+	cheshire/vo/findaway
+	cheshire/vo/gowiththeflow
+	cheshire/vo/lookstraightahead
+	cheshire/vo/pathsthatendintrouble
+	cheshire/vo/properorder
+	cheshire/vo/remarkablebizarre
+	cheshire/vo/seekandyeshallfind
+	cheshire/vo/stepsofenlightenment
+	cheshire/vo/whatissought
+	cheshire/vo/youknowthemoves
+}
+
+cheshire/vo/firststep 				"sounds/CheshireCat/cat_firststep.wav"
+cheshire/vo/doorshavelocks 			"sounds/CheshireCat/cat_doorshavelocks.wav"
+cheshire/vo/findaway 				"sounds/CheshireCat/cat_findaway.wav"
+cheshire/vo/gowiththeflow 			"sounds/CheshireCat/cat_gowiththeflow.wav"
+cheshire/vo/lookstraightahead 		"sounds/CheshireCat/cat_lookstraightahead.wav"
+cheshire/vo/pathsthatendintrouble 	"sounds/CheshireCat/cat_pathsthatendintrouble.wav"
+cheshire/vo/properorder 			"sounds/CheshireCat/cat_properorder.wav"
+cheshire/vo/remarkablebizarre 		"sounds/CheshireCat/cat_remarkablebizarre.wav"
+cheshire/vo/seekandyeshallfind 		"sounds/CheshireCat/cat_seekandyeshallfind.wav"
+cheshire/vo/stepsofenlightenment 	"sounds/CheshireCat/cat_stepsofenlightenment.wav"
+cheshire/vo/whatissought 			"sounds/CheshireCat/cat_whatissought.wav"
+cheshire/vo/youknowthemoves 		"sounds/CheshireCat/cat_youknowthemoves.wav"

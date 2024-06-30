@@ -350,6 +350,10 @@ class ToM_Utils
 		{
 			// Pick a random position:
 			vector3 ppos = actorpos + (frandom[frpa](-ofs, ofs), frandom[frpa](-ofs, ofs), 0);
+			if (!Level.IsPointInLevel(ppos))
+			{
+				continue;
+			}
 			// Get the sector and distance to the point:
 			let sec = Level.PointinSector(ppos.xy);
 			double secfz = sec.NextLowestFloorAt(ppos.x, ppos.y, ppos.z);
@@ -360,17 +364,16 @@ class ToM_Utils
 			if (fovlimit > 0)
 			{
 				double ang = atan2(diff.y, diff.x);
-				if (Actor.AbsAngle(viewangle, ang) > fovlimit)
-					inFOV = false;
+				inFOV = (Actor.AbsAngle(viewangle, ang) <= fovlimit);
 			}
 			
 			// We found suitable position if it's in the map,
 			// in view (optionally), on the same elevation
 			// (optionally) and not closer than necessary
 			// (optionally):
-			if (inFOV && Level.IsPointInLevel(ppos) && (!checkheight || secfz == actorpos.z) && (mindist <= 0 || diff.Length() >= mindist))
+			if (inFOV && (!checkheight || secfz == actorpos.z) && (mindist <= 0 || diff.Length() >= mindist))
 			{
-				finalpos = ppos;
+				finalpos = (ppos.xy, secfz);
 				//console.printf("Final pos: %.1f,%.1f,%.1f", finalpos.x,finalpos.y,finalpos.z);
 				break;
 			}
@@ -492,7 +495,7 @@ class ToM_Utils
 		else 
 		{
 			FLineTraceData hit;
-			a.LineTrace(0,a.height+16,ceiling ? 90 : -90,flags:TRF_THRUACTORS|TRF_NOSKY,data:hit);
+			a.LineTrace(0, max(a.height, a.radius), ceiling ? 90 : -90, flags:TRF_THRUACTORS|TRF_NOSKY, data:hit);
 			if (hit.Hit3DFloor) 
 			{
 				F3DFloor ff = hit.Hit3DFloor;
@@ -513,7 +516,7 @@ class ToM_Utils
 		double ang = Actor.DeltaAngle(VectorAngle(norm.x, norm.y), a.angle);
 		double pch = 90 - asin(norm.z);
 		if (pch > 90)
-			pch -= 180;			
+			pch -= 180;
 		a.pitch = pch * cos(ang);
 		a.roll = pch * sin(ang);	
 		if (ceiling) 

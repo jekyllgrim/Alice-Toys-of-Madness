@@ -19,6 +19,9 @@ class ToM_BaseWeapon : Weapon abstract
 	property PickupParticleColor : PickupParticleColor;
 	bool IsTwoHanded;
 	property IsTwoHanded : IsTwoHanded;
+	protected bool canPlayCheshireSound;
+	sound CheshireSound;
+	property CheshireSound : CheshireSound;
 	
 	// used by vorpal knife and jacks, to tell the player pawn
 	// that it shouldn't be rendering any weapon model:
@@ -63,6 +66,7 @@ class ToM_BaseWeapon : Weapon abstract
 		weapon.BobSpeed 1.85;
 		scale 0.5;
 		+FLOATBOB
+		+Inventory.AUTOACTIVATE
 		FloatBobStrength 0.8;
 		ToM_BaseWeapon.PickupParticleColor "7fa832";
 	}
@@ -756,6 +760,22 @@ class ToM_BaseWeapon : Weapon abstract
 		{
 			handler.mapweapons.Push(GetClass());
 		}
+
+		// only allow playing the sound for world pickups:
+		// (otherwise Use() will catch items given through
+		// the Player.StartItem property for some reason)
+		canPlayCheshireSound = !bNoSector;
+	}
+
+	override bool Use(bool pickup)
+	{
+		if (CheshireSound && canPlayCheshireSound && !bTOSSED && pickup && 
+			owner && owner.player)
+		{
+			canPlayCheshireSound = false;
+			ToM_CheshireCat.SpawnAndTalk(owner.player.mo, CheshireSound);
+		}
+		return Super.Use(pickup);
 	}
 	
 	override void DoEffect()

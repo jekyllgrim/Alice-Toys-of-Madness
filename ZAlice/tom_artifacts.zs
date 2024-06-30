@@ -238,6 +238,7 @@ class ToM_RageBox : Actor replaces Berserk
 		}
 		A_RemoveLight('rageBoxLight');
 		SetStateLabel("Active");
+		ToM_CheshireCat.SpawnAndTalk(activator.player.mo, "cheshire/vo/ragebox");
 	}
 	
 	override void PostbeginPlay()

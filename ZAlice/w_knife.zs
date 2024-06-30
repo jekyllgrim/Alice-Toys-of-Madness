@@ -20,11 +20,11 @@ class ToM_Knife : ToM_BaseWeapon
 	{
 		Tag "$TOM_WEAPON_KNIFE";
 		Inventory.Icon "AWICVKNF";
+		ToM_BaseWeapon.CheshireSound "cheshire/vo/yourknife";
 		+WEAPON.MELEEWEAPON;
 		+WEAPON.NOAUTOFIRE;
 		//Obituary "";
 		weapon.slotnumber 1;
-		//inventory.icon "";
 		//weapon.upsound "weapons/knife/draw";
 	}
 

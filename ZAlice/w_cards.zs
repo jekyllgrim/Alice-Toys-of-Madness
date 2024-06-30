@@ -24,6 +24,7 @@ class ToM_Cards : ToM_BaseWeapon
 	Default
 	{
 		Tag "$TOM_WEAPON_CARDS";
+		ToM_BaseWeapon.CheshireSound "cheshire/vo/52pickup";
 		Inventory.Icon "AWICCARD";
 		weapon.slotnumber 2;
 		weapon.ammotype1 "ToM_WeakMana";

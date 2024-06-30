@@ -8,6 +8,7 @@ class ToM_CheshireCatBase : ToM_BaseActor
 	{
 		+SOLID
 		+DECOUPLEDANIMATIONS
+		+NOTIMEFREEZE
 		Radius 20;
 		Height 56;
 	}

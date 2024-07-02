@@ -586,4 +586,29 @@ class ToM_Utils
 		if (remove && !victim.player)
 			victim.Destroy();
 	}
+
+	// Adds an actor to the specified array so they're ordered by their distance 
+	// from the 'from' actor:
+	static void AddByDistance(Actor toAdd, Actor from, out array<Actor> arr)
+	{
+		if (arr.Size() <= 0)
+		{
+			arr.Push(toAdd);
+			return;
+		}
+
+		double dist = from.Distance3D(toAdd)**2;
+		for (int i = 0; i < arr.Size(); i++)
+		{
+			let v = arr[i];
+			if (!v) 
+				continue;
+			
+			if (dist <= from.Distance3DSquared(v))
+			{
+				arr.Insert(i, toAdd);
+				break;
+			}
+		}
+	}
 }

@@ -387,6 +387,8 @@ class ToM_RealSeeker : ToM_JackProjectile
 		+USEBOUNCESTATE
 		gravity 0.6;
 		bouncesound "weapons/jacks/ricochet";
+		Radius 1;
+		Height 1;
 	}
 	
 	override void Tick()
@@ -449,6 +451,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 		{
 			double closestDist = double.infinity;
 			BlockThingsIterator itr = BlockThingsIterator.Create(self,atkdist);
+			array<Actor> victims;
 			while (itr.next()) 
 			{
 				let next = itr.thing;
@@ -464,8 +467,11 @@ class ToM_RealSeeker : ToM_JackProjectile
 					closestDist = dist;
 				if (!CheckSight(next,SF_IGNOREWATERBOUNDARY))
 					continue;
-				// set the victim:
-				tracer = next;
+				ToM_Utils.AddByDistance(next, self, victims);
+			}
+			if (victims.Size() > 0)
+			{
+				tracer = victims[0];
 			}
 		}
 	}

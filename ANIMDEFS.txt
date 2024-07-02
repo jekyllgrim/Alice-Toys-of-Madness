@@ -1,4 +1,4 @@
-CameraTexture "AliceWeapon.camtex" 800 800
+CameraTexture "AliceWeapon.camtex" 400 400
 
 Texture ACTPPUFF
 	pic ACTPPUFF tics 8
@@ -308,3 +308,7 @@ Texture FJE1W0 NoTrim
 Texture FJE1X0 NoTrim
 Texture FJE1Y0 NoTrim
 Texture FJE1Z0 NoTrim
+
+Texture AICWA0 NoTrim
+Texture AICWB0 NoTrim
+Texture AICWC0 NoTrim

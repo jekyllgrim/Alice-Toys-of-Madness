@@ -5,6 +5,15 @@ Material Sprite "LGMRC0"
 	Texture maskTex "materials/mirror_mask.png"
 }
 
+Material Sprite "AICWA0"
+{
+	Shader "shaders/Alice_CamTexWeapon.fp"
+	Texture camTex "AliceWeapon.camtex"
+	Texture maskTex "materials/icewand_mask.png"
+	Texture normalTex "materials/icewand_normal.png"
+	Define normalStrength = 0.02
+}
+
 HardwareShader PostProcess Scene
 {
     Name "Alice_ScreenWarp"

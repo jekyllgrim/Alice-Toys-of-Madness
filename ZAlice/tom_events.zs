@@ -214,20 +214,19 @@ class ToM_Mainhandler : EventHandler
 		}
 	}
 
-	ui TextureID mirrortex;	
+	ui TextureID mirrortex;
 	override void RenderOverlay(renderEvent e) 
 	{
 		if (!PlayerInGame[consoleplayer])
 			return;
 		
 		PlayerInfo plr = players[consoleplayer];
-		if (plr && plr.readyweapon && plr.readyweapon is 'ToM_InvisibilitySelector')
+		if (plr && plr.mo  && plr.camera == plr.mo)
 		{	
-			if (!mirrortex)
+			if (!mirrortex || !mirrortex.IsValid())
 				mirrortex = TexMan.CheckForTexture("AliceWeapon.camtex", TexMan.Type_Any);
-			if (mirrortex.IsValid()) {
+			else
 				Screen.DrawTexture(mirrortex, false, 0.0, 0.0, DTA_Alpha, 0.0);
-			}
 		}
 	}
 	

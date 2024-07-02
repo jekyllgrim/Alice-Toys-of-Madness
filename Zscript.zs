@@ -20,6 +20,7 @@ version "4.12"
 #include "ZAlice/w_pgrinder.zs"
 #include "ZAlice/w_teapot.zs"
 #include "ZAlice/w_eyestaff.zs"
+#include "ZAlice/w_icewand.zs"
 #include "ZAlice/w_blunderbuss.zs"
 
 #include "ZAlice/tom_cat.zs"

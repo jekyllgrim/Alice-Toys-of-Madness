@@ -4,14 +4,13 @@ void SetupMaterial(inout Material matid)
     texCoord.y = 1.0 - texCoord.y;
 	
 	vec4 camTexColor;
-	float nrmStrength = 0.2;
-	#if defined(normalStrength)
-		nrmStrength = normalStrength;
+	#ifndef normalStrength
+		#define normalStrength 0.2
 	#endif
 	// apply normal map if defined:
 	#if defined(normalTex)
 		vec4 nrm = texture(normalTex, vTexCoord.xy);
-		camTexColor = texture(camTex, texCoord + (nrm.xy * 2.0 - 1.0) * nrmStrength);
+		camTexColor = texture(camTex, texCoord + (nrm.xy * 2.0 - 1.0) * normalStrength);
 	#else
 		camTexColor = texture(camTex, texCoord);
 	#endif

@@ -373,7 +373,7 @@ Class ToM_FrozenCase : ToM_BaseActor
 	{
 		if (!master)
 		{
-			A_FadeOut(0.01);
+			A_FadeOut(0.02);
 			scale.x *= 1.004;
 		}
 		else

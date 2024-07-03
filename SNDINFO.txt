@@ -333,11 +333,9 @@ $random weapons/icewand/flesh
 {
 	weapons/icewand/flesh1
 	weapons/icewand/flesh2
-	weapons/icewand/flesh3
 }
-weapons/icewand/flesh1	"sounds/IceWand/icewand_flesh1.wav"
-weapons/icewand/flesh2	"sounds/IceWand/icewand_flesh2.wav"
-weapons/icewand/flesh3	"sounds/IceWand/icewand_flesh3.wav"
+weapons/icewand/flesh1	"sounds/IceWand/icewand_flesh1.ogg"
+weapons/icewand/flesh2	"sounds/IceWand/icewand_flesh2.ogg"
 weapons/icewand/icewall	"sounds/IceWand/icewand_icewall.ogg"
 
 

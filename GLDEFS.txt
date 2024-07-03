@@ -8,8 +8,12 @@ Material Sprite "LGMRC0"
 Material Sprite "AICWA0"
 {
 	Shader "shaders/Alice_CamTexWeapon.fp"
+	Texture topTex "AICWA0"
+	Texture glowTex "AICWC0"
+	Define glowStrength = 0.5
 	Texture camTex "AliceWeapon.camtex"
 	Texture maskTex "materials/icewand_mask.png"
+	Texture maskTex "materials/icewand_mask1.png"
 	Texture normalTex "materials/icewand_normal.png"
 	Define normalStrength = 0.02
 }

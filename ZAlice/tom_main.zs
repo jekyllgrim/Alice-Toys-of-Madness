@@ -1168,8 +1168,10 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 class ToM_ReflectionCamera : Actor
 {
 	PlayerPawn ppawn;
+	int ppawnNumber;
 	Vector3 cam_offset; //forward/back, left/right, up/down
 	Vector3 cam_angles; //angle, pitch, roll
+	const TOM_CAMERATEXTURE = "AliceWeapon.camtex";
 
 	Default	
 	{
@@ -1183,17 +1185,33 @@ class ToM_ReflectionCamera : Actor
 		height 1;
 	}
 
-	static ToM_ReflectionCamera Create(PlayerPawn ppawn, String cameratexture, double fov = 90, Vector3 offset = (0,0,0), Vector3 angles = (0,0,0), class<ToM_ReflectionCamera> cameraClass = 'ToM_ReflectionCamera')
+	static ToM_ReflectionCamera Create(PlayerPawn ppawn, double fov = 90, Vector3 offset = (0,0,0), Vector3 angles = (0,0,0), class<ToM_ReflectionCamera> cameraClass = 'ToM_ReflectionCamera')
 	{
 		let cam = ToM_ReflectionCamera(Spawn(cameraClass, ppawn.pos));
 		if (cam)
 		{
 			cam.ppawn = ppawn;
+			cam.ppawnNumber = ppawn.PlayerNumber();
 			cam.cam_offset = offset;
 			cam.cam_angles = angles;
-			TexMan.SetCameraToTexture(cam, cameratexture, fov);
+			TexMan.SetCameraToTexture(cam, TOM_CAMERATEXTURE, fov);
+			let handler = ToM_Mainhandler(EventHandler.Find('ToM_Mainhandler'));
+			if (handler)
+			{
+				handler.weaponCameras[cam.ppawnNumber] = cam;
+			}
 		}
 		return cam;
+	}
+
+	override void OnDestroy()
+	{
+		let handler = ToM_Mainhandler(EventHandler.Find('ToM_Mainhandler'));
+		if (handler)
+		{
+			handler.weaponCameras[ppawnNumber] = null;
+		}
+		Super.OnDestroy();
 	}
 	
 	override void Tick() 

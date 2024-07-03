@@ -3,6 +3,7 @@ class ToM_Mainhandler : EventHandler
 	ToM_HUDFaceController HUDfaces[MAXPLAYERS];
 	array < Class<Weapon> > mapweapons;
 	array < Actor > allmonsters;
+	ToM_ReflectionCamera weaponCameras[MAXPLAYERS];
 	int playerCheshireTimers[MAXPLAYERS];
 	
 	bool IsVoodooDoll(PlayerPawn mo) 
@@ -220,13 +221,15 @@ class ToM_Mainhandler : EventHandler
 		if (!PlayerInGame[consoleplayer])
 			return;
 		
-		PlayerInfo plr = players[consoleplayer];
-		if (plr && plr.mo  && plr.camera == plr.mo)
-		{	
+		if (weaponCameras[consoleplayer])
+		{
 			if (!mirrortex || !mirrortex.IsValid())
-				mirrortex = TexMan.CheckForTexture("AliceWeapon.camtex", TexMan.Type_Any);
-			else
+				mirrortex = TexMan.CheckForTexture(ToM_ReflectionCamera.TOM_CAMERATEXTURE, TexMan.Type_Any);
+			let pmo = players[consoleplayer].mo;
+			if (pmo && pmo.player.camera == pmo)
+			{
 				Screen.DrawTexture(mirrortex, false, 0.0, 0.0, DTA_Alpha, 0.0);
+			}
 		}
 	}
 	

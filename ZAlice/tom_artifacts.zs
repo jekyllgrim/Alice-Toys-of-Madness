@@ -1108,7 +1108,7 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelector
 		if (!cam)
 		{
 			cam = ToM_ReflectionCamera.Create(
-				PlayerPawn(owner), "AliceWeapon.camtex", 60, 
+				PlayerPawn(owner), 60, 
 				(owner.radius + 16, -8, owner.player.viewheight - 16),
 				(180, -1, 0));
 		}

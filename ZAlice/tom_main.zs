@@ -1164,3 +1164,57 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 		stop;
 	}
 }
+
+class ToM_ReflectionCamera : Actor
+{
+	PlayerPawn ppawn;
+	Vector3 cam_offset; //forward/back, left/right, up/down
+	Vector3 cam_angles; //angle, pitch, roll
+
+	Default	
+	{
+		+NOINTERACTION
+		+NOBLOCKMAP
+		+NOTIMEFREEZE
+		+SYNCHRONIZED
+		+DONTBLAST
+		FloatBobPhase 0;
+		radius 1;
+		height 1;
+	}
+
+	static ToM_ReflectionCamera Create(PlayerPawn ppawn, String cameratexture, double fov = 90, Vector3 offset = (0,0,0), Vector3 angles = (0,0,0), class<ToM_ReflectionCamera> cameraClass = 'ToM_ReflectionCamera')
+	{
+		let cam = ToM_ReflectionCamera(Spawn(cameraClass, ppawn.pos));
+		if (cam)
+		{
+			cam.ppawn = ppawn;
+			cam.cam_offset = offset;
+			cam.cam_angles = angles;
+			TexMan.SetCameraToTexture(cam, cameratexture, fov);
+		}
+		return cam;
+	}
+	
+	override void Tick() 
+	{
+		if (!ppawn) 
+		{
+			Destroy();
+			return;
+		}
+		
+		Warp(
+			ppawn, 
+			xofs: cam_offset.x, 
+			yofs: cam_offset.y,
+			zofs: cam_offset.z
+		);
+		
+		A_SetAngle(ppawn.angle + cam_angles.x, SPF_INTERPOLATE);
+		// cam_angles.y == -1 is interpreted as "inverse player pitch"
+		// in all other cases it's just treated additively
+		A_SetPitch((cam_angles.y == -1)? -ppawn.pitch : ppawn.pitch + cam_angles.y, SPF_INTERPOLATE);
+		A_SetRoll(Clamp(ppawn.roll + cam_angles.z, -90, 90), SPF_INTERPOLATE);
+	}
+}

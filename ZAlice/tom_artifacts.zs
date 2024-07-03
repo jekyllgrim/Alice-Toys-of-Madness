@@ -1107,9 +1107,10 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelector
 		
 		if (!cam)
 		{
-			cam = ToM_ReflectionCamera(Spawn("ToM_ReflectionCamera", owner.pos));
-			cam.ppawn = PlayerPawn(owner);
-			TexMan.SetCameraToTexture(cam, "AliceWeapon.camtex", 60);
+			cam = ToM_ReflectionCamera.Create(
+				PlayerPawn(owner), "AliceWeapon.camtex", 60, 
+				(owner.radius + 16, -8, owner.player.viewheight - 16),
+				(180, -1, 0));
 		}
 	}
 	
@@ -1224,40 +1225,6 @@ class ToM_InvisibilitySelector : ToM_ArtifactSelector
 				psm.alpha -= 0.125;
 		}
 		stop;
-	}
-}
-
-class ToM_ReflectionCamera : Actor
-{
-	PlayerPawn ppawn;
-
-	Default	
-	{
-		+NOINTERACTION
-		+NOBLOCKMAP
-		+NOTIMEFREEZE
-		radius 1;
-		height 1;
-	}
-	
-	override void Tick() 
-	{
-		if (!ppawn) 
-		{
-			Destroy();
-			return;
-		}
-		
-		Warp(
-			ppawn, 
-			xofs: ppawn.radius + 16, 
-			yofs: -8,
-			zofs: ppawn.player.viewheight - 16
-		);
-		
-		A_SetRoll(ppawn.roll, SPF_INTERPOLATE);
-		A_SetAngle(ppawn.angle + 180, SPF_INTERPOLATE);
-		A_SetPitch(-ppawn.pitch, SPF_INTERPOLATE);
 	}
 }
 

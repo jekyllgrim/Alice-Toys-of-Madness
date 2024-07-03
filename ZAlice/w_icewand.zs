@@ -14,6 +14,26 @@ class ToM_Icewand : ToM_BaseWeapon
 		weapon.ammouse2 20;
 	}
 
+	action void A_FireIceWave()
+	{
+		let def = GetDefaultByType('ToM_IceWandProjectileReal');
+		let real = ToM_IceWandProjectileReal(A_Fire3DProjectile("ToM_IceWandProjectileReal"));
+		let vis = A_Fire3DProjectile("ToM_IceWandProjectileVisual", useammo: false, forward: 32, leftright:10, updown:-11);
+		if (real && vis)
+		{
+			real.visualProj = vis;
+		}
+	}
+
+	override bool DepleteAmmo(bool altFire, bool checkEnough, int ammouse, bool forceammouse)
+	{
+		if (!altfire && (owner.player.refire % 3 != 0))
+		{
+			return true;
+		}
+		return Super.DepleteAmmo(altFire, checkEnough, ammouse, forceammouse);
+	}
+
 	override void DoEffect()
 	{
 		super.DoEffect();
@@ -28,19 +48,11 @@ class ToM_Icewand : ToM_BaseWeapon
 		{
 			if (!cam)
 			{
-				cam = ToM_ReflectionCamera(Spawn("ToM_IcewwandCamera", owner.pos));
-				cam.ppawn = PlayerPawn(owner);
-				TexMan.SetCameraToTexture(cam, "AliceWeapon.camtex", owner.player.fov);
+				cam = ToM_ReflectionCamera.Create(
+					PlayerPawn(owner), owner.player.fov,
+					(owner.radius * 0.5, -12, 40),
+					(-20, 15, 0));
 			}
-			/*let psp = owner.player.FindPSprite(APSP_Overlayer);
-			let psw = owner.player.FindPSprite(PSP_WEAPON);
-			if (!psp)
-			{
-				psp = owner.player.GetPSprite(APSP_Overlayer);
-				psp.SetState(ResolveState("WandHandle"));
-				psp.bAddWeapon = true;
-				psp.bAddBob = true;
-			}*/
 		}
 		else
 		{
@@ -81,64 +93,299 @@ class ToM_Icewand : ToM_BaseWeapon
 		TNT1 A 0 A_Lower;
 		wait;
 	Ready:
-		AICW A 1 bright A_WeaponReady();
+		AICW A 1 A_WeaponReady();
 		loop;
-	WandHandle:
-		TNT1 A 0 A_Overlay(OverlayID() + 1, "CrystalGraphic");
-		AICW B 1
-		{
-			let psw = player.FindPSprite(PSP_WEAPON);
-			for (int i = 0; i < 2; i++)
-			{
-				let psp = player.FindPSprite(OverlayID() + i);
-				if (!psp) continue;
-				psp.bInterpolate = psw.bInterpolate;
-				psp.bPivotPercent = psw.bPivotPercent;
-				psp.pivot = psw.pivot;
-				psp.scale = psw.scale;
-				psp.rotation = psw.rotation;
-			}
-		}
-		wait;
-	CrystalGraphic:
-		AICW C -1 bright
-		{
-			A_OverlayFlags(OverlayID(), PSPF_RenderStyle|PSPF_ForceAlpha, true);
-			A_OverlayRenderstyle(OverlayID(), STYLE_Add);
-			A_OverlayAlpha(OverlayID(), 0.7);
-		}
-		stop;
 	Fire:
+		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.3, 0.3);
+	Hold:
 		AICW A 1
 		{
-			double sc = frandom[icewand](1.0, 1.05);
+			double sc = 1 + 0.03 * ToM_Utils.SinePulse(40, player.refire);
+			double rot = -1 + 2 * ToM_Utils.SinePulse(80, player.refire);
 			A_OverlayScale(OverlayID(), sc, sc, WOF_INTERPOLATE);
+			A_OverlayRotate(OverlayID(), rot, WOF_INTERPOLATE);
+			A_FireIceWave();
 		}
-		#### # 0 A_Refire;
-		#### # 0 A_OverlayScale(OverlayID(), 1, 1, WOF_INTERPOLATE);
+		TNT1 A 0 
+		{
+			if (PressingAttackButton())
+			{
+				A_startSound("weapons/icewand/fire", CHAN_WEAPON, CHANF_LOOPING);
+			}
+			else
+			{
+				A_StopSound(CHAN_WEAPON);
+			}
+			A_Refire();
+		}
+		AICW A 4 A_ResetPSprite(OverlayID(), 4);
 		goto ready;
 	}
 }
 
-class ToM_IcewwandCamera : ToM_ReflectionCamera
+class ToM_IceWandProjectileReal : ToM_PiercingProjectile
 {
-	override void Tick() 
+	Actor visualProj;
+
+	Default
 	{
-		if (!ppawn) 
+		speed 16;
+		radius 6.5;
+		height 10;
+		alpha 0.5;
+	}
+
+	override bool CheckValid(Actor victim)
+	{
+		return (!target || victim != target) && victim.bSHOOTABLE && !victim.bNonShootable && victim.health > 0;
+	}
+
+	override void HitVictim(Actor victim)
+	{
+		if (!victim.bNoIceDeath && !victim.bBoss)
+		{
+			let iceman = ToM_FreezeController(victim.FindInventory('ToM_FreezeController'));
+			if (iceman)
+			{
+				iceman.EffectTics += TICRATE;
+			}
+			else
+			{
+				victim.GiveInventory('ToM_FreezeController', 1);
+			}
+		}
+		victim.DamageMobj(self, target? target : Actor(self), 3, 'Normal', DMG_THRUSTLESS|DMG_NO_PAIN);
+	}
+
+	override void PostBeginPlay()
+	{
+		super.PostBeginPlay();
+		if (target)
+		{
+			vel += target.vel;
+		}
+		wrot = frandom[teasmoke](4,7);
+	}
+
+	override void Tick()
+	{
+		super.Tick();
+		if (isFrozen())
+			return;
+		
+		if (vel.length() < 5)
+			A_FadeOut(0.06);
+			
+		vel *= 0.93;
+		if (visualProj)
+		{
+			visualProj.vel = visualProj.vel.Unit() * self.vel.length();
+		}
+	}
+	
+	States
+	{
+	Spawn:
+		TNT1 A -1;
+		stop;
+	Death:
+		TNT1 A 1;
+		stop;
+	}
+}
+
+
+class ToM_IceWandProjectileVisual : ToM_IceWandProjectileReal
+{
+	Default
+	{
+		Renderstyle 'AddStencil';
+		StencilColor '79dfeb';
+		+BRIGHT
+		+NOCLIP
+		+FORCEXYBILLBOARD
+		scale 0.1;
+		radius 1;
+		height 1;
+	}
+
+	override bool CheckValid(Actor victim)
+	{
+		return false;
+	}
+
+	override void HitVictim(Actor victim)
+	{}
+
+	override void Tick()
+	{
+		super.Tick();
+		if (isFrozen())
+			return;
+		
+		roll += wrot;
+		wrot *= 0.95;
+		scale *= 1.03;
+	}
+	
+	States
+	{
+	Spawn:
+		SMO2 # -1 NoDelay 
+		{
+			frame = random[sfx](0,5);
+		}
+		stop;
+	Death:
+		#### # 1 A_FadeOut(0.03);
+		loop;
+	}
+}
+
+class ToM_FreezeController : Powerup
+{
+	const SPEEDFACTOR = 0.5;
+	const FREEZEDEATHTIME = TICRATE * 10;
+	int freezeDeathTics;
+	Vector2 ownerSpriteOffset;
+	ToM_FrozenCase frozenCase;
+
+	Default
+	{
+		Powerup.Duration -1;
+	}
+
+	override void InitEffect()
+	{
+		Super.InitEffect();
+		if (owner)
+		{
+			owner.speed *= SPEEDFACTOR;
+			ownerSpriteOffset = owner.SpriteOffset;
+		}
+	}
+
+	override void EndEffect()
+	{
+		if (owner)
+		{
+			owner.speed /= SPEEDFACTOR;
+		}
+		Super.EndEffect();
+	}
+
+	override void Tick ()
+	{
+		if (!owner)
 		{
 			Destroy();
-			return;
 		}
-		
-		Warp(
-			ppawn, 
-			xofs: ppawn.radius * 0.5, 
-			yofs: -12,
-			zofs: 40
-		);
-		
-		A_SetRoll(ppawn.roll, SPF_INTERPOLATE);
-		A_SetAngle(ppawn.angle -20, SPF_INTERPOLATE);
-		A_SetPitch(Clamp(ppawn.pitch + 15, -90, 90), SPF_INTERPOLATE);
+		else if (effectTics > 0)
+		{
+			effectTics--;
+		}
+		else if (freezeDeathTics <= 0)
+		{
+			Destroy();
+		}
+	}
+
+	override void OwnerDied()
+	{
+		if (!owner) return;
+		freezeDeathTics = FREEZEDEATHTIME;
+		owner.A_NoBlocking();
+		owner.A_SetRenderstyle(1, Style_Normal);
+		owner.A_SetTranslation('Ice');
+	}
+
+	override void DoEffect()
+	{
+		Super.DoEffect();
+		if (!owner) return;
+		// Post-death effects:
+		if (freezeDeathTics > 0 && !owner.IsFrozen())
+		{
+			freezeDeathTics--;
+			owner.SetStateLabel("Pain");
+			owner.A_SetTics(-1);
+			if (!frozenCase)
+			{
+				frozenCase = ToM_FrozenCase.SpawnCase(owner);
+			}
+			if (freezeDeathTics <= 0)
+			{
+				if (owner.special)
+				{
+					owner.A_CallSpecial(owner.special, owner.args[0], owner.args[1], owner.args[2], owner.args[3], owner.args[4]);
+					owner.special = 0;
+				}
+				if (owner.bBossDeath)
+				{
+					owner.A_BossDeath();
+				}
+				owner.SetStateLabel("Null");
+			}
+			else if (freezeDeathTics <= FREEZEDEATHTIME*0.5)
+			{
+				owner.SpriteOffset.y = ToM_Utils.LinearMap(freezeDeathTics, 0, FREEZEDEATHTIME*0.5, ownerSpriteOffset.y + owner.default.height, ownerSpriteOffset.y);
+				
+				frozenCase.scale.x *= 1.003;
+				frozenCase.scale.y = ToM_Utils.LinearMap(freezeDeathTics, 0, FREEZEDEATHTIME*0.5, 0, frozenCase.baseScale.y);
+			}
+		}
+	}
+}
+
+Class ToM_FrozenCase : ToM_BaseActor
+{
+	Vector2 baseScale;
+	double zofs;
+
+	Default 
+	{
+		+NOINTERACTION
+		+NOBLOCKMAP
+		+SYNCHRONIZED
+		+DONTBLAST
+		FloatBobPhase 0;
+		Renderstyle 'Translucent';
+		Alpha 0.5;
+	}
+
+	static ToM_FrozenCase SpawnCase(Actor victim)
+	{
+		let a = ToM_FrozenCase(Spawn('ToM_FrozenCase', victim.pos));
+		if (a)
+		{
+			a.A_StartSound("weapons/icewand/flesh");
+			a.master = victim;
+			a.scale.x = victim.radius*2;
+			a.scale.y = victim.default.height + Clamp(victim.projectilePassHeight, 0, 128);
+			a.basescale = a.scale;
+			a.zofs = frandom[frozencase](0.01, 0.10);
+			a.angle = frandom[frozencase](0, 360);
+		}
+		return a;
+	}
+	
+	override void Tick()
+	{
+		if (!master)
+		{
+			A_FadeOut(0.01);
+			scale.x *= 1.004;
+		}
+		else
+		{
+			SetOrigin(master.pos + (0,0,zofs), true);
+			alpha = ToM_Utils.LinearMap(scale.y, 0, basescale.y, 1.0, default.alpha);
+		}
+	}
+
+	states {
+	Spawn:
+		M000 A -1;
+		stop;
 	}
 }

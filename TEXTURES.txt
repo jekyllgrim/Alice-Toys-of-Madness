@@ -1087,6 +1087,7 @@ Sprite "AICWA0", 294, 242
 	YScale 1.200
 	Offset -66, -31
 	Patch "AICWA", 0, 0
+	Patch "AICWB", 0, 0
 }
 
 Sprite "AICWB0", 294, 242
@@ -1101,6 +1102,11 @@ Sprite "AICWC0", 294, 242
 	YScale 1.200
 	Offset -66, -31
 	Patch "AICWA", 0, 0
+}
+
+Texture "AICECASE", 64, 64
+{
+	Patch "materials/icecase_env.png", 0, 0
 }
 
 Graphic "ADECVCD1", 64, 64

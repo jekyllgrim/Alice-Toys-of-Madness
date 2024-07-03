@@ -285,6 +285,16 @@ Model ToM_EyestaffProjectile
 	FrameIndex M000 A 0 0
 }
 
+Model ToM_Frozencase
+{
+	Model 0 "models/iceblock.obj"
+	Skin 0 "AICECASE"
+	DONTCULLBACKFACES
+	Scale 0.75 0.75 0.6
+
+	FrameIndex M000 A 0 0
+}
+
 Model ToM_RageBox
 {
 	Path "Models/RageBox"

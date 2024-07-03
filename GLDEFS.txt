@@ -12,10 +12,16 @@ Material Sprite "AICWA0"
 	Texture glowTex "AICWC0"
 	Define glowStrength = 0.5
 	Texture camTex "AliceWeapon.camtex"
-	Texture maskTex "materials/icewand_mask.png"
 	Texture maskTex "materials/icewand_mask1.png"
 	Texture normalTex "materials/icewand_normal.png"
 	Define normalStrength = 0.02
+	brightmap "materials/icewand_brightmap.png"
+}
+
+Material Texture "AICECASE"
+{
+	Shader "shaders/fakeEnvMap.fp"
+	Texture tex_envmap "materials/icecase_env.png"
 }
 
 HardwareShader PostProcess Scene

@@ -295,6 +295,30 @@ Model ToM_Frozencase
 	FrameIndex M000 A 0 0
 }
 
+Model ToM_IceCluster
+{
+	DONTCULLBACKFACES
+	Skin 0 "AICECASE"
+
+	Model 0 "models/icedebris1.obj"
+	FrameIndex M000 A 0 0
+	Model 0 "models/icedebris2.obj"
+	FrameIndex M000 B 0 0
+	Model 0 "models/icedebris3.obj"
+	FrameIndex M000 C 0 0
+}
+
+Model ToM_IceWall
+{
+	Model 0 "models/iceblock.obj"
+	Skin 0 "AICECASE"
+	DONTCULLBACKFACES
+	Scale 4 56 40
+	Offset 0 0 0.5
+
+	FrameIndex M000 A 0 0
+}
+
 Model ToM_RageBox
 {
 	Path "Models/RageBox"

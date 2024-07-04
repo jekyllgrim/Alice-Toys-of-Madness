@@ -1324,21 +1324,19 @@ class ToM_PiercingProjectile : ToM_Projectile
 		if (victim)
 		{
 			if (!CheckValid(victim))
-				return 1;
+			{
+				return victim.bDontRip? MHIT_DEFAULT : MHIT_PASS;
+			}
 			
 			if (hitvictims.Find(victim) == hitvictims.Size())
 			{
 				hitvictims.Push(victim);
 				HitVictim(victim);
-				if (victim.bDontRip)
-				{
-					return -1;
-				}
 			}
-			return 1;
+			return victim.bDontRip? MHIT_DEFAULT : MHIT_PASS;
 		}
 		
-		return 1;
+		return MHIT_PASS;
 	}
 }
 	

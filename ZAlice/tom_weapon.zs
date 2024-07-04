@@ -160,8 +160,12 @@ class ToM_BaseWeapon : Weapon abstract
 		invoker.swingSndCounter = 0;
 	}
 	
-	// Do the attack and move the offset one step as defined above:
-	action Actor, Actor A_SwingAttack(int damage,
+	// Do the attack and move the offset one step as defined above
+	// Return values:
+	// 1. Actor - the actor that was hit
+	// 2. Actor - the puff
+	// 3. bool - true if the hit actor was dealt damage
+	action Actor, Actor, bool A_SwingAttack(int damage,
 							double stepX, double stepY,
 							double range = 0,
 							class<Actor> pufftype = null,
@@ -185,7 +189,7 @@ class ToM_BaseWeapon : Weapon abstract
 		if (!data)
 		{
 			Console.Printf("\cgSwing data:\c- Controller \cd%d\c- does not exist. Aborting.", id);
-			return null, null;
+			return null, null, false;
 		}
 		Vector2 flatOfs = data.ofs;
 		Quat view = Quat.FromAngles(angle, pitch, roll);
@@ -220,6 +224,7 @@ class ToM_BaseWeapon : Weapon abstract
 
 		Actor victim;
 		Actor puff;
+		bool damaged = false;
 		Vector3 hitnormal = ToM_Utils.GetNormalFromTrace(hit);
 		Vector3 puffpos = hit.hitlocation;
 		if (damage > 0)
@@ -273,10 +278,11 @@ class ToM_BaseWeapon : Weapon abstract
 			}
 			
 			// Do this if we hit an actor:
-			else if (type == ToM_Utils.HT_ShootableThing && victim && invoker.swingVictims.Find(victim) == invoker.swingVictims.Size())
+			else if (damage > 0 && type == ToM_Utils.HT_ShootableThing && victim && invoker.swingVictims.Find(victim) == invoker.swingVictims.Size())
 			{
 				invoker.swingVictims.Push(victim);
 				victim.DamageMobj(puff? puff : self, self, damage, 'normal');
+				damaged = true;
 				/*if (fleshsound)
 				{
 					A_StartSound(fleshsound, CHAN_WEAPON);
@@ -309,7 +315,7 @@ class ToM_BaseWeapon : Weapon abstract
 				style:		style);
 		}
 
-		return victim, puff;
+		return victim, puff, damaged;
 	}
 
 	action void A_PlayerAttackAnim(int animTics, Name animName, double framerate = -1, int startFrame = -1, int loopFrame= -1, int endFrame = -1, int interpolateTics = -1, int flags = 0)
@@ -501,7 +507,7 @@ class ToM_BaseWeapon : Weapon abstract
 	// In conjuction with ToM_PspResetController allows to
 	// stagger this process over multiple tics
 	// (see pspcontrol array and Tick())
-	action void A_ResetPSprite(int layer = 0, int staggertics = 0)
+	action void A_ResetPSprite(int layer = 0, int staggertics = 0, bool interpolate = false)
 	{
 		// If using default value, interpret as calling layer
 		int tlayer = layer == 0 ? OverlayID() : layer;
@@ -535,7 +541,7 @@ class ToM_BaseWeapon : Weapon abstract
 		// Otherwise create a ToM_PspResetController and pass
 		// the current PSPrite and target values to it:
 		
-		let cont = ToM_PspResetController(ToM_PspResetController.Create(psp, staggertics, tofs));
+		let cont = ToM_PspResetController(ToM_PspResetController.Create(psp, staggertics, tofs, interpolate: interpolate));
 		if (!cont)
 		{
 			if (ToM_debugmessages)
@@ -1310,7 +1316,7 @@ class ToM_PiercingProjectile : ToM_Projectile
 	
 	virtual bool CheckValid(Actor victim)
 	{
-		return (!target || victim != target) && victim.bSHOOTABLE && victim.health > 0;
+		return (!target || victim != target) && victim.bSHOOTABLE && !victim.bNonShootable && victim.health > 0 && !victim.bNoDamage && !victim.bInvulnerable;
 	}
 	
 	override int SpecialMissileHit(actor victim)
@@ -1324,6 +1330,10 @@ class ToM_PiercingProjectile : ToM_Projectile
 			{
 				hitvictims.Push(victim);
 				HitVictim(victim);
+				if (victim.bDontRip)
+				{
+					return -1;
+				}
 			}
 			return 1;
 		}
@@ -1802,6 +1812,7 @@ class ToM_PspResetController : Thinker
 {
 	protected PSprite psp;
 	protected int tics;
+	protected bool interpolate;
 	
 	protected vector2 ofs;
 	protected vector2 scale;
@@ -1815,7 +1826,7 @@ class ToM_PspResetController : Thinker
 	protected vector2 scale_step;
 	protected double rotation_step;
 	
-	static ToM_PspResetController Create (PSprite psp, int tics, vector2 tofs = (0,0), vector2 tscale = (1, 1), int trotation = 0)
+	static ToM_PspResetController Create (PSprite psp, int tics, vector2 tofs = (0,0), vector2 tscale = (1, 1), int trotation = 0, bool interpolate = true)
 	{
 		if (!psp || tics <= 0)
 			return null;
@@ -1825,6 +1836,7 @@ class ToM_PspResetController : Thinker
 		{
 			ppRC.psp = psp;
 			ppRC.tics = tics;
+			ppRC.interpolate = interpolate && tics > 0;
 			
 			ppRC.ofs = (psp.x, psp.y);
 			ppRC.scale = psp.scale;
@@ -1865,6 +1877,7 @@ class ToM_PspResetController : Thinker
 			Destroy();
 			return;
 		}
+		psp.bInterpolate = interpolate;
 		psp.x += ofs_step.x;
 		psp.y += ofs_step.y;
 		psp.scale += scale_step;

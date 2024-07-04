@@ -229,7 +229,7 @@ class ToM_Utils
 			let victim = tr.HitActor;
 			if (victim)
 			{
-				if(victim.bSHOOTABLE && !victim.bDORMANT && victim.health > 0 && !victim.bINVULNERABLE)
+				if(victim.bSHOOTABLE && victim.health > 0 && !victim.bDORMANT && !victim.bINVULNERABLE && !victim.bNODAMAGE)
 				{
 					return HT_ShootableThing, victim;
 				}

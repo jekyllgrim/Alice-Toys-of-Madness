@@ -786,8 +786,8 @@ class ToM_SteamProjectile : ToM_PiercingProjectile
 	Default
 	{
 		speed 12;
-		radius 56;
-		height 36;
+		radius 16;
+		height 22;
 		renderstyle 'Translucent';
 		alpha 0.5;
 		scale 0.1;

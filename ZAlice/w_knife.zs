@@ -128,7 +128,9 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			decaltype = 'VKnifeDown';
 		}
-		let victim = A_SwingAttack(
+		Actor victim, puff;
+		bool damaged;
+		[victim, puff, damaged] = A_SwingAttack(
 			damage, 
 			stepX, stepY,
 			range: 60,
@@ -140,9 +142,13 @@ class ToM_Knife : ToM_BaseWeapon
 			style: PBS_Fade|PBS_Fullbright|PBS_Untextured,
 			decaltype: decaltype,
 			id: 0);
-		if (victim && victim.health > 0 && !victim.bNoPain && random[knifepain](0, 100) <= ToM_Utils.LinearMap(invoker.combo, 0, 5, 15, 80))
+		if (victim && victim.health > 0 && damaged && random[knifepain](0, 100) <= ToM_Utils.LinearMap(invoker.combo, 0, 5, 15, 80))
 		{
-			victim.SetState(victim.FindState("Pain"));
+			let st = victim.FindState("Pain");
+			if (st)
+			{
+				victim.SetState(st);
+			}
 		}
 	}
 

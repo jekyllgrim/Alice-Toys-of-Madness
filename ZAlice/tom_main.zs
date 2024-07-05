@@ -529,6 +529,7 @@ class ToM_ActorLayer : ToM_SmallDebris abstract
 	Default
 	{
 		+NOINTERACTION
+		+NOBLOCKMAP
 		+NOSPRITESHADOW
 		ToM_ActorLayer.fade 0.1;
 		Renderstyle 'Translucent';

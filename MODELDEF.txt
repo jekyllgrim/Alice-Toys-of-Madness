@@ -287,7 +287,8 @@ Model ToM_EyestaffProjectile
 
 Model ToM_Frozencase
 {
-	Model 0 "models/iceblock.obj"
+	Path "models/icewand"
+	Model 0 "iceblock.obj"
 	Skin 0 "AICECASE"
 	DONTCULLBACKFACES
 	Scale 0.75 0.75 0.6
@@ -299,18 +300,20 @@ Model ToM_IceCluster
 {
 	DONTCULLBACKFACES
 	Skin 0 "AICECASE"
+	Path "models/icewand"
 
-	Model 0 "models/icedebris1.obj"
+	Model 0 "icedebris1.obj"
 	FrameIndex M000 A 0 0
-	Model 0 "models/icedebris2.obj"
+	Model 0 "icedebris2.obj"
 	FrameIndex M000 B 0 0
-	Model 0 "models/icedebris3.obj"
+	Model 0 "icedebris3.obj"
 	FrameIndex M000 C 0 0
 }
 
 Model ToM_IceWall
 {
-	Model 0 "models/iceblock.obj"
+	Path "models/icewand"
+	Model 0 "iceblock.obj"
 	Skin 0 "AICECASE"
 	DONTCULLBACKFACES
 	Scale 4 56 40

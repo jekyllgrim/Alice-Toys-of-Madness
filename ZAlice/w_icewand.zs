@@ -11,7 +11,7 @@ class ToM_Icewand : ToM_BaseWeapon
 		weapon.ammouse1 1;
 		weapon.ammogive1 80;
 		weapon.ammotype2 "ToM_MediumMana";
-		weapon.ammouse2 20;
+		weapon.ammouse2 10;
 	}
 
 	action void A_FireIceWave()
@@ -139,7 +139,7 @@ class ToM_Icewand : ToM_BaseWeapon
 		TNT1 A 0 A_Lower;
 		wait;
 	Ready:
-		AICW A 1 A_WeaponReady();
+		AICW A 1 A_WeaponReady(pos.z > floorz? WRF_NOSECONDARY : 0);
 		loop;
 	Fire:
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.3, 0.3);
@@ -167,7 +167,15 @@ class ToM_Icewand : ToM_BaseWeapon
 		AICW A 4 A_ResetPSprite(OverlayID(), 4, interpolate: true);
 		goto Ready;
 	AltFire:
-		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.8, 0.8);
+		TNT1 A 0 
+		{
+			if (!invoker.DepleteAmmo(true, true))
+			{
+				return invoker.GetReadyState();
+			}
+			A_OverlayPivot(OverlayID(), 0.8, 0.8);
+			return ResolveState(null);
+		}
 		AICW AAAAAAAA 1 
 		{
 			A_OverlayRotate(OverlayID(), 5, WOF_ADD);
@@ -328,6 +336,7 @@ class ToM_FreezeController : Powerup
 	Vector2 ownerSpriteOffset;
 	ToM_FrozenCase frozenCase;
 	protected State slowstate;
+	protected ToM_FreezeColorLayer colorLayer;
 
 	Default
 	{
@@ -338,19 +347,26 @@ class ToM_FreezeController : Powerup
 	{
 		if (!victim || victim.bNoIceDeath || victim.bBoss) return;
 
-		let iceman = ToM_FreezeController(victim.FindInventory('ToM_FreezeController'));
-		if (iceman)
+		let icectrl = ToM_FreezeController(victim.FindInventory('ToM_FreezeController'));
+		if (icectrl)
 		{
-			iceman.EffectTics = Clamp(iceman.EffectTics += 2, 0, MAXDURATION);
-			//Console.Printf("%s freeze duration: %d", victim.GetClassName(), iceman.EffectTics);
-			if (iceman.EffectTics % 20 == 0)
+			icectrl.EffectTics = Clamp(icectrl.EffectTics += 2, 0, MAXDURATION);
+			//Console.Printf("%s freeze duration: %d", victim.GetClassName(), icectrl.EffectTics);
+			if (icectrl.EffectTics % 20 == 0)
 			{
-				Vector3 dpos = victim.pos + (0,0,victim.height*0.5) + (frandom[icedebris](-3,3),frandom[icedebris](-3,3),frandom[icedebris](-victim.height*0.2,victim.height*0.2));
+				double vh = victim.height + victim.projectilePassHeight;
+				Vector3 dpos = victim.pos + (0,0,vh*0.5);
+				dpos.x += frandom[icedebris](-3,3);
+				dpos.y += frandom[icedebris](-3,3);
+				dpos.z += frandom[icedebris](-vh*0.35,vh*0.35);
 				let deb = ToM_IceCluster(Spawn('ToM_IceCluster', dpos));
 				if (deb)
 				{
 					deb.master = victim;
+					deb.controller = icectrl;
 					deb.masterOfs = level.Vec3Diff(victim.pos, deb.pos);
+					deb.ic_startTime = icectrl.EffectTics;
+					deb.ic_endTime = deb.ic_startTime - TICRATE;
 				}
 			}
 		}
@@ -367,6 +383,11 @@ class ToM_FreezeController : Powerup
 		{
 			owner.speed *= SPEEDFACTOR;
 			ownerSpriteOffset = owner.SpriteOffset;
+			colorLayer = ToM_FreezeColorLayer(Spawn('ToM_FreezeColorLayer', owner.pos));
+			if (colorlayer)
+			{
+				colorlayer.master = owner;
+			}
 		}
 	}
 
@@ -377,6 +398,15 @@ class ToM_FreezeController : Powerup
 			owner.speed /= SPEEDFACTOR;
 		}
 		Super.EndEffect();
+	}
+
+	override void OnDestroy()
+	{
+		if (colorlayer)
+		{
+			colorLayer.Destroy();
+		}
+		Super.OnDestroy();
 	}
 
 	override void Tick ()
@@ -402,6 +432,10 @@ class ToM_FreezeController : Powerup
 		owner.A_NoBlocking();
 		owner.A_SetRenderstyle(1, Style_Normal);
 		owner.A_SetTranslation('Ice');
+		if (colorlayer)
+		{
+			colorLayer.Destroy();
+		}
 	}
 
 	override void DoEffect()
@@ -413,6 +447,10 @@ class ToM_FreezeController : Powerup
 		{
 			slowstate = owner.curstate;
 			owner.tics = round(owner.curstate.tics * ToM_Utils.LinearMap(effectTics, 0, MAXDURATION, 2, 4));
+			if (colorLayer)
+			{
+				colorLayer.alpha = ToM_Utils.LinearMap(effectTics, 0, MAXDURATION, 0.0, 1.0, true);
+			}
 		}
 
 		// Post-death effects:
@@ -452,6 +490,9 @@ class ToM_FreezeController : Powerup
 class ToM_IceCluster : Actor
 {
 	Vector3 masterOfs;
+	Powerup controller;
+	int ic_startTime;
+	int ic_endTime;
 
 	Default
 	{
@@ -461,7 +502,7 @@ class ToM_IceCluster : Actor
 		Radius 1;
 		Renderstyle 'Add';
 		Alpha 0.5;
-		Scale 10;
+		Scale 7;
 	}
 
 	override void PostBeginPlay()
@@ -469,30 +510,33 @@ class ToM_IceCluster : Actor
 		Super.PostBeginPlay();
 		pitch = frandom[icewall](-90, 90);
 		angle = frandom[icewall](0,360);
-		scale *= frandom[icewall](0.75, 1.0);
+		scale *= frandom[icewall](0.5, 1.0);
 	}
 
 	override void Tick()
 	{
 		Super.Tick();
-		if (!master)
+		if (!master || !controller)
 		{
 			Destroy();
 		}
 		else
 		{
 			Warp(master, masterOfs.x, masterOfs.y, masterOfs.z, flags: WARPF_NOCHECKPOSITION|WARPF_INTERPOLATE);
+			if (controller.EffectTics > 0)
+			{
+				alpha = ToM_Utils.LinearMap(controller.EffectTics, ic_startTime, ic_endTime, default.alpha, 0);
+			}
 		}
 	}
 
 	States {
 	Spawn:
-		M000 A 0 NoDelay 
+		M000 A -1 NoDelay 
 		{
 			frame = random[icewall](0,2);
 		}
-		#### # 1 A_FadeOut(default.alpha / (TICRATE * 3));
-		wait;
+		stop;
 	}
 }
 
@@ -568,6 +612,15 @@ Class ToM_FrozenCase : ToM_BaseActor
 			}
 		}
 		loop;
+	}
+}
+
+class ToM_FreezeColorLayer : ToM_ActorLayer
+{
+	Default
+	{
+		Translation "Ice";
+		ToM_ActorLayer.fade 0;
 	}
 }
 

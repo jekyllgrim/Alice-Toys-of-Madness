@@ -53,14 +53,14 @@ class ToM_Icewand : ToM_BaseWeapon
 		double startOfs = step * (segments-1) * 0.5;
 		double lastOfs = -startOfs;
 		bool spawned; Actor wall;
-		[spawned, wall] = A_SpawnItemEx('ToM_IceWall', xofs: distance, yofs: 0);
+		[spawned, wall] = A_SpawnItemEx('ToM_IceWall', xofs: distance, flags: SXF_NOCHECKPOSITION);
 		let wallvis = ToM_IceWall(wall);
 		if (wallvis)
 		{
 			wallvis.A_StartSound("weapons/icewand/icewall");
 			while (startOfs >= lastOfs)
 			{
-				[spawned, wall] = A_SpawnItemEx(wallelement, xofs: distance, yofs: startOfs);
+				[spawned, wall] = A_SpawnItemEx(wallelement, xofs: distance, yofs: startOfs, flags: SXF_NOCHECKPOSITION);
 				startOfs -= step;
 				if (wall)
 				{
@@ -73,7 +73,8 @@ class ToM_Icewand : ToM_BaseWeapon
 
 	override bool DepleteAmmo(bool altFire, bool checkEnough, int ammouse, bool forceammouse)
 	{
-		if (!altfire && (owner.player.refire % 3 != 0))
+		// in primary fire mode, only consume 1 mana every 3 tics:
+		if (!altfire && owner.player.refire != 0 && owner.player.refire % 3 != 0)
 		{
 			return true;
 		}
@@ -97,7 +98,8 @@ class ToM_Icewand : ToM_BaseWeapon
 				cam = ToM_ReflectionCamera.Create(
 					PlayerPawn(owner), owner.player.fov,
 					(owner.radius * 0.5, -12, 40),
-					(-20, 15, 0));
+					(-20, 15, 0),
+					cameraClass: 'ToM_IceWandReflectionCamera');
 			}
 		}
 		else
@@ -139,7 +141,7 @@ class ToM_Icewand : ToM_BaseWeapon
 		TNT1 A 0 A_Lower;
 		wait;
 	Ready:
-		AICW A 1 A_WeaponReady(pos.z > floorz? WRF_NOSECONDARY : 0);
+		AICW A 1 A_WeaponReady(player.onGround? 0 : WRF_NOSECONDARY);
 		loop;
 	Fire:
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.3, 0.3);
@@ -182,15 +184,12 @@ class ToM_Icewand : ToM_BaseWeapon
 			A_WeaponOffset(-5, 5, WOF_ADD);
 			A_OverlayScale(OverlayID(), -0.01, -0.01, WOF_ADD);
 		}
+		#### # 0 A_CameraSway(0, 15, 4);
 		AICW AAAA 1 A_OverlayRotate(OverlayID(), 0.5, WOF_ADD);
 		#### # 0 
 		{
 			A_SpawnIceWall(100);
 			player.cheats |= CF_TOTALLYFROZEN;
-			if (CheckFreeLook())
-			{
-				A_SetPitch(15, SPF_INTERPOLATE);
-			}
 			A_Stop();
 			A_CameraSway(0, -15, 16);
 		}
@@ -207,6 +206,22 @@ class ToM_Icewand : ToM_BaseWeapon
 			player.cheats &= ~CF_TOTALLYFROZEN;
 		}
 		goto Ready;
+	}
+}
+
+class ToM_IceWandReflectionCamera : ToM_ReflectionCamera
+{
+	override void UpdateCameraAngles()
+	{
+		A_SetAngle(ppawn.angle + cam_angles.x, SPF_INTERPOLATE);
+		A_SetPitch(Clamp((cam_angles.y == -1)? -ppawn.pitch : ppawn.pitch + cam_angles.y, -90, 90), SPF_INTERPOLATE);
+		double r = ppawn.roll + cam_angles.z;
+		let psp = ppawn.player.FindPSprite(PSP_WEAPON);
+		if (psp)
+		{
+			r -= psp.rotation;
+		}
+		A_SetRoll(r, SPF_INTERPOLATE);
 	}
 }
 
@@ -366,7 +381,7 @@ class ToM_FreezeController : Powerup
 					deb.controller = icectrl;
 					deb.masterOfs = level.Vec3Diff(victim.pos, deb.pos);
 					deb.ic_startTime = icectrl.EffectTics;
-					deb.ic_endTime = deb.ic_startTime - TICRATE;
+					deb.ic_endTime = icectrl.EffectTics - TICRATE;
 				}
 			}
 		}
@@ -391,24 +406,6 @@ class ToM_FreezeController : Powerup
 		}
 	}
 
-	override void EndEffect()
-	{
-		if (owner)
-		{
-			owner.speed /= SPEEDFACTOR;
-		}
-		Super.EndEffect();
-	}
-
-	override void OnDestroy()
-	{
-		if (colorlayer)
-		{
-			colorLayer.Destroy();
-		}
-		Super.OnDestroy();
-	}
-
 	override void Tick ()
 	{
 		if (!owner)
@@ -422,19 +419,6 @@ class ToM_FreezeController : Powerup
 		else if (freezeDeathTics <= 0)
 		{
 			Destroy();
-		}
-	}
-
-	override void OwnerDied()
-	{
-		if (!owner) return;
-		freezeDeathTics = FREEZEDEATHTIME;
-		owner.A_NoBlocking();
-		owner.A_SetRenderstyle(1, Style_Normal);
-		owner.A_SetTranslation('Ice');
-		if (colorlayer)
-		{
-			colorLayer.Destroy();
 		}
 	}
 
@@ -457,8 +441,12 @@ class ToM_FreezeController : Powerup
 		if (freezeDeathTics > 0 && !owner.IsFrozen())
 		{
 			freezeDeathTics--;
-			owner.SetStateLabel("Pain");
+			if (owner.FindState("Pain"))
+			{
+				owner.SetStateLabel("Pain");
+			}
 			owner.A_SetTics(-1);
+			//owner.freezetics = freezeDeathTics;
 			if (!frozenCase)
 			{
 				frozenCase = ToM_FrozenCase.SpawnCase(owner);
@@ -479,10 +467,41 @@ class ToM_FreezeController : Powerup
 			else if (freezeDeathTics <= FREEZEDEATHTIME*0.5)
 			{
 				owner.SpriteOffset.y = ToM_Utils.LinearMap(freezeDeathTics, 0, FREEZEDEATHTIME*0.5, ownerSpriteOffset.y + owner.default.height, ownerSpriteOffset.y);
-				
 				frozenCase.scale.x *= 1.003;
+				owner.scale.x *= 1.002;
 				frozenCase.scale.y = ToM_Utils.LinearMap(freezeDeathTics, 0, FREEZEDEATHTIME*0.5, 0, frozenCase.baseScale.y);
 			}
+		}
+	}
+
+	override void EndEffect()
+	{
+		if (owner)
+		{
+			owner.speed /= SPEEDFACTOR;
+		}
+		Super.EndEffect();
+	}
+
+	override void OnDestroy()
+	{
+		if (colorlayer)
+		{
+			colorLayer.Destroy();
+		}
+		Super.OnDestroy();
+	}
+
+	override void OwnerDied()
+	{
+		if (!owner) return;
+		freezeDeathTics = FREEZEDEATHTIME;
+		owner.A_NoBlocking();
+		owner.A_SetRenderstyle(1, Style_Normal);
+		owner.A_SetTranslation('Ice');
+		if (colorlayer)
+		{
+			colorLayer.Destroy();
 		}
 	}
 }
@@ -522,8 +541,12 @@ class ToM_IceCluster : Actor
 		}
 		else
 		{
-			Warp(master, masterOfs.x, masterOfs.y, masterOfs.z, flags: WARPF_NOCHECKPOSITION|WARPF_INTERPOLATE);
-			if (controller.EffectTics > 0)
+			Warp(master, 
+				masterOfs.x,
+				masterOfs.y,
+				masterOfs.z - (master.SpriteOffset.y - master.default.SpriteOffset.y),
+				flags: WARPF_NOCHECKPOSITION|WARPF_INTERPOLATE);
+			if (controller.EffectTics > 0 && controller.owner && controller.owner.health > 0)
 			{
 				alpha = ToM_Utils.LinearMap(controller.EffectTics, ic_startTime, ic_endTime, default.alpha, 0);
 			}
@@ -630,12 +653,12 @@ class ToM_IceWall : Actor
 	const MAXDURATION = TICRATE * 8;
 	const MELTDURATION = MAXDURATION / 2;
 	const RESTOREAMOUNT = 4;
+	const ICEWALLHEIGHT = 80.0;
 	int wallduration;
 
 	Default
 	{
-		+NOBLOCKMAP
-		Height 80;
+		Height ICEWALLHEIGHT;
 		Radius 1;
 		Renderstyle 'Add';
 		Alpha 0.5;
@@ -680,10 +703,7 @@ class ToM_IceWall : Actor
 		Super.Tick();
 		foreach (mo : hitboxes)
 		{
-			if (mo)
-			{
-				mo.SetZ(pos.z);
-			}
+			if (mo) mo.SetOrigin((mo.pos.xy, pos.z), false);
 		}
 	}
 
@@ -740,13 +760,14 @@ class ToM_IceWallHitBox : Actor
 		+DONTBLAST
 		+NOBLOOD
 		+DONTRIP
-		Height 80;
+		+NOGRAVITY
+		Height ToM_iceWAll.ICEWALLHEIGHT;
 		Radius 10;
 	}
 
 	override void CollidedWith(Actor other, bool passive)
 	{
-		if (!wallready && passive)
+		if (!wallready && passive && !(other is self.GetClass()))
 		{
 			let dir = Vec3To(other).Unit();
 			other.vel = dir * radius;

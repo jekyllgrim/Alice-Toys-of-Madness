@@ -13,7 +13,7 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 		ToM_BaseWeapon.IsTwoHanded true;
 		+WEAPON.NOAUTOFIRE
 		+WEAPON.BFG
-		Weapon.slotnumber 7;
+		Weapon.slotnumber 8;
 		weapon.ammotype1 "ToM_StrongMana";
 		weapon.ammouse1 100;
 		weapon.ammogive1 100;

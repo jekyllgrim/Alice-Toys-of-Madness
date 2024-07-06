@@ -22,7 +22,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		ToM_BaseWeapon.CheshireSound "cheshire/vo/eyestaff";
 		Inventory.Icon "AWICEYES";
 		ToM_BaseWeapon.IsTwoHanded true;
-		Weapon.slotnumber 6;
+		Weapon.slotnumber 7;
 		weapon.ammotype1 "ToM_StrongMana";
 		weapon.ammouse1 1;
 		weapon.ammogive1 100;

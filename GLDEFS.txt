@@ -18,10 +18,27 @@ Material Sprite "AICWA0"
 	brightmap "materials/icewand_brightmap.png"
 }
 
+Material Texture "models/alice/weapons/icewand_skin02.png"
+{
+	Shader "shaders/fakeEnvMap.fp"
+	Texture tex_envmap "materials/icecase_env.png"
+	Brightmap "models/alice/weapons/icewand_skin02.png"
+}
+
 Material Texture "AICECASE"
 {
 	Shader "shaders/fakeEnvMap.fp"
 	Texture tex_envmap "materials/icecase_env.png"
+}
+
+brightmap texture "models/alice/weapons/horsetex.png"
+{
+	map "models/alice/weapons/horsetex_brightmap.png"
+}
+
+brightmap texture "models/alice/weapons/eyestaff.png"
+{
+	map "models/alice/weapons/eyestaff_brightmap.png"
 }
 
 HardwareShader PostProcess Scene

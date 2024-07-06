@@ -1214,6 +1214,25 @@ class ToM_ReflectionCamera : Actor
 		}
 		Super.OnDestroy();
 	}
+
+	virtual void UpdateCameraPosition()
+	{
+		Warp(
+			ppawn, 
+			xofs: cam_offset.x, 
+			yofs: cam_offset.y,
+			zofs: cam_offset.z
+		);
+	}
+
+	virtual void UpdateCameraAngles()
+	{
+		A_SetAngle(ppawn.angle + cam_angles.x, SPF_INTERPOLATE);
+		// cam_angles.y == -1 is interpreted as "inverse player pitch"
+		// in all other cases it's just treated additively
+		A_SetPitch(Clamp((cam_angles.y == -1)? -ppawn.pitch : ppawn.pitch + cam_angles.y, -90, 90), SPF_INTERPOLATE);
+		A_SetRoll(ppawn.roll + cam_angles.z, SPF_INTERPOLATE);
+	}
 	
 	override void Tick() 
 	{
@@ -1222,18 +1241,7 @@ class ToM_ReflectionCamera : Actor
 			Destroy();
 			return;
 		}
-		
-		Warp(
-			ppawn, 
-			xofs: cam_offset.x, 
-			yofs: cam_offset.y,
-			zofs: cam_offset.z
-		);
-		
-		A_SetAngle(ppawn.angle + cam_angles.x, SPF_INTERPOLATE);
-		// cam_angles.y == -1 is interpreted as "inverse player pitch"
-		// in all other cases it's just treated additively
-		A_SetPitch((cam_angles.y == -1)? -ppawn.pitch : ppawn.pitch + cam_angles.y, SPF_INTERPOLATE);
-		A_SetRoll(Clamp(ppawn.roll + cam_angles.z, -90, 90), SPF_INTERPOLATE);
+		UpdateCameraPosition();
+		UpdateCameraAngles();
 	}
 }

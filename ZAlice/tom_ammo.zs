@@ -266,7 +266,7 @@ class ToM_StrongManaBig : ToM_StrongMana
 /// AMMO SPAWNERS ///
 /////////////////////
 
-class ToM_EquipmentSpawner : Inventory 
+class ToM_EquipmentSpawner : Inventory abstract
 {
 	Class<Ammo> ammo1; //ammo type for the 1st weapon
 	Class<Ammo> ammo2; //ammo type for the 2nd weapon
@@ -300,13 +300,13 @@ class ToM_EquipmentSpawner : Inventory
 		ToM_EquipmentSpawner.dropChance 100;
 	}
 	
-	Inventory SpawnInvPickup(vector3 spawnpos, Class<Inventory> ammopickup) 
+	Inventory SpawnInvPickup(vector3 spawnpos, Class<Inventory> itemToSpawn) 
 	{
-		let toSpawn = ammopickup;
+		let toSpawn = itemToSpawn;
 		
 		if (bigPickupChance >= 1)
 		{
-			let am = (class<ToM_Ammo>)(ammopickup);
+			let am = (class<ToM_Ammo>)(itemToSpawn);
 			if (am)
 			{
 				let bigPickupCls = GetDefaultByType(am).bigPickupClass;
@@ -316,26 +316,8 @@ class ToM_EquipmentSpawner : Inventory
 				}
 			}
 		}
-		
-		let inv = Inventory(Spawn(toSpawn,spawnpos));
-		
-		if (inv) 
-		{
-			inv.vel = vel;
-			// Halve the amount if it's dropped by the enemy:
-			if (bTOSSED) 
-			{
-				inv.bTOSSED = true;
-				inv.amount = Clamp(inv.amount / 2, 1, inv.amount);
-			}
-			
-			// this is important to make sure that the weapon 
-			// that wasn't dropped doesn't get DROPPED flag 
-			// (and thus can't be crushed by moving ceilings)
-			else
-				inv.bDROPPED = false;
-		}
-		return inv;
+
+		return ToM_Utils.SpawnInvPickup(self, spawnPos, toSpawn);
 	}
 	
 	// returns true if any of the players have the weapon, 
@@ -356,22 +338,20 @@ class ToM_EquipmentSpawner : Inventory
 	
 	States {
 	Spawn:
-		TNT1 A 0 NoDelay
+		TNT1 A 1 NoDelay
 		{
 			// weapon1 is obligatory; if for whatever 
 			// reason it's empty, destroy it:
 			if (!weapon1) 
 			{
-				Destroy();
-				return;
+				return ResolveState("Null");
 			}	
 			
 			// if dropped by an enemy, the pickusp aren't
 			// guaranteed to spawn:
 			if (bTOSSED && dropChance < frandom[ammoSpawn](1,100)) 
 			{
-				Destroy();
-				return;
+				return ResolveState("Null");
 			}
 			
 			//get ammo classes for weapon1 and weapon2:
@@ -440,6 +420,7 @@ class ToM_EquipmentSpawner : Inventory
 					SpawnInvPickup(spawnpos,tospawn2);
 				}
 			}
+			return ResolveState(null);
 		}
 		stop;
 	}
@@ -471,5 +452,190 @@ class ToM_AmmoSpawner_RedYellow_BigOther : ToM_AmmoSpawner_RedYellow
 		ToM_EquipmentSpawner.twoPickupsChance 40;
 		ToM_EquipmentSpawner.bigPickupChance 100;
 		ToM_EquipmentSpawner.otherPickupChance 50;
+	}
+}
+
+class ToM_WeaponSpawner : ToM_EquipmentSpawner abstract
+{
+	Class<Inventory> toSpawn;
+	ToM_MainHandler rhandler;
+	bool onlyMapPlaced1;
+	bool onlyMapPlaced2;
+	Property OnlyMapPlaced1 : onlyMapPlaced1;
+	Property OnlyMapPlaced2 : onlyMapPlaced2;
+
+	States {
+	Spawn:
+		TNT1 A 1 Nodelay
+		{
+			if (!weapon1)
+			{
+				return ResolveState("Null");
+			}	
+
+			// First round only checks the players' inventories to determine what to spawn
+			
+			tospawn = weapon1;
+			//check if players have weapon1 and weapon2 or those exist on the map:
+			bool have1 = (ToM_Utils.CheckPlayersHave(weapon1, true));
+			bool have2 = weapon2 && (ToM_Utils.CheckPlayersHave(weapon2, true));
+			if (weapon2)
+			{
+				//if none of the players have weapon1, it should always spawn:
+				if (!have1)
+				{
+					otherPickupChance -= 50;
+				}
+				//otherwise, if none of the players have weapon2, that should always spawn:
+				else if (!have2)
+				{
+					otherPickupChance += 50;
+				}
+				//(if players have both weapons, otherPickupChance is unchanged by this point)
+				//set to spawn weapon2 if check passed:
+				if (otherPickupChance >= frandom[ammoSpawn](1,100))
+				{
+					tospawn = weapon2;
+				}
+			}
+			//if weapon2 is true and the item was NOT dropped, stagger spawning:
+			bool stagger = weapon2 && !bTOSSED;
+			if (ToM_debugmessages > 1)
+			{
+				string phave1 = have1 ? "have" : "don't have";
+				string phave2 = have2 ? "have" : "don't have";	
+				string wclass1 = weapon1.GetClassName();
+				string wclass2 = "weapon2 (not defined)";
+				if (weapon2) wclass2 = weapon2.GetClassName();
+				string dr = bTOSSED ? "It was dropped." : "It was placed on the map.";
+				console.printf("Players %s %s | Players %s %s | Secondary chance: %d, spawning %s. %s",phave1,wclass1,phave2,wclass2,otherPickupChance,tospawn.GetClassName(),dr);
+			}
+			/* 
+			If it was  dropped by an enemy and ALL players have the chosen weapon, 
+			OR this weapon is explicitly told to not be spawnable as an enemy drop,
+			spawn ammo instead.
+			(this is mainly because weapons, being 3D and all, look very "prominent"
+			and I just don't want many of them to exist on the map at once)
+			*/
+			if (bTOSSED && ((toSpawn == weapon1 && onlyMapPlaced1) || (toSpawn == weapon2 && onlyMapPlaced2) ||  ToM_Utils.CheckPlayersHave(tospawn, true)))
+			{
+				//simply randomly pick primary or secondary ammo:
+				Class<Weapon> weap = (Class<Weapon>)(tospawn);
+				Class<Ammo> amToSpawn = null;
+				if (weap)
+					amToSpawn = (random[ammoSpawn](0,1) == 1) ? GetDefaultByType(weap).ammotype1 :GetDefaultByType(weap).ammotype2;
+				if (amToSpawn)
+					tospawn = amToSpawn;
+			}		
+			if (!stagger)
+			{
+				SpawnInvPickup(pos,tospawn);
+				return ResolveState("Null");
+			}
+			/*if we stagger spawning, push the desired weapon into array
+			of all weapons on the map instead of spawning directly:
+			*/
+			if (tospawn is 'Weapon')
+			{
+				rhandler = ToM_MainHandler(EventHandler.Find("ToM_MainHandler"));	
+				rhandler.mapweapons.Push((class<Weapon>)(toSpawn));
+			}
+			return ResolveState(null);
+		}
+		TNT1 A 0 {
+			/*	Iterate through the array of the weapon classes that
+				have been spawned on the map. If there are at least 2
+				weapons of the chosen class in the array, simply spawn
+				the other weapon instead:
+			*/
+			Class<Inventory> toSpawnFinal = (toSpawn == weapon2) ? weapon1 : weapon2;
+			int wcount;
+			foreach (mapweapon : rhandler.mapweapons)
+			{
+				if (mapweapon && mapweapon == toSpawn)
+				{
+					wcount++;
+					if (wcount >= 3)
+					{
+						break;
+					}
+				}
+			}
+			//if there are 3 or more weapons of this class, spawn primary or secondary randomly:
+			if (wcount >= 3 && random[ammoSpawn](0,1) == 1)
+				toSpawnFinal = toSpawn;
+			//if there's only current weapon, spawn it:
+			else if (wcount <= 1)
+				toSpawnFinal = toSpawn;
+			if (ToM_debugmessages > 1)
+				Console.PrintF("There are at least %d instaces of %s on this map. Spawning %s",wcount,toSpawn.GetClassName(),toSpawnFinal.GetClassName());
+			SpawnInvPickup(pos,toSpawnFinal);
+		}
+		stop;
+	}
+}
+
+class ToM_WeaponSpawner_Pistol : ToM_WeaponSpawner
+{
+	Default
+	{
+		ToM_EquipmentSpawner.Weapon1 'ToM_Knife';
+		ToM_EquipmentSpawner.Weapon2 'ToM_Cards';
+	}
+}
+
+class ToM_WeaponSpawner_Shotgun : ToM_WeaponSpawner
+{
+	Default
+	{
+		ToM_EquipmentSpawner.Weapon1 'ToM_Cards';
+		ToM_EquipmentSpawner.Weapon2 'ToM_Jacks';
+		ToM_WeaponSpawner.OnlyMapPlaced2 true;
+	}
+}
+
+class ToM_WeaponSpawner_SuperShotgun : ToM_WeaponSpawner
+{
+	Default
+	{
+		ToM_EquipmentSpawner.Weapon1 'ToM_Jacks';
+		ToM_EquipmentSpawner.Weapon2 'ToM_IceWand';
+	}
+}
+
+class ToM_WeaponSpawner_Chaingun : ToM_WeaponSpawner
+{
+	Default
+	{
+		ToM_EquipmentSpawner.Weapon1 'ToM_PepperGrinder';
+		ToM_EquipmentSpawner.Weapon2 'ToM_Jacks';
+		ToM_WeaponSpawner.OnlyMapPlaced2 true;
+	}
+}
+
+class ToM_WeaponSpawner_RocketLauncher : ToM_WeaponSpawner
+{
+	Default
+	{
+		ToM_EquipmentSpawner.Weapon1 'ToM_Teapot';
+		ToM_EquipmentSpawner.Weapon2 'ToM_Jacks';
+	}
+}
+
+class ToM_WeaponSpawner_PlasmaRifle : ToM_WeaponSpawner
+{
+	Default
+	{
+		ToM_EquipmentSpawner.Weapon1 'ToM_Eyestaff';
+		ToM_EquipmentSpawner.Weapon2 'ToM_IceWand';
+	}
+}
+
+class ToM_WeaponSpawner_BFG9000 : ToM_WeaponSpawner
+{
+	Default
+	{
+		ToM_EquipmentSpawner.Weapon1 'ToM_Blunderbuss';
+		ToM_EquipmentSpawner.Weapon2 'ToM_Eyestaff';
 	}
 }

@@ -611,4 +611,50 @@ class ToM_Utils
 			}
 		}
 	}
+
+	static play Inventory SpawnInvPickup(Inventory sourceItem, vector3 spawnpos, Class<Inventory> itemToSpawn) 
+	{
+		let inv = Inventory(Actor.Spawn(itemToSpawn,spawnpos));
+		if (!inv) return null;
+		
+		// Halve the amount if it's dropped by the enemy:
+		if (sourceItem.bTOSSED) 
+		{
+			inv.bTOSSED = true;
+			inv.amount = Clamp(inv.amount / 2, 1, inv.amount);
+		}
+		
+		// this is important to make sure that the weapon 
+		// that wasn't dropped doesn't get DROPPED flag 
+		// (and thus can't be crushed by moving ceilings)
+		else if (inv is 'Weapon')
+		{
+			inv.bDROPPED = false;
+		}
+
+		// transfer all relevant data similar to
+		// how RandomSpawner does it:
+		inv.SpawnAngle = sourceItem.SpawnAngle;
+		inv.Angle		= sourceItem.Angle;
+		inv.SpawnPoint = sourceItem.SpawnPoint;
+		inv.special    = sourceItem.special;
+		inv.args[0]    = sourceItem.args[0];
+		inv.args[1]    = sourceItem.args[1];
+		inv.args[2]    = sourceItem.args[2];
+		inv.args[3]    = sourceItem.args[3];
+		inv.args[4]    = sourceItem.args[4];
+		inv.special1   = sourceItem.special1;
+		inv.special2   = sourceItem.special2;
+		inv.SpawnFlags = sourceItem.SpawnFlags & ~MTF_SECRET;
+		inv.HandleSpawnFlags();
+		inv.SpawnFlags = sourceItem.SpawnFlags;
+		inv.bCountSecret = sourceItem.SpawnFlags & MTF_SECRET;
+		inv.ChangeTid(sourceItem.tid);
+		inv.Vel	= sourceItem.Vel;
+		inv.master = sourceItem.master;
+		inv.target = sourceItem.target;
+		inv.tracer = sourceItem.tracer;
+
+		return inv;
+	}
 }

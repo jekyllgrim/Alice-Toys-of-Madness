@@ -747,7 +747,7 @@ class ToM_BaseWeapon : Weapon abstract
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
-		if (bTOSSED && ToM_Utils.CheckPlayersHave(self.GetClass(), checkAll: true))
+		/*if (bTOSSED && ToM_Utils.CheckPlayersHave(self.GetClass(), checkAll: true))
 		{
 			if (ammotype1)
 			{
@@ -769,7 +769,7 @@ class ToM_BaseWeapon : Weapon abstract
 
 		// only allow playing the sound for world pickups:
 		// (otherwise Use() will catch items given through
-		// the Player.StartItem property for some reason)
+		// the Player.StartItem property for some reason)*/
 		canPlayCheshireSound = !bNoSector;
 	}
 

@@ -242,25 +242,25 @@ class ToM_Mainhandler : EventHandler
 			e.Replacement = "ToM_HobbyHorse"; 
 			break;
 		case 'Pistol':
-			e.Replacement = "ToM_Knife"; 
+			e.Replacement = "ToM_WeaponSpawner_Pistol"; 
 			break;
 		case 'Shotgun':
-			e.Replacement = "ToM_Cards"; 
+			e.Replacement = "ToM_WeaponSpawner_Shotgun"; 
 			break;
 		case 'SuperShotgun':
-			e.Replacement = "ToM_Jacks"; 
+			e.Replacement = "ToM_WeaponSpawner_SuperShotgun"; 
 			break;
 		case 'Chaingun':
-			e.Replacement = "ToM_PepperGrinder"; 
+			e.Replacement = "ToM_WeaponSpawner_Chaingun"; 
 			break;
 		case 'RocketLauncher':
-			e.Replacement = "ToM_Teapot"; 
+			e.Replacement = "ToM_WeaponSpawner_RocketLauncher"; 
 			break;
 		case 'PlasmaRifle':
-			e.Replacement = "ToM_Eyestaff"; 
+			e.Replacement = "ToM_WeaponSpawner_PlasmaRifle"; 
 			break;
 		case 'BFG9000':
-			e.Replacement = "ToM_Blunderbuss"; 
+			e.Replacement = "ToM_WeaponSpawner_BFG9000"; 
 			break;
 			
 		case 'ArmorBonus':

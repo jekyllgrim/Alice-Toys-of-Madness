@@ -65,6 +65,14 @@ Model ToM_Eyestaff
 	Rotation-Speed 1
 	FrameIndex M000 A 0 0
 }
+Model ToM_IceWand
+{
+	Model 0 "models/weaponpickups/pickup_icewand.obj"
+	Scale 2.5 2.5 2.5
+	ROTATING
+	Rotation-Speed 1
+	FrameIndex M000 A 0 0
+}
 Model ToM_Blunderbuss
 {
 	Model 0 "models/weaponpickups/pickup_blunderbuss.obj"

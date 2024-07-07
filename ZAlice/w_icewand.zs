@@ -392,6 +392,7 @@ class ToM_FreezeController : Powerup
 	ToM_FrozenCase frozenCase;
 	protected State slowstate;
 	protected ToM_FreezeColorLayer colorLayer;
+	protected class<Actor> lastInflictor;
 
 	Default
 	{
@@ -532,9 +533,24 @@ class ToM_FreezeController : Powerup
 		Super.OnDestroy();
 	}
 
+	override void ModifyDamage(int damage, Name damageType, out int newdamage, bool passive, Actor inflictor, Actor source, int flags)
+	{
+		if (owner && passive && inflictor)
+		{
+			lastInflictor = inflictor.GetClass();
+		}
+	}
+
 	override void OwnerDied()
 	{
-		if (!owner) return;
+		// Do not apply visual freeze death effects
+		// if the victim wasn't killed by Ice Wand:
+		if (!owner || lastInflictor != 'ToM_IceWandProjectileReal')
+		{
+			Destroy();
+			return;
+		}
+
 		freezeDeathTics = FREEZEDEATHTIME;
 		owner.A_NoBlocking();
 		owner.A_SetRenderstyle(1, Style_Normal);

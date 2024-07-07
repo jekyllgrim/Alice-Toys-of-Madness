@@ -1,12 +1,14 @@
 class ToM_Icewand : ToM_BaseWeapon
 {
 	ToM_ReflectionCamera cam;
+	protected double iceWaveSoundVolume;
 
 	Default
 	{
 		Tag "$TOM_WEAPON_ICEWAND";
 		ToM_BaseWeapon.CheshireSound "cheshire/vo/witheringcold";
 		ToM_BaseWeapon.IsTwoHanded true;
+		ToM_BaseWeapon.LoopedAttackSound "weapons/icewand/fire";
 		Weapon.SlotNumber 6;
 		weapon.ammotype1 "ToM_StrongMana";
 		weapon.ammouse1 1;
@@ -110,6 +112,32 @@ class ToM_Icewand : ToM_BaseWeapon
 				cam.Destroy();
 			}
 		}
+
+		let psp = owner.player.FindPSprite(PSP_WEAPON);
+		if ((weap == self) && psp && psp.curstate.InStateSequence(GetAtkState(true)) && owner.player.refire > 0)
+		{
+			iceWaveSoundVolume = ToM_Utils.LinearMap(owner.player.refire, 1, 16, 0.1, 1.0, true);
+			if (owner.IsActorPlayingSound(CHAN_WEAPON, LoopedAttackSound))
+			{
+				owner.A_SoundVolume(CHAN_WEAPON, iceWaveSoundVolume);
+			}
+			else
+			{
+				owner.A_StartSound(LoopedAttackSound, CHAN_WEAPON, CHANF_LOOPING, iceWaveSoundVolume);
+			}
+		}
+		else if (owner.IsActorPlayingSound(CHAN_WEAPON, LoopedAttackSound))
+		{
+			iceWaveSoundVolume = Clamp(iceWaveSoundVolume - 0.05, 0.0, 1.0);
+			if (iceWaveSoundVolume <= 0)
+			{
+				owner.A_StopSound(CHAN_WEAPON);
+			}
+			else
+			{
+				owner.A_SoundVolume(CHAN_WEAPON, iceWaveSoundVolume);
+			}
+		}
 	}
 
 	States {
@@ -159,18 +187,7 @@ class ToM_Icewand : ToM_BaseWeapon
 			A_OverlayRotate(OverlayID(), rot, WOF_INTERPOLATE);
 			A_FireIceWave();
 		}
-		TNT1 A 0 
-		{
-			if (PressingAttackButton())
-			{
-				A_startSound("weapons/icewand/fire", CHAN_WEAPON, CHANF_LOOPING);
-			}
-			else
-			{
-				A_StopSound(CHAN_WEAPON);
-			}
-			A_Refire();
-		}
+		#### # 0 A_Refire();
 		AICW A 4 
 		{
 			A_ResetPSprite(OverlayID(), 4, interpolate: true);

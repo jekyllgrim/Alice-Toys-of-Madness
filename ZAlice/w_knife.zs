@@ -857,7 +857,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		renderstyle "Translucent";
 		decal 'VKnifeThrown';
 		speed 25;
-		damage (20);
+		DamageFunction (random[knifedamage](60, 80));
 		-NOGRAVITY
 		+HITTRACER
 		+BLOODSPLATTER

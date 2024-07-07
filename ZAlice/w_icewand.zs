@@ -410,7 +410,7 @@ class ToM_FreezeController : Powerup
 			//Console.Printf("%s freeze duration: %d", victim.GetClassName(), icectrl.EffectTics);
 			if (icectrl.EffectTics % 20 == 0)
 			{
-				double vh = victim.height + victim.projectilePassHeight;
+				double vh = max(victim.height, victim.projectilePassHeight);
 				Vector3 dpos = victim.pos + (0,0,vh*0.5);
 				dpos.x += frandom[icedebris](-3,3);
 				dpos.y += frandom[icedebris](-3,3);
@@ -643,7 +643,7 @@ Class ToM_FrozenCase : ToM_BaseActor
 			a.A_StartSound("weapons/icewand/flesh");
 			a.master = victim;
 			a.scale.x = victim.radius*2.15;
-			a.scale.y = victim.default.height + Clamp(victim.projectilePassHeight, 0, 128);
+			a.scale.y = max(victim.default.height, victim.projectilePassHeight);
 			a.basescale = a.scale;
 			a.zofs = frandom[frozencase](0.01, 0.10);
 			a.angle = frandom[frozencase](0, 360);

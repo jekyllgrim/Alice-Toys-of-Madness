@@ -323,7 +323,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			A_StartSound("weapons/eyestaff/beam", CHAN_WEAPON, CHANF_LOOPING);
 			A_EyestaffRecoil();
 			A_FireBeam();
-			A_FireBullets(0, 0, 1, 5, pufftype: "ToM_EyestaffPuff", flags:FBF_NORANDOM|FBF_USEAMMO);
+			A_FireBullets(0, 0, 1, 9, pufftype: "ToM_EyestaffPuff", flags:FBF_NORANDOM|FBF_USEAMMO);
 		}
 		TNT1 A 0 
 		{

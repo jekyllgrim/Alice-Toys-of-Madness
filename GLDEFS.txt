@@ -31,9 +31,24 @@ Material Texture "AICECASE"
 	Texture tex_envmap "materials/icecase_env.png"
 }
 
+brightmap texture "models/alice/weapons/VorpalBlade2_DM.png"
+{
+	map "models/alice/weapons/VorpalBlade2_DM_brightmap.png"
+}
+
 brightmap texture "models/alice/weapons/horsetex.png"
 {
 	map "models/alice/weapons/horsetex_brightmap.png"
+}
+
+brightmap texture "models/alice/weapons/playingcards.png"
+{
+	map "models/alice/weapons/playingcards_brightmap.png"
+}
+
+brightmap texture "models/alice/weapons/teapottex.png"
+{
+	map "models/alice/weapons/teapottex_brightmap.png"
 }
 
 brightmap texture "models/alice/weapons/eyestaff.png"

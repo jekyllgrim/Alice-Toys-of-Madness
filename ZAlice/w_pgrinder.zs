@@ -395,7 +395,6 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 		}
 
 		int ret = super.SpecialMissileHit(victim);
-		Console.Printf("remaining damage: %d", damage);
 		if (damage <= 0)
 		{
 			return MHIT_DEFAULT;

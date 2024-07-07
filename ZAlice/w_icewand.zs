@@ -291,7 +291,6 @@ class ToM_IceWandProjectileReal : ToM_PiercingProjectile
 				ToM_FreezeController.AddFreeze(victim);
 			}
 		}
-		Console.PrintF("Victim %s will receive %d damage", victim.GetClassName(), dmg);
 		if (dmg > 0)
 		{
 			victim.DamageMobj(self, target? target : Actor(self), dmg, 'Normal', DMG_THRUSTLESS|DMG_NO_PAIN);

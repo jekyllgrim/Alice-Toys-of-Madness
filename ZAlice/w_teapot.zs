@@ -588,7 +588,7 @@ class ToM_TeaProjectile : ToM_Projectile
 		deathsound "weapons/teapot/explode";
 		height 16;
 		radius 8;
-		speed 22;		
+		speed 22;
 		damage (25);
 		Renderstyle 'Translucent';
 		alpha 0.7;
@@ -626,7 +626,7 @@ class ToM_TeaProjectile : ToM_Projectile
 		{
 			A_SetScale(1);
 			bNOGRAVITY = true;
-			A_Explode();
+			A_Explode(160, 140);
 			
 			ToM_SphereFX.SpawnExplosion(pos, size: 42, alpha: 0.5, col1: "32a856", boomfactor: 2);
 			

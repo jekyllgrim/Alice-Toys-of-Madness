@@ -25,6 +25,7 @@ class ToM_Teapot : ToM_BaseWeapon
 	{
 		Tag "$TOM_WEAPON_TEAPOT";
 		ToM_BaseWeapon.CheshireSound "cheshire/vo/launchthisrocket";
+		ToM_BaseWeapon.LoopedAttackSound "weapons/teapot/altfire";
 		Inventory.Icon "AWICTPOT";
 		weapon.slotnumber 5;
 		weapon.ammotype1 "ToM_MediumMana";
@@ -137,14 +138,14 @@ class ToM_Teapot : ToM_BaseWeapon
 		}
 	}
 	
-	override void DetachFromOwner()
+	override void OnRemoval(Actor dropper)
 	{
 		if (owner)
 		{
 			owner.A_StopSound(CH_TPOTHEAT);
 			owner.A_StopSound(CH_TPOTCHARGE);
 		}
-		super.DetachFromOwner();
+		super.OnRemoval(dropper);
 	}
 	
 	action state A_PickReady()
@@ -203,7 +204,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		invoker.heat = Clamp(invoker.heat - 0.8, 0, HEAT_MAX);
 		double pp = ToM_Utils.LinearMap(invoker.heat, 0, HEAT_MAX, 1, 1.2);
 		double vol = ToM_Utils.LinearMap(invoker.heat, 0, HEAT_MAX, 0.25, 0.75);
-		A_StartSound("weapons/teapot/altfire", CHAN_WEAPON, CHANF_LOOPING);
+		A_StartSound(invoker.loopedAttackSound, CHAN_WEAPON, CHANF_LOOPING);
 		A_SoundPitch(CHAN_WEAPON, pp);
 		A_SoundVolume(CHAN_WEAPON, vol);
 		int freq = ToM_Utils.LinearMap(invoker.heat, 0, HEAT_MAX, 5, 1, true);

@@ -15,13 +15,15 @@ class ToM_BaseWeapon : Weapon abstract
 	protected state kickstate;
 	protected double prekickspeed;
 	
-	color PickupParticleColor;
-	property PickupParticleColor : PickupParticleColor;
-	bool IsTwoHanded;
-	property IsTwoHanded : IsTwoHanded;
+	color pickupParticleColor;
+	Property PickupParticleColor : pickupParticleColor;
+	bool isTwoHanded;
+	Property IsTwoHanded : isTwoHanded;
 	protected bool canPlayCheshireSound;
-	sound CheshireSound;
-	property CheshireSound : CheshireSound;
+	sound cheshireSound;
+	Property CheshireSound : cheshireSound;
+	sound loopedAttackSound;
+	Property LoopedAttackSound : loopedAttackSound;
 	
 	// used by vorpal knife and jacks, to tell the player pawn
 	// that it shouldn't be rendering any weapon model:
@@ -769,8 +771,28 @@ class ToM_BaseWeapon : Weapon abstract
 
 		// only allow playing the sound for world pickups:
 		// (otherwise Use() will catch items given through
-		// the Player.StartItem property for some reason)*/
+		// the Player.StartItem Property for some reason)*/
 		canPlayCheshireSound = !bNoSector;
+	}
+
+	virtual void OnRemoval(Actor dropper)
+	{
+		if (dropper)
+		{
+			dropper.A_StopSound(CHAN_WEAPON);
+		}
+	}
+
+	override void DetachFromOwner()
+	{
+		OnRemoval(owner);
+		Super.DetachFromOwner();
+	}
+
+	override void OnDrop (Actor dropper)
+	{
+		OnRemoval(dropper);
+		Super.OnDrop(dropper);
 	}
 
 	override bool Use(bool pickup)
@@ -814,18 +836,6 @@ class ToM_BaseWeapon : Weapon abstract
 			owner.A_SetPitch(finalPitch, SPF_INTERPOLATE);
 			SwayTics--;
 		}
-	
-		/*for (int i = pspcontrols.Size() - 1; i >= 0; i--)
-		{
-			if (pspcontrols[i])
-			{
-				pspcontrols[i].DoResetStep();
-			}
-			else
-			{
-				pspcontrols.Delete(i);
-			}	
-		}*/
 	}
 	
 	override void Tick()
@@ -908,12 +918,12 @@ class ToM_BasePuff : ToM_BaseActor
 	color puff_partcolor;
 	name puff_texture;
 
-	property ParticleAmount : puff_particles;
-	property ParticleSpeed : puff_partvel;
-	property ParticleGravity : puff_gravity;
-	property ParticleSize : puff_partsize;
-	property ParticleColor : puff_partcolor;
-	property ParticleTexture : puff_texture;
+	Property ParticleAmount : puff_particles;
+	Property ParticleSpeed : puff_partvel;
+	Property ParticleGravity : puff_gravity;
+	Property ParticleSize : puff_partsize;
+	Property ParticleColor : puff_partcolor;
+	Property ParticleTexture : puff_texture;
 
 	Default
 	{
@@ -1010,7 +1020,7 @@ class ToM_NullPuff : ToM_NullActor
 Class ToM_Projectile : ToM_BaseActor abstract 
 {
 	protected bool ShouldActivateLines;
-	property ShouldActivateLines : ShouldActivateLines;
+	Property ShouldActivateLines : ShouldActivateLines;
 	protected bool dead;
 	protected state s_spawn; //pointer to Spawn label
 	protected state s_death;
@@ -1040,20 +1050,20 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	
 	double wrot;
 	
-	property trailactor : trailactor;
-	property flareactor : flareactor;
-	property flarecolor : flarecolor;
-	property flarescale : flarescale;
-	property flarealpha : flarealpha;
-	property trailcolor : trailcolor;
-	property trailTexture : trailTexture;
-	property trailalpha : trailalpha;
-	property trailscale : trailscale;
-	property trailfade : trailfade;
-	property trailshrink : trailshrink;
-	property trailvel : trailvel;
-	property trailz : trailz;
-	property trailstyle : trailstyle;
+	Property trailactor : trailactor;
+	Property flareactor : flareactor;
+	Property flarecolor : flarecolor;
+	Property flarescale : flarescale;
+	Property flarealpha : flarealpha;
+	Property trailcolor : trailcolor;
+	Property trailTexture : trailTexture;
+	Property trailalpha : trailalpha;
+	Property trailscale : trailscale;
+	Property trailfade : trailfade;
+	Property trailshrink : trailshrink;
+	Property trailvel : trailvel;
+	Property trailz : trailz;
+	Property trailstyle : trailstyle;
 	
 	Default 
 	{

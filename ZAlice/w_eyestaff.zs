@@ -22,6 +22,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		ToM_BaseWeapon.CheshireSound "cheshire/vo/eyestaff";
 		Inventory.Icon "AWICEYES";
 		ToM_BaseWeapon.IsTwoHanded true;
+		ToM_BaseWeapon.LoopedAttackSound "weapons/eyestaff/beam";
 		Weapon.slotnumber 7;
 		weapon.ammotype1 "ToM_StrongMana";
 		weapon.ammouse1 1;
@@ -30,8 +31,9 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		weapon.ammouse2 2;
 	}
 
-	override void DetachFromOwner()
+	override void OnRemoval(Actor dropper)
 	{
+		Super.OnRemoval(dropper);
 		A_StopCharge();
 		A_StopBeam();
 		A_RemoveAimCircle();
@@ -49,6 +51,9 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	{
 		if (!self || !self.player)
 			return;
+			
+		A_StartSound(invoker.loopedAttackSound, CHAN_WEAPON, CHANF_LOOPING);
+
 		if (!invoker.beam1)
 		{
 			invoker.beam1 = ToM_EyestaffBeam(ToM_LaserBeam.Create(self, 10, 4.2, -1.4, type: "ToM_EyestaffBeam"));
@@ -100,6 +105,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			invoker.outerBeamPos.Destroy();
 		}
+		A_StopSound(CHAN_WEAPON);
 	}
 	
 	action void A_EyestaffFlash(StateLabel label, double alpha = 0)
@@ -236,12 +242,18 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		super.DoEffect();
 		if (!owner || !owner.player)
 			return;
+
 		let weap = owner.player.readyweapon;
+
 		if (owner.health <= 0 || !weap || weap != self)
 		{
 			if (beam1) beam1.SetEnabled(false);
 			if (beam2) beam2.SetEnabled(false);
 			A_RemoveAimCircle();
+			if (owner && owner.IsActorPlayingSound(CHAN_WEAPON, loopedAttackSound))
+			{
+				owner.A_StopSound(CHAN_WEAPON);
+			}
 		}
 	}
 
@@ -320,10 +332,9 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			A_PlayerAttackAnim(-1, 'attack_eyestaff', 30, flags: SAF_LOOP|SAF_NOOVERRIDE);
 			A_EyestaffFlash("BeamFlash", frandom[eye](0.3, 1));
-			A_StartSound("weapons/eyestaff/beam", CHAN_WEAPON, CHANF_LOOPING);
 			A_EyestaffRecoil();
 			A_FireBeam();
-			A_FireBullets(0, 0, 1, 9, pufftype: "ToM_EyestaffPuff", flags:FBF_NORANDOM|FBF_USEAMMO);
+			A_FireBullets(0, 0, 1, 9, pufftype: "ToM_EyestaffPuff", flags:FBF_NORANDOM|FBF_USEAMMO|FBF_NOFLASH);
 		}
 		TNT1 A 0 
 		{
@@ -343,7 +354,6 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			A_PlayerAttackAnim(20, 'attack_eyestaff_alt_end', 30, interpolateTics:6);
 			A_StopBeam();
-			A_StopSound(CHAN_WEAPON);
 			player.SetPsprite(PSP_Flash, ResolveState("FlashEnd"));
 			let proj = A_FireProjectile("ToM_EyestaffProjectile", useammo: false);
 			if (proj)

@@ -411,7 +411,7 @@ Model ToM_JackBombProjectile
 	FrameIndex	M004	F	0	48
 	FrameIndex	M004	G	0	49
 					
-	FrameIndex	M005	A	0	50
+	/*FrameIndex	M005	A	0	50
 	// rotate:				
 	FrameIndex	M006	A	0	51
 	FrameIndex	M006	B	0	52
@@ -437,5 +437,5 @@ Model ToM_JackBombProjectile
 	FrameIndex	M006	V	0	72
 	FrameIndex	M006	W	0	73
 	FrameIndex	M006	X	0	74
-	FrameIndex	M006	Y	0	75
+	FrameIndex	M006	Y	0	75*/
 }

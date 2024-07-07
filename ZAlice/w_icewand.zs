@@ -250,7 +250,7 @@ class ToM_IceWandProjectileReal : ToM_PiercingProjectile
 
 	override int SpecialMissileHit(Actor victim)
 	{
-		// Hitting an ice wall will increase its strength:
+		// Hitting an ice wall will repair it:
 		if (victim is 'ToM_IceWallHitBox' && victim.master)
 		{
 			let wall = ToM_IceWall(victim.master);
@@ -258,14 +258,44 @@ class ToM_IceWandProjectileReal : ToM_PiercingProjectile
 			{
 				wall.wallduration = Clamp(wall.wallduration + ToM_IceWall.RESTOREAMOUNT, 0, ToM_IceWall.MAXDURATION);
 			}
+			return MHIT_DEFAULT;
 		}
-		return Super.SpecialMissileHit(victim);
+		bool ret = Super.SpecialMissileHit(victim);
+		if (victim.bNoIceDeath || victim.bBoss)
+		{
+			return MHIT_DEFAULT;
+		}
+		return ret;
 	}
 
 	override void HitVictim(Actor victim)
 	{
-		ToM_FreezeController.AddFreeze(victim);
-		victim.DamageMobj(self, target? target : Actor(self), 3, 'Normal', DMG_THRUSTLESS|DMG_NO_PAIN);
+		if (!victim) return;
+		int dmg;
+		// Bosses, Arch-Viles and +NOICEDEATH actors cannot be frozen
+		// and receive *slightly* reduced damage:
+		if ((victim.bNoIceDeath || victim.bBoss || victim is 'ArchVile'))
+		{
+			double v = 0.75;
+			ToM_WhiteSmoke.Spawn(pos, 0, (frandom[smk](-v,v),frandom[smk](-v,v),frandom[smk](0.1,v)), alpha: 0.7, fade:0.06, style: STYLE_Add);
+			dmg = random[icewand](2,5);
+		}
+		else
+		{
+			// The projectile deals Normal damage in order not to trigger
+			// the hardcoded freezedeath effects, BUT its damage will still
+			// be modified by the victim's resistance to Ice damage:
+			dmg = victim.ApplyDamageFactor('Ice', random[icewand](3,5));
+			if (dmg > 0)
+			{
+				ToM_FreezeController.AddFreeze(victim);
+			}
+		}
+		Console.PrintF("Victim %s will receive %d damage", victim.GetClassName(), dmg);
+		if (dmg > 0)
+		{
+			victim.DamageMobj(self, target? target : Actor(self), dmg, 'Normal', DMG_THRUSTLESS|DMG_NO_PAIN);
+		}
 	}
 
 	override void PostBeginPlay()

@@ -111,11 +111,6 @@ class ToM_Mainhandler : EventHandler
 	
 	override void WorldThingDamaged(worldEvent e)
 	{
-		// Handle DoT from Teapot Cannon projectiles
-		// (has to be done here, since that's the only
-		// way to make sure the DoT is triggered by
-		// explosions, not just a direct hit of the 
-		// projectile):
 		if (!e.thing)
 			return;
 		
@@ -139,7 +134,12 @@ class ToM_Mainhandler : EventHandler
 			e.thing.GiveInventory("ToM_EyestaffBurnControl", 1);
 		}
 
-		if (e.Inflictor && e.Inflictor.GetClass() == 'ToM_TeaProjectile' && e.Inflictor.target)
+		// Handle DoT from Teapot Cannon projectiles
+		// (has to be done here, since that's the only
+		// way to make sure the DoT is triggered by
+		// explosions, not just a direct hit of the 
+		// projectile):
+		if (e.Inflictor && e.Inflictor.GetClass() == 'ToM_TeaProjectile' && e.Inflictor.target && e.thing != e.Inflictor.target)
 		{
 			let act = e.thing;
 			if (!act.CountInv("ToM_TeaBurnControl"))

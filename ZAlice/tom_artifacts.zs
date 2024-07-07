@@ -284,6 +284,15 @@ class ToM_RageBoxEffect : ToM_Powerup
 		+Inventory.ALWAYSPICKUP
 	}
 
+	override void InitEffect()
+	{
+		Super.InitEffect();
+		if (owner)
+		{
+			owner.GiveBody(100);
+		}
+	}
+
 	// Increase outgoing damage and reduce incoming damage:
 	override void ModifyDamage(int damage, Name damageType, out int newdamage, bool passive, Actor inflictor, Actor source, int flags)
 	{

@@ -351,29 +351,6 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 		"fb4834",
 		"251308"
 	};
-
-	override void HitVictim(Actor victim)
-	{
-		if (self && victim && target)
-		{
-			victim.DamageMobj(self, target, damage, 'Pepper');
-			victim.TraceBleed(damage, self);
-			victim.SpawnBlood(pos, AngleTo(victim), damage);
-			bMISSILE = false;
-			bCORPSE = true;
-		}
-	}
-	
-	// Primary-fire projectiles have bNOGRAVITY,
-	// and they shouldn't exhibit any piercing
-	// behavior:
-	override int SpecialMissileHit(actor victim)
-	{
-		if (bNOGRAVITY)
-			return -1;
-		
-		return super.SpecialMissileHit(victim);
-	}
 	
 	Default
 	{
@@ -390,8 +367,40 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 		ToM_Projectile.flarecolor "fb4834";
 		ToM_Projectile.trailcolor "fb4834";
 		ToM_Projectile.flarescale 0.12;
-		damage 15;
+		damage 16;
 		speed 60;
+	}
+
+	override void HitVictim(Actor victim)
+	{
+		if (self && victim)
+		{
+			victim.DamageMobj(self, target? target : Actor(self), damage, 'Pepper');
+			if (!victim.bNoBlood)
+			{
+				victim.TraceBleed(damage, self);
+				victim.SpawnBlood(pos, AngleTo(victim), damage);
+			}
+			SetDamage(damage - ToM_Utils.LinearMap(victim.GetMaxHealth(true), 60, 500, 1, 10));
+		}
+	}
+	override int SpecialMissileHit(actor victim)
+	{
+		// Primary-fire projectiles have bNOGRAVITY,
+		// and they shouldn't exhibit any piercing
+		// behavior:
+		if (bNOGRAVITY)
+		{
+			return MHIT_DEFAULT;
+		}
+
+		int ret = super.SpecialMissileHit(victim);
+		Console.Printf("remaining damage: %d", damage);
+		if (damage <= 0)
+		{
+			return MHIT_DEFAULT;
+		}
+		return ret;
 	}
 	
 	override void PostBeginPlay()
@@ -441,14 +450,26 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 			pp.accel.z = -(pp.vel.z / pp.lifetime);
 			Level.SpawnParticle(pp);
 			
-			scale *= 0.92;
+			scale *= bCorpse? 0.92 : 0.65;
 
 			if (scale.x < default.scale.x * 0.1)
-				Destroy();
+			{
+				return ResolveState("Null");
+			}
+			return ResolveState(null);
 		}
 		wait;
 	Death:
-		TNT1 A 1;
+		TNT1 A 1
+		{
+			if (!bNOGRAVITY)
+			{
+				bNOGRAVITY = true;
+				A_Stop();
+				return ResolveState("Crash");
+			}
+			return ResolveState(null);
+		}
 		stop;
 	}
 }

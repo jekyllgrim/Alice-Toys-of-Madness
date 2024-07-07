@@ -14,7 +14,7 @@ class ToM_Icewand : ToM_BaseWeapon
 		weapon.ammouse1 1;
 		weapon.ammogive1 80;
 		weapon.ammotype2 "ToM_StrongMana";
-		weapon.ammouse2 10;
+		weapon.ammouse2 5;
 	}
 
 	action void A_FireIceWave()

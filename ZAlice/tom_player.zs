@@ -8,6 +8,7 @@ class ToM_AlicePlayer : DoomPlayer
 		"aliceweap_jacks.iqm",
 		"aliceweap_pgrinder.iqm",
 		"aliceweap_teapot.iqm",
+		"aliceweap_icewand.iqm",
 		"aliceweap_eyestaff.iqm",
 		"aliceweap_blunderbuss.iqm"
 	};
@@ -20,6 +21,7 @@ class ToM_AlicePlayer : DoomPlayer
 		AW_Jacks,
 		AW_PGrinder,
 		AW_Teapot,
+		AW_IceWand,
 		AW_Eyestaff,
 		AW_Blunderbuss,
 		AW_NoWeapon = -1000,
@@ -159,6 +161,9 @@ class ToM_AlicePlayer : DoomPlayer
 				break;
 			case 'ToM_Teapot':
 				newmodel = AW_Teapot;
+				break;
+			case 'ToM_IceWand':
+				newmodel = AW_IceWand;
 				break;
 			case 'ToM_Eyestaff':
 				newmodel = AW_Eyestaff;

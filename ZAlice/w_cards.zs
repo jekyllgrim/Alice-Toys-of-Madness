@@ -583,6 +583,7 @@ class ToM_CardProjectile : ToM_StakeProjectile
 		ToM_Projectile.trailalpha 0.1;
 		+ROLLSPRITE
 		+SCREENSEEKER
+		+BLOODSPLATTER
 		renderstyle "Translucent";
 		speed 55;
 		DamageFunction SetCardDamage();

@@ -860,6 +860,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		damage (20);
 		-NOGRAVITY
 		+HITTRACER
+		+BLOODSPLATTER
 		gravity 0.2;
 		radius 4;
 		height 20;

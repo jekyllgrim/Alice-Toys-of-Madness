@@ -13,10 +13,10 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		Inventory.Icon "AWICPPGR";
 		ToM_BaseWeapon.IsTwoHanded true;
 		Weapon.slotnumber 4;
-		weapon.ammotype1 "ToM_WeakMana";
+		weapon.ammotype1 "ToM_MediumMana";
 		weapon.ammouse1 1;
 		weapon.ammogive1 100;
-		weapon.ammotype2 "ToM_WeakMana";
+		weapon.ammotype2 "ToM_MediumMana";
 		weapon.ammouse2 1;
 	}
 

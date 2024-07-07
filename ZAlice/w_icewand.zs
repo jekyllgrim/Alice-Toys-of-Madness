@@ -8,10 +8,10 @@ class ToM_Icewand : ToM_BaseWeapon
 		ToM_BaseWeapon.CheshireSound "cheshire/vo/witheringcold";
 		ToM_BaseWeapon.IsTwoHanded true;
 		Weapon.SlotNumber 6;
-		weapon.ammotype1 "ToM_MediumMana";
+		weapon.ammotype1 "ToM_StrongMana";
 		weapon.ammouse1 1;
 		weapon.ammogive1 80;
-		weapon.ammotype2 "ToM_MediumMana";
+		weapon.ammotype2 "ToM_StrongMana";
 		weapon.ammouse2 10;
 	}
 

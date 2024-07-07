@@ -19,10 +19,10 @@ class ToM_Jacks : ToM_BaseWeapon
 		ToM_BaseWeapon.CheshireSound "cheshire/vo/nastygame";
 		Inventory.Icon "AWICJACK";
 		weapon.slotnumber 3;
-		weapon.ammotype1 "ToM_MediumMana";
+		weapon.ammotype1 "ToM_WeakMana";
 		weapon.ammouse1 6;
 		weapon.ammogive1 60;
-		weapon.ammotype2 "ToM_MediumMana";
+		weapon.ammotype2 "ToM_WeakMana";
 		weapon.ammouse2 12;
 	}
 	

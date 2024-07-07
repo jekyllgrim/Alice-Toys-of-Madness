@@ -914,6 +914,12 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 	override void StickToWall()
 	{
 		Super.StickToWall();
+		// don't spawn on bleeding monsters:
+		if (stickobject && stickobject.bShootable && !stickobject.bNOBLOOD && !stickobject.bINVULNERABLE)
+		{
+			return;
+		}
+
 		FLineTraceData tr;
 		Vector3 dir; bool success;
 		[dir, success] = ToM_Utils.GetNormalFromPos(self, 64, angle, pitch, tr);

@@ -144,7 +144,11 @@ class ToM_Icewand : ToM_BaseWeapon
 		AICW A 1 A_WeaponReady(player.onGround? 0 : WRF_NOSECONDARY);
 		loop;
 	Fire:
-		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.3, 0.3);
+		TNT1 A 0 
+		{
+			A_OverlayPivot(OverlayID(), 0.3, 0.3);
+			A_PlayerAttackAnim(-1, 'attack_eyestaff', 30, endframe: 1, flags: SAF_LOOP|SAF_NOOVERRIDE);
+		}
 	Hold:
 		AICW A 1
 		{
@@ -166,7 +170,11 @@ class ToM_Icewand : ToM_BaseWeapon
 			}
 			A_Refire();
 		}
-		AICW A 4 A_ResetPSprite(OverlayID(), 4, interpolate: true);
+		AICW A 4 
+		{
+			A_ResetPSprite(OverlayID(), 4, interpolate: true);
+			A_PlayerAttackAnim(1, 'attack_eyestaff');
+		}
 		goto Ready;
 	AltFire:
 		TNT1 A 0 
@@ -176,6 +184,7 @@ class ToM_Icewand : ToM_BaseWeapon
 				return invoker.GetReadyState();
 			}
 			A_OverlayPivot(OverlayID(), 0.8, 0.8);
+			A_PlayerAttackAnim(-1, 'attack_eyestaff', 30, endframe: 1, flags: SAF_LOOP|SAF_NOOVERRIDE);
 			return ResolveState(null);
 		}
 		AICW AAAAAAAA 1 
@@ -202,6 +211,7 @@ class ToM_Icewand : ToM_BaseWeapon
 		}
 		AICW A 15 
 		{
+			A_PlayerAttackAnim(1, 'attack_eyestaff');
 			A_ResetPSprite(OverlayID(), 10, interpolate: true);
 			player.cheats &= ~CF_TOTALLYFROZEN;
 		}

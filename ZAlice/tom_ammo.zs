@@ -426,32 +426,40 @@ class ToM_EquipmentSpawner : Inventory abstract
 	}
 }
 
-class ToM_AmmoSpawner_RedYellow : ToM_EquipmentSpawner 
+class ToM_AmmoSpawner_WeakMedium : ToM_EquipmentSpawner 
 {
 	Default 
 	{
 		ToM_EquipmentSpawner.weapon1 "ToM_Cards";
-		ToM_EquipmentSpawner.weapon2 "ToM_Jacks";
-		ToM_EquipmentSpawner.otherPickupChance 25;
+		ToM_EquipmentSpawner.weapon2 "ToM_PepperGrinder";
+		ToM_EquipmentSpawner.otherPickupChance 20;
 	}
 }
 
-class ToM_AmmoSpawner_RedYellow_Big : ToM_AmmoSpawner_RedYellow 
+class ToM_AmmoSpawner_WeakMedium_Big : ToM_AmmoSpawner_WeakMedium 
 {
 	Default 
 	{
+		ToM_EquipmentSpawner.otherPickupChance 30;
 		ToM_EquipmentSpawner.twoPickupsChance 40;
 		ToM_EquipmentSpawner.bigPickupChance 100;
 	}
 }
 
-class ToM_AmmoSpawner_RedYellow_BigOther : ToM_AmmoSpawner_RedYellow 
+class ToM_AmmoSpawner_WeakMedium_Other : ToM_EquipmentSpawner 
 {
 	Default 
 	{
-		ToM_EquipmentSpawner.twoPickupsChance 40;
-		ToM_EquipmentSpawner.bigPickupChance 100;
 		ToM_EquipmentSpawner.otherPickupChance 50;
+		ToM_EquipmentSpawner.twoPickupsChance 50;
+	}
+}
+
+class ToM_AmmoSpawner_WeakMedium_Other_Big : ToM_AmmoSpawner_WeakMedium_Other 
+{
+	Default 
+	{
+		ToM_EquipmentSpawner.bigPickupChance 100;
 	}
 }
 

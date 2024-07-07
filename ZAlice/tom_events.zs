@@ -307,22 +307,22 @@ class ToM_Mainhandler : EventHandler
 			break;
 
 		case 'Clip':
-			e.Replacement = "ToM_AmmoSpawner_RedYellow"; 
+			e.Replacement = "ToM_AmmoSpawner_WeakMedium"; 
 			break;
 		case 'ClipBox':
-			e.Replacement = "ToM_AmmoSpawner_RedYellow_Big"; 
+			e.Replacement = "ToM_AmmoSpawner_WeakMedium_Other_Big"; 
 			break;
 		case 'Shell':
-			e.Replacement = "ToM_AmmoSpawner_RedYellow"; 
+			e.Replacement = "ToM_AmmoSpawner_WeakMedium"; 
 			break;
 		case 'ShellBox':
-			e.Replacement = "ToM_AmmoSpawner_RedYellow_BigOther"; 
+			e.Replacement = "ToM_AmmoSpawner_WeakMedium_Big"; 
 			break;
 		case 'RocketAmmo':
-			e.Replacement = "ToM_MediumMana"; 
+			e.Replacement = "ToM_AmmoSpawner_WeakMedium_Other"; 
 			break;
 		case 'RocketBox':
-			e.Replacement = "ToM_MediumManaBig"; 
+			e.Replacement = "ToM_AmmoSpawner_WeakMedium_Other_Big"; 
 			break;
 		case 'Cell':
 			e.Replacement = "ToM_StrongMana"; 

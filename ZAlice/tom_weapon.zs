@@ -1430,8 +1430,14 @@ Class ToM_StakeProjectile : ToM_Projectile
 			pitch = target.pitch;
 		}
 		
+		// Stuck in an actor:
 		if (stickobject) 
-		{		
+		{
+			if (bBLOODSPLATTER && stickobject.bSHOOTABLE && !stickobject.bNOBLOOD && !stickobject.bINVULNERABLE)
+			{
+				stickobject.TraceBleed(damage, self);
+				stickobject.SpawnBlood(self.pos, AngleTo(stickobject), damage);
+			}
 			return;
 		}
 		

@@ -100,7 +100,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		// are still used but only for visuals:
 		if (hitscan)
 		{
-			A_FireBullets(angleofs, pitchofs, -1, int(3 * frandom(1., 8.)), "ToM_PepperPuff", FBF_NORANDOM|FBF_EXPLICITANGLE);
+			A_FireBullets(angleofs, pitchofs, -1, int(3 * frandom(5., 8.)), "ToM_PepperPuff", FBF_NORANDOM|FBF_EXPLICITANGLE);
 			FLineTraceData pp;
 			double atkheight = ToM_Utils.GetPlayerAtkHeight(PlayerPawn(self));
 			LineTrace(angle + angleofs, 4096, pitch + pitchofs, TRF_SOLIDACTORS, atkheight, data: pp);
@@ -189,7 +189,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		PPGR Z 5
 		{
 			A_PepperFlash();
-			A_FirePepperGun();
+			A_FirePepperGun(1.3);
 		}
 		TNT1 A 0 A_ReFire();
 		TNT1 A 0 

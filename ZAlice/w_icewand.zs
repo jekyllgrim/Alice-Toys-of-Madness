@@ -5,6 +5,7 @@ class ToM_Icewand : ToM_BaseWeapon
 	Default
 	{
 		Tag "$TOM_WEAPON_ICEWAND";
+		ToM_BaseWeapon.CheshireSound "cheshire/vo/witheringcold";
 		ToM_BaseWeapon.IsTwoHanded true;
 		Weapon.SlotNumber 6;
 		weapon.ammotype1 "ToM_MediumMana";

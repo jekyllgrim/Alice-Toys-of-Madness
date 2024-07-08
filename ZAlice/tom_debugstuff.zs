@@ -16,6 +16,16 @@ class ToM_DebugSpot : Actor
 		Renderstyle 'Shaded';
 		StencilColor "00FF00";
 	}
+
+	static ToM_DebugSpot Spawn(Vector3 location, int duration)
+	{
+		let t = ToM_DebugSpot(Actor.Spawn('ToM_DebugSpot', location));
+		if (t)
+		{
+			t.A_SetHealth(duration);
+		}
+		return t;
+	}
 	
 	override void Tick() 
 	{

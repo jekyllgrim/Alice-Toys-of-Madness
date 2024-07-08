@@ -404,6 +404,7 @@ mirror/disappear	"sounds/pickups/mirror_use.ogg"
 mirror/appear		"sounds/pickups/mirror_end.ogg"
 // growth cake
 $random growpotion/giantstep { giantstep1 giantstep2 giantstep3 }
+pickups/cake	"sounds/pickups/cake_eat.ogg"
 giantstep1	"sounds/player/giant_step01.ogg"
 giantstep2	"sounds/player/giant_step02.ogg"
 giantstep3	"sounds/player/giant_step03.ogg"

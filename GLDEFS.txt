@@ -1,3 +1,4 @@
+// PSprite cameratexture used by Looking Glass:
 Material Sprite "LGMRC0"
 {
 	Shader "shaders/Alice_CamTexWeapon.fp"
@@ -5,6 +6,7 @@ Material Sprite "LGMRC0"
 	Texture maskTex "materials/mirror_mask.png"
 }
 
+// PSprite cameratexture used by Ice Wand:
 Material Sprite "AICWA0"
 {
 	Shader "shaders/Alice_CamTexWeapon.fp"
@@ -66,6 +68,7 @@ brightmap texture "models/alice/weapons/eyestaff.png"
 	map "models/alice/weapons/eyestaff_brightmap.png"
 }
 
+// Screen effects from Mad Vision Glasses:
 HardwareShader PostProcess Scene
 {
     Name "Alice_ScreenWarp"

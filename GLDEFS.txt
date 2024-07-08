@@ -18,6 +18,7 @@ Material Sprite "AICWA0"
 	brightmap "materials/icewand_brightmap.png"
 }
 
+// The icy portion of the Ice Wand world model:
 Material Texture "models/alice/weapons/icewand_skin02.png"
 {
 	Shader "shaders/fakeEnvMap.fp"
@@ -25,10 +26,19 @@ Material Texture "models/alice/weapons/icewand_skin02.png"
 	Brightmap "models/alice/weapons/icewand_skin02.png"
 }
 
+// The block of ice encasing monsters killed by Ice Wand:
 Material Texture "AICECASE"
 {
 	Shader "shaders/fakeEnvMap.fp"
 	Texture tex_envmap "materials/icecase_env.png"
+}
+
+// Rage Box world model (layered texture):
+Material texture "models/ragebox/ragebox_base.png"
+{
+	Shader "shaders/Alice_ragebox.fp"
+	Texture bottomTex "models/ragebox/ragebox_glow.png"
+	Brightmap "models/ragebox/ragebox_brightmap.png"
 }
 
 brightmap texture "models/alice/weapons/VorpalBlade2_DM.png"
@@ -61,11 +71,6 @@ HardwareShader PostProcess Scene
     Name "Alice_ScreenWarp"
     Shader "shaders/Alice_ScreenWarp.fp" 330
     Texture NormalTexture "materials/stained_glass_normal.png"
-}
-
-brightmap texture "models/ragebox/ragebox_lit.png"
-{
-   map "brightmaps/ragebox_lit.png"
 }
 
 // Cheshire cat

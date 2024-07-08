@@ -246,7 +246,7 @@ class ToM_RageBox : Actor replaces Berserk
 		super.PostbeginPlay();
 		double hpos = 25;
 		flare = ToM_BaseFlare.Spawn(pos + (0,0,hpos), scale: 0.3, alpha: 0.45, col: "FF0000");
-		A_AttachLight('rageBoxLight', DynamicLight.PointLight, "cc0000", 48, 0, flags: DYNAMICLIGHT.LF_ATTENUATE, ofs: (0,0, hpos));
+		A_AttachLight('rageBoxLight', DynamicLight.PointLight, "cc0000", 48, 0, flags: DYNAMICLIGHT.LF_ATTENUATE|DYNAMICLIGHT.LF_DONTLIGHTSELF, ofs: (0,0, hpos));
 	}
 	
 	States
@@ -264,7 +264,7 @@ class ToM_RageBox : Actor replaces Berserk
 			}
 		}
 		M000 AAAAAAAAAAAAAAAAAAAAA 2 SpawnRageSmoke();
-		M000 B 1 A_FadeOut(0.05);
+		M000 A 1 A_FadeOut(0.05);
 		wait;
 	}
 }

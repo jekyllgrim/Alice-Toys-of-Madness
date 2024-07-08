@@ -333,13 +333,10 @@ Model ToM_IceWall
 Model ToM_RageBox
 {
 	Path "Models/RageBox"
-	Model 0 "ragebox.md3"
-	
-	Skin 0 "ragebox_lit.png"
+	Model 0 "ragebox.obj"
+	Skin 0 "ragebox_base.png"
+
 	FrameIndex M000 A 0 0
-	
-	Skin 0 "ragebox_unlit.png"
-	FrameIndex M000 B 0 0
 }
 
 Model ToM_JackBombPickup

@@ -614,47 +614,47 @@ class ToM_Utils
 
 	static play Inventory SpawnInvPickup(Inventory sourceItem, vector3 spawnpos, Class<Inventory> itemToSpawn) 
 	{
-		let inv = Inventory(Actor.Spawn(itemToSpawn,spawnpos));
-		if (!inv) return null;
+		let item = Inventory(Actor.Spawn(itemToSpawn,spawnpos));
+		if (!item) return null;
 		
 		// Halve the amount if it's dropped by the enemy:
 		if (sourceItem.bTOSSED) 
 		{
-			inv.bTOSSED = true;
-			inv.amount = Clamp(inv.amount / 2, 1, inv.amount);
+			item.bTOSSED = true;
+			item.amount = Clamp(item.amount / 2, 1, item.amount);
 		}
 		
 		// this is important to make sure that the weapon 
 		// that wasn't dropped doesn't get DROPPED flag 
 		// (and thus can't be crushed by moving ceilings)
-		else if (inv is 'Weapon')
+		else if (item is 'Weapon')
 		{
-			inv.bDROPPED = false;
+			item.bDROPPED = false;
 		}
 
 		// transfer all relevant data similar to
 		// how RandomSpawner does it:
-		inv.SpawnAngle = sourceItem.SpawnAngle;
-		inv.Angle		= sourceItem.Angle;
-		inv.SpawnPoint = sourceItem.SpawnPoint;
-		inv.special    = sourceItem.special;
-		inv.args[0]    = sourceItem.args[0];
-		inv.args[1]    = sourceItem.args[1];
-		inv.args[2]    = sourceItem.args[2];
-		inv.args[3]    = sourceItem.args[3];
-		inv.args[4]    = sourceItem.args[4];
-		inv.special1   = sourceItem.special1;
-		inv.special2   = sourceItem.special2;
-		inv.SpawnFlags = sourceItem.SpawnFlags & ~MTF_SECRET;
-		inv.HandleSpawnFlags();
-		inv.SpawnFlags = sourceItem.SpawnFlags;
-		inv.bCountSecret = sourceItem.SpawnFlags & MTF_SECRET;
-		inv.ChangeTid(sourceItem.tid);
-		inv.Vel	= sourceItem.Vel;
-		inv.master = sourceItem.master;
-		inv.target = sourceItem.target;
-		inv.tracer = sourceItem.tracer;
+		item.SpawnAngle = sourceItem.SpawnAngle;
+		item.Angle		= sourceItem.Angle;
+		item.SpawnPoint = sourceItem.SpawnPoint;
+		item.special    = sourceItem.special;
+		item.args[0]    = sourceItem.args[0];
+		item.args[1]    = sourceItem.args[1];
+		item.args[2]    = sourceItem.args[2];
+		item.args[3]    = sourceItem.args[3];
+		item.args[4]    = sourceItem.args[4];
+		item.special1   = sourceItem.special1;
+		item.special2   = sourceItem.special2;
+		item.SpawnFlags = sourceItem.SpawnFlags & ~MTF_SECRET;
+		item.HandleSpawnFlags();
+		item.SpawnFlags = sourceItem.SpawnFlags;
+		item.bCountSecret = sourceItem.SpawnFlags & MTF_SECRET;
+		item.ChangeTid(sourceItem.tid);
+		item.Vel	= sourceItem.Vel;
+		item.master = sourceItem.master;
+		item.target = sourceItem.target;
+		item.tracer = sourceItem.tracer;
 
-		return inv;
+		return item;
 	}
 }

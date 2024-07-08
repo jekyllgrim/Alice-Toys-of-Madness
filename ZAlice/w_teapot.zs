@@ -24,7 +24,7 @@ class ToM_Teapot : ToM_BaseWeapon
 	Default
 	{
 		Tag "$TOM_WEAPON_TEAPOT";
-		ToM_BaseWeapon.CheshireSound "cheshire/vo/launchthisrocket";
+		ToM_BaseWeapon.CheshireSound "cheshire/vo/realtea";
 		ToM_BaseWeapon.LoopedAttackSound "weapons/teapot/altfire";
 		Inventory.Icon "AWICTPOT";
 		weapon.slotnumber 5;

@@ -460,7 +460,8 @@ class ToM_GrowthPotion : PowerupGiver
 	{
 		Powerup.Type "ToM_GrowthPotionEffect";
 		Powerup.Duration -30;
-		Inventory.Pickupmessage "You've eaten the cake!";
+		Inventory.Pickupmessage "$TOM_ITEM_CAKE";
+		Inventory.PickupSound "pickups/cake";
 		+INVENTORY.AUTOACTIVATE
 		scale 0.15;
 	}
@@ -888,7 +889,7 @@ class ToM_Invisibility : PowerupGiver
 
 	Default
 	{
-		Inventory.pickupmessage "Looking-glass mirror";
+		Inventory.pickupmessage "$TOM_ITEM_MIRROR";
 		Inventory.pickupsound "mirror/pickup";
 		Powerup.Duration -40;
 		scale 0.25;

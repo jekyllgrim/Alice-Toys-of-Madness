@@ -60,7 +60,8 @@ class ToM_BaseWeapon : Weapon abstract
 	
 	Default 
 	{
-		Inventory.Pickupmessage "";
+		// Weapons just reuse tag for their pickupmessage
+		// and add ! to it
 		Inventory.PickupSound "pickups/weapon";
 		weapon.BobStyle "InverseSmooth";
 		weapon.BobRangeX 0.32;
@@ -72,7 +73,12 @@ class ToM_BaseWeapon : Weapon abstract
 		FloatBobStrength 0.8;
 		ToM_BaseWeapon.PickupParticleColor "7fa832";
 	}
-	
+
+	override String PickupMessage()
+	{
+		return String.Format("%s!", StringTable.Localize(GetTag()));
+	}
+
 	action bool HasRageBox()
 	{
 		return ToM_RageBox.HasRageBox(self);

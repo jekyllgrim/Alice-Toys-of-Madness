@@ -446,7 +446,7 @@ class ToM_AmmoSpawner_WeakMedium_Big : ToM_AmmoSpawner_WeakMedium
 	}
 }
 
-class ToM_AmmoSpawner_WeakMedium_Other : ToM_EquipmentSpawner 
+class ToM_AmmoSpawner_WeakMedium_Other : ToM_AmmoSpawner_WeakMedium 
 {
 	Default 
 	{

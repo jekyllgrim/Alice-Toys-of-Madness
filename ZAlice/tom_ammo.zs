@@ -472,6 +472,13 @@ class ToM_WeaponSpawner : ToM_EquipmentSpawner abstract
 	Property OnlyMapPlaced1 : onlyMapPlaced1;
 	Property OnlyMapPlaced2 : onlyMapPlaced2;
 
+	Default
+	{
+		// If the dropped weapon gets replaced by ammo,
+		// there's a 20% chance that ammo will be big:
+		ToM_EquipmentSpawner.BigPickupChance 20;
+	}
+
 	States {
 	Spawn:
 		TNT1 A 1 Nodelay

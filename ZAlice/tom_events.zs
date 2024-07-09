@@ -65,7 +65,7 @@ class ToM_Mainhandler : EventHandler
 				if (!PlayerInGame[i]) continue;
 				PlayerPawn pmo = players[i].mo;
 				if (!pmo) continue;
-				ToM_CheshireCat.SpawnAndTalk(pmo, snd, rad: 700);
+				ToM_CheshireCat.SpawnAndTalk(pmo, snd, rad: 700, mapevent:true);
 			}
 		}
 
@@ -211,7 +211,7 @@ class ToM_Mainhandler : EventHandler
 		PlayerPawn pmo = player.mo;
 		if (pmo)
 		{
-			ToM_CheshireCat.SpawnAndTalk(pmo, "cheshire/vo/paincomment");
+			ToM_CheshireCat.SpawnAndTalk(pmo, "cheshire/vo/paincomment", mapevent:true);
 		}
 	}
 

@@ -7,6 +7,9 @@ class ToM_CheshireCatBase : ToM_BaseActor
 	Default
 	{
 		+SOLID
+		+SYNCHRONIZED
+		FloatBobphase 0;
+		+DONTBLAST
 		+DECOUPLEDANIMATIONS
 		+NOTIMEFREEZE
 		Radius 20;
@@ -19,21 +22,18 @@ class ToM_CheshireCat : ToM_CheshireCatBase
 {
 	Default
 	{
-		+NOBLOCKMAP
 		+NOINTERACTION
-		+SYNCHRONIZED
+		+NOBLOCKMAP
 		+NOSAVEGAME
-		FloatBobphase 0;
-		+DONTBLAST
 		RenderStyle 'Translucent';
 		Alpha 0;
 	}
 
-	static void SpawnAndTalk(PlayerPawn pmo, Sound soundToPlay, int talktime = 0, double rad = 512, double mindist = 128)
+	static void SpawnAndTalk(PlayerPawn pmo, Sound soundToPlay, int talktime = 0, double rad = 512, double mindist = 128, bool mapevent = false)
 	{
 		if (!pmo || ToM_Utils.IsVoodooDoll(pmo)) return;
 
-		let c = CVar.GetCVar('tom_cheshire', pmo.player);
+		let c = CVar.GetCVar(mapevent? 'tom_cheshire_map' : 'tom_cheshire_items', pmo.player);
 		if (!c || !c.GetBool()) return;
 
 		int pnumber = pmo.PlayerNumber();
@@ -46,23 +46,61 @@ class ToM_CheshireCat : ToM_CheshireCatBase
 
 		Vector3 spawnpos = pmo.pos;
 		bool spawngood;
-		for (int i = 32; i > 0; i--)
+		// Pick spawn position.
+		// First, try spawning in front of the player (-45/45 + player's angle)
+		// if not possible, try spawning behind (-45/315 + player's angle)
+		double angstep = 5;
+		double alim1 = 45; //inner range 
+		double alim2 = alim1 + (360 - alim1*2);
+		double anglimit = alim1;
+		// Start with 0 and go right:
+		for (int i = 0; abs(i) <= abs(anglimit); i += angstep)
 		{
-			spawnpos = ToM_Utils.FindRandomPosAround(pmo.pos, rad, mindist, 60, pmo.angle);
-			// not a single remotely valid position - abort:
-			if (spawnpos == pmo.pos)
+			if (tom_debugmessages)
+				Console.Printf("Iterating. i = %d, angstep = %d, anglimit = %d", i, angstep, anglimit);
+			// reached right limit, start going left:
+			if (anglimit == alim1 && i >= anglimit)
 			{
-				return;
-				break;
+				anglimit = -anglimit;
+				angstep = -angstep;
+				i = 0;
 			}
+			// reached left limit:
+			else if (anglimit < 0 && i <= anglimit)
+			{
+				// If still using first range, extend to 315
+				// and start going right from 50:
+				if (abs(anglimit) == alim1)
+				{
+					anglimit = alim2;
+					angstep = -angstep;
+					i = alim1;
+					if (tom_debugmessages)
+						Console.Printf("reached -45. Resetting. i = %d, angstep = %d, anglimit = %d", i, angstep, anglimit);
+					continue;
+				}
+				// otherwise abort:
+				else
+				{
+					if (tom_debugmessages)
+						Console.Printf("reached %d, aborting", anglimit);
+					break;
+				}
+			}
+
+			Vector3 ppos;
+			ppos.xy = pmo.pos.xy + Actor.RotateVector((frandom[catspawn](mindist, rad), 0), pmo.angle + i);
+			ppos.z = level.PointInSector(ppos.xy).NextLowestFloorAt(ppos.x, ppos.y, pmo.pos.z);
+			if (tom_debugmessages)
+				ToM_DebugSpot.Spawn(ppos, 5, 6);
+
+			if (ppos.z > pmo.pos.z + 160 || ppos.z < pmo.pos.z - 64) continue;
+			if (!level.IsPointInLevel(ppos)) continue;
+
+			spawnpos = ppos;
 			// test position with a test actor:
 			let testcat = Spawn('ToM_CheshireCatBase', spawnpos);
 			spawngood = testcat && testcat.TestMobjLocation() && testcat.CheckSight(pmo);
-			if (spawngood)
-			{
-				Vector3 view = Level.SphericalCoords((pmo.pos.xy, pmo.player.viewz), spawnpos, (pmo.angle, pmo.pitch));
-				spawngood = abs(view.y) <= 40;
-			}
 			// destroy test actor:
 			if (testcat)
 			{
@@ -71,8 +109,15 @@ class ToM_CheshireCat : ToM_CheshireCatBase
 			// stop looking if position is good:
 			if (spawngood)
 			{
+				Console.Printf("Found good spawn position");
 				break;
 			}
+		}
+		// Not a single valid position found:
+		if (spawnpos == pmo.pos)
+		{
+			Console.Printf("Can't find any cat positions");
+			return;
 		}
 
 		handler.playerCheshireTimers[pnumber] = talktime;
@@ -83,7 +128,7 @@ class ToM_CheshireCat : ToM_CheshireCatBase
 			let cat = ToM_CheshireCatBase(Spawn('ToM_CheshireCat', spawnpos));
 			if (cat)
 			{
-				cat.A_Face(pmo);
+				cat.angle += cat.AngleTo(pmo);
 				cat.soundToPlay = soundToPlay;
 				cat.talktime = talktime;
 			}

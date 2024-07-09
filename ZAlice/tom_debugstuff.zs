@@ -17,12 +17,13 @@ class ToM_DebugSpot : Actor
 		StencilColor "00FF00";
 	}
 
-	static ToM_DebugSpot Spawn(Vector3 location, int duration)
+	static ToM_DebugSpot Spawn(Vector3 location, int duration, double size = 1)
 	{
 		let t = ToM_DebugSpot(Actor.Spawn('ToM_DebugSpot', location));
 		if (t)
 		{
 			t.A_SetHealth(duration);
+			t.scale *= size;
 		}
 		return t;
 	}

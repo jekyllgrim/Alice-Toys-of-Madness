@@ -5,28 +5,42 @@
 ## Contents and requirements
 
 **GZDoom 4.12.2** required
+
 **Maps**: none (so far)
+
 **Custom player class**: yes (required for full features; compatibility with other mods that utilize a custom player class is not guaranteed)
+
 **Custom weapons, ammo, items**: yes
+
 **Custom sounds**: yes
 
 ## Features
 
 Play as Alice and lay waste to the demons! Features unique weapons, some unique items, entirely custom sprites, and some familiar 3D models and sounds.
 
+### Player features
+
+* 3D model for the player with different world-models for weapons and multiple animations
+
+* Double jump
+
+* Quick kick
+
+* Anti-slip system when landing after a jump if the player is not pressing movement buttons (or pressing them in the opposite direction of the original jump).
+
 ### Weapons
 
 * Vorpal Knife: Slice and dice, go snicker-snack! Throw the knife to stick it into enemies, then recall it at a press of a button.
 
-* Hobby Horse: Crush your opponents with mighty blows, or perform a pluging attack with secondary fire. Note, the longer you fall when plunging, the more damage you will deal!
+* Hobby Horse: Crush your opponents with mighty blows, or perform a plunging attack with secondary fire. Note, the plunge, the higher the damage!
 
-* Playing Cards: Sharp projectiles with mild homing capabilities. Secondary fire launches a volley of them with delayed homing.
+* Playing Cards: Sharp projectiles with mild homing capabilities. Secondary fire launches a volley of them with delayed homing. Perfect for medium and long range.
 
-* Jacks: Throw these piercing gravity-affected projectiles with wild abandon, or throw a bunch of seeking jacks that will mercilessly bounce toward enemies for a time.
+* Jacks: Throw these piercing gravity-affected projectiles with wild abandon, or throw a bunch of seeking jacks that will mercilessly bounce toward enemies for a time but will lock you out of throwing more until they return to you.
 
 * Pepper Grinder: This is your pepper-flavored chaingun. Secondary fire turns the handle the other way, turning it into a makeshift shotgun!
 
-* Teapot Cannon: Launch bubbles of super-hot tea that explode and poison enemies they hit. Don't be afraid of overheating—you can let out the accumulated steam with secondary fire (it also pushes enemies away!)
+* Teapot Cannon: Launch blobs of super-hot tea that explode and poison enemies they hit. Don't be afraid of overheating—you can let out the accumulated steam with secondary fire (it also pushes enemies away!)
 
 * Ice Wand: The stream of freezing cold passes through enemies, slowing them down and eventually turning them into ice crystals. Secondary attack creates a temporary ice wall that shields you from attacks. Hint: once the ice wall starts to melt, hit it with primary attack to restore its integrity!
 
@@ -42,7 +56,7 @@ Play as Alice and lay waste to the demons! Features unique weapons, some unique 
 
 * Rage Box (replaces Berserk): Regeneration, reduced damage, and, most importantly RAGE! You will be locked to using your knife, but it will deal devastating damage.
 
-* Looking-Glass Mirror (replaces Blursphere): A *true* invisibility. Enemies won't know where you are—until you make some noise by attacking, that is, but even that alert will be only temporary.
+* Looking-Glass Mirror (replaces Invisibility aka Blursphere): A *true* invisibility. Enemies won't know where you are—until you make some noise by attacking, that is, but even that alert will be only temporary.
 
 ## How to play
 
@@ -50,8 +64,8 @@ Play as Alice and lay waste to the demons! Features unique weapons, some unique 
 
 Released versions should be the most stable and bug-free ones. Some releases are development versions which don't have all the planned features implemented yet.
 
-1. Navigate to the "Releases" tab at the top or following this URL: https://github.com/jekyllgrim/Alice-Toys-of-Madness/releases/
-2. Download the attached PK3 file. Run it as you'd run any .wad or .pk3. For example, in the command line it shoud look as follows:
+1. Navigate to the "Releases" tab on the right, or follow this URL: https://github.com/jekyllgrim/Alice-Toys-of-Madness/releases/
+2. Download the attached PK3 file. Run it as you'd run any .wad or .pk3. For example, in the command line it should look as follows:
 
 ```
 gzdoom.exe -file AliceToysOfMadness###.pk3
@@ -87,12 +101,12 @@ It's possible to play the version that is currently in the repository but hasn't
 
 # Copyright information and permissions
 
-*Alice: Toys of Madness* gameplay modification for GZDoom engine by Agent_Ash ("Alice: Toys of Madness") also known as Jekyll Grim Payne ("the Author") is based on the *American McGee's Alice* game by Rogue Entertainment and *Alice: Madness Returns* game by Spicy Horse; the intellectual property rights belong to Electronic Arts. The Mod consists of several components that are subject to different licenses and permissions.
+*Alice: Toys of Madness* gameplay modification for GZDoom engine ("Alice: Toys of Madness") by Agent_Ash also known as Jekyll Grim Payne ("the Author") is based on the *American McGee's Alice* game by Rogue Entertainment and *Alice: Madness Returns* game by Spicy Horse; the intellectual property rights for those games belong to Electronic Arts. Alice: Toys of Madness consists of several components that are subject to different licenses and permissions.
 
 ### Short summary of the permissions (not equivalent to the full text):
 
 * Most of the graphics in Alice: Toys of Madness (specifically, weapon sprites, item sprites and HUD graphics) are owned by the Author and may NOT be used, copied or edited by anyone for any purpose without first obtaining an explicit permission from the Author.
-* The code used in Alice: Toys of Madness is licensed under General Public License ver. 3 (GPLv3) and can be used by anyone for any purpose, as long as the author of derivative projects complies with GPLv3, the original author or authors are credited, and the relevant license and copyright information is kept intact (i.e. all files containing license information shall be copied to derivate works).
+* The code used in Alice: Toys of Madness is licensed under General Public License version 3 (GPLv3) and can be used by anyone for any purpose, as long as the author of derivative projects complies with GPLv3, the original author or authors are credited, and the relevant license and copyright information is kept intact (i.e. all files containing license information shall be copied to derivate works).
 * Most of the sounds used in Alice: Toys of Madness are owned by Electronic Arts and are used under Fair Use.
 
 ## The Artwork
@@ -126,9 +140,9 @@ iii. Open-source assets
      **Locations**:
 
 ```
+sprites/ (root folder)
 sprites/SFX/
 sprites/debris/
-sprites/ (root folder)
 ```
 
 ## The Code

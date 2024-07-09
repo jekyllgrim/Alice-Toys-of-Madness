@@ -53,7 +53,8 @@ OptionMenu "ToM_Settings"
 	StaticText ""
 
 	Option "$TOM_MENU_PARTICLES", "tom_particles", "ToM_ParticleIntensity"
-	Option "$TOM_MENU_CHESHIRE", "tom_cheshire", "OnOff"
+	Option "$TOM_MENU_CHESHIRE_MAP", "tom_cheshire_map", "OnOff"
+	Option "$TOM_MENU_CHESHIRE_ITEMS", "tom_cheshire_items", "OnOff"
 }
 
 

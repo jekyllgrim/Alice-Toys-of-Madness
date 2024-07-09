@@ -1,4 +1,4 @@
-Alice: Toys of Madness (c) 2021 Agent_Ash aka Jekyll Grim Payne
+Alice: Toys of Madness (c) 2021-2024 Agent_Ash aka Jekyll Grim Payne
 
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007

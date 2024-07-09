@@ -589,7 +589,7 @@ class ToM_CardProjectile : ToM_StakeProjectile
 		DamageFunction SetCardDamage();
 		gravity 0.6;
 		radius 4;
-		height 1;
+		height 0.5;
 		scale 0.75;
 	}
 
@@ -601,6 +601,7 @@ class ToM_CardProjectile : ToM_StakeProjectile
 		return dmg;
 	}
 
+	// Spawn two trails at card eges relative to its roll:
 	override void SpawnTrail(vector3 ppos)
 	{
 		FSpawnParticleParams trail;
@@ -627,26 +628,63 @@ class ToM_CardProjectile : ToM_StakeProjectile
 
 		seekAngle = Clamp(seekAngle, 1, 90);
 	}
+
+	void A_CardSeek(double ang)
+	{
+		//A_SeekerMissile(0, seekAngle, SMF_PRECISE|SMF_CURSPEED, 256);
+
+		if (age <= seekDelay || seekAngle <= 0) return;
+
+		if (!tracer)
+		{
+			tracer = RoughMonsterSearch(1080, true);
+		}
+		else
+		{
+			double angTo = DeltaAngle(angle, AngleTo(tracer));
+			if (abs(angTo) > 90 || abs(PitchTo(tracer)) > 45)
+			{
+				tracer = null;
+				return;
+			}
+			A_SetRoll(roll - Clamp(angTo, -20, 20), SPF_INTERPOLATE);
+			Vector3 endpos, dir;
+			double theight = max(tracer.height, tracer.projectilePassHeight);
+			double ofsz = theight*0.5;
+			double aimOfsZ = ofsz;
+			ToM_CardSeekTracer cardtracer;
+			for (int i = 0; i < 2; i++)
+			{
+				switch(i)
+				{
+					default: ofsz = theight*0.95; break; //try top
+					case 1: ofsz = theight*0.05; break; //try bottom
+					case 2: ofsz = theight*0.5; break; //try middle
+				}
+				endpos = (tracer.pos.xy, tracer.pos.z + ofsz);
+				dir = Level.Vec3Diff(self.pos, endpos).Unit();
+				cardtracer = new('ToM_CardSeekTracer');
+				cardtracer.Trace(self.pos, cursector, dir, PLAYERMISSILERANGE, TRACE_HitSky);
+				/*if (cardtracer.HitActor)
+				{
+					Console.Printf("Attempt \cd%d\c-: Tracer hit \cd%s\c- at \cd%.2f\c- offset", i, cardtracer.HitActor.GetClassName(),  ofsz / theight);
+				}*/
+				//ToM_DebugSpot.Spawn(cardtracer.results.hitPos, 1);
+				if (cardtracer.hitActor == tracer)
+				{
+					aimOfsZ = ofsz;
+					break;
+				}
+			}
+			A_Face(tracer, seekAngle, seekAngle, flags: FAF_BOTTOM, z_ofs: aimOfsZ);
+			Vel3DFromAngle(speed, angle, pitch);
+		}
+	}
 	
 	States
 	{
 	Spawn:
-		#### A 1
-		{
-			if (tracer && age > seekDelay && seekAngle > 0)
-			{
-				double angTo = DeltaAngle(angle, AngleTo(tracer));
-				if (abs(angTo) > 90 || abs(PitchTo(tracer)) > 45)
-				{
-					tracer = null;
-				}
-				else
-				{
-					A_SetRoll(roll - Clamp(angTo, -20, 20), SPF_INTERPOLATE);
-				}
-				A_SeekerMissile(0, seekAngle, SMF_PRECISE|SMF_CURSPEED, 256);
-			}
-		}
+		#### A 1 A_CardSeek(seekangle);
 		loop;
 	XDeath:
 		TNT1 A 1 A_StartSound("weapons/cards/hitflesh", CHAN_AUTO, attenuation: 8);
@@ -663,5 +701,31 @@ class ToM_CardProjectile : ToM_StakeProjectile
 			A_FadeOut(0.15);
 		}
 		wait;
+	}
+}
+
+class ToM_CardSeekTracer : LineTracer
+{
+	Actor hitActor;
+
+	override ETraceStatus TraceCallBack()
+	{
+		let ht = results.hitType;
+		if (ht == TRACE_HitFloor || ht == TRACE_HitCeiling || ht == TRACE_HitWall || ht == TRACE_HasHitSky)
+		{
+			return TRACE_Stop;
+		}
+
+		if (ht == TRACE_HitActor)
+		{
+			let ha = results.HitActor;
+			if (ha && (ha.bSolid || ha.bSHOOTABLE))
+			{
+				self.HitActor = ha;
+				return TRACE_Stop;
+			}
+		}
+
+		return TRACE_Skip;
 	}
 }

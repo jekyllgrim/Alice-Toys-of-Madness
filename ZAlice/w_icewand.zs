@@ -6,6 +6,7 @@ class ToM_Icewand : ToM_BaseWeapon
 	Default
 	{
 		Tag "$TOM_WEAPON_ICEWAND";
+		Inventory.Icon "AWICICEW";
 		ToM_BaseWeapon.CheshireSound "cheshire/vo/witheringcold";
 		ToM_BaseWeapon.IsTwoHanded true;
 		ToM_BaseWeapon.LoopedAttackSound "weapons/icewand/fire";

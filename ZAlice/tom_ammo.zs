@@ -373,7 +373,7 @@ class ToM_EquipmentSpawner : Inventory abstract
 				// if players have neither, both calculations 
 				// will happen, ultimately leaving the chance 
 				// unchanged!
-				if (tom_debugmessages > 1)
+				if (tom_debugmessages)
 					console.printf("alt set chance: %f",otherPickupChance);
 			}
 			
@@ -490,14 +490,16 @@ class ToM_WeaponSpawner : ToM_EquipmentSpawner abstract
 			if (weapon2)
 			{
 				//if none of the players have weapon1, it should always spawn:
-				if (!have1)
+				//same if this is tossed but weapon2 can't be spawned tossed:
+				if (!have1 || (bTossed && onlyMapPlaced2))
 				{
-					otherPickupChance -= 50;
+					otherPickupChance = 0;
 				}
 				//otherwise, if none of the players have weapon2, that should always spawn:
-				else if (!have2)
+				//same if this is tossed but weapon1 can't be spawned tossed:
+				else if (!have2 || (bTossed && onlyMapPlaced1))
 				{
-					otherPickupChance += 50;
+					otherPickupChance = 100;
 				}
 				//(if players have both weapons, otherPickupChance is unchanged by this point)
 				//set to spawn weapon2 if check passed:
@@ -508,7 +510,7 @@ class ToM_WeaponSpawner : ToM_EquipmentSpawner abstract
 			}
 			//if weapon2 is true and the item was NOT dropped, stagger spawning:
 			bool stagger = weapon2 && !bTOSSED;
-			if (ToM_debugmessages > 1)
+			if (tom_debugmessages)
 			{
 				string phave1 = have1 ? "have" : "don't have";
 				string phave2 = have2 ? "have" : "don't have";	
@@ -525,15 +527,35 @@ class ToM_WeaponSpawner : ToM_EquipmentSpawner abstract
 			(this is mainly because weapons, being 3D and all, look very "prominent"
 			and I just don't want many of them to exist on the map at once)
 			*/
-			if (bTOSSED && ((toSpawn == weapon1 && onlyMapPlaced1) || (toSpawn == weapon2 && onlyMapPlaced2) ||  ToM_Utils.CheckPlayersHave(tospawn, true)))
+			if (bTOSSED && (ToM_Utils.CheckPlayersHave(tospawn, true)) || (toSpawn == weapon1 && onlyMapPlaced1) || (toSpawn == weapon2 && onlyMapPlaced2))
 			{
-				//simply randomly pick primary or secondary ammo:
+				if (tom_debugmessages)
+				{
+					string reason;
+					if (ToM_Utils.CheckPlayersHave(tospawn, true)) 
+						reason = String.Format("All players have %s", toSpawn.GetClassName());
+					else if ((toSpawn == weapon1 && onlyMapPlaced1) || (toSpawn == weapon2 && onlyMapPlaced2))
+						reason = String.Format("This was dropped, but %s can only spawn map-placed", toSpawn.GetClassName());
+					Console.Printf("Spawning ammo instead of %s because %s", toSpawn.GetClassName(), reason);
+				}
+				// For ammo drops, recalculate chances again.
+				// Increase chances of dropping ammo for the
+				// weapon you actually have:
+				otherPickupChance = default.otherPickupChance;
+				if (!have1)
+					otherPickupChance += 30;
+				else if (!have2)
+					otherPickupChance -= 30;
+				otherPickupChance = Clamp(otherPickupChance, 0, 100);
+				toSpawn = (otherPickupChance >= frandom[ammoSpawn](1,100))? weapon2 : weapon1;
 				Class<Weapon> weap = (Class<Weapon>)(tospawn);
-				Class<Ammo> amToSpawn = null;
-				if (weap)
-					amToSpawn = (random[ammoSpawn](0,1) == 1) ? GetDefaultByType(weap).ammotype1 :GetDefaultByType(weap).ammotype2;
+				if (!weap) return ResolveState("Null");
+				Class<Ammo> amToSpawn = GetDefaultByType(weap).ammotype1;
 				if (amToSpawn)
+				{
 					tospawn = amToSpawn;
+					stagger = false;
+				}
 			}		
 			if (!stagger)
 			{
@@ -575,7 +597,7 @@ class ToM_WeaponSpawner : ToM_EquipmentSpawner abstract
 			//if there's only current weapon, spawn it:
 			else if (wcount <= 1)
 				toSpawnFinal = toSpawn;
-			if (ToM_debugmessages > 1)
+			if (tom_debugmessages)
 				Console.PrintF("There are at least %d instaces of %s on this map. Spawning %s",wcount,toSpawn.GetClassName(),toSpawnFinal.GetClassName());
 			SpawnInvPickup(pos,toSpawnFinal);
 		}
@@ -627,6 +649,7 @@ class ToM_WeaponSpawner_RocketLauncher : ToM_WeaponSpawner
 	{
 		ToM_EquipmentSpawner.Weapon1 'ToM_Teapot';
 		ToM_EquipmentSpawner.Weapon2 'ToM_Jacks';
+		ToM_WeaponSpawner.OnlyMapPlaced2 true;
 	}
 }
 
@@ -645,5 +668,6 @@ class ToM_WeaponSpawner_BFG9000 : ToM_WeaponSpawner
 	{
 		ToM_EquipmentSpawner.Weapon1 'ToM_Blunderbuss';
 		ToM_EquipmentSpawner.Weapon2 'ToM_Eyestaff';
+		ToM_WeaponSpawner.OnlyMapPlaced1 true;
 	}
 }

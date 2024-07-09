@@ -96,7 +96,7 @@ class ToM_AlicePlayer : DoomPlayer
 		}
 		if (waterLevel >= 2)
 		{
-			SetAnimation('swim_loop', flags:SAF_LOOP|SAF_NOOVERRIDE);
+			SetAnimation('swim_loop', interpolateTics: 10, flags:SAF_LOOP|SAF_NOOVERRIDE);
 			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 3, 18, minFr, maxFr));
 		}
 		// falling (not jumping)
@@ -116,7 +116,7 @@ class ToM_AlicePlayer : DoomPlayer
 		// walking
 		else if (hvel <= 7.5)
 		{
-			SetAnimation(twohanded? 'walk_bigweapon' : 'walk_smallweapon', flags:SAF_LOOP|SAF_NOOVERRIDE);
+			SetAnimation(twohanded? 'walk_bigweapon' : 'walk_smallweapon', interpolateTics: 5, flags:SAF_LOOP|SAF_NOOVERRIDE);
 			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 2, 7.5, minFr, maxFr));
 		}
 		// running

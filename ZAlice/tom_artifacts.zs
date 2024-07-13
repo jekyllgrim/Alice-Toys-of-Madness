@@ -462,8 +462,10 @@ class ToM_GrowthPotion : PowerupGiver
 		Powerup.Duration -30;
 		Inventory.Pickupmessage "$TOM_ITEM_CAKE";
 		Inventory.PickupSound "pickups/cake";
-		+INVENTORY.AUTOACTIVATE
+		+Inventory.AUTOACTIVATE
+		+Inventory.ALWAYSPICKUP
 		scale 0.15;
+		Inventory.MaxAmount 1;
 	}
 	
 	States
@@ -893,7 +895,8 @@ class ToM_Invisibility : PowerupGiver
 		Inventory.pickupsound "mirror/pickup";
 		Powerup.Duration -40;
 		scale 0.25;
-		+INVENTORY.AUTOACTIVATE
+		+Inventory.AUTOACTIVATE
+		+Inventory.ALWAYSPICKUP
 		FloatBobStrength 0.5;
 	}
 

@@ -356,7 +356,10 @@ class ToM_JackProjectile : ToM_Projectile
 			// Scale out of existence:
 			scale *= 0.92;
 			if (scale.x <= default.scale.x * 0.08)
-				Destroy();
+			{
+				return ResolveState("Null");
+			}
+			return ResolveState(null);
 		}
 		wait;
 	}

@@ -285,7 +285,7 @@ class ToM_JackProjectile : ToM_Projectile
 	override int SpecialMissileHit(Actor victim)
 	{
 		if (!victim)
-			return -1;
+			return MHIT_DEFAULT;
 
 		if (victim.bSHOOTABLE && !victim.bNONSHOOTABLE)
 		{
@@ -298,23 +298,25 @@ class ToM_JackProjectile : ToM_Projectile
 				ripvictim = victim; //record victim 
 				ripwait = RIPDELAY; //start the rip delay counter
 				// deal damage:
-				victim.DamageMobj(self, target, JackDamage, "Normal");
-				//console.printf("Damaging %s for %d HP | %d HP remaining", victim.GetClassName(), JackDamage, victim.health);
-				A_StartSound("weapons/jacks/flesh", CHAN_AUTO);
-				// spawn blood decal and actor
-				// because DamageMobj doesn't do it automatically:
-				if (!victim.bNOBLOOD)
+				int dealtDmg = victim.DamageMobj(self, target, JackDamage, 'normal');
+				if (dealtDmg > 0)
 				{
-					victim.TraceBleed(JackDamage, self);
-					victim.SpawnBlood(pos, AngleTo(victim), JackDamage);
+					A_StartSound("weapons/jacks/flesh", CHAN_VOICE, CHANF_NOSTOP);
+					// spawn blood decal and actor
+					// because DamageMobj doesn't do it automatically:
+					if (!victim.bNOBLOOD)
+					{
+						victim.TraceBleed(JackDamage, self);
+						victim.SpawnBlood(pos, AngleTo(victim), JackDamage);
+					}
 				}
 			}
-			if (!victim.bBOSS)
+			if (!victim.bBOSS && !victim.bDontRip)
 			{
-				return 1; // fly through
+				return MHIT_PASS; // fly through
 			}
 		}
-		return -1; // do the usual behavior
+		return MHIT_DEFAULT; // do the usual behavior
 	}
 	
 	override void Tick()

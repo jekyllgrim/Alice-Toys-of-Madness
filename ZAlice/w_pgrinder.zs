@@ -146,7 +146,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		PPGR Y 0 
 		{
 			A_ClearOverlays(APSP_Righthand, APSP_Righthand);
-			A_WeaponOffset(-24, 90+WEAPONTOP);
+			A_SetSelectPosition(-24, 90+WEAPONTOP);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
 			A_RotatePSPrite(OverlayID(), 30);
 		}

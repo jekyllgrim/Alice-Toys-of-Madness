@@ -129,3 +129,39 @@ class ToM_TestPowerupGiver3 : ToM_TestPowerupGiver
 		stop;
 	}
 }
+
+class Prop_Shootable : Actor
+{
+	Default
+	{
+		+SOLID
+		height 56;
+		radius 16;
+		+SHOOTABLE
+		+NOBLOOD
+		+BUDDHA
+		+DONTTHRUST
+	}
+
+	States {
+	Spawn:
+		COLU A -1;
+		stop;
+	}
+}
+
+class Prop_Monster : Prop_Shootable
+{
+	Default
+	{
+		+ISMONSTER
+		Translation "0:255=#[255,128,128]";
+		-NOBLOOD
+	}
+
+	States {
+	Spawn:
+		POSS A -1;
+		stop;
+	}
+}

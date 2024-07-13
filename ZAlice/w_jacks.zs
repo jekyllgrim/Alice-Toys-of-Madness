@@ -173,7 +173,7 @@ class ToM_Jacks : ToM_BaseWeapon
 	Select:
 		AJCK A 0 
 		{
-			A_WeaponOffset(24, WEAPONTOP + 54);
+			A_SetSelectPosition(24, WEAPONTOP + 54);
 			A_SetJacksFrame();
 		}
 		#### ###### 1

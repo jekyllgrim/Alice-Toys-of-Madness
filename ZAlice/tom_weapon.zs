@@ -3,8 +3,6 @@ class ToM_BaseWeapon : Weapon abstract
 	mixin ToM_PlayerSightCheck;
 	mixin ToM_CheckParticles;
 	
-	array <ToM_PspResetController> pspcontrols;
-	
 	protected vector2 targOfs; //used by DampedRandomOffset
 	protected vector2 shiftOfs; //used by DampedRandomOffset
 	protected int idleCounter; //used by idle animations 
@@ -196,7 +194,10 @@ class ToM_BaseWeapon : Weapon abstract
 		ToM_SwingController data = invoker.swingdata[id];
 		if (!data)
 		{
-			Console.Printf("\cgSwing data:\c- Controller \cd%d\c- does not exist. Aborting.", id);
+			if (tom_debugmessages)
+			{
+				Console.Printf("\cgSwing data:\c- Controller \cd%d\c- does not exist. Aborting.", id);
+			}
 			return null, null, false;
 		}
 		Vector2 flatOfs = data.ofs;
@@ -524,9 +525,11 @@ class ToM_BaseWeapon : Weapon abstract
 		if (!psp)
 		{
 			if (ToM_debugmessages > 1)
-				console.printf("PSprite %d doesn't exist", tlayer);
+				console.printf("\cYPSPRC:\c- PSprite %d doesn't exist", tlayer);
 			return;
 		}
+		let alice = ToM_AlicePlayer(self);
+		if (!alice) return;
 		
 		// If this is main layer (PSP_WEAPON), or an
 		// overlay that doesn't have bADDWEAPON,
@@ -534,15 +537,25 @@ class ToM_BaseWeapon : Weapon abstract
 		// Otherwise they're (0,0):
 		vector2 tofs = (0, 0);
 		if (tlayer == PSP_WEAPON || psp.bAddWeapon == false)
+		{
 			tofs.y = WEAPONTOP;
+		}
 		
 		// If stagger tics is 1 or fewer, simply reset everything:
 		if (staggertics <= 1)
 		{
+			psp.bInterpolate = false;
 			A_StopPSpriteReset(tlayer);
-			A_OverlayOffset(tlayer, tofs.x, tofs.y);
-			A_OverlayRotate(tlayer, 0);
-			A_OverlayScale(tlayer, 1, 1);
+			psp.x = tofs.x;
+			psp.y = tofs.y;
+			psp.rotation = 0;
+			psp.scale = (1, 1);
+			psp.pivot = (0,0);
+			psp.Coord0 = (0,0);
+			psp.Coord1 = (0,0);
+			psp.Coord2 = (0,0);
+			psp.Coord3 = (0,0);
+			psp.ResetInterpolation();
 			return;
 		}
 		
@@ -553,17 +566,38 @@ class ToM_BaseWeapon : Weapon abstract
 		if (!cont)
 		{
 			if (ToM_debugmessages)
-				console.printf("Error: Couldn't create ToM_PspResetController", tlayer);
+				console.printf("\cYPSPRC:\c- Error: Couldn't create ToM_PspResetController", tlayer);
 			return;
 		}
 		
-		if (invoker.pspcontrols.Find(cont) == invoker.pspcontrols.Size())
+		if (alice.pspcontrols.Find(cont) == alice.pspcontrols.Size())
 		{
 			if (tom_debugmessages > 1)
 			{
-				console.printf("Pushing layer %d into pspcontrols array. Tics: %d, target offsets: (%d, %d)", tlayer, staggertics, tofs.x, tofs.y);
+				console.printf("\cYPSPRC:\c- Pushing layer \cd%d\c- into pspcontrols array. Tics: \cd%d\c-, target offsets: \cd(%d, %d)\c-", tlayer, staggertics, tofs.x, tofs.y);
 			}
-			invoker.pspcontrols.Push(cont);
+			alice.pspcontrols.Push(cont);
+		}
+		else if (tom_debugmessages > 1)
+		{
+			Console.Printf("\cyPSPRC:\c- Controller for layer \cd%d\c- already exists, not pushing.", tlayer);
+		}
+	}
+	
+	action void A_SetSelectPosition(double wx, double wy)
+	{
+		A_StopPSpriteReset(OverlayID(), dropRightThere: true);
+		let psp = player.FindPSprite(PSP_WEAPON);
+		if (psp)
+		{
+			A_ResetPSprite(PSP_WEAPON);
+			psp.x = wx;
+			psp.y = wy;
+			psp.ResetInterpolation();
+			if (tom_debugmessages > 1)
+			{
+				Console.Printf("\cYPSPRC:\c- Layer %d reset. Pos: %.1f,%.1f | Scale: %.1f, %.1f", PSP_WEAPON, psp.x, psp.y, psp.scale.x, psp.scale.y);
+			}
 		}
 	}
 	
@@ -578,21 +612,28 @@ class ToM_BaseWeapon : Weapon abstract
 		if (!psp)
 		{
 			if (ToM_debugmessages > 1)
-				console.printf("PSprite %d doesn't exist", tlayer);
+				console.printf("\cYPSPRC:\c- PSprite %d doesn't exist", tlayer);
 			return;
 		}
 		
-		for (int i = invoker.pspcontrols.Size() - 1; i >= 0; i--)
+		let alice = ToM_AlicePlayer(self);
+	
+		for (int i = alice.pspcontrols.Size() - 1; i >= 0; i--)
 		{
-			if (invoker.pspcontrols[i] && invoker.pspcontrols[i].GetPSprite() == psp)
+			let cntrl = alice.pspcontrols[i];
+			//Console.Printf("\cgIterating over PSprites.\c- Target id: \cg%d\c- | current id: \cg%d\c-", tlayer, cntrl? cntrl.GetPSprite().id : 000);
+			if (cntrl && cntrl.GetPSprite() == psp)
 			{
 				if (ToM_debugmessages > 1)
-					console.printf("Removing psp controller for PSprite %d", tlayer);
+					console.printf("\cYPSPRC:\c- Removing psp controller for PSprite %d", tlayer);
 				if (dropRightThere)
-					invoker.pspcontrols[i].StopReset();
+					cntrl.StopReset();
 				else
-					invoker.pspcontrols[i].Destroy();
-				invoker.pspcontrols.Delete(i);
+				{
+					cntrl.ResetPsprite();
+					cntrl.Destroy();
+				}
+				alice.pspcontrols.Delete(i);
 				return;
 			}
 		}
@@ -1872,7 +1913,7 @@ class ToM_PspResetController : Thinker
 			if (tom_debugmessages > 1)
 			{
 				console.printf(
-					"PSP reset controller created:\n"
+					"\cYPSPRC:\c- Controller created:\n"
 					"ofs: %d, %d | target ofs: %d, %d | step: %d, %d\n"
 					"scale: %.1f, %.1f | target scale: %.1f, %.1f | step: %.1f\n"
 					"rotation: %.1f | target rotation: %.1f | step: %.1f",
@@ -1892,7 +1933,7 @@ class ToM_PspResetController : Thinker
 		{
 			if (tom_debugmessages > 1)
 			{
-				console.printf("No PSprite, destroying controller");
+				console.printf("\cYPSPRC:\c- No PSprite, destroying controller");
 			}
 			Destroy();
 			return;
@@ -1904,16 +1945,12 @@ class ToM_PspResetController : Thinker
 		psp.rotation += rotation_step;
 		if (tom_debugmessages > 1)
 		{
-			console.printf("Updating psprite values. Tics left: %d", tics);
+			console.printf("\cYPSPRC:\c- Updating psprite values. Tics left: %d", tics);
 		}
 		
 		tics--;
 		if (tics < 0)
 		{
-			if (tom_debugmessages > 1)
-			{
-				console.printf("PSP reset controller destroyed");
-			}
 			Destroy();
 			return;
 		}
@@ -1927,12 +1964,14 @@ class ToM_PspResetController : Thinker
 	void StopReset()
 	{
 		if (psp)
+		{
 			psp = null;
+		}
 	
 		Destroy();
 	}
 	
-	override void OnDestroy()
+	void ResetPsprite()
 	{
 		if (psp)
 		{
@@ -1942,6 +1981,15 @@ class ToM_PspResetController : Thinker
 			psp.scale = targetscale;
 			psp.rotation = targetrotation;
 		}
+	}
+	
+	override void OnDestroy()
+	{
+		if (tom_debugmessages > 1)
+		{
+			Console.Printf("\cyPSPRC:\c- Controller for layer \cd%s\c- \cgdestroyed\c-", psp? ""..psp.id : "'unknown'");
+		}
+		Super.OnDestroy();
 	}
 }
 	

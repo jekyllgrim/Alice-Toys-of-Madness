@@ -44,7 +44,7 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 	Select:
 		BBUS A 0 
 		{
-			A_WeaponOffset(-24, 90+WEAPONTOP);
+			A_SetSelectPosition(-24, 90+WEAPONTOP);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
 			A_OverlayRotate(OverlayID(), 30);
 		}

@@ -29,6 +29,11 @@ class ToM_AlicePlayer : DoomPlayer
 
 	static const name leaftex[] = { 'AIRLEAF1', 'AIRLEAF2', 'AIRLEAF3', 'AIRLEAF4', 'AIRLEAF5', 'AIRLEAF6', 'AIRLEAF7', 'AIRLEAF8' };
 	
+	const MAXAIRJUMPTICS = 6;
+	const MAXAIRJUMPS = 1;
+	const AIRJUMPTICTHRESHOLD = -4;
+	const AIRJUMPFACTOR = 0.8;
+	
 	protected int curWeaponID;
 	protected vector2 prevMoveDir;
 	double modelDirection;
@@ -37,10 +42,7 @@ class ToM_AlicePlayer : DoomPlayer
 	protected state s_airjump;
 	protected int airJumps;
 	protected int airJumpTics;
-	const MAXAIRJUMPTICS = 6;
-	const MAXAIRJUMPS = 1;
-	const AIRJUMPTICTHRESHOLD = -4;
-	const AIRJUMPFACTOR = 0.8;
+	array <ToM_PspResetController> pspcontrols;
 
 	Default
 	{

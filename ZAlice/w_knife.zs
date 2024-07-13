@@ -476,7 +476,7 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			if (HasRageBox())
 			{
-				A_WeaponOffset(0, WEAPONTOP);
+				A_SetSelectPosition(0, WEAPONTOP);
 				return ResolveState("Ready");
 				//A_Overlay(APSP_LeftHand, "ClawHandSelect");
 			}
@@ -490,7 +490,7 @@ class ToM_Knife : ToM_BaseWeapon
 				A_SetKnifeSprite("VKNF", "VKRF");
 			}
 				
-			A_WeaponOffset(-24, 86);
+			A_SetSelectPosition(-24, 86);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
 			A_RotatePSprite(OverlayID(), 30);
 			return ResolveState(null);

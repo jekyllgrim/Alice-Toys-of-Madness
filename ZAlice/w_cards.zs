@@ -358,7 +358,7 @@ class ToM_Cards : ToM_BaseWeapon
 	Select:
 		APCR A 0 
 		{
-			A_WeaponOffset(24, WEAPONTOP + 54);
+			A_SetSelectPosition(24, WEAPONTOP + 54);
 			A_CreateCardLayers();
 			//PickACard();
 		}

@@ -244,7 +244,7 @@ class ToM_Teapot : ToM_BaseWeapon
 				if (psp)
 					psp.frame = OPENLIDFRAME;
 			}
-			A_WeaponOffset(-48, 110+WEAPONTOP);
+			A_SetSelectPosition(-48, 110+WEAPONTOP);
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
 			A_OverlayRotate(OverlayID(), 40);
 		}

@@ -2,6 +2,7 @@ class ToM_Icewand : ToM_BaseWeapon
 {
 	ToM_ReflectionCamera cam;
 	protected double iceWaveSoundVolume;
+	protected ToM_IceWall icewall;
 
 	Default
 	{
@@ -58,19 +59,37 @@ class ToM_Icewand : ToM_BaseWeapon
 		double lastOfs = -startOfs;
 		bool spawned; Actor wall;
 		[spawned, wall] = A_SpawnItemEx('ToM_IceWall', xofs: distance, flags: SXF_NOCHECKPOSITION);
-		let wallvis = ToM_IceWall(wall);
-		if (wallvis)
+		invoker.icewall = ToM_IceWall(wall);
+		if (invoker.icewall)
 		{
-			wallvis.A_StartSound("weapons/icewand/icewall");
+			invoker.icewall.A_StartSound("weapons/icewand/icewall");
 			while (startOfs >= lastOfs)
 			{
 				[spawned, wall] = A_SpawnItemEx(wallelement, xofs: distance, yofs: startOfs, flags: SXF_NOCHECKPOSITION);
 				startOfs -= step;
 				if (wall)
 				{
-					wall.master = wallvis;
-					wallvis.hitboxes.Push(ToM_IceWallHitBox(wall));
+					wall.master = invoker.icewall;
+					invoker.icewall.hitboxes.Push(ToM_IceWallHitBox(wall));
 				}
+			}
+		}
+	}
+	
+	// Negate damage from explosive projectiles that exploded
+	// with the ice wall hitbox between it and the owner:
+	override void ModifyDamage (int damage, Name damageType, out int newdamage, bool passive, Actor inflictor, Actor source, int flags)
+	{
+		if (owner && passive && damage > 0 && (flags & DMG_EXPLOSION) && icewall)
+		{
+			let proj = inflictor? inflictor : source;
+			if (!proj) return;
+			let dir = level.Vec3Diff(proj.pos, owner.pos+(0,0,owner.height*0.5)).Unit();
+			let tr = new('ToM_IceSplashDetector');
+			tr.Trace(proj.pos, proj.cursector, dir, proj.Distance3D(owner) + owner.radius*2, 0);
+			if (tr.hitIceWall)
+			{
+				newdamage = 0;
 			}
 		}
 	}
@@ -252,6 +271,25 @@ class ToM_IceWandReflectionCamera : ToM_ReflectionCamera
 		}
 		A_SetRoll(r, SPF_INTERPOLATE);
 	}
+}
+
+class ToM_IceSplashDetector : LineTracer
+{
+	bool hitIceWall;
+	
+    override ETraceStatus TraceCallback()
+    {
+        if (results.HitType == TRACE_HitActor)
+        {
+			let iw = ToM_IceWallHitBox(results.hitActor);
+			if (iw)
+			{
+				hitIceWall = true;
+				return TRACE_Stop;
+			}
+        }
+        return TRACE_Skip;
+    }
 }
 
 class ToM_IceWandProjectileReal : ToM_PiercingProjectile

@@ -592,7 +592,7 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		height 13;
 		radius 10;
 		speed 22;		
-		damage (40);
+		DamageFunction (100);
 		Renderstyle 'Add';
 		alpha 0.5;
 		xscale 5;

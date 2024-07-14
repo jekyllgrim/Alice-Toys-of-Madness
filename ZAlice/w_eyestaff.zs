@@ -85,6 +85,13 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		FLineTraceData bd;
 		LineTrace(angle, PLAYERMISSILERANGE, pitch, TRF_SOLIDACTORS, offsetz: ToM_Utils.GetPlayerAtkHeight(player.mo), data: bd);
 		invoker.outerBeam.startTracking(bd.HitLocation);
+			
+		int fflags = FBF_NORANDOM|FBF_NOFLASH;
+		if (player.refire & 2 == 0)
+		{
+			fflags |= FBF_USEAMMO;
+		}
+		A_FireBullets(0, 0, 1, 8, pufftype: "ToM_EyestaffPuff", flags:fflags);
 	}
 	
 	action void A_StopBeam()
@@ -341,20 +348,15 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 		goto Ready;
 	FireBeam:
-		JEYC A 2
+		JEYC A 1
 		{
 			A_PlayerAttackAnim(-1, 'attack_eyestaff', 30, flags: SAF_LOOP|SAF_NOOVERRIDE);
 			A_EyestaffFlash("BeamFlash", frandom[eye](0.3, 1));
 			A_EyestaffRecoil();
 			A_FireBeam();
-			A_FireBullets(0, 0, 1, 9, pufftype: "ToM_EyestaffPuff", flags:FBF_NORANDOM|FBF_USEAMMO|FBF_NOFLASH);
 		}
-		TNT1 A 0 
-		{
-			if (PressingAttackButton() && A_CheckAmmo())
-				return ResolveState("FireBeam");
-			return ResolveState(null);
-		}
+		JEYC A 1 A_FireBeam();
+		TNT1 A 0 A_ReFire("FireBeam");
 		goto FireEnd;
 	BeamFlash:
 		JEYC F -1 bright;

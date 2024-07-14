@@ -5,8 +5,8 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	private ToM_EyestaffBeam beam2; //inner beam (yellow)
 	private ToM_EyestaffBeam outerBeam; //rendered for other players and mirrors
 	
-	const ES_FULLCHARGE = 42;
 	const ES_FULLALTCHARGE = 40;
+	const ES_FULLCHARGE = 30;
 	const ES_PARTALTCHARGE = 8;
 	int altStartupFrame;
 	
@@ -293,6 +293,10 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	Ready:
 		JEYC A 1 
 		{
+			if (invoker.charge > 0)
+			{
+				invoker.charge--;
+			}
 			A_ResetZoom();
 			A_WeaponReady();
 		}
@@ -314,13 +318,12 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			}
 			if (PressingAttackButton(holdCheck:PAB_HELD))
 			{
-				A_SpawnPSParticle("ChargeParticle", bottom: true, density: 4, xofs: 120, yofs: 120);
+				A_SpawnPSParticle("ChargeParticle", bottom: true, density: ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLCHARGE, 1, 10), xofs: 120, yofs: 120);
 				invoker.charge++;
 				//A_DampedRandomOffset(2, 2, 1.2);
 				A_AttackZoom(0.001, 0.08, 0.002);
 				return ResolveState("Fire");
 			}
-			A_StopCharge();
 			player.SetPsprite(PSP_Flash, ResolveState("FlashEnd"));
 			A_StartSound("weapons/eyestaff/chargeoff", CHAN_WEAPON);
 			A_PlayerAttackAnim(1, 'attack_eyestaff');

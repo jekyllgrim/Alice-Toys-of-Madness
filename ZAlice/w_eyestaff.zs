@@ -174,7 +174,6 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	
 	action void A_AimCircle(double dist = 350)
 	{
-		
 		double atkheight = ToM_Utils.GetPlayerAtkHeight(PlayerPawn(self));
 		
 		FLineTraceData tr;
@@ -200,7 +199,16 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	action void A_RemoveAimCircle()
 	{
 		if (invoker.aimCircle)
+		{
 			invoker.aimCircle.Destroy();
+		}
+		let player = self.player;
+		if (!player) return;
+		let psp = player.FindPSprite(APSP_LeftHand);
+		if (psp && InStateSequence(psp.curstate, ResolveState("AimCircleControlLayer")))
+		{
+			psp.Destroy();
+		}
 	}
 	
 	action void A_LaunchSkyMissiles()
@@ -415,11 +423,14 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			A_PlayerAttackAnim(-1, 'attack_eyestaff_alt_start', startframe: 6);
 			A_StartSound("weapons/eyestaff/charge2", CHAN_WEAPON, CHANF_LOOPING);
-			A_AimCircle(400);
+			A_Overlay(APSP_LeftHand, "AimCircleControlLayer", true);
 			A_EyestaffFlash("AltFlash");
 			A_SpawnPSParticle("ChargeParticle", bottom: true, density: 4, xofs: 120, yofs: 120);
 		}			
 		JEYC E 1 { return A_DoAltCharge(); }
+		loop;
+	AimCircleControlLayer:
+		TNT1 A 1 A_AimCircle(400);
 		loop;
 	AltFireDo:
 		JEYC E 6;
@@ -443,6 +454,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			A_PlayerAttackAnim(17, 'attack_eyestaff_alt_end', 25);
 			A_SpawnSkyMissiles();
 			A_StopCharge();
+			A_ClearOverlays(APSP_LeftHand, APSP_LeftHand);
 			player.SetPsprite(PSP_Flash, ResolveState("Null"));
 		}
 	AltFireEndFast:

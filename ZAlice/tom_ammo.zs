@@ -655,7 +655,7 @@ class ToM_WeaponSpawner_RocketLauncher : ToM_WeaponSpawner
 	Default
 	{
 		ToM_EquipmentSpawner.Weapon1 'ToM_Teapot';
-		ToM_EquipmentSpawner.Weapon2 'ToM_Jacks';
+		ToM_EquipmentSpawner.Weapon2 'ToM_IceWand';
 		ToM_WeaponSpawner.OnlyMapPlaced2 true;
 	}
 }
@@ -674,7 +674,5 @@ class ToM_WeaponSpawner_BFG9000 : ToM_WeaponSpawner
 	Default
 	{
 		ToM_EquipmentSpawner.Weapon1 'ToM_Blunderbuss';
-		ToM_EquipmentSpawner.Weapon2 'ToM_Eyestaff';
-		ToM_WeaponSpawner.OnlyMapPlaced1 true;
 	}
 }

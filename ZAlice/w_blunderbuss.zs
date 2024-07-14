@@ -15,7 +15,7 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 		+WEAPON.BFG
 		Weapon.slotnumber 8;
 		weapon.ammotype1 "ToM_StrongMana";
-		weapon.ammouse1 100;
+		weapon.ammouse1 60;
 		weapon.ammogive1 100;
 	}
 	
@@ -228,9 +228,9 @@ class ToM_Cannonball : ToM_Projectile
 	{
 		radius 16;
 		height 24;
-		damage (80);
+		DamageFunction (300);
 		xscale 0.25;
-		yscale 0.208;
+		yscale 0.25 / 1.2;
 		speed 50;
 		+FORCERADIUSDMG
 		//ToM_Projectile.trailactor "ToM_CannonballFireTrail";
@@ -259,7 +259,7 @@ class ToM_Cannonball : ToM_Projectile
 			A_StartSound("weapons/blunderbuss/explode", CHAN_BODY, attenuation: 1);
 			
 			ToM_SphereFX.SpawnExplosion(pos, size: 128, alpha: 0.5, col1: "4f026e", col2: "d10841", boomfactor: 2);
-			A_Explode(512, 512, XF_THRUSTZ, fulldamagedistance: 256);
+			A_Explode(1024, 512, XF_THRUSTZ, fulldamagedistance: 256);
 			let exp = ToM_GenericExplosion.Create(
 				pos, scale: 1.5, tics: 2,
 				randomdebris: 24,

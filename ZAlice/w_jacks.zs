@@ -422,16 +422,22 @@ class ToM_RealSeeker : ToM_JackProjectile
 	}
 	
 	// Reuse collision rules from the regular jack (ToM_JackProjectile),
-	// but with a new rule: when successfully hitting a valid victim,
-	// seeker jacks bounce off it upwards, with a little horizontal
-	// momentum.
-	// (Imitates the fact that in AMA jacks aim at victims not only 
-	// after bouncing off a surface, but also after bouncing off
-	// a victim and losing velocity in the air):
+	// but with some new rules:
 	override int SpecialMissileHit(Actor victim)
 	{
 		int ret = super.SpecialMissileHit(victim);
-		if (ret == 1 && victim && ripvictim && victim == ripvictim)
+		// This type of jacks CAN rip through bosses and DONTRIP:
+		if (ret == MHIT_DEFAULT && (victim.bBoss || victim.bDontRip))
+		{
+			ret = MHIT_PASS;
+		}
+		// When successfully hitting a valid victim,
+		// seeker jacks bounce off it upwards, with a little horizontal
+		// momentum.
+		// (Imitates the fact that in AMA jacks aim at victims not only 
+		// after bouncing off a surface, but also after bouncing off
+		// a victim and losing velocity in the air):
+		if (ret == MHIT_PASS && victim && ripvictim && victim == ripvictim)
 		{
 			vel.xy = ( frandom[vicbounce](-4, 4), frandom[vicbounce](-4, 4) );
 			vel.z = frandom[vicbounce](5, 10);

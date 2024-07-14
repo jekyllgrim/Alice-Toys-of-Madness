@@ -256,6 +256,16 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			}
 		}
 	}
+	
+	// receive only a third of the damage from eyestaff 
+	// after-beam projectiles:
+	override void ModifyDamage (int damage, Name damageType, out int newdamage, bool passive, Actor inflictor, Actor source, int flags)
+	{
+		if (passive && owner && inflictor && inflictor is 'ToM_EyestaffProjectile' && inflictor.target == owner)
+		{
+			newdamage = damage / 2;
+		}
+	}
 
 	States
 	{
@@ -677,7 +687,14 @@ class ToM_EyestaffProjectile : ToM_Projectile
 	Death:
 		TNT1 A 1 
 		{
-			A_Explode(80, 128);
+			if (alt)
+			{
+				A_Explode(80, 128);
+			}
+			else
+			{
+				A_Explode(128, 160);
+			}
 			ToM_SphereFX.SpawnExplosion(pos, col1: flarecolor, col2: "fcb126");
 			double svel = 2;
 			for (int i = 10; i > 0; i--)

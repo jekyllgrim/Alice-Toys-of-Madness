@@ -385,7 +385,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 
 	Default
 	{
-		ToM_JackProjectile.JackDamage 17;
+		ToM_JackProjectile.JackDamage 20;
 		ProjectileKickback 20;
 		speed 20;
 		bouncefactor 0.75;

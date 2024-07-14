@@ -5,8 +5,8 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	private ToM_EyestaffBeam beam2; //inner beam (yellow)
 	private ToM_EyestaffBeam outerBeam; //rendered for other players and mirrors
 	
-	const ES_FULLALTCHARGE = 40;
 	const ES_FULLCHARGE = 30;
+	const ES_FULLALTCHARGE = 42;
 	const ES_PARTALTCHARGE = 8;
 	int altStartupFrame;
 	
@@ -411,7 +411,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			return ResolveState(null);
 		}
 	AltCharge:
-		JEYC EE 1
+		JEYC E 1
 		{
 			A_PlayerAttackAnim(-1, 'attack_eyestaff_alt_start', startframe: 6);
 			A_StartSound("weapons/eyestaff/charge2", CHAN_WEAPON, CHANF_LOOPING);
@@ -865,7 +865,7 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 	States 
 	{
 	Spawn:
-		TNT1 A 60;
+		TNT1 A 30;
 		TNT1 A 3 
 		{
 			if (charge > 0)

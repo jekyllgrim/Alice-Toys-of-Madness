@@ -41,8 +41,6 @@ class ToM_Cards : ToM_BaseWeapon
 		A_Overlay(APSP_Card1, "PrepareCard");
 		A_Overlay(APSP_Card2, "PrepareCard");
 		A_Overlay(APSP_Card3, "PrepareCard");
-		int l = random[acard](0, invoker.cardLayerNum.Size() - 1);
-		invoker.curCardLayer = invoker.cardLayerNum[l];
 	}	
 	
 	action void A_FireCardLayer()
@@ -52,6 +50,10 @@ class ToM_Cards : ToM_BaseWeapon
 		if (psp)
 		{
 			player.SetPSPrite(invoker.curCardLayer, ResolveState("FireCard"));
+			if (tom_debugmessages)
+			{
+				Console.Printf("\cyCARDS\c- Playing card attack animation on layer \cd%d\c-", invoker.curCardLayer);
+			}
 		}
 		invoker.cardLayerID++;
 		if (invoker.cardLayerID >= invoker.cardLayerNum.Size())
@@ -175,7 +177,7 @@ class ToM_Cards : ToM_BaseWeapon
 			proj.tracer = A_FindCardTarget();
 			
 			int dmg;
-			name spritename; 
+			name spritename;
 			
 			if (altmode)
 			{
@@ -190,7 +192,7 @@ class ToM_Cards : ToM_BaseWeapon
 				int cardId = 0;
 				switch (invoker.curCardLayer)
 				{
-				case APSP_Card1: cardId = 0; break;
+				default:		 cardId = 0; break;
 				case APSP_Card2: cardId = 1; break;
 				case APSP_Card3: cardId = 2; break;
 				}
@@ -199,17 +201,21 @@ class ToM_Cards : ToM_BaseWeapon
 				spritename = invoker.cardSpriteName[cardId];
 				if (tom_debugmessages)
 				{
-					string cs = ""..spritename;
-					console.printf("Card layer %d: sprite %s | damage %d", invoker.curCardLayer, cs, dmg);
+					console.printf("\cyCARDS\c- Card layer \cd%d\c-: sprite \cd%s\c- | damage \cd%d\c-", invoker.curCardLayer, spritename, dmg);
 				}
 			}
 			
-			let sprt = GetSpriteIndex(spritename);
-			if (sprt > 0)
+			//let sprt = GetSpriteIndex(spritename);
+			//if (sprt > 0)
+			//{
+			//	proj.sprite = sprt;
+			//}
+			String newskin = String.Format("models/cards/tx%s.png", spritename);
+			if (tom_debugmessages)
 			{
-				proj.sprite = sprt;
+				console.printf("\cyCARDS\c- Changing card model's skin to \cd\"%s\"\c- for layer \cd%d\c-", newskin, invoker.curCardLayer);
 			}
-			
+			proj.A_ChangeModel("", skin: newskin);
 			proj.cardSpecialDamage = dmg * 3;
 			proj.broll = frandom[card](-2,2);
 			return proj;
@@ -249,7 +255,7 @@ class ToM_Cards : ToM_BaseWeapon
 		if (Cards.Size() <= 0)
 		{
 			if (tom_debugmessages)
-				console.printf("Cards array empty: filling");
+				console.printf("\cyCARDS\c- \cdCards\c- array empty: filling");
 			FillCardsArray();
 		}
 		
@@ -263,7 +269,7 @@ class ToM_Cards : ToM_BaseWeapon
 		}
 		
 		if (tom_debugmessages)
-			console.printf("Selected card sprite: %s | value: %d", cardSpriteName, cardValue);
+			console.printf("\cyCARDS\c- Selected card sprite: \cd%s\c- | value: \cd%d\c-", cardSpriteName, cardValue);
 		
 		return cardValue, cardSpriteName;
 	}
@@ -276,14 +282,15 @@ class ToM_Cards : ToM_BaseWeapon
 			return -1;
 		
 		int cardId = 0;
-		switch (invoker.curCardLayer)
+		int layerID = OverlayID();
+		switch (layerID)
 		{
-		case APSP_Card1: cardId = 0; break;
+		default: 		 cardId = 0; break;
 		case APSP_Card2: cardId = 1; break;
 		case APSP_Card3: cardId = 2; break;
 		}
 		if (tom_debugmessages)
-			console.printf("Attempting to set card for layer%d", invoker.curCardLayer);
+			console.printf("\cyCARDS\c- Attempting to set card for layer \cd%d\c-", layerID);
 			
 		int dmg; name spriteName;
 		[dmg, spriteName] = invoker.PickRandomCard();
@@ -294,14 +301,14 @@ class ToM_Cards : ToM_BaseWeapon
 		let s = GetSpriteIndex(invoker.cardSpriteName[cardId]);
 		if (s > 0)
 		{
-			//if (tom_debugmessages)
-				//console.printf("Selected card sprite: %s",invoker.cardSpriteName[cardID]);
+			if (tom_debugmessages)
+				console.printf("\cyCARDS\c- Selected sprite \cd%s\c- for layer \cd%d\c-", invoker.cardSpriteName[cardID], layerID);
 			return s;
 		}
 		
 		if (tom_debugmessages)
 		{
-			console.printf("%s couldn't resolve a valid sprite index, returning -1", invoker.cardSpriteName[cardID]);
+			console.printf("\cyCARDS\c- \cd%s\c- couldn't resolve a valid sprite index, returning -1 (layer \cd%d\c-", invoker.cardSpriteName[cardID], layerID);
 		}
 		
 		return -1;
@@ -360,7 +367,6 @@ class ToM_Cards : ToM_BaseWeapon
 		{
 			A_SetSelectPosition(24, WEAPONTOP + 54);
 			A_CreateCardLayers();
-			//PickACard();
 		}
 		#### ###### 1
 		{
@@ -597,7 +603,7 @@ class ToM_CardProjectile : ToM_StakeProjectile
 	{
 		int dmg = cardSpecialDamage > 0 ? cardSpecialDamage : 20;
 		if (tom_debugmessages > 1)
-			console.printf("card damage: %d", dmg);
+			console.printf("\cyCARDS\c- card damage: %d", dmg);
 		return dmg;
 	}
 
@@ -684,19 +690,19 @@ class ToM_CardProjectile : ToM_StakeProjectile
 	States
 	{
 	Spawn:
-		#### A 1 A_CardSeek(seekangle);
+		M000 A 1 A_CardSeek(seekangle);
 		loop;
 	XDeath:
 		TNT1 A 1 A_StartSound("weapons/cards/hitflesh", CHAN_AUTO, attenuation: 8);
 		stop;
 	Death:
-		#### A 60
+		M000 A 60
 		{
 			A_SetRenderstyle(alpha, Style_Translucent);
 			A_StartSound("weapons/cards/hitwall", CHAN_AUTO, attenuation: 8);
 			StickToWall();
 		}
-		#### A 1 
+		M000 A 1 
 		{
 			A_FadeOut(0.15);
 		}

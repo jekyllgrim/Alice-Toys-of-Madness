@@ -393,6 +393,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 		bouncesound "weapons/jacks/ricochet";
 		Radius 4;
 		Height 4;
+		//+BOUNCEONACTORS
 	}
 	
 	override void Tick()
@@ -424,16 +425,25 @@ class ToM_RealSeeker : ToM_JackProjectile
 		{
 			ret = MHIT_PASS;
 		}
-		// When successfully hitting a valid victim,
-		// seeker jacks bounce off it upwards, with a little horizontal
-		// momentum.
-		// (Imitates the fact that in AMA jacks aim at victims not only 
-		// after bouncing off a surface, but also after bouncing off
-		// a victim and losing velocity in the air):
-		if (ret == MHIT_PASS && victim && ripvictim && victim == ripvictim)
+		if (ret == MHIT_PASS && victim)
 		{
-			vel.xy = ( frandom[vicbounce](-4, 4), frandom[vicbounce](-4, 4) );
-			vel.z = frandom[vicbounce](5, 10);
+			// If the jacks hit a monster without having bounced yet,
+			// set this monster as their tracer:
+			if (!tracer)
+			{
+				tracer = ripvictim = victim;
+			}
+			// When successfully hitting a valid victim,
+			// seeker jacks bounce off it upwards, with a little horizontal
+			// momentum.
+			// (Imitates the fact that in AMA jacks aim at victims not only 
+			// after bouncing off a surface, but also after bouncing off
+			// a victim and losing velocity in the air):
+			if (ripvictim && victim == ripvictim)
+			{
+				vel.xy = ( frandom[vicbounce](-4, 4), frandom[vicbounce](-4, 4) );
+				vel.z = frandom[vicbounce](5, 10);
+			}
 		}
 		return ret;
 	}

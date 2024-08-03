@@ -1025,7 +1025,10 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 					let al = Spawn("ToM_BleedLayer", tracer.pos);
 					if (al)
 						al.master = tracer;
-					tracer.SpawnBlood(pos, tracer.AngleTo(self), dmg);
+					if (!tracer.bNoBlood && !tracer.bDormant)
+					{
+						tracer.SpawnBlood(pos, tracer.AngleTo(self), dmg);
+					}
 				}
 			}
 		}

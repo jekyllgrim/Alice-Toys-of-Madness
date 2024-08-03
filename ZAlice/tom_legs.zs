@@ -74,6 +74,7 @@ class ToM_KickWeapon : CustomInventory
 				{
 					let norm = ToM_Utils.GetLineNormal(pos.xy, tr.HitLine);
 					puffpos.xy += norm * 8;
+					tr.HitLine.RemoteActivate(self, tr.LineSide, SPAC_Impact, self.pos);
 				}
 				let spot = Spawn('ToM_DebugSpot', puffpos);
 				if (spot)

@@ -284,6 +284,10 @@ class ToM_BaseWeapon : Weapon abstract
 				{
 					tompuff.SpawnPuffEffects(hitnormal, puffpos);
 				}
+				if (hit.hitLine)
+				{
+					hit.HitLine.RemoteActivate(self, hit.LineSide, SPAC_Impact, self.pos);
+				}
 			}
 			
 			// Do this if we hit an actor:

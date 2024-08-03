@@ -389,23 +389,16 @@ class ToM_RealSeeker : ToM_JackProjectile
 		ProjectileKickback 20;
 		speed 20;
 		bouncefactor 0.75;
-		+USEBOUNCESTATE
 		gravity 0.6;
 		bouncesound "weapons/jacks/ricochet";
-		Radius 1;
-		Height 1;
+		Radius 4;
+		Height 4;
 	}
 	
 	override void Tick()
 	{
 		super.Tick();
-	
-		if (tracer)
-		{
-			bouncefactor = 0;
-		}
-		else
-			bouncefactor = default.bouncefactor;
+		if (isFrozen()) return;
 			
 		if (vel.length () < 3 && !tracer)
 		{
@@ -415,7 +408,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 		// Reduce duration faster if the jack
 		// is resting and still haven't found
 		// a suitable target:
-		if (!isFrozen() && !tracer && !bMISSILE)
+		if (!tracer && !bMISSILE)
 		{
 			age += 2;
 		}
@@ -447,53 +440,45 @@ class ToM_RealSeeker : ToM_JackProjectile
 	
 	void GetTracer(double atkdist = 400)
 	{
-		if (!target)
+		tracer = null;
+		double closestDist = double.infinity;
+		BlockThingsIterator itr = BlockThingsIterator.Create(self,atkdist);
+		array<Actor> victims;
+		while (itr.next()) 
 		{
-			tracer = null;
-			return;
+			let next = itr.thing;
+			if (!next || next == self || next == target)
+				continue;
+			bool isValid = (next.bSHOOTABLE && (next.bIsMonster || next.player) && next.health > 0);
+			if (!isValid)
+				continue;
+			double dist = Distance3D(next);
+			if (dist > atkdist)
+				continue;
+			if (dist < closestDist)
+				closestDist = dist;
+			if (!CheckSight(next,SF_IGNOREWATERBOUNDARY))
+				continue;
+			ToM_Utils.AddByDistance(next, self, victims);
 		}
-		
-		if (tracer && (tracer.health <= 0 || Distance3D(tracer) > JMAXSEEKDIST) )
+		if (victims.Size() > 0)
 		{
-			tracer = null;
-		}
-		
-		if (!tracer)
-		{
-			double closestDist = double.infinity;
-			BlockThingsIterator itr = BlockThingsIterator.Create(self,atkdist);
-			array<Actor> victims;
-			while (itr.next()) 
-			{
-				let next = itr.thing;
-				if (!next || next == self || next == target)
-					continue;
-				bool isValid = (next.bSHOOTABLE && (next.bIsMonster || next.player) && next.health > 0);
-				if (!isValid)
-					continue;
-				double dist = Distance3D(next);
-				if (dist > atkdist)
-					continue;
-				if (dist < closestDist)
-					closestDist = dist;
-				if (!CheckSight(next,SF_IGNOREWATERBOUNDARY))
-					continue;
-				ToM_Utils.AddByDistance(next, self, victims);
-			}
-			if (victims.Size() > 0)
-			{
-				tracer = victims[0];
-			}
+			tracer = victims[0];
 		}
 	}
 	
 	// Every time the jack bounces off a surface,
 	// it'll aim at its victim (tracer) and
 	// jump at them:
-	void AimAtTracer()
+	override int SpecialBounceHit(Actor bounceMobj, Line bounceLine, readonly<SecPlane> bouncePlane)
 	{
+		if (!tracer || !CheckSight(tracer, SF_IGNOREWATERBOUNDARY))
+		{
+			GetTracer();
+		}
+
 		if (tracer)
-		{			
+		{
 			// 2D vector to victim:
 			vector2 diff = LevelLocals.Vec2Diff(pos.xy, tracer.pos.xy);
 			vector2 dir = diff.unit(); //normalized (direction)
@@ -511,19 +496,15 @@ class ToM_RealSeeker : ToM_JackProjectile
 			vel.z = (vdiff + 0.5 * flytime**2) / flytime;
 			vel *= GetGravity();
 			
-			if (tom_debugmessages)
-				console.printf("victim: %s | Distance: %.1f | Vel: %.1f", tracer.GetClassName(), dist, vel.length());
+			if (tom_debugmessages > 1)
+				console.printf("\cyJACKS\c- victim: %s | Distance: %.1f | Vel: %.1f", tracer.GetClassName(), dist, vel.length());
+			
+			return MHIT_PASS;
 		}
+
+		tracer = null;
+		return MHIT_DEFAULT;
 	}
-	
-	/*bool CheckProjMove()
-	{
-		double cdist = vel.Length();
-		A_FaceMovementDirection();
-		FLineTraceData check;
-		LineTrace(angle, cdist, pitch, offsetz: height * 0.5, data: check);
-		return (check.HitType == TRACE_HitFloor || check.HitType == TRACE_HitCeiling || check.HitType == TRACE_HitWall);
-	}*/
 
 	void ReturnToShooter()
 	{
@@ -546,22 +527,17 @@ class ToM_RealSeeker : ToM_JackProjectile
 			if (age >= JSLIFETIME)
 			{
 				ReturnToShooter();
-				return null;
 			}
-			GetTracer();
-			return null;
+			if (!target)
+			{
+				tracer = null;
+			}
+			if (tracer && (tracer.health <= 0 || Distance3D(tracer) > JMAXSEEKDIST))
+			{
+				tracer = null;
+			}
 		}
 		wait;
-	Bounce:
-		M000 A 1 
-		{
-			// Reset ripping timer upon bouncing:
-			// if an enemy is close to a surface, jacks
-			// can damage it more often upon bouncing;
-			ripwait = 0;
-			AimAtTracer();
-		}
-		goto Spawn;			
 	ReturnToShooter:
 		TNT1 A 0
 		{

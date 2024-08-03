@@ -543,6 +543,7 @@ class ToM_FreezeController : Powerup
 				owner.SetStateLabel("Pain");
 			}
 			owner.A_SetTics(-1);
+			owner.A_StopAllSounds();
 			//owner.freezetics = freezeDeathTics;
 			if (!frozenCase)
 			{

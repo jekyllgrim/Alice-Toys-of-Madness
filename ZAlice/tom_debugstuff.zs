@@ -166,6 +166,46 @@ class ToM_Prop_Monster : ToM_Prop_Shootable
 	}
 }
 
+class ToM_Prop_RocketTurret : ToM_Prop_Monster
+{
+	override void Tick()
+	{
+		Super.Tick();
+		if (target)
+		{
+			A_FaceTarget();
+		}
+	}
+
+	States {
+	Spawn:
+		POSS A 35 A_LookEx(LOF_NoSeeSound, label:"Missile");
+		loop;
+	Missile:
+		POSS F 10 A_SpawnProjectile('ToM_Prop_Rocket');
+		POSS E 60;
+		TNT1 A 0 A_JumpIf(target == null, "Spawn");
+		loop;
+	}
+}
+
+class ToM_Prop_Rocket : Rocket
+{
+	Default
+	{
+		Translation "64:79=123:127", "128:151=112:123";
+		DamageFunction (1);
+	}
+
+	States {
+	Death:
+		MISL B 8 Bright A_Explode(1, 128, 0, fulldamagedistance: 128);
+		MISL C 6 Bright;
+		MISL D 4 Bright;
+		Stop;
+	}
+}
+
 // The main utils class:
 class ToM_VisualTrace play abstract
 {

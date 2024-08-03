@@ -1,4 +1,4 @@
-version "4.12"
+version "4.12.2"
 
 #include "ZAlice/tom_constants.zs"
 #include "ZAlice/tom_utils.zs"

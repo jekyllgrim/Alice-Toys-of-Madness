@@ -442,8 +442,12 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		loop;
 	AltFireDo:
 		JEYC E 6;
-		TNT1 A 0 A_StopSound(CHAN_WEAPON);
-		JEYC E 2
+		TNT1 A 0 
+		{
+			A_StopSound(CHAN_WEAPON);
+			A_ClearOverlays(APSP_LeftHand, APSP_LeftHand);
+		}
+		JEYC E 1
 		{
 			A_PlayerAttackAnim(-1, 'attack_eyestaff_alt_start', startframe: 6);
 			invoker.charge--;
@@ -462,7 +466,6 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			A_PlayerAttackAnim(17, 'attack_eyestaff_alt_end', 25);
 			A_SpawnSkyMissiles();
 			A_StopCharge();
-			A_ClearOverlays(APSP_LeftHand, APSP_LeftHand);
 			player.SetPsprite(PSP_Flash, ResolveState("Null"));
 		}
 	AltFireEndFast:

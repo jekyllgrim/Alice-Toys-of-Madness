@@ -469,7 +469,7 @@ class ToM_BaseWeapon : Weapon abstract
 		return true;
 	}
 	
-	action bool A_CheckInfiniteAmmo() 
+	action bool A_CheckInfiniteAmmo()
 	{
 		return (sv_infiniteammo || FindInventory("PowerInfiniteAmmo", true) );
 	}
@@ -1090,7 +1090,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 	double flarescale;
 	double flarealpha;
 	color trailcolor;
-	string trailTexture;
+	String trailTexture;
 	double trailscale;
 	double trailalpha;
 	double trailfade;
@@ -1407,10 +1407,21 @@ class ToM_PiercingProjectile : ToM_Projectile
 // Ported from Painslayer, used by thrown Vorpal Knife and Playing Cards.
 Class ToM_StakeProjectile : ToM_Projectile 
 {
+	enum EStuckTypes
+	{
+		STUCK_NONE		= 0,
+		STUCK_GEOMETRY	= 1 << 1,
+		STUCK_ACTOR		= 1 << 2, //this is set only in SpecialMissileHit()
+		STUCK_SECPLANE	= 1 << 3,
+		STUCK_FLOOR		= STUCK_GEOMETRY | 1 << 4,
+		STUCK_CEILING	= STUCK_GEOMETRY | 1 << 5,
+		STUCK_WALL		= STUCK_GEOMETRY | 1 << 6,
+		STUCK_3DFLOOR	= STUCK_GEOMETRY | 1 << 7,
+	}
+	// records the type of sticking:
+	protected EStuckTypes stucktype;
 	// Pos where the flight ended:
 	protected vector3 endspot;
-	// Records if a plane was hit (see EHitplanes):
-	protected int hitplane;
 	// 3D floor to stick into, if any:
 	protected transient F3DFloor hit_3dfloor;
 	// Line to stick into, if any:
@@ -1438,19 +1449,6 @@ Class ToM_StakeProjectile : ToM_Projectile
 	// The offset from the center of the stake to 
 	// the victim's corpse center:
 	protected double victimofz; 
-	// A non-transient bool that is set to true if
-	// the stake hit a plane. Upon save load it's
-	// checked by a static event handler that calls
-	// StickToWall() on all stakes that have this set
-	// to true, to reattach them to planes:
-	bool stuckToSecPlane;
-	
-	enum EHitplanes
-	{
-		PLANE_NONE,
-		PLANE_FLOOR,
-		PLANE_CEILING,
-	}
 	
 	Default 
 	{
@@ -1467,7 +1465,7 @@ Class ToM_StakeProjectile : ToM_Projectile
 	// dies and checks if it hit something:
 	virtual void StickToWall() 
 	{	
-		string myclass = GetClassName();
+		String myclass = GetClassName();
 		
 		if (ShouldActivateLines)
 		{
@@ -1494,7 +1492,7 @@ Class ToM_StakeProjectile : ToM_Projectile
 		// Stuck in an actor:
 		if (stickobject) 
 		{
-			if (bBLOODSPLATTER && stickobject.bSHOOTABLE && !stickobject.bNOBLOOD && !stickobject.bINVULNERABLE)
+			if (bBLOODSPLATTER && stickobject.bSHOOTABLE && !stickobject.bNOBLOOD && !stickobject.bDORMANT)
 			{
 				stickobject.TraceBleed(damage, self);
 				stickobject.SpawnBlood(self.pos, AngleTo(stickobject), damage);
@@ -1506,45 +1504,47 @@ Class ToM_StakeProjectile : ToM_Projectile
 		FLineTraceData trac;
 		LineTrace(angle,64,pitch,TRF_NOSKY|TRF_THRUACTORS|TRF_BLOCKSELF,data:trac);
 		hit_3dfloor = trac.Hit3DFloor;
-		hit_Line = trac.HitLine;		
+		hit_Line = trac.HitLine;
 		sticklocation = trac.HitLocation.xy;
 		topz = CurSector.ceilingplane.ZatPoint(sticklocation);
 		botz = CurSector.floorplane.ZatPoint(sticklocation);
-		
+
 		//if hit floor/ceiling, we'll attach to them:
 		if (trac.HitLocation.z >= topz) 
 		{
-			hitplane = PLANE_CEILING;
+			stucktype = STUCK_FLOOR;
 			if (tom_debugmessages)
-				console.printf("%s hit ceiling at at %d,%d,%d",myclass,pos.x,pos.y,pos.z);
+				console.printf("\cy%s\c- hit ceiling at at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,pos.x,pos.y,pos.z);
 		}
 		else if (trac.HitLocation.z <= botz) 
 		{
-			hitplane = PLANE_FLOOR;
+			stucktype = STUCK_CEILING;
 			if (tom_debugmessages)
-				console.printf("%s hit floor at at %d,%d,%d",myclass,pos.x,pos.y,pos.z);
+				console.printf("\cy%s\c- hit floor at at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,pos.x,pos.y,pos.z);
 		}
-		
 		// If stuck in floor or ceiling, stop here:
-		if (hitplane != PLANE_NONE)
+		if (stucktype != STUCK_NONE)
+		{
 			return;
+		}
 			
 		// 3D floor is easiest, so we start with it:
 		if (hit_3dfloor) 
 		{
-			stuckToSecPlane = true;
+			stucktype = STUCK_3DFLOOR|STUCK_SECPLANE;
 			// we simply attach the stake to the 3D floor's
 			// top plane, nothing else:
 			F3DFloor flr = trac.Hit3DFloor;
 			stickplane = flr.top;
 			stickoffset = stickplane.ZAtPoint(sticklocation) - pos.z;
 			if (tom_debugmessages)
-				console.printf("%s hit a 3D floor at %d,%d,%d",myclass,pos.x,pos.y,pos.z);
+				console.printf("\cy%s\c- hit a 3D floor at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,pos.x,pos.y,pos.z);
 			return;
 		}
 		//otherwise see if we hit a line:
-		if (hit_Line) 
+		else if (hit_Line) 
 		{
+			stucktype = STUCK_WALL;
 			//check if the line is two-sided first:
 			let tline = hit_Line;
 			// if it's one-sided, it can't be a door/lift,
@@ -1552,19 +1552,19 @@ Class ToM_StakeProjectile : ToM_Projectile
 			if (!tline.backsector) 
 			{
 				if (tom_debugmessages)
-					console.printf("%s hit one-sided line, not doing anything else",myclass);
+					console.printf("\cy%s\c- hit one-sided line, not doing anything else",myclass);
 				return;
 			}
-			stuckToSecPlane = true;
+			stucktype |= STUCK_SECPLANE;
 			//if it's two-sided:
 			//check which side we're on:
 			int lside = ToM_Utils.PointOnLineSide(pos.xy,tline);
-			string sside = (lside == 0) ? "front" : "back";
+			String sside = (lside == 0) ? "front" : "back";
 			//we'll attach the stake to the sector on the other side:
 			let targetsector = (lside == 0 && tline.backsector) ? tline.backsector : tline.frontsector;
 			let floorHitZ = targetsector.floorplane.ZatPoint (sticklocation);
 			let ceilHitZ = targetsector.ceilingplane.ZatPoint (sticklocation);
-			string secpart = "middle";
+			String secpart = "middle";
 			//check if we hit top or bottom floor (i.e. door or lift):
 			if (pos.z <= floorHitZ) 
 			{
@@ -1579,8 +1579,20 @@ Class ToM_StakeProjectile : ToM_Projectile
 				stickoffset = ceilHitZ - pos.z;
 			}
 			if (tom_debugmessages)
-				console.printf("%s hit the %s %s part of the line at %.1f,%1f,%1f",myclass,secpart,sside,pos.x,pos.y,pos.z);
+				console.printf("\cy%s\c- hit the %s %s part of the line at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,secpart,sside,pos.x,pos.y,pos.z);
 		}
+	}
+	
+	// Virtual for breaking apart; child actors
+	// override it to add debris or change the 
+	// behavior:
+	virtual void StakeBreak() 
+	{
+		stucktype = STUCK_NONE;
+		if (tom_debugmessages)
+			console.printf("\cy%s\c- destroyed at \cd%d\c-,\cd%d\c-,\cd%d\c-",GetClassName(), pos.x, pos.y, pos.z);
+		if (self)
+			Destroy();
 	}
 	
 	// Record a non-monster solid object the stake
@@ -1590,26 +1602,16 @@ Class ToM_StakeProjectile : ToM_Projectile
 		if (victim != target && (victim.bSOLID || victim.bSHOOTABLE))
 		{
 			stickobject = victim;
+			stucktype = STUCK_ACTOR;
 			stickoffset = pos.z - stickobject.pos.z;
 			stickAngleOfs = DeltaAngle(stickobject.angle, angle);
 			stickDeadPitch = random[sticksfx](60,80);
 			if (tom_debugmessages)
 			{
-				console.printf("%s hit %s at at %.1f, %.1f, %.1f", GetClassName(), stickobject.GetClassName(), pos.x,pos.y,pos.z);
+				console.printf("\cy%s\c- hit \cy%s\c- at at \cd%d\c-,\cd%d\c-,\cd%d\c-", GetClassName(), stickobject.GetClassName(), pos.x,pos.y,pos.z);
 			}
 		}
 		return -1;
-	}
-	
-	// Virtual for breaking apart; child actors
-	// override it to add debris or change the 
-	// behavior:
-	virtual void StakeBreak() 
-	{
-		if (tom_debugmessages)
-			console.printf("%s destroyed at %.1f,%.1f,%.1f",GetClassName(), pos.x, pos.y, pos.z);
-		if (self)
-			Destroy();
 	}
 	
 	override void Tick () 
@@ -1621,12 +1623,19 @@ Class ToM_StakeProjectile : ToM_Projectile
 		{
 			A_FaceMovementDirection(flags:FMDF_INTERPOLATE);
 		}
+		
+		if (stucktype == STUCK_NONE) 
+		{
+			return;
+		}
+
 		// Otherwise stake is dead, so we'll move it
 		// alongside the object/plane it's supposed
 		// to be attached to:
-		if (bTHRUACTORS) 
+
+		// Attached to an actor:
+		if (stucktype == STUCK_ACTOR)
 		{
-			// Attached to an actor:
 			if (stickobject)
 			{
 				bool victimDead = (stickobject.bISMONSTER && stickobject.health <= 0);
@@ -1638,45 +1647,57 @@ Class ToM_StakeProjectile : ToM_Projectile
 					pitch = stickDeadPitch;
 				}
 			}
-			
-			// Attached to ceiling:
-			else if (hitplane == PLANE_CEILING)
-				SetZ(ceilingz);
-			
-			// Attached to floor:
-			else if (hitplane == PLANE_FLOOR)
-				SetZ(floorz);
-			
-			// Attached to a wall:
+			// WAS attached to an actor at some point,
+			// but that actor no longer exists, so just
+			// let the stake fall down:
 			else
-			{		
-				topz = CurSector.ceilingplane.ZAtPoint(pos.xy);
-				botz = CurSector.floorplane.ZAtPoint(pos.xy);
-				// Destroy the stake if it's run into ceiling/floor 
-				// by a moving sector (e.g. a door opened, pulled 
-				// the stake up and pushed it into the ceiling). 
-				// Only do this if the stake didn't actually hit
-				// a plane before that:
-				if (pos.z >= topz-height || pos.z <= botz)
-				{
-					StakeBreak();
-					return;
-				}
-				
-				// Attached to a plane (hit a door/lift earlier):
-				else if (stickplane) 
-				{
-					SetZ(stickplane.ZAtPoint(sticklocation) - stickoffset);
-				}
+			{
+				stucktype = STUCK_NONE;
+				bNOGRAVITY = false;
+			}
+		}
+		
+		// Attached to ceiling:
+		else if (stucktype == STUCK_CEILING)
+		{
+			SetZ(ceilingz);
+		}
+		
+		// Attached to floor:
+		else if (stucktype == STUCK_FLOOR)
+		{
+			SetZ(floorz);
+		}
+		
+		// Attached to a wall:
+		else
+		{		
+			topz = CurSector.ceilingplane.ZAtPoint(pos.xy);
+			botz = CurSector.floorplane.ZAtPoint(pos.xy);
+			// Destroy the stake if it's run into ceiling/floor 
+			// by a moving sector (e.g. a door opened, pulled 
+			// the stake up and pushed it into the ceiling). 
+			// Only do this if the stake didn't actually hit
+			// a plane before that:
+			if (pos.z >= topz-height || pos.z <= botz)
+			{
+				StakeBreak();
+				return;
 			}
 			
-			/* (Painslayer feature)
-			// and if there's a decorative corpse on the stake, 
-			// move it as well:
-			if (pinvictim)
-				pinvictim.SetZ(pos.z + victimofz);
-			*/
+			// Attached to a plane (hit a door/lift earlier):
+			else if (stickplane) 
+			{
+				SetZ(stickplane.ZAtPoint(sticklocation) - stickoffset);
+			}
 		}
+		
+		/* (Painslayer feature)
+		// and if there's a decorative corpse on the stake, 
+		// move it as well:
+		if (pinvictim)
+			pinvictim.SetZ(pos.z + victimofz);
+		*/
 	}
 }
 
@@ -1955,6 +1976,10 @@ class ToM_PspResetController : Thinker
 		tics--;
 		if (tics < 0)
 		{
+			if (tom_debugmessages > 1)
+			{
+				console.printf("\cYPSPRC:\c- PSP reset controller destroyed");
+			}
 			Destroy();
 			return;
 		}
@@ -1984,6 +2009,7 @@ class ToM_PspResetController : Thinker
 			psp.y = targetofs.y;
 			psp.scale = targetscale;
 			psp.rotation = targetrotation;
+			psp.ResetInterpolation();
 		}
 	}
 	

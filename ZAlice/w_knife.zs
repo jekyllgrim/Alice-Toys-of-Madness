@@ -898,6 +898,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		// That behavior checks for bTHRUACTORS, so by disabling
 		// it we disable the sticking behavior.
 		// See ToM_StakeProjectile for details.
+		stucktype = STUCK_NONE;
 		bTHRUACTORS = false;
 		bNOCLIP = true;
 		SetStateLabel("Recall");

@@ -278,13 +278,12 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 	}
 	
-	// receive only a third of the damage from eyestaff 
-	// after-beam projectiles:
+	// Receive reduced damage from eyestaff projectiles:
 	override void ModifyDamage (int damage, Name damageType, out int newdamage, bool passive, Actor inflictor, Actor source, int flags)
 	{
 		if (passive && owner && inflictor && inflictor is 'ToM_EyestaffProjectile' && inflictor.target == owner)
 		{
-			newdamage = damage / 2;
+			newdamage = damage / 4;
 		}
 	}
 
@@ -713,7 +712,7 @@ class ToM_EyestaffProjectile : ToM_Projectile
 			}
 			else
 			{
-				A_Explode(128, 160);
+				A_Explode(128, 160, 0);
 			}
 			ToM_SphereFX.SpawnExplosion(pos, col1: flarecolor, col2: "fcb126");
 			double svel = 2;

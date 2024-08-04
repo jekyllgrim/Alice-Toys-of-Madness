@@ -1,10 +1,11 @@
 class ToM_Mainhandler : EventHandler
 {
 	ToM_HUDFaceController HUDfaces[MAXPLAYERS];
-	array < Class<Weapon> > mapweapons;
-	array < Actor > allmonsters;
 	ToM_ReflectionCamera weaponCameras[MAXPLAYERS];
 	int playerCheshireTimers[MAXPLAYERS];
+	array < Class<Weapon> > mapweapons;
+	array < Actor > allmonsters;
+	array < ToM_StakeProjectile > stakeprojectiles;
 	
 	bool IsVoodooDoll(PlayerPawn mo) 
 	{
@@ -85,6 +86,11 @@ class ToM_Mainhandler : EventHandler
 		{
 			allmonsters.Push(thing);
 		}
+		let stake = ToM_StakeProjectile(thing);
+		if (stake)
+		{
+			stakeprojectiles.Push(stake);
+		}
 	}
 
 	override void WorldThingDied(worldEvent e)
@@ -96,6 +102,19 @@ class ToM_Mainhandler : EventHandler
 			if (i < allmonsters.Size())
 			{
 				allmonsters.Delete(i);
+			}
+		}
+	}
+
+	override void WorldThingDestroyed(WorldEvent e)
+	{
+		let stake = ToM_StakeProjectile(e.thing);
+		if (stake)
+		{
+			int id = stakeprojectiles.Find(stake);
+			if (id != stakeprojectiles.Size())
+			{
+				stakeprojectiles.Delete(id);
 			}
 		}
 	}
@@ -336,6 +355,35 @@ class ToM_Mainhandler : EventHandler
 
 Class ToM_StaticStuffHandler : StaticEventHandler
 {
+	// When hitting a wall, stakes get attached to a secplane of the sector
+	// behind the wall, so that if the wall moves (as a door/lift), the stake
+	// will move with it.
+	// Since SecPlane pointers aren't serializable (thus the SecPlane field
+	// used by stakes has to be transient) - see ToM_StakeProjectile - 
+	// upon loading a save all existing stakes that are parented to a SecPlane
+	// call StickToWall() again to *reacquire* that SecPlane:
+
+	override void WorldLoaded(WorldEvent e)
+	{
+		if (!e.isSaveGame)
+			return;
+		let handler = ToM_Mainhandler(EventHandler.Find("ToM_Mainhandler"));
+		if (!handler)
+			return;
+		foreach (stake : handler.stakeprojectiles)
+		{
+			if (stake && stake.GetStuckType() & ToM_StakeProjectile.STUCK_SECPLANE)
+			{
+				//Console.Printf("Running \cdStickToWall()\c- on stake projectile \cy%s\c-", stake.GetClassName());
+				stake.StickToWall();
+			}
+		}
+	}
+
+	// The rest of the handler by 3saster:
+	// This searches ANIMDEFS and ANIMATED lumps to see if a given texture name is 
+	// defined in any of those as an animated texture.
+
 	// These must be stored as numbers, in order to get the textures
 	// from ANIMATED in between the start and end
 	// Oddly, we can convert a TextureID to int, but not the other way

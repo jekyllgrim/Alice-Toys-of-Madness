@@ -1411,8 +1411,8 @@ Class ToM_StakeProjectile : ToM_Projectile
 	{
 		STUCK_NONE		= 0,
 		STUCK_GEOMETRY	= 1 << 1,
-		STUCK_ACTOR		= 1 << 2, //this is set only in SpecialMissileHit()
-		STUCK_SECPLANE	= 1 << 3,
+		STUCK_ACTOR		= 1 << 2, // This is set only in SpecialMissileHit()
+		STUCK_SECPLANE	= 1 << 3, // Parented to a SecPlane (see ToM_StatucStuffHandler)
 		STUCK_FLOOR		= STUCK_GEOMETRY | 1 << 4,
 		STUCK_CEILING	= STUCK_GEOMETRY | 1 << 5,
 		STUCK_WALL		= STUCK_GEOMETRY | 1 << 6,
@@ -1430,9 +1430,10 @@ Class ToM_StakeProjectile : ToM_Projectile
 	protected actor stickobject; 
 	protected double stickAngleOfs;
 	protected double stickDeadPitch;
-	// Plane to stick  into, if any
-	// (has to be transient, since SecPlane 
-	// can't be recorded into save games):
+	// Plane to stick  into, if any. Has to be transient becase
+	// SecPlane is not serializable. ToM_StaticStuffHandler
+	// takes care of reacquiring this in case a save is made and
+	// loaded *while* a stake was stuck:
 	protected transient SecPlane stickplane;
 	// The point at the line the stake collided with:
 	protected vector2 sticklocation; 
@@ -1454,6 +1455,11 @@ Class ToM_StakeProjectile : ToM_Projectile
 	{
 		+MOVEWITHSECTOR
 		+NOEXTREMEDEATH
+	}
+
+	EStuckTypes GetStuckType()
+	{
+		return stucktype;
 	}
 	
 	void SetEndSpot(vector3 spot) 
@@ -1523,7 +1529,7 @@ Class ToM_StakeProjectile : ToM_Projectile
 				console.printf("\cy%s\c- hit floor at at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,pos.x,pos.y,pos.z);
 		}
 		// If stuck in floor or ceiling, stop here:
-		if (stucktype != STUCK_NONE)
+		if (stucktype == STUCK_FLOOR || stucktype == STUCK_CEILING)
 		{
 			return;
 		}

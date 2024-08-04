@@ -28,7 +28,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		weapon.ammouse1 1;
 		weapon.ammogive1 100;
 		weapon.ammotype2 "ToM_StrongMana";
-		weapon.ammouse2 2;
+		weapon.ammouse2 1;
 	}
 
 	override void OnRemoval(Actor dropper)
@@ -153,13 +153,19 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			console.printf("Eyestaff alt charge: %d", invoker.charge);
 		}
+
+		bool enoughAmmo = invoker.DepleteAmmo(invoker.bAltFire, true);
+		if (invoker.charge % 3)
+		{
+			enoughAmmo = invoker.DepleteAmmo(invoker.bAltFire, true);
+		}
 		
 		// Cancel charge if:
 		// 1. we're out of ammo
 		// 2. we reached maximum charge
 		// 3. we reached at least partial charge and
 		// the player is not holding the attack button
-		if (!invoker.DepleteAmmo(invoker.bAltFire, true) || invoker.charge >= ES_FULLALTCHARGE || (!PressingAttackButton() && invoker.charge >= ES_PARTALTCHARGE))
+		if (!enoughAmmo || invoker.charge >= ES_FULLALTCHARGE || (!PressingAttackButton() && invoker.charge >= ES_PARTALTCHARGE))
 		{
 			return ResolveState("AltFireDo");
 		}

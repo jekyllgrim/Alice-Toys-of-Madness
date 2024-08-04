@@ -1512,13 +1512,13 @@ Class ToM_StakeProjectile : ToM_Projectile
 		//if hit floor/ceiling, we'll attach to them:
 		if (trac.HitLocation.z >= topz) 
 		{
-			stucktype = STUCK_FLOOR;
+			stucktype = STUCK_CEILING;
 			if (tom_debugmessages)
 				console.printf("\cy%s\c- hit ceiling at at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,pos.x,pos.y,pos.z);
 		}
 		else if (trac.HitLocation.z <= botz) 
 		{
-			stucktype = STUCK_CEILING;
+			stucktype = STUCK_FLOOR;
 			if (tom_debugmessages)
 				console.printf("\cy%s\c- hit floor at at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,pos.x,pos.y,pos.z);
 		}

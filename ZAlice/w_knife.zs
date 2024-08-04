@@ -827,6 +827,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 	Actor knifemodel; //the actor that the 3d model is attached to
 	int bleedDelay;
 	int deathDelay;
+	int recalldelay;
 	
 	enum EKnifeValues
 	{
@@ -834,8 +835,9 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		KV_BLEEDELAYMIN = 15,
 		KV_BLEEDELAYMAX = 40,
 		KV_BLEEDDAMAGE = 5,
-		KV_DEATHRECALLTIME = 35 * 2,
-	}		
+		KV_DEATHRECALLTIME = TICRATE * 2,
+		KV_MAXRECALLTIME = TICRATE * 6,
+	}
 	
 	static const color RecallColors[] =
 	{
@@ -882,7 +884,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		if (tom_debugmessages)
 			console.printf("Recalling knife");
 		
-		if (tracer && tracer.bISMONSTER && tracer.health <= 0 && !tracer.bNOBLOOD)
+		if (tracer && tracer.bISMONSTER && tracer.health <= 0 && !tracer.bNOBLOOD && !tracer.bDORMANT)
 		{
 			for (int i = 4; i > 0; i--)
 			{
@@ -895,14 +897,29 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		// Disable sticking-to-wall behavior - see StickToWall()
 		// Without this the knife's pos.z would be forcefully
 		// attached to a plane if it hit a 2-sided wall.
-		// That behavior checks for bTHRUACTORS, so by disabling
-		// it we disable the sticking behavior.
-		// See ToM_StakeProjectile for details.
 		stucktype = STUCK_NONE;
 		bTHRUACTORS = false;
 		bNOCLIP = true;
 		SetStateLabel("Recall");
-	}	
+	}
+
+	bool ReturnKnife(Actor who)
+	{
+		if (!who) return false;
+
+		let kn = ToM_Knife(who.FindInventory("ToM_Knife"));
+		if (kn)
+		{
+			kn.CatchKnife();
+			if (knifemodel)
+			{
+				knifemodel.Destroy();
+			}
+			return true;
+		}
+		
+		return false;
+	}
 	
 	// When run into a floor/ceiling by a moving wall,
 	// recall it instead of destroying.
@@ -995,9 +1012,24 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 				BeginRecall();
 			}
 		}
+
+		// If already returning and it's taking too long, forcefully
+		// return the knife to the owner:
+		if (bNOCLIP)
+		{
+			recalldelay++;
+			if (recalldelay > KV_MAXRECALLTIME)
+			{
+				ReturnKnife(target);
+				Destroy();
+				return;
+			}
+		}
 		
 		if (!target || !tracer || !tracer.bSHOOTABLE || tracer.health <= 0 || tracer.bNOBLOOD)
+		{
 			return;
+		}
 			
 		// Do the bleed damage to the enemy the knife is stuck into.
 		// Rather than employing a control item, I do it from the 
@@ -1033,7 +1065,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 				}
 			}
 		}
-	}			
+	}
 	
 	States
 	{
@@ -1045,7 +1077,9 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		TNT1 A 1
 		{
 			if (knifemodel)
-				knifemodel.A_SetPitch(knifemodel.pitch + 25);
+			{
+				knifemodel.A_SetPitch(knifemodel.pitch + 25, SPF_INTERPOLATE);
+			}
 		}
 		wait;
 	XDeath:
@@ -1108,20 +1142,13 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 				
 				if (Distance2D(target) <= 64 && abs(pos.z - target.player.viewz) <= 64 )
 				{
-					let kn = ToM_Knife(target.FindInventory("ToM_Knife"));
-					if (kn)
+					if (ReturnKnife(target))
 					{
-						kn.CatchKnife();
+						return ResolveState("Null");
 					}
-					
-					if (knifemodel)
-					{
-						knifemodel.Destroy();
-					}
-					
-					Destroy();
 				}
 			}
+			return ResolveState(null);
 		}
 		loop;
 	}

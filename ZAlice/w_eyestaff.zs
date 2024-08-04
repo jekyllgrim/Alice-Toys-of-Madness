@@ -198,7 +198,10 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		ppos.z = level.PointInSector(ppos.xy).NextLowestFloorAt(ppos.x, ppos.y, ppos.z);
 
 		if (!invoker.aimCircle)
+		{
 			invoker.aimCircle = ToM_ESAimingCircle(Spawn("ToM_ESAimingCircle", ppos));
+			invoker.aimCircle.eyestaff = ToM_Eyestaff(invoker);
+		}
 		invoker.aimCircle.SetOrigin(ppos, true);
 	}
 	
@@ -781,6 +784,8 @@ class ToM_EyestaffBurnControl : ToM_ControlToken
 
 class ToM_ESAimingCircle : ToM_BaseActor
 {
+	ToM_Eyestaff eyestaff;
+
 	Default
 	{
 		+NOBLOCKMAP
@@ -798,7 +803,12 @@ class ToM_ESAimingCircle : ToM_BaseActor
 	Spawn:
 		AMRK A 1 
 		{
-			A_SetAngle(angle+0.5, SPF_INTERPOLATE);
+			double ang = 0.1;
+			if (eyestaff)
+			{
+				ang = ToM_Utils.LinearMap(eyestaff.charge, 0, ToM_Eyestaff.ES_FULLALTCHARGE, 0.1, 4);
+			}
+			A_SetAngle(angle + ang, SPF_INTERPOLATE);
 			SetZ(floorz+1);
 		}
 		loop;

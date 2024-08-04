@@ -334,20 +334,16 @@ class ToM_Mainhandler : EventHandler
 	}
 }
 
-// By 3saster:
-// This searches ANIMDEFS and ANIMATED lumps to see if a given texture name is 
-// defined in any of those as an animated texture.
-
-Class ToM_Animated_Handler : StaticEventHandler
+Class ToM_StaticStuffHandler : StaticEventHandler
 {
 	// These must be stored as numbers, in order to get the textures
 	// from ANIMATED in between the start and end
 	// Oddly, we can convert a TextureID to int, but not the other way
 	Array<int> animNums;
 	
-	clearscope static bool isAnimated(textureID tex)
+	clearscope static bool IsAnimatedTexture(textureID tex)
 	{
-		ToM_Animated_Handler event = ToM_Animated_Handler(StaticEventHandler.Find("ToM_Animated_Handler"));
+		ToM_StaticStuffHandler event = ToM_StaticStuffHandler(StaticEventHandler.Find("ToM_StaticStuffHandler"));
 		if (!event)
 			return false;
 		

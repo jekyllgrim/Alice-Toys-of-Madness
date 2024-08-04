@@ -1,7 +1,7 @@
 Gameinfo
 {
 	PlayerClasses = "ToM_AlicePlayer"
-	AddEventhandlers = "ToM_Mainhandler", "ToM_Animated_Handler"
+	AddEventhandlers = "ToM_Mainhandler", "ToM_StaticStuffHandler"
 	StatusBarClass = "ToM_AliceHUD"
 	ArmorIcons = "ACARM_1", 0.5, "ACARM_2"
 	TitleMusic = "music/alice_title.mp3"

@@ -721,7 +721,7 @@ class ToM_HorseImpactDebris : ToM_BaseActor
 	{
 		super.PostBeginPlay();
 		A_StartSound("weapons/hhorse/hitfloor_heavy");
-		if (waterlevel > 0 || CheckLiquidFlat() || ToM_Animated_Handler.isAnimated(floorpic))
+		if (waterlevel > 0 || CheckLiquidFlat() || ToM_StaticStuffHandler.IsAnimatedTexture(floorpic))
 		{
 			Destroy();
 			return;

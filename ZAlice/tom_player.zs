@@ -612,30 +612,30 @@ class ToM_AlicePlayer : DoomPlayer
 	States {
 	See:
 	Spawn:
-		M000 A 1 UpdateMovementAnimation();
+		APLR A 1 UpdateMovementAnimation();
 		loop;
 
 	Melee:
 	Missile:
-		M000 A 30;
+		APLR A 30;
 		goto Spawn;
 	
 	Jump:
 		JumpGround:
-			M000 A 8 SetAnimation('jump', 30, loopframe: 9, flags: SAF_LOOP);
-			M000 A 0
+			APLR A 8 SetAnimation('jump', 30, loopframe: 9, flags: SAF_LOOP);
+			APLR A 0
 			{
 				return ResolveState("JumpLoop");
 			}
 		JumpAir:
-			M000 A 4 
+			APLR A 4 
 			{
 				SetAnimation('jump_air', 20, loopframe: 4, flags: SAF_LOOP);
 				return ResolveState("JumpLoop");
 			}
 		JumpLoop:
-			M000 A 1;
-			M000 A 0
+			APLR A 1;
+			APLR A 0
 			{
 				if (waterlevel >= 2)
 				{
@@ -648,18 +648,18 @@ class ToM_AlicePlayer : DoomPlayer
 				return ResolveState("JumpLoop");
 			}
 		JumpEnd:
-			M000 A 12 
+			APLR A 12 
 			{
 				SetAnimation('jump_end', 30);
 			}
 			goto Spawn;
 	
 	Pain:
-		M000 A 12 SetAnimation('pain');
+		APLR A 12 SetAnimation('pain');
 		Goto Spawn;
 		
 	Death:
-		M000 A -1
+		APLR A -1
 		{
 			A_PlayerScream();
 			A_NoBlocking();
@@ -667,7 +667,7 @@ class ToM_AlicePlayer : DoomPlayer
 		}
 		Stop;
 	XDeath:
-		M000 A -1
+		APLR A -1
 		{
 			A_PlayerScream();
 			A_NoBlocking();

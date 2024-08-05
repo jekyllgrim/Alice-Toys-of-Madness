@@ -263,13 +263,13 @@ class ToM_AlicePlayer : DoomPlayer
 
 		let bob = super.BobWeapon(ticfrac);
 
-		int downlim = -4;
-		int uplim = 6;
-		double downfac = -1.85;
-		double upfac = 1.2;
 		int jumptics = player.jumptics;
 		if (player && jumptics != 0)
 		{
+			int downlim = -4;
+			int uplim = 6;
+			double downfac = -1.85;
+			double upfac = 1.2;
 			double prevboby;
 			double boby;
 			
@@ -285,8 +285,17 @@ class ToM_AlicePlayer : DoomPlayer
 				boby = player.jumptics * upfac;
 			}
 			
-			return (bob.x, boby * (1. - ticfrac) + prevboby * ticfrac);
+			bob = (bob.x, boby * (1. - ticfrac) + prevboby * ticfrac);
 		}
+
+		double wScaleF = weapon.WeaponScaleY - weapon.default.WeaponScaleY;
+		if (wScaleF != 0)
+		{
+			bob.y += 64. * wScaleF;
+			bob.x -= 32 * wScaleF;
+		}
+
+		//Console.Printf("WeaponScale: \cd%.3f\c-, \cd%.3f\c-", weapon.WeaponScaleX, weapon.WeaponScaleY);
 		
 		return bob;
 	}

@@ -622,10 +622,6 @@ class ToM_GrowthPotionEffect : Powerup
 		
 		// target height (to be set in DoEffect):
 		targetHeight = prevHeight * GROWFACTOR;
-
-		// target AttackZOffset and AttackZOffset step (to be set in DoEffect):
-		targetAttackZOffset = prevAttackZOffset * GROWFACTOR;
-		attackZOffsetStep = (targetAttackZOffset - prevAttackZOffset) / GROWTIME;
 		
 		// target viewheight and viewheight step (to be set in DoEffect):
 		targetViewHeight = targetHeight - (prevHeight - prevViewHeight);
@@ -635,6 +631,11 @@ class ToM_GrowthPotionEffect : Powerup
 		targetScale = prevScale * GROWFACTOR;
 		scaleStep.x = (targetScale.x - prevScale.x) / GROWTIME;
 		scaleStep.y = (targetScale.y - prevScale.y) / GROWTIME;
+
+		// target AttackZOffset and AttackZOffset step (to be set in DoEffect):
+		double diff = prevViewHeight - prevHeight*0.5 - prevAttackZOffset;
+		targetAttackZOffset = targetViewHeight - diff - targetHeight*0.5; //prevAttackZOffset * GROWFACTOR;
+		attackZOffsetStep = (targetAttackZOffset - prevAttackZOffset) / GROWTIME;
 		
 		// target weapon scale and weapon scale step:
 		if (weap)
@@ -708,6 +709,7 @@ class ToM_GrowthPotionEffect : Powerup
 		);
 		player.viewHeight = pmo.viewHeight;
 
+		// gradually modify attack height (AttackZOffset):
 		pmo.AttackZOffset = Clamp(
 			pmo.AttackZOffset + attackZOffsetStep * stepFactor,
 			prevAttackZOffset, targetAttackZOffset

@@ -120,7 +120,7 @@ class ToM_Icewand : ToM_BaseWeapon
 			{
 				cam = ToM_ReflectionCamera.Create(
 					PlayerPawn(owner), owner.player.fov,
-					(owner.radius * 0.5, -12, 40),
+					(owner.radius * 0.5, -12, -15),
 					(-20, 15, 0),
 					cameraClass: 'ToM_IceWandReflectionCamera');
 			}

@@ -1221,7 +1221,7 @@ class ToM_ReflectionCamera : Actor
 			ppawn, 
 			xofs: cam_offset.x, 
 			yofs: cam_offset.y,
-			zofs: cam_offset.z
+			zofs: ppawn.player.viewz + cam_offset.z
 		);
 	}
 

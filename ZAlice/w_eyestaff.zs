@@ -199,8 +199,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 
 		if (!invoker.aimCircle)
 		{
-			invoker.aimCircle = ToM_ESAimingCircle(Spawn("ToM_ESAimingCircle", ppos));
-			invoker.aimCircle.eyestaff = ToM_Eyestaff(invoker);
+			invoker.aimCircle = ToM_ESAimingCircle.Create(ppos, self.player.mo);
 		}
 		invoker.aimCircle.SetOrigin(ppos, true);
 	}
@@ -787,7 +786,13 @@ class ToM_EyestaffBurnControl : ToM_ControlToken
 
 class ToM_ESAimingCircle : ToM_BaseActor
 {
-	ToM_Eyestaff eyestaff;
+	PlayerPawn shooter;
+	Canvas circleCanvas;
+	TextureID circleOut;
+	TextureID circleIn;
+	Shape2DTransform circleTransform;
+	Shape2D circleShape;
+	double circleOutAngle;
 
 	Default
 	{
@@ -797,21 +802,130 @@ class ToM_ESAimingCircle : ToM_BaseActor
 		renderstyle 'Add';
 		alpha 0.42;
 		radius 256;
-		scale 256;
+		scale 4;
 		height 1;
+	}
+
+	static ToM_ESAimingCircle Create(Vector3 pos, PlayerPawn shooter)
+	{
+		let c = ToM_ESAimingCircle(Actor.Spawn('ToM_ESAimingCircle', pos));
+		if (c)
+		{
+			c.shooter = shooter;
+		}
+		return c;
+	}
+
+	override void PostbeginPlay()
+	{
+		Super.PostBeginPlay();
+		String canvasTexName = String.Format("EyestaffAimCircle%d", shooter? shooter.PlayerNumber() : 0);
+		if (tom_debugmessages)
+		{
+			Console.Printf("Created canvas texture \cd%s\c- for \cy%s\c-", canvasTexName, GetClassName());
+		}
+		circleCanvas = TexMan.GetCanvas(canvasTexName);
+		if (!circleCanvas)
+		{
+			Console.Printf("\cgAToM Error:\c- \cg%s\c- is not a valid texture; couldn't obtain Canvas. Destroying \cy%s\c-...", canvasTexName, GetClassName());
+			Destroy();
+			return;
+		}
+		A_ChangeModel("", skin: canvasTexName);
+		circleOut = TexMan.CheckForTexture("Models/Eyestaff/eyestaff_circle_out.png");
+		circleIn = TexMan.CheckForTexture("Models/Eyestaff/eyestaff_circle_in.png");
+		if (!circleOut.IsValid() || !circleIn.IsValid())
+		{
+			Console.Printf("\cgAToM Error:\c- Couldn't obtain textures. Destroying \cy%s\c-...", GetClassName());
+			Destroy();
+			return;
+		}
+	}
+
+	void MakeShapes()
+	{
+		circleShape = New('Shape2D');
+		// Create center vertex:
+		Vector2 cmid = (0, 0);
+		circleShape.PushVertex(cmid);
+		// Texture offsets relative to vertex positions, 
+		// since textures use 0.0-1.0 range:
+		Vector2 texOfs = (0.5, 0.5);
+		circleShape.PushCoord(cmid + texOfs);
+		int steps = 60; //60 vertices on the edge
+		double angStep = 360.0 / steps; //angle difference between each edge vertex
+		Vector2 p = (0, -0.5); //first edge vertex (top)
+		for (int i = 0; i < steps; i++)
+		{
+			circleShape.PushVertex(p);
+			circleShape.PushCoord(p + texOfs);
+			p = Actor.RotateVector(p, angStep);
+		}
+		// Create triangles. Each triangle must connect
+		// the center vertex with two edge vertices. We begin at 1,
+		// because 0 is the coordinate of the center:
+		for (int i = 1; i <= steps; i++)
+		{
+			int next = i+1;
+			// If the next vertex is beyond 'steps',
+			// that means we've looped around,
+			// so go back to vertex 1:
+			if (next > steps)
+			{
+				next = 1;
+			}
+			// Create a triangle between center,
+			// edge vertex and the next edge vertex:
+			circleShape.PushTriangle(0, i, next);
+		}
+
+		circleTransform = new('Shape2DTransform');
+		circleTransform.Clear();
+		circleTransform.Scale((radius, radius));
+		circleTransform.Rotate(0);
+		circleTransform.Translate((radius*0.5, radius*0.5));
+		circleShape.SetTransform(circleTransform);
+	}
+
+	void UpdateTransform(double ang)
+	{
+		if (!circleTransform) return;
+		
+		circleTransform.Clear();
+		circleTransform.Scale((radius, radius));
+		circleTransform.Rotate(ang);
+		circleTransform.Translate((radius*0.5, radius*0.5));
+		circleShape.SetTransform(circleTransform);
+	}
+
+	override void Tick()
+	{
+		Super.Tick();
+		
+		circleCanvas.Clear(0, 0, 1000, 1000, 0xff000000);
+		if (!circleShape || !circleTransform)
+		{
+			MakeShapes();
+		}
+		
+		UpdateTransform(circleOutAngle);
+		circleCanvas.DrawShape(circleOut, false, circleShape,
+			DTA_DestWidthF, radius,
+			DTA_DestHeightF, radius
+		);
+		circleOutAngle += 0.5;
+		UpdateTransform(0);
+		circleCanvas.DrawShape(circleIn, false, circleShape,
+			DTA_DestWidthF, radius,
+			DTA_DestHeightF, radius
+		);
 	}
 	
 	States 
 	{
 	Spawn:
-		AMRK A 1 
+		M000 A 1
 		{
-			double ang = 0.1;
-			if (eyestaff)
-			{
-				ang = ToM_Utils.LinearMap(eyestaff.charge, 0, ToM_Eyestaff.ES_FULLALTCHARGE, 0.1, 4);
-			}
-			A_SetAngle(angle + ang, SPF_INTERPOLATE);
 			SetZ(floorz+1);
 		}
 		loop;

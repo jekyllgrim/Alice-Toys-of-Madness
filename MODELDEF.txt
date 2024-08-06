@@ -170,10 +170,10 @@ Model ToM_Jackball
 
 Model ToM_ESAimingCircle
 {
-	Path "models/pool"
-	Model 0 "pool.md3"
-	Skin 0 "jccircle.png"
-	FrameIndex AMRK A 0 0	
+	Path "models"
+	Model 0 "pool/circle.obj"
+	//Skin 0 "eyestaff/jccircle.png"
+	FrameIndex M000 A 0 0	
 }
 
 Model ToM_TeaPool

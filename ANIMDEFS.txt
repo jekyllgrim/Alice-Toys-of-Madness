@@ -1,5 +1,15 @@
 CameraTexture "AliceWeapon.camtex" 400 400
 
+CanvasTexture "EyestaffAimCircle0" 256 256
+CanvasTexture "EyestaffAimCircle1" 256 256
+CanvasTexture "EyestaffAimCircle2" 256 256
+CanvasTexture "EyestaffAimCircle3" 256 256
+CanvasTexture "EyestaffAimCircle4" 256 256
+CanvasTexture "EyestaffAimCircle5" 256 256
+CanvasTexture "EyestaffAimCircle6" 256 256
+CanvasTexture "EyestaffAimCircle7" 256 256
+CanvasTexture "EyestaffAimCircle8" 256 256
+
 Texture ACTPPUFF
 	pic ACTPPUFF tics 8
 	pic TNT1A0 tics 8

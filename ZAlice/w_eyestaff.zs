@@ -199,7 +199,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 
 		if (!invoker.aimCircle)
 		{
-			invoker.aimCircle = ToM_ESAimingCircle.Create(ppos, self.player.mo);
+			invoker.aimCircle = ToM_ESAimingCircle.Create(ppos, ToM_Eyestaff(invoker), self.player.mo);
 		}
 		invoker.aimCircle.SetOrigin(ppos, true);
 	}
@@ -787,11 +787,14 @@ class ToM_EyestaffBurnControl : ToM_ControlToken
 class ToM_ESAimingCircle : ToM_BaseActor
 {
 	PlayerPawn shooter;
+	ToM_Eyestaff eyestaff;
+	int charge;
 	Canvas circleCanvas;
 	TextureID circleOut;
 	TextureID circleIn;
 	Shape2DTransform circleTransform;
-	Shape2D circleShape;
+	Shape2D innerShape;
+	Shape2D outerShape;
 	double circleOutAngle;
 
 	Default
@@ -800,17 +803,18 @@ class ToM_ESAimingCircle : ToM_BaseActor
 		+NOINTERACTION
 		+BRIGHT
 		renderstyle 'Add';
-		alpha 0.42;
+		alpha 0.7;
 		radius 256;
-		scale 4;
+		scale 8;
 		height 1;
 	}
 
-	static ToM_ESAimingCircle Create(Vector3 pos, PlayerPawn shooter)
+	static ToM_ESAimingCircle Create(Vector3 pos, ToM_Eyestaff eyestaff, PlayerPawn shooter)
 	{
 		let c = ToM_ESAimingCircle(Actor.Spawn('ToM_ESAimingCircle', pos));
 		if (c)
 		{
+			c.eyestaff = eyestaff;
 			c.shooter = shooter;
 		}
 		return c;
@@ -842,23 +846,79 @@ class ToM_ESAimingCircle : ToM_BaseActor
 		}
 	}
 
-	void MakeShapes()
+	void UpdateTransform(double ang = 0)
 	{
-		circleShape = New('Shape2D');
+		if (!circleTransform)
+		{
+			circleTransform = new('Shape2DTransform');
+		}
+		
+		circleTransform.Clear();
+		circleTransform.Scale((radius, radius));
+		circleTransform.Rotate(ang);
+		circleTransform.Translate((radius*0.5, radius*0.5));
+	}
+
+	void UpdateOuterShape(double ang)
+	{
+		if (!outerShape)
+		{
+			outerShape = New('Shape2D');
+			// Create vertices:
+			Vector2 p = (-0.5, -0.5); //start at top left corner
+			outerShape.PushVertex(p);
+			outerShape.PushVertex((p.x, -p.y));
+			outerShape.PushVertex((-p.x, p.y));
+			outerShape.PushVertex((-p.x, -p.y));
+			// Create texture coordinates:
+			outerShape.PushCoord((0,0));
+			outerShape.PushCoord((0,1));
+			outerShape.PushCoord((1,0));
+			outerShape.PushCoord((1,1));
+			// Create triangles:
+			outerShape.PushTriangle(0,1,2);
+			outerShape.PushTriangle(1,2,3);
+		}
+
+		UpdateTransform(ang);
+		outerShape.SetTransform(circleTransform);
+	}
+
+	void UpdateInnerShape()
+	{
+		if (!innerShape)
+		{
+			innerShape = new('Shape2D');
+		}
+		else
+		{
+			innerShape.Clear(Shape2D.C_Verts);
+			innerShape.Clear(Shape2D.C_Coords);
+			innerShape.Clear(Shape2D.C_Indices);
+		}
+		if (!eyestaff) return;
+
 		// Create center vertex:
 		Vector2 cmid = (0, 0);
-		circleShape.PushVertex(cmid);
+		innerShape.PushVertex(cmid);
 		// Texture offsets relative to vertex positions, 
 		// since textures use 0.0-1.0 range:
 		Vector2 texOfs = (0.5, 0.5);
-		circleShape.PushCoord(cmid + texOfs);
-		int steps = 60; //60 vertices on the edge
-		double angStep = 360.0 / steps; //angle difference between each edge vertex
-		Vector2 p = (0, -0.5); //first edge vertex (top)
+		innerShape.PushCoord(cmid + texOfs);
+		// Calculate how far to move along the circle based
+		// on highest latest charge (we're not reducing this
+		// since eyestaff will decrement it when firing,
+		// which we don't want to reflect):
+		charge = max(charge, eyestaff.charge);
+		double angstep = 360.0 / ToM_Eyestaff.ES_FULLALTCHARGE;
+		double finalAng = 360.0 * (double(charge) / ToM_Eyestaff.ES_FULLALTCHARGE);
+		int steps = charge;
+
+		Vector2 p = (0, -1); //first edge vertex (top)
 		for (int i = 0; i < steps; i++)
 		{
-			circleShape.PushVertex(p);
-			circleShape.PushCoord(p + texOfs);
+			innerShape.PushVertex(p);
+			innerShape.PushCoord(p + texOfs);
 			p = Actor.RotateVector(p, angStep);
 		}
 		// Create triangles. Each triangle must connect
@@ -867,68 +927,55 @@ class ToM_ESAimingCircle : ToM_BaseActor
 		for (int i = 1; i <= steps; i++)
 		{
 			int next = i+1;
-			// If the next vertex is beyond 'steps',
-			// that means we've looped around,
-			// so go back to vertex 1:
+			// looped around:
 			if (next > steps)
 			{
-				next = 1;
+				if (finalAng >= 360)
+				{
+					next = 1;
+				}
+				else
+				{
+					break;
+				}
 			}
 			// Create a triangle between center,
 			// edge vertex and the next edge vertex:
-			circleShape.PushTriangle(0, i, next);
+			innerShape.PushTriangle(0, i, next);
 		}
 
-		circleTransform = new('Shape2DTransform');
-		circleTransform.Clear();
-		circleTransform.Scale((radius, radius));
-		circleTransform.Rotate(0);
-		circleTransform.Translate((radius*0.5, radius*0.5));
-		circleShape.SetTransform(circleTransform);
-	}
-
-	void UpdateTransform(double ang)
-	{
-		if (!circleTransform) return;
-		
-		circleTransform.Clear();
-		circleTransform.Scale((radius, radius));
-		circleTransform.Rotate(ang);
-		circleTransform.Translate((radius*0.5, radius*0.5));
-		circleShape.SetTransform(circleTransform);
+		UpdateTransform();
+		innerShape.SetTransform(circleTransform);
 	}
 
 	override void Tick()
 	{
 		Super.Tick();
+		SetZ(floorz+1);
 		
-		circleCanvas.Clear(0, 0, 1000, 1000, 0xff000000);
-		if (!circleShape || !circleTransform)
-		{
-			MakeShapes();
-		}
+		double width = radius*2;
+		circleCanvas.Clear(0, 0, width, width, 0xff000000);
 		
-		UpdateTransform(circleOutAngle);
-		circleCanvas.DrawShape(circleOut, false, circleShape,
-			DTA_DestWidthF, radius,
-			DTA_DestHeightF, radius
+		UpdateOuterShape(circleOutAngle);
+		circleCanvas.DrawShape(circleOut, false, outerShape,
+			DTA_DestWidthF, width,
+			DTA_DestHeightF, width,
+			DTA_Alpha, 0.5
 		);
 		circleOutAngle += 0.5;
-		UpdateTransform(0);
-		circleCanvas.DrawShape(circleIn, false, circleShape,
-			DTA_DestWidthF, radius,
-			DTA_DestHeightF, radius
+
+		UpdateInnerShape();
+		circleCanvas.DrawShape(circleIn, false, innerShape,
+			DTA_DestWidthF, width,
+			DTA_DestHeightF, width
 		);
 	}
 	
 	States 
 	{
 	Spawn:
-		M000 A 1
-		{
-			SetZ(floorz+1);
-		}
-		loop;
+		M000 A -1;
+		stop;
 	}
 }
 

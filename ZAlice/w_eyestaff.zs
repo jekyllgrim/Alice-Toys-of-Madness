@@ -793,8 +793,9 @@ class ToM_ESAimingCircle : ToM_BaseActor
 	TextureID circleOut;
 	TextureID circleIn;
 	Shape2DTransform circleTransform;
-	Shape2D innerShape;
 	Shape2D outerShape;
+	Shape2D innerShape;
+	Shape2D innerEdgeShape;
 	double circleOutAngle;
 
 	Default
@@ -946,6 +947,24 @@ class ToM_ESAimingCircle : ToM_BaseActor
 
 		UpdateTransform();
 		innerShape.SetTransform(circleTransform);
+
+		if (!innerEdgeShape)
+		{
+			innerEdgeShape = new('Shape2D');
+			p = (0, 0);
+			innerEdgeShape.PushVertex(p);
+			innerEdgeShape.PushCoord((0,0));
+			p = Actor.RotateVector((0, -1), finalAng - 4);
+			innerEdgeShape.PushVertex(p);
+			innerEdgeShape.PushCoord((0,0));
+			p = Actor.RotateVector((0, -1), finalAng - 8);
+			innerEdgeShape.PushVertex(p);
+			innerEdgeShape.PushCoord((0,0));
+
+			innerEdgeShape.PushTriangle(0, 1, 2);
+		}
+		UpdateTransform(finalAng);
+		innerEdgeShape.SetTransform(circleTransform);
 	}
 
 	override void Tick()
@@ -957,18 +976,15 @@ class ToM_ESAimingCircle : ToM_BaseActor
 		circleCanvas.Clear(0, 0, width, width, 0xff000000);
 		
 		UpdateOuterShape(circleOutAngle);
-		circleCanvas.DrawShape(circleOut, false, outerShape,
-			DTA_DestWidthF, width,
-			DTA_DestHeightF, width,
-			DTA_Alpha, 0.5
-		);
+		circleCanvas.DrawShape(circleOut, false, outerShape);
 		circleOutAngle += 0.5;
 
 		UpdateInnerShape();
-		circleCanvas.DrawShape(circleIn, false, innerShape,
-			DTA_DestWidthF, width,
-			DTA_DestHeightF, width
-		);
+		circleCanvas.DrawShape(circleIn, false, innerShape);
+		if (eyestaff.charge >= charge)
+		{
+			circleCanvas.DrawShapeFill(0xf170ff, 1.0, innerEdgeShape);
+		}
 	}
 	
 	States 

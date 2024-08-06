@@ -154,7 +154,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		invoker.charge++;
 		if (tom_debugmessages)
 		{
-			console.printf("Eyestaff alt charge: \cd%d\c-/\cq%d\c-", invoker.charge, ES_FULLALTCHARGE);
+			console.printf("Eyestaff visualMode charge: \cd%d\c-/\cq%d\c-", invoker.charge, ES_FULLALTCHARGE);
 		}
 
 		bool enoughAmmo = invoker.DepleteAmmo(invoker.bAltFire, true);
@@ -247,7 +247,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		let proj = ToM_EyestaffProjectile(Spawn("ToM_EyestaffProjectile", ppos));
 		if (proj)
 		{
-			proj.alt = true;
+			proj.visualMode = true;
 			proj.target = self;
 			proj.A_StartSound("weapons/eyestaff/boom2");
 			proj.vel.z = proj.speed;
@@ -258,7 +258,10 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	action void A_SpawnSkyMissiles(double height = 800)
 	{
 		if (!invoker.aimCircle)
+		{
+			Console.Printf("\cgAToM Error:\c- Eyestaff aiming circle missing: cannot fire sky missiles.");
 			return;
+		}
 		
 		double pz = Clamp(invoker.aimCircle.pos.z + height, invoker.aimCircle.pos.z, invoker.aimCircle.ceilingz);
 		
@@ -298,7 +301,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	{
 		if (passive && owner && inflictor && inflictor is 'ToM_EyestaffProjectile' && inflictor.target == owner)
 		{
-			newdamage = damage / 4;
+			newdamage = int(round(damage / 4.0));
 		}
 	}
 
@@ -604,7 +607,8 @@ class ToM_EyestaffBeam : ToM_LaserBeam
 
 class ToM_EyestaffProjectile : ToM_Projectile
 {
-	bool alt;
+	bool visualMode;
+	bool altMode;
 	const TRAILOFS = 6;
 	
 	static const color SmokeColors[] =
@@ -633,19 +637,24 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		height 13;
 		radius 10;
 		speed 22;		
-		DamageFunction (100);
+		DamageFunction EyeProjDamage();
 		Renderstyle 'Add';
 		alpha 0.5;
 		xscale 5;
 		yscale 6;
 		Decal "EyestaffProjectileDecal";
 	}
+
+	int EyeProjDamage()
+	{
+		return altMode? 15 : 100;
+	}
 	
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
 		A_FaceMovementDirection();
-		if (alt)
+		if (visualMode)
 		{
 			bNOINTERACTION = true;
 			double vx = 3.5;
@@ -675,7 +684,7 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		super.Tick();
 		if (isFrozen())
 			return;
-		if (alt)
+		if (visualMode)
 		{
 			if (pos.z > ceilingz)
 			{
@@ -686,6 +695,10 @@ class ToM_EyestaffProjectile : ToM_Projectile
 			trailalpha = alpha * 3;
 		}
 		A_SetRoll(roll + 16, SPF_INTERPOLATE);
+		/*if (tracer && InStateSequence(curstate, spawnstate))
+		{
+			A_SeekerMissile(0, 0.3, SMF_PRECISE|SMF_CURSPEED);
+		}*/
 	}
 
 	override void SpawnTrail(vector3 ppos)
@@ -728,9 +741,9 @@ class ToM_EyestaffProjectile : ToM_Projectile
 	Death:
 		TNT1 A 1 
 		{
-			if (alt)
+			if (altMode)
 			{
-				A_Explode(80, 128);
+				A_Explode(30, 128);
 			}
 			else
 			{
@@ -1052,6 +1065,8 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 	int charge;
 	double zShift;
 	double circleRad;
+	array<Actor> projTargets;
+	int targetID;
 	
 	static const color EyeColor[] = 
 	{
@@ -1124,7 +1139,21 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 	States 
 	{
 	Spawn:
-		TNT1 A 30;
+		TNT1 A 30 NoDelay
+		{
+			if (tracer)
+			{
+				let bt = BlockThingsIterator.Create(tracer, circleRad);
+				while (bt.Next())
+				{
+					let t = bt.thing;
+					if (target && t != target && t.bShootable && (t.bIsMonster || t.player) && t.health > 0 && tracer.Distance2D(t) <= circleRad && t.isHostile(target))
+					{
+						projTargets.Push(t);
+					}
+				}
+			}
+		}
 		TNT1 A 3 
 		{
 			if (charge > 0)
@@ -1143,13 +1172,27 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 					if (Level.IsPointInLevel(ppos))
 						break;
 				}
-				let proj = Spawn("ToM_EyestaffProjectile", ppos);
+				let proj = ToM_EyestaffProjectile(Spawn("ToM_EyestaffProjectile", ppos));
 				if (proj)
 				{
 					proj.target = target;
-					proj.vel.z = -proj.speed;
-					double hvel = 2.8;
-					proj.vel.xy = (frandom(-hvel,hvel), frandom(-hvel,hvel));
+					proj.altMode = true;
+					if (projTargets.Size() > 0)
+					{
+						proj.tracer = projTargets[targetID];
+						if (++targetID >= projTargets.Size())
+						{
+							targetID = 0;
+						}
+						Vector3 dir = level.Vec3Diff(proj.pos, proj.tracer.pos).Unit();
+						proj.vel = dir * proj.speed;
+					}
+					else
+					{
+						proj.vel.z = -proj.speed;
+						double hvel = 2.8;
+						proj.vel.xy = (frandom(-hvel,hvel), frandom(-hvel,hvel));
+					}
 					proj.A_FaceMovementDirection();
 				}
 				charge--;

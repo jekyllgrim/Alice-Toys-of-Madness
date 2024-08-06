@@ -765,6 +765,25 @@ class ToM_EyestaffProjectile : ToM_Projectile
 	}
 }
 
+class ToM_ESAimingCircle_AfterImage : ToM_ESAimingCircle
+{
+	Default
+	{
+		alpha 0.4;
+	}
+
+	override void PostbeginPlay()
+	{
+		ToM_BaseActor.PostBeginPlay();
+	}
+
+	override void Tick()
+	{
+		ToM_BaseActor.Tick();
+		A_FadeOut(0.012);
+	}
+}
+
 class ToM_EyestaffBurnControl : ToM_ControlToken
 {
 	Default
@@ -808,6 +827,7 @@ class ToM_ESAimingCircle : ToM_BaseActor
 	protected int circleID;
 	protected int charge;
 	protected Canvas circleCanvas;
+	protected String canvasTexName;
 	protected TextureID circleOut;
 	protected TextureID circleIn;
 	protected Shape2DTransform circleTransform;
@@ -844,7 +864,7 @@ class ToM_ESAimingCircle : ToM_BaseActor
 	override void PostbeginPlay()
 	{
 		Super.PostBeginPlay();
-		String canvasTexName = String.Format("EyestaffAimCircle%d%d", shooter? shooter.PlayerNumber() : 0, circleID);
+		canvasTexName = String.Format("EyestaffAimCircle%d%d", shooter? shooter.PlayerNumber() : 0, circleID);
 		if (tom_debugmessages)
 		{
 			Console.Printf("Created canvas texture \cd%s\c- for \cy%s\c-", canvasTexName, GetClassName());
@@ -1006,6 +1026,16 @@ class ToM_ESAimingCircle : ToM_BaseActor
 		if (charge < ToM_Eyestaff.ES_FULLALTCHARGE)
 		{
 			circleCanvas.DrawShapeFill(0xf170ff, 1.0, innerEdgeShape);
+		}
+
+		if (charge >= ToM_Eyestaff.ES_FULLALTCHARGE && !chargeFinished)
+		{
+			let ai = Spawn('ToM_ESAimingCircle_AfterImage', pos);
+			if (ai)
+			{
+				ai.vel.z = 1;
+				ai.A_ChangeModel("", skin: canvasTexName);
+			}
 		}
 	}
 	

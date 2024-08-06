@@ -172,7 +172,13 @@ Model ToM_ESAimingCircle
 {
 	Path "models"
 	Model 0 "pool/circle.obj"
-	//Skin 0 "eyestaff/jccircle.png"
+	FrameIndex M000 A 0 0	
+}
+
+Model ToM_ESAimingCircle_AfterImage
+{
+	Path "models"
+	Model 0 "pool/circle.obj"
 	FrameIndex M000 A 0 0	
 }
 

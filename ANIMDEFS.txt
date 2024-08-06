@@ -1,14 +1,49 @@
 CameraTexture "AliceWeapon.camtex" 400 400
 
-CanvasTexture "EyestaffAimCircle0" 256 256
-CanvasTexture "EyestaffAimCircle1" 256 256
-CanvasTexture "EyestaffAimCircle2" 256 256
-CanvasTexture "EyestaffAimCircle3" 256 256
-CanvasTexture "EyestaffAimCircle4" 256 256
-CanvasTexture "EyestaffAimCircle5" 256 256
-CanvasTexture "EyestaffAimCircle6" 256 256
-CanvasTexture "EyestaffAimCircle7" 256 256
-CanvasTexture "EyestaffAimCircle8" 256 256
+CanvasTexture "EyestaffAimCircle00" 512 512
+CanvasTexture "EyestaffAimCircle01" 512 512
+CanvasTexture "EyestaffAimCircle02" 512 512
+CanvasTexture "EyestaffAimCircle03" 512 512
+
+CanvasTexture "EyestaffAimCircle10" 512 512
+CanvasTexture "EyestaffAimCircle11" 512 512
+CanvasTexture "EyestaffAimCircle12" 512 512
+CanvasTexture "EyestaffAimCircle13" 512 512
+
+CanvasTexture "EyestaffAimCircle20" 512 512
+CanvasTexture "EyestaffAimCircle21" 512 512
+CanvasTexture "EyestaffAimCircle22" 512 512
+CanvasTexture "EyestaffAimCircle23" 512 512
+
+CanvasTexture "EyestaffAimCircle30" 512 512
+CanvasTexture "EyestaffAimCircle31" 512 512
+CanvasTexture "EyestaffAimCircle32" 512 512
+CanvasTexture "EyestaffAimCircle33" 512 512
+
+CanvasTexture "EyestaffAimCircle40" 512 512
+CanvasTexture "EyestaffAimCircle41" 512 512
+CanvasTexture "EyestaffAimCircle42" 512 512
+CanvasTexture "EyestaffAimCircle43" 512 512
+
+CanvasTexture "EyestaffAimCircle50" 512 512
+CanvasTexture "EyestaffAimCircle51" 512 512
+CanvasTexture "EyestaffAimCircle52" 512 512
+CanvasTexture "EyestaffAimCircle53" 512 512
+
+CanvasTexture "EyestaffAimCircle60" 512 512
+CanvasTexture "EyestaffAimCircle61" 512 512
+CanvasTexture "EyestaffAimCircle62" 512 512
+CanvasTexture "EyestaffAimCircle63" 512 512
+
+CanvasTexture "EyestaffAimCircle70" 512 512
+CanvasTexture "EyestaffAimCircle71" 512 512
+CanvasTexture "EyestaffAimCircle72" 512 512
+CanvasTexture "EyestaffAimCircle73" 512 512
+
+CanvasTexture "EyestaffAimCircle80" 512 512
+CanvasTexture "EyestaffAimCircle81" 512 512
+CanvasTexture "EyestaffAimCircle82" 512 512
+CanvasTexture "EyestaffAimCircle83" 512 512
 
 Texture ACTPPUFF
 	pic ACTPPUFF tics 8

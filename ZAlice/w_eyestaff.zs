@@ -8,11 +8,14 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	const ES_FULLCHARGE = 30;
 	const ES_FULLALTCHARGE = 42;
 	const ES_PARTALTCHARGE = 8;
+	const ES_MAXCIRCLES = 4;
 	int altStartupFrame;
 	
 	int altCharge;
 	vector2 altChargeOfs;
 	ToM_ESAimingCircle aimCircle;
+	ToM_ESAimingCircle aimCircles[ES_MAXCIRCLES]; //keep track of circles existing simultaneously
+	int aimCircleID;
 	vector3 aimCirclePos;
 	ToM_OuterBeamPos outerBeamPos;
 	
@@ -151,11 +154,12 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		invoker.charge++;
 		if (tom_debugmessages)
 		{
-			console.printf("Eyestaff alt charge: %d", invoker.charge);
+			console.printf("Eyestaff alt charge: \cd%d\c-/\cq%d\c-", invoker.charge, ES_FULLALTCHARGE);
 		}
 
 		bool enoughAmmo = invoker.DepleteAmmo(invoker.bAltFire, true);
-		if (invoker.charge % 3)
+		// consume 1 more ammo every 3 tics:
+		if (invoker.charge % 3 == 0)
 		{
 			enoughAmmo = invoker.DepleteAmmo(invoker.bAltFire, true);
 		}
@@ -199,7 +203,12 @@ class ToM_Eyestaff : ToM_BaseWeapon
 
 		if (!invoker.aimCircle)
 		{
-			invoker.aimCircle = ToM_ESAimingCircle.Create(ppos, ToM_Eyestaff(invoker), self.player.mo);
+			invoker.aimCircle = ToM_ESAimingCircle.Create(ppos, ToM_Eyestaff(invoker), self.player.mo, invoker.aimCircleID);
+			invoker.aimCircles[invoker.aimCircleID] = invoker.aimCircle;
+			if (++invoker.aimCircleID >= ES_MAXCIRCLES)
+			{
+				invoker.aimCircleID = 0;
+			}
 		}
 		invoker.aimCircle.SetOrigin(ppos, true);
 	}
@@ -209,6 +218,10 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		if (invoker.aimCircle)
 		{
 			invoker.aimCircle.Destroy();
+			for (int i = 0; i < ES_MAXCIRCLES; i++)
+			{
+				invoker.aimCircles[i] = null;
+			}
 		}
 		let player = self.player;
 		if (!player) return;
@@ -445,6 +458,10 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			A_StopSound(CHAN_WEAPON);
 			A_ClearOverlays(APSP_LeftHand, APSP_LeftHand);
+			if (invoker.aimCircle)
+			{
+				invoker.aimCircle.chargeFinished = true;
+			}
 		}
 		JEYC E 1
 		{
@@ -786,17 +803,19 @@ class ToM_EyestaffBurnControl : ToM_ControlToken
 
 class ToM_ESAimingCircle : ToM_BaseActor
 {
-	PlayerPawn shooter;
-	ToM_Eyestaff eyestaff;
-	int charge;
-	Canvas circleCanvas;
-	TextureID circleOut;
-	TextureID circleIn;
-	Shape2DTransform circleTransform;
-	Shape2D outerShape;
-	Shape2D innerShape;
-	Shape2D innerEdgeShape;
-	double circleOutAngle;
+	protected PlayerPawn shooter;
+	protected ToM_Eyestaff eyestaff;
+	protected int circleID;
+	protected int charge;
+	protected Canvas circleCanvas;
+	protected TextureID circleOut;
+	protected TextureID circleIn;
+	protected Shape2DTransform circleTransform;
+	protected Shape2D outerShape;
+	protected Shape2D innerShape;
+	protected Shape2D innerEdgeShape;
+	protected double circleOutAngle;
+	bool chargeFinished;
 
 	Default
 	{
@@ -810,13 +829,14 @@ class ToM_ESAimingCircle : ToM_BaseActor
 		height 1;
 	}
 
-	static ToM_ESAimingCircle Create(Vector3 pos, ToM_Eyestaff eyestaff, PlayerPawn shooter)
+	static ToM_ESAimingCircle Create(Vector3 pos, ToM_Eyestaff eyestaff, PlayerPawn shooter, int circleID)
 	{
 		let c = ToM_ESAimingCircle(Actor.Spawn('ToM_ESAimingCircle', pos));
 		if (c)
 		{
 			c.eyestaff = eyestaff;
 			c.shooter = shooter;
+			c.circleID = circleID;
 		}
 		return c;
 	}
@@ -824,7 +844,7 @@ class ToM_ESAimingCircle : ToM_BaseActor
 	override void PostbeginPlay()
 	{
 		Super.PostBeginPlay();
-		String canvasTexName = String.Format("EyestaffAimCircle%d", shooter? shooter.PlayerNumber() : 0);
+		String canvasTexName = String.Format("EyestaffAimCircle%d%d", shooter? shooter.PlayerNumber() : 0, circleID);
 		if (tom_debugmessages)
 		{
 			Console.Printf("Created canvas texture \cd%s\c- for \cy%s\c-", canvasTexName, GetClassName());
@@ -855,9 +875,9 @@ class ToM_ESAimingCircle : ToM_BaseActor
 		}
 		
 		circleTransform.Clear();
-		circleTransform.Scale((radius, radius));
+		circleTransform.Scale((radius*2, radius*2));
 		circleTransform.Rotate(ang);
-		circleTransform.Translate((radius*0.5, radius*0.5));
+		circleTransform.Translate((radius, radius));
 	}
 
 	void UpdateOuterShape(double ang)
@@ -887,6 +907,8 @@ class ToM_ESAimingCircle : ToM_BaseActor
 
 	void UpdateInnerShape()
 	{
+		if (chargeFinished) return;
+
 		if (!innerShape)
 		{
 			innerShape = new('Shape2D');
@@ -900,12 +922,11 @@ class ToM_ESAimingCircle : ToM_BaseActor
 		if (!eyestaff) return;
 
 		// Create center vertex:
-		Vector2 cmid = (0, 0);
-		innerShape.PushVertex(cmid);
+		innerShape.PushVertex((0, 0));
 		// Texture offsets relative to vertex positions, 
 		// since textures use 0.0-1.0 range:
 		Vector2 texOfs = (0.5, 0.5);
-		innerShape.PushCoord(cmid + texOfs);
+		innerShape.PushCoord(texOfs);
 		// Calculate how far to move along the circle based
 		// on highest latest charge (we're not reducing this
 		// since eyestaff will decrement it when firing,
@@ -918,9 +939,9 @@ class ToM_ESAimingCircle : ToM_BaseActor
 		Vector2 p = (0, -1); //first edge vertex (top)
 		for (int i = 0; i < steps; i++)
 		{
+			p = Actor.RotateVector(p, angStep);
 			innerShape.PushVertex(p);
 			innerShape.PushCoord(p + texOfs);
-			p = Actor.RotateVector(p, angStep);
 		}
 		// Create triangles. Each triangle must connect
 		// the center vertex with two edge vertices. We begin at 1,
@@ -954,10 +975,11 @@ class ToM_ESAimingCircle : ToM_BaseActor
 			p = (0, 0);
 			innerEdgeShape.PushVertex(p);
 			innerEdgeShape.PushCoord((0,0));
-			p = Actor.RotateVector((0, -1), finalAng - 4);
+			Vector2 s = (0, -0.38);
+			p = Actor.RotateVector(s, finalAng - 2);
 			innerEdgeShape.PushVertex(p);
 			innerEdgeShape.PushCoord((0,0));
-			p = Actor.RotateVector((0, -1), finalAng - 8);
+			p = Actor.RotateVector(s, finalAng);
 			innerEdgeShape.PushVertex(p);
 			innerEdgeShape.PushCoord((0,0));
 
@@ -981,7 +1003,7 @@ class ToM_ESAimingCircle : ToM_BaseActor
 
 		UpdateInnerShape();
 		circleCanvas.DrawShape(circleIn, false, innerShape);
-		if (eyestaff.charge >= charge)
+		if (charge < ToM_Eyestaff.ES_FULLALTCHARGE)
 		{
 			circleCanvas.DrawShapeFill(0xf170ff, 1.0, innerEdgeShape);
 		}

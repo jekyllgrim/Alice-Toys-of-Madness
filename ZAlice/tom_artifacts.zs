@@ -616,6 +616,11 @@ class ToM_GrowthPotionEffect : Powerup
 			prevWeaponScale = (dweap.WeaponScaleX, dweap.WeaponScaleY);
 			curWeaponScale = prevWeaponScale;
 		}
+		/*PSprite psp = pmo.player.psprites;
+		if (psp)
+		{
+			prevWeaponScale = curWeaponScale = psp.basescale;
+		}*/
 
 		// slower view bob:
 		pmo.ViewBobSpeed *= VIEWFACTOR;
@@ -733,10 +738,19 @@ class ToM_GrowthPotionEffect : Powerup
 			prevWeaponScale.y, 
 			targetWeaponScale.y
 		);
+		// We need to modify BOTH the WeaponScaleX/Y properties
+		// AND change the basescale of each active PSprite;
+		// without doing the latter, the currently active PSprites
+		// won't get updated until they are recreated or A_WeaponReady
+		// is called on them (which works only for PSP_WEAPON):
 		if (weap)
 		{
 			weap.WeaponScaleX = curWeaponScale.x;
 			weap.WeaponScaleY = curWeaponScale.Y;
+		}
+		for (PSprite psp = pmo.player.psprites; psp; psp = psp.next)
+		{
+			psp.basescale = curWeaponScale;
 		}
 		
 		// gradually modify scale:
@@ -845,6 +859,10 @@ class ToM_GrowthPotionEffect : Powerup
 					weap.WeaponScaleX = weap.default.WeaponScaleX;
 					weap.WeaponScaleY = weap.default.WeaponScaleY;
 				}
+			}
+			for (PSprite psp = pmo.player.psprites; psp; psp = psp.next)
+			{
+				psp.basescale = weap? (weap.WeaponScaleX, weap.WeaponScaleY) : (1.0, 1.2);
 			}
 			if (tom_debugmessages)
 			{

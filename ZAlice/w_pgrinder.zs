@@ -381,7 +381,7 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 				victim.TraceBleed(damage, self);
 				victim.SpawnBlood(pos, AngleTo(victim), damage);
 			}
-			SetDamage(damage - ToM_Utils.LinearMap(victim.GetMaxHealth(true), 60, 500, 1, 10));
+			SetDamage(damage - int(round(ToM_Utils.LinearMap(victim.GetMaxHealth(true), 60, 500, 1, 10))));
 		}
 	}
 	override int SpecialMissileHit(actor victim)

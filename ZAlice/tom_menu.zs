@@ -222,7 +222,7 @@ mixin class ToM_MainMenuDrawer
 		vector2 screenRes = (Screen.GetWidth(), screen.GetHeight());
 		vector2 scale = (screenRes.x / size.x, screenRes.y / size.y);
 
-		Screen.Dim("000000", 1, 0, 0, screenRes.x, screenRes.y);
+		Screen.Dim("000000", 1, 0, 0, int(screenRes.x), int(screenRes.y));
 
 		
 		Screen.DrawTexture(tex_bg, false,

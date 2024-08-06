@@ -206,7 +206,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			hi.A_Explode(80 + fallAttackForce, rad, 0);
 			hi.A_StartSound("weapons/hhorse/hitfloor", CHAN_7);
 			double qints = ToM_Utils.LinearMap(fallAttackForce, 4, 32, 1, 4, true);
-			int qdur = ToM_Utils.LinearMap(fallAttackForce, 4, 32, 10, 30, true);
+			int qdur = int(ToM_Utils.LinearMap(fallAttackForce, 4, 32, 10, 30, true));
 			hi.A_Quake(qints, qdur, 0, rad, sfx: "");
 			for (int i = random[sfx](12,16); i > 0; i--)
 			{
@@ -243,7 +243,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			}
 		}
 
-		int reps = ToM_Utils.LinearMap(fallAttackForce, 40, 1, 5, 1, true);
+		int reps = int(ToM_Utils.LinearMap(fallAttackForce, 40, 1, 5, 1, true));
 		for (int i = 0; i <= reps; i++)
 		{
 			let iring = ToM_HorseImpact(Spawn("ToM_HorseImpact", ipos));
@@ -276,7 +276,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				
 				if (InStateSequence(psp.curstate, ResolveState("AltFire")))
 				{
-					fallAttackForce = ceil( (abs(owner.vel.x) + abs(owner.vel.y)) * 0.15 + abs(owner.vel.z) );
+					fallAttackForce = int(ceil( (abs(owner.vel.x) + abs(owner.vel.y)) * 0.15 + abs(owner.vel.z) ));
 				}
 			}
 		}
@@ -649,7 +649,7 @@ class ToM_HorsePuff : ToM_BasePuff
 		double yaw = atan2(dir.y, dir.x);
 		double pch = -atan2(dir.z, dir.xy.Length());
 		Quat orientation = Quat.FromAngles(yaw, pch, 0.0);
-		for (int i = round(puff_particles * frandom[puffvis](0.8, 1.2)); i > 0; i--)
+		for (int i = int(round(puff_particles * frandom[puffvis](0.8, 1.2))); i > 0; i--)
 		{
 			double v = 30;
 			Quat offset = Quat.FromAngles(frandom[puffvis](-v, v), frandom[puffvis](-v, v), 0.0);

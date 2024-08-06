@@ -182,7 +182,7 @@ class ToM_Prop_RocketTurret : ToM_Prop_Monster
 		POSS A 35 A_LookEx(LOF_NoSeeSound, label:"Missile");
 		loop;
 	Missile:
-		POSS F 10 A_SpawnProjectile('ToM_Prop_Rocket');
+		POSS F 10 A_SpawnProjectile('Rocket');
 		POSS E 60;
 		TNT1 A 0 A_JumpIf(target == null, "Spawn");
 		loop;

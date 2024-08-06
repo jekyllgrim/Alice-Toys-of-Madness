@@ -169,7 +169,7 @@ class ToM_AliceHUD : BaseStatusBar
 		{
 			if (!userHudScale)
 				userHudScale = CVar.GetCVar('hud_scale', CPlayer);
-			int userscale = Clamp(userHudScale.GetInt(), -1., 8.);
+			int userscale = int(Clamp(userHudScale.GetInt(), -1., 8.));
 			// -1 = adapt to screen scale, 0 = use default scale
 			// apply manual scaling only if it's over 0:
 			if (userscale > 0.)
@@ -225,7 +225,7 @@ class ToM_AliceHUD : BaseStatusBar
 	Weapon prevWeapon;
 	void UpdateWeaponIconOfs(double ticfrac)
 	{
-		curWeapIconOfs = Clamp(curWeapIconOfs - ticfrac, 0, MAXWEAPICONOFS);
+		curWeapIconOfs = int(Clamp(curWeapIconOfs - ticfrac, 0, MAXWEAPICONOFS));
 
 		Weapon selected = Cplayer.readyweapon;
 		if (!selected) return;
@@ -809,7 +809,7 @@ class ToM_AliceHUD : BaseStatusBar
 		else
 		{
 			double pick = ToM_Utils.LinearMap(health, 65, 0, 0, mirrorCrackTex.Size() - 1);
-			int i = Clamp(round(pick), 0, mirrorCrackTex.Size() - 1);
+			int i = int(Clamp(round(pick), 0, mirrorCrackTex.Size() - 1));
 			texpath = String.Format("graphics/HUD/%s", mirrorCrackTex[i]);
 		}
 

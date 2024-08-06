@@ -1086,7 +1086,7 @@ class ToM_WhiteSmoke : ToM_BaseSmoke
 			{
 				smoke.color1 = "";
 			}
-			smoke.lifetime = ceil(alpha / fade) + fadedelay;
+			smoke.lifetime = int(ceil(alpha / fade)) + fadedelay;
 			smoke.flags = SPF_ROLL|SPF_REPLACE|flags;
 			smoke.size = TexMan.GetSize(smoketex) * scale * frandom[sfx](0.9,1.1);
 			smoke.sizestep = smoke.size * (dscale - 1.0) * 0.75;

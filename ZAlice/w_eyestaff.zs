@@ -993,7 +993,7 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 		pp.vel.x = frandom[eyec](-hv,hv);
 		pp.vel.y = frandom[eyec](-hv,hv);
 		pp.vel.z = frandom[eyec](-hv,0);
-		for (int i = ToM_Utils.LinearMap(charge, 0, ToM_Eyestaff.ES_FULLCHARGE, 1, 7); i > 0; i--)
+		for (int i = int(ToM_Utils.LinearMap(charge, 0, ToM_Eyestaff.ES_FULLCHARGE, 1, 7)); i > 0; i--)
 		{		
 			vector3 ppos = pos;
 			ppos.xy = Vec2Angle(frandom[eye](0, circleRad), random[eye](0, 359));

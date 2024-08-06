@@ -287,7 +287,7 @@ class ToM_Utils
 		density = Clamp(density, 0.025, 1024);
 		let diff = Level.Vec3Diff(from, to); // difference between two points
 		let dir = diff.Unit(); // direction from point 1 to point 2
-		int steps = ceil(diff.Length() / density); // how many steps to take:
+		int steps = int(ceil(diff.Length() / density)); // how many steps to take:
 
 		// Generic particle properties:
 		FSpawnParticleParams pp;

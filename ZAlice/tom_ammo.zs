@@ -40,7 +40,7 @@ class ToM_Ammo : Ammo
 
 	void A_SetManaFrame(int startFrame, int endFrame)
 	{
-		int i = round(ToM_Utils.LinearMap(manaBobFactor, -1, 1, startFrame, endFrame+1));
+		int i = int(round(ToM_Utils.LinearMap(manaBobFactor, -1, 1, startFrame, endFrame+1)));
 		if (i > endFrame) i = startFrame;
 		frame = i;
 	}

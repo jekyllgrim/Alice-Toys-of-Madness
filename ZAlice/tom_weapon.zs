@@ -1025,7 +1025,7 @@ class ToM_BasePuff : ToM_BaseActor
 		double yaw = atan2(dir.y, dir.x);
 		double pch = -atan2(dir.z, dir.xy.Length());
 		Quat orientation = Quat.FromAngles(yaw, pch, 0.0);
-		for (int i = round(puff_particles * frandom[puffvis](0.8, 1.2)); i > 0; i--)
+		for (int i = int(round(puff_particles * frandom[puffvis](0.8, 1.2))); i > 0; i--)
 		{
 			if (puff_partcolor != 0)
 			{
@@ -1284,7 +1284,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		// add vertical offset to position:
 		trail.pos = (ppos.x, ppos.y, ppos.z + trailz);
 		// lifetime is calculated based on alpha and fadefactor:
-		trail.lifetime = ceil(trailalpha / trailfade);
+		trail.lifetime = int(ceil(trailalpha / trailfade));
 		// apply random velocity if pvel is not 0:
 		if (pvel != 0)
 		{

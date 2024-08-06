@@ -207,7 +207,7 @@ class ToM_Teapot : ToM_BaseWeapon
 		A_StartSound(invoker.loopedAttackSound, CHAN_WEAPON, CHANF_LOOPING);
 		A_SoundPitch(CHAN_WEAPON, pp);
 		A_SoundVolume(CHAN_WEAPON, vol);
-		int freq = ToM_Utils.LinearMap(invoker.heat, 0, HEAT_MAX, 5, 1, true);
+		int freq = int(ToM_Utils.LinearMap(invoker.heat, 0, HEAT_MAX, 5, 1, true));
 	}
 	
 	static const int lidframes[] = { 2, 11, 12, 13 };

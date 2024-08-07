@@ -9,6 +9,7 @@ class ToM_BaseWeapon : Weapon abstract
 	protected int particleLayer_bottom; //used by multi-layer particle effects
 	protected int particleLayer_top; //used by multi-layer particle effects
 	protected double atkzoom;
+	protected bool isSelected;
 	
 	protected state kickstate;
 	protected double prekickspeed;
@@ -778,6 +779,23 @@ class ToM_BaseWeapon : Weapon abstract
 			pitchOfs = ToM_Utils.LinearMap(self.pitch, 0, -90, pitchOfs, 0);
 		return A_FireProjectile(missiletype, angle, useammo, spawnofs_xy, spawnheight, flags, pitchOfs);
 	}
+
+	virtual void OnRemoval(Actor dropper)
+	{
+		if (dropper)
+		{
+			dropper.A_StopSound(CHAN_WEAPON);
+			OnDeselect(dropper);
+		}
+	}
+
+	virtual void OnDeselect(Actor dropper)
+	{
+		if (dropper)
+		{
+			dropper.A_StopSound(CHAN_WEAPON);
+		}
+	}
 	
 	override void BeginPlay()
 	{
@@ -790,48 +808,10 @@ class ToM_BaseWeapon : Weapon abstract
 		s_idle = FindState("IdleAnim");
 	}
 	
-	// I don't want weapon pickups to be too common due to their
-	// somewhat dramatic appearance. If all players already have 
-	// this weapon, and this weapon uses ammo, we'll destroy it 
-	// and spawn ammo for it instead.
-	// If it doesn't use ammo, we'll just destroy it directly,
-	// since there's no need to spawn duplicates of weapons 
-	// that don't consume ammo.
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
-		/*if (bTOSSED && ToM_Utils.CheckPlayersHave(self.GetClass(), checkAll: true))
-		{
-			if (ammotype1)
-			{
-				let am = Ammo(Spawn(ammotype1, pos));
-				if (am)
-				{
-					am.bTOSSED = true;
-					am.vel = vel;
-				}
-				Destroy();
-				return;
-			}
-		}
-		let handler = ToM_MainHandler(EventHandler.Find("ToM_MainHandler"));
-		if (handler && handler.mapweapons.Find(GetClass()) == handler.mapweapons.Size())
-		{
-			handler.mapweapons.Push(GetClass());
-		}
-
-		// only allow playing the sound for world pickups:
-		// (otherwise Use() will catch items given through
-		// the Player.StartItem Property for some reason)*/
 		canPlayCheshireSound = !bNoSector;
-	}
-
-	virtual void OnRemoval(Actor dropper)
-	{
-		if (dropper)
-		{
-			dropper.A_StopSound(CHAN_WEAPON);
-		}
 	}
 
 	override void DetachFromOwner()
@@ -870,9 +850,20 @@ class ToM_BaseWeapon : Weapon abstract
 		}
 			
 		let weap = owner.player.readyweapon;
-		
-		if (!weap || weap != self)
+
+		if (weap && weap == self &&  owner.health > 0)
+		{
+			isSelected = true;
+		}
+		else
+		{
+			if (isSelected)
+			{
+				OnDeselect(owner);
+				isSelected = false;
+			}
 			return;
+		}
 		
 		if (SwayTics >= 0) 
 		{

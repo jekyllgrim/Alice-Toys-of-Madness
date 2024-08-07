@@ -138,14 +138,14 @@ class ToM_Teapot : ToM_BaseWeapon
 		}
 	}
 	
-	override void OnRemoval(Actor dropper)
+	override void OnDeselect(Actor dropper)
 	{
-		if (owner)
+		super.OnDeselect(dropper);
+		if (dropper)
 		{
-			owner.A_StopSound(CH_TPOTHEAT);
-			owner.A_StopSound(CH_TPOTCHARGE);
+			dropper.A_StopSound(CH_TPOTHEAT);
+			dropper.A_StopSound(CH_TPOTCHARGE);
 		}
-		super.OnRemoval(dropper);
 	}
 	
 	action state A_PickReady()

@@ -34,9 +34,9 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		weapon.ammouse2 1;
 	}
 
-	override void OnRemoval(Actor dropper)
+	override void OnDeselect(Actor dropper)
 	{
-		Super.OnRemoval(dropper);
+		Super.OnDeselect(dropper);
 		A_StopCharge();
 		A_StopBeam();
 		A_RemoveAimCircle();
@@ -273,26 +273,6 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			sms.charge = invoker.altCharge;
 			sms.target = self;
 			sms.tracer = invoker.aimCircle;
-		}
-	}	
-	
-	override void DoEffect()
-	{
-		super.DoEffect();
-		if (!owner || !owner.player)
-			return;
-
-		let weap = owner.player.readyweapon;
-
-		if (owner.health <= 0 || !weap || weap != self)
-		{
-			if (beam1) beam1.SetEnabled(false);
-			if (beam2) beam2.SetEnabled(false);
-			A_RemoveAimCircle();
-			if (owner && owner.IsActorPlayingSound(CHAN_WEAPON, loopedAttackSound))
-			{
-				owner.A_StopSound(CHAN_WEAPON);
-			}
 		}
 	}
 	

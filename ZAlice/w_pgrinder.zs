@@ -136,6 +136,15 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		A_StartSound("weapons/pgrinder/fire", CHAN_WEAPON, CHANF_OVERLAP, startTime: 0.6);
 		A_QuakeEX(1,1,0,4,0,1, sfx:"world/null", flags:QF_SCALEDOWN);
 	}
+
+	override void OnDeselect(Actor dropper)
+	{
+		super.OnDeselect(dropper);
+		if (dropper)
+		{
+			dropper.A_StopSound(CHAN_7);
+		}
+	}
 	
 	States
 	{
@@ -161,6 +170,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 		PPGR Y 0
 		{
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
+			A_StopSound(CHAN_7);
 		}
 		#### ###### 1
 		{

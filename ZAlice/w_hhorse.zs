@@ -1,6 +1,7 @@
 class ToM_HobbyHorse : ToM_BaseWeapon
 {
 	int combo;
+	int totalcombo;
 	int fallAttackForce;
 	
 	Default
@@ -39,12 +40,15 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		{
 			decaltype = 'HorseDecalDown';
 		}
+
+		Actor victim, puff;
+		bool wasHit;
 		for (int i = 0; i < 2; i++)
 		{
-			A_SwingAttack(
+			[victim, puff, wasHit] = A_SwingAttack(
 				(i == 0)? damage : 0, 
 				stepX, stepY,
-				range: 70, 
+				range: 80, 
 				pufftype: (i == 0)? 'ToM_HorsePuff' : '',
 				trailcolor: 0xff00BB,
 				trailsize: 8,
@@ -52,6 +56,63 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				rstyle: Style_Add,
 				decaltype: (i == 0)? decaltype : 'none',
 				id: i);
+			
+			if (i != 0 || !victim || !wasHit || !(victim.bIsMonster || victim.player))
+			{
+				continue;
+			}
+
+			double stunchance = ToM_Utils.LinearMap(victim.health, 300, 2000, 100, 25, true);
+			if (stunchance < random(0, 100))
+			{
+				continue;
+			}
+			
+			if (!victim.bNogravity && !victim.bDontThrust)
+			{
+				double pushspeed = ToM_Utils.LinearMap(victim.mass, 100, 800, 5, 0, true);
+				if (victim.health < 0)
+				{
+					pushspeed *= 2;
+				}
+
+				Vector3 pushdir = (pushspeed, 0, 0);
+				switch (decaltype)
+				{
+				case 'HorseDecalLeft':
+					pushdir.xy = Actor.RotateVector(pushdir.xy, self.angle + 90);
+					break;
+				case 'HorseDecalRight':
+					pushdir.xy = Actor.RotateVector(pushdir.xy, self.angle - 90);
+					break;
+				default:
+					pushdir.z = pushspeed;
+					break;
+				}
+				victim.vel = pushdir;
+			}
+
+			if (victim.health <= 0)
+			{
+				victim.freezeTics = 0;
+			}
+			else
+			{
+				victim.freezeTics = max(victim.freezeTics, int(ToM_Utils.LinearMap(invoker.totalcombo, 1, 8, 12, 35, true)));
+				if (victim.freezeTics > 0)
+				{
+					let stunflash = ToM_ActorLayer.Create(victim, STYLE_TranslucentStencil, alpha: 0.7, fade: 0.7 / victim.freezeTics, fullbright: true);
+					if (stunflash)
+					{
+						stunflash.SetShade(0xffffff);
+					}
+				}
+				State pst = victim.FindState("Pain");
+				if (victim.freezeTics > 12 && pst && !InStateSequence(victim.curstate, pst))
+				{
+					victim.SetState(pst);
+				}
+			}
 		}
 	}
 
@@ -258,6 +319,19 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 
 		vel.z = 5;
 	}
+
+	override void OnDeselect(Actor dropper)
+	{
+		Super.OnDeselect(dropper);
+		if (dropper)
+		{
+			if (dropper.IsActorPlayingSound(CHAN_BODY, "weapons/hhorse/freefall"));
+			{
+				dropper.A_StopSound(CHAN_BODY);
+			}
+			combo = totalcombo = 0;
+		}
+	}
 	
 	override void DoEffect()
 	{
@@ -305,6 +379,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		HHRS A 0
 		{
 			A_OverlayPivot(OverlayID(), 0.6, 0.8);
+			invoker.combo = invoker.totalcombo = 0;
 		}
 		#### ###### 1
 		{
@@ -318,6 +393,10 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		HHRS A 1 
 		{
 			A_WeaponReady();
+			if (invoker.totalcombo > 0)
+			{
+				invoker.totalcombo--;
+			}
 			A_SpawnHorseEyeFire();
 		}
 		wait;
@@ -356,6 +435,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		{
 			A_ResetPSprite();
 			invoker.combo++;
+			invoker.totalcombo++;
 			if (invoker.combo <= 1) {
 				A_PlayerAttackAnim(30, 'attack_horse', 15);
 				return ResolveState("RightSwing");
@@ -387,36 +467,23 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		HHRS BB 1 
 		{
-			A_HorseSwing(50, 14, 4);
+			A_HorseSwing(40, 14, 4);
 			A_WeaponOffset(-35, 12, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
-		//TNT1 A 0 A_Overlay(APSP_Overlayer, "RightSwingTrail");
 		HHRS DD 1 
 		{
-			A_HorseSwing(50, 14, 4);
+			A_HorseSwing(40, 14, 4);
 			A_WeaponOffset(-50, 22, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 3, WOF_ADD);
 		}
 		HHRS DDD 1 
 		{
-			A_HorseSwing(50, 14, 4);
+			A_HorseSwing(40, 14, 4);
 			A_WeaponOffset(-50, 22, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 4, WOF_ADD);
 		}
 		goto AttackEnd;
-	RightSwingTrail:
-		HHRR ABCDA 1 bright
-		{
-			let from = player.FindPSprite(PSP_WEAPON);
-			let to = player.FindPSprite(OverlayID());
-			if (from && to)
-			{
-				to.pivot = from.pivot;
-				to.rotation = from.rotation;
-			}
-		}
-		stop;
 	LeftSwing:
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 1);
 		HHRS AAAEEEE 1 
@@ -437,36 +504,23 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		HHRS FF 1 
 		{
-			A_HorseSwing(50, -15, 5);
+			A_HorseSwing(40, -15, 5);
 			A_WeaponOffset(35, 12, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
-		//TNT1 A 0 A_Overlay(APSP_Overlayer, "LeftSwingTrail");
 		HHRS HH 1 
 		{
-			A_HorseSwing(50, -15, 5);
+			A_HorseSwing(40, -15, 5);
 			A_WeaponOffset(45, 18, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		HHRS HHH 1 
 		{
-			A_HorseSwing(50, -15, 5);
+			A_HorseSwing(40, -15, 5);
 			A_WeaponOffset(45, 18, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 		}
 		goto AttackEnd;
-	LeftSwingTrail:
-		HHRL ABCDA 1 bright
-		{
-			let from = player.FindPSprite(PSP_WEAPON);
-			let to = player.FindPSprite(OverlayID());
-			if (from && to)
-			{
-				to.pivot = from.pivot;
-				to.rotation = from.rotation;
-			}
-		}
-		stop;
 	Overhead:
 		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.2, 0.8);
 		HHRS KKKKLLLL 1 
@@ -486,37 +540,23 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_PrepareHorseSwing((-2, -30), (-18, -30));
 			A_StartSound("weapons/hhorse/heavyswing", CHAN_AUTO);
 			A_CameraSway(0, 5, 7);
-			//A_Overlay(APSP_Overlayer, "OverheadTrail");
 		}
 		HHRS NOO 1 
 		{
-			A_HorseSwing(65, 1.5, 16);
+			A_HorseSwing(60, 1.5, 16);
 			A_WeaponOffset(-24, 35, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.1, WOF_ADD);
 			A_ScalePSprite(OverlayID(), -0.003, -0.003, WOF_ADD);
 		}
 		HHRS OO 1 
 		{
-			A_HorseSwing(65, 1.5, 16);
+			A_HorseSwing(60, 1.5, 16);
 			A_WeaponOffset(-24, 35, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.1, WOF_ADD);
 			A_ScalePSprite(OverlayID(), -0.003, -0.003, WOF_ADD);
 		}
 		TNT1 A 0 { invoker.combo = 0; }
 		goto AttackEnd;
-	OverheadTrail:
-		TNT1 A 1;
-		HHRO ABCD 1 bright
-		{
-			let from = player.FindPSprite(PSP_WEAPON);
-			let to = player.FindPSprite(OverlayID());
-			if (from && to)
-			{
-				to.pivot = from.pivot;
-				to.rotation = from.rotation;
-			}
-		}
-		stop;
 	Altfire:
 		TNT1 A 0 
 		{

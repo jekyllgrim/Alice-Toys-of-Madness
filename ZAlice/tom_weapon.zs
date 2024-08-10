@@ -220,7 +220,7 @@ class ToM_BaseWeapon : Weapon abstract
 		);
 
 		// Debug spot:
-		if (tom_debugmessages)
+		if (tom_debugmessages > 1)
 		{
 			let spot = Spawn("ToM_DebugSpot", hit.hitlocation);
 			spot.A_SetHealth(1);
@@ -795,6 +795,7 @@ class ToM_BaseWeapon : Weapon abstract
 		{
 			dropper.A_StopSound(CHAN_WEAPON);
 		}
+		FOVScale = 1.0;
 	}
 	
 	override void BeginPlay()

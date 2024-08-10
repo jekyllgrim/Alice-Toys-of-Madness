@@ -11,7 +11,7 @@ class ToM_Jacks : ToM_BaseWeapon
 	}
 	int jackswait; //wait time for safe reload
 	Actor jackball;
-	array<ToM_JackProjectile> thrownSeekers;
+	array<ToM_RealSeeker> thrownSeekers;
 
 	Default
 	{
@@ -84,7 +84,7 @@ class ToM_Jacks : ToM_BaseWeapon
 		A_StartSound("weaopons/jacks/toss", CHAN_WEAPON);
 		for (int i = JPROJNUMBER; i > 0; i--)
 		{
-			let proj = ToM_JackProjectile(
+			let proj = ToM_RealSeeker(
 				A_Fire3DProjectile(
 					"ToM_RealSeeker", 
 					useammo: false,
@@ -123,6 +123,9 @@ class ToM_Jacks : ToM_BaseWeapon
 			if (jack)
 			{
 				jack.tracer = null;
+				jack.bMissile = null;
+				jack.bNoInteraction = true;
+				jack.returnspeed = owner? jack.Distance3D(owner) / jack.JRETURNTIME : 0;
 				jack.SetStateLabel("ReturnToShooter");
 			}
 		}
@@ -286,6 +289,9 @@ class ToM_JackProjectile : ToM_Projectile
 	{
 		if (!victim)
 			return MHIT_DEFAULT;
+		
+		if (target && victim == target)
+			return MHIT_PASS;
 
 		if (victim.bSHOOTABLE && !victim.bNONSHOOTABLE)
 		{
@@ -381,7 +387,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 		JMAXFLYTIME = 30,
 	}
 	
-	protected double returnspeed;
+	double returnspeed;
 
 	Default
 	{
@@ -393,18 +399,13 @@ class ToM_RealSeeker : ToM_JackProjectile
 		bouncesound "weapons/jacks/ricochet";
 		Radius 4;
 		Height 4;
-		//+BOUNCEONACTORS
 	}
 	
 	override void Tick()
 	{
 		super.Tick();
-		if (isFrozen()) return;
-			
-		if (vel.length () < 3 && !tracer)
-		{
-			bMISSILE = false;
-		}
+		Console.Printf("\cyJACKS\c- age: \cd%d\c-/%d | tracer: \cd%d\c- | bMissile: \cd%d\c-", age, JSLIFETIME, tracer != null, bMISSILE);
+		if (isFrozen() || bNoInteraction) return;
 		
 		// Reduce duration faster if the jack
 		// is resting and still haven't found
@@ -419,31 +420,47 @@ class ToM_RealSeeker : ToM_JackProjectile
 	// but with some new rules:
 	override int SpecialMissileHit(Actor victim)
 	{
-		int ret = super.SpecialMissileHit(victim);
-		// This type of jacks CAN rip through bosses and DONTRIP:
+		let ret = super.SpecialMissileHit(victim);
+
+		if (!victim || (target && victim == target))
+		{
+			return ret;
+		}
+
+		// Extra rule: seeking jacks CAN rip through bosses and DONTRIP,
+		// in contrast to regular jacks:
 		if (ret == MHIT_DEFAULT && (victim.bBoss || victim.bDontRip))
 		{
 			ret = MHIT_PASS;
 		}
-		if (ret == MHIT_PASS && victim)
+
+		// We hit something valid:
+		if (ret == MHIT_PASS && (victim.bSolid || victim.default.bShootable))
 		{
-			// If the jacks hit a monster without having bounced yet,
-			// set this monster as their tracer:
+			// If the jacks hit a valid enemy without having obtained
+			// a tracer yet, set this actor as the tracer:
 			if (!tracer)
 			{
-				tracer = ripvictim = victim;
+				if (victim.health > 0 && (victim.bIsMonster || victim.player))
+				{
+					tracer = ripvictim = victim;
+				}
+				else
+				{
+					GetTracer();
+				}
 			}
-			// When successfully hitting a valid victim,
+			// When successfully hitting something shootable,
 			// seeker jacks bounce off it upwards, with a little horizontal
 			// momentum.
 			// (Imitates the fact that in AMA jacks aim at victims not only 
 			// after bouncing off a surface, but also after bouncing off
-			// a victim and losing velocity in the air):
-			if (ripvictim && victim == ripvictim)
-			{
-				vel.xy = ( frandom[vicbounce](-4, 4), frandom[vicbounce](-4, 4) );
-				vel.z = frandom[vicbounce](5, 10);
-			}
+			// a victim and losing velocity in the air).
+			// If this was a monster/player, it also got damaged earlier in
+			// the Super.SpecialMissileHit call. Otherwise (shootable but
+			// not a monster or a player) jacks will just bounce of this:
+			vel.xy = ( frandom[vicbounce](-4, 4), frandom[vicbounce](-4, 4) );
+			vel.z = frandom[vicbounce](5, 10);
 		}
 		return ret;
 	}
@@ -451,38 +468,32 @@ class ToM_RealSeeker : ToM_JackProjectile
 	void GetTracer(double atkdist = 400)
 	{
 		tracer = null;
-		double closestDist = double.infinity;
+		double closestDist = atkdist;
 		BlockThingsIterator itr = BlockThingsIterator.Create(self,atkdist);
-		array<Actor> victims;
 		while (itr.next()) 
 		{
 			let next = itr.thing;
-			if (!next || next == self || next == target)
-				continue;
-			bool isValid = (next.bSHOOTABLE && (next.bIsMonster || next.player) && next.health > 0);
-			if (!isValid)
+			if (!next || next == self || 
+				next == target || 
+				!next.bSHOOTABLE || 
+				!(next.bIsMonster || next.player) || 
+				next.health <= 0)
 				continue;
 			double dist = Distance3D(next);
-			if (dist > atkdist)
+			if (dist > closestDist)
 				continue;
-			if (dist < closestDist)
-				closestDist = dist;
 			if (!CheckSight(next,SF_IGNOREWATERBOUNDARY))
 				continue;
-			ToM_Utils.AddByDistance(next, self, victims);
-		}
-		if (victims.Size() > 0)
-		{
-			tracer = victims[0];
+			closestDist = dist;
+			tracer = next;
 		}
 	}
 	
-	// Every time the jack bounces off a surface,
-	// it'll aim at its victim (tracer) and
-	// jump at them:
+	// Every time the jack bounces off a surface, it'll aim at its
+	// tracer (or try to find a new one) and "bounce" towards it:
 	override int SpecialBounceHit(Actor bounceMobj, Line bounceLine, readonly<SecPlane> bouncePlane)
 	{
-		if (!tracer || !CheckSight(tracer, SF_IGNOREWATERBOUNDARY))
+		if (!tracer || !CheckSight(tracer, SF_IGNOREWATERBOUNDARY) || tracer.health <= 0 || Distance3D(tracer) > JMAXSEEKDIST)
 		{
 			GetTracer();
 		}
@@ -513,6 +524,10 @@ class ToM_RealSeeker : ToM_JackProjectile
 		}
 
 		tracer = null;
+		if (vel.length() < 3)
+		{
+			bMissile = false;
+		}
 		return MHIT_DEFAULT;
 	}
 
@@ -542,22 +557,9 @@ class ToM_RealSeeker : ToM_JackProjectile
 			{
 				tracer = null;
 			}
-			if (tracer && (tracer.health <= 0 || Distance3D(tracer) > JMAXSEEKDIST))
-			{
-				tracer = null;
-			}
 		}
 		wait;
 	ReturnToShooter:
-		TNT1 A 0
-		{
-			// Calculate return velocity for a fixed time:
-			if (target)
-			{
-				returnspeed = Distance3D(target) / JRETURNTIME;
-			}
-			bNOINTERACTION = true;
-		}
 		M000 A 1
 		{
 			if (!target)

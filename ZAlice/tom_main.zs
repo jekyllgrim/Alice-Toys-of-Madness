@@ -521,7 +521,7 @@ Class ToM_SmallDebris : ToM_BaseDebris abstract
 // this actor will be placed on top of the
 // original one, and with renderstyles, color
 // and alpha applied, it creates a "layer."
-class ToM_ActorLayer : ToM_SmallDebris abstract
+class ToM_ActorLayer : ToM_SmallDebris
 {
 	double fade;
 	property fade : fade;
@@ -534,6 +534,19 @@ class ToM_ActorLayer : ToM_SmallDebris abstract
 		ToM_ActorLayer.fade 0.1;
 		Renderstyle 'Translucent';
 		Alpha 1.0;
+	}
+
+	static ToM_ActorLayer Create(Actor victim, uint style = STYLE_Translucent, double alpha = 1.0, double fade = 0, bool fullbright = false)
+	{
+		let actorflash = ToM_ActorLayer(Spawn('ToM_ActorLayer', victim.pos));
+		if (actorflash)
+		{
+			actorflash.master = victim;
+			actorflash.bBright = fullbright;
+			actorflash.A_SetRenderstyle(alpha, style);
+			actorflash.fade = fade;
+		}
+		return actorflash;
 	}
 	
 	override void PostBeginPlay()
@@ -552,8 +565,8 @@ class ToM_ActorLayer : ToM_SmallDebris abstract
 			Destroy();
 			return;
 		}
-		if (!master.isFrozen())
-		{
+		//if (!master.isFrozen())
+		//{
 			SetOrigin(master.pos, true);
 			ToM_Utils.CopyAppearance(self, master, style: false, size: true);
 			//console.printf("%s layer alpha: %.2f", master.GetTag(), alpha);
@@ -563,7 +576,7 @@ class ToM_ActorLayer : ToM_SmallDebris abstract
 				if (alpha <= 0.0)
 					Destroy();
 			}
-		}
+		//}
 	}
 }
 

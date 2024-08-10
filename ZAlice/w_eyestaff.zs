@@ -1152,6 +1152,14 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 					if (Level.IsPointInLevel(ppos))
 						break;
 				}
+				for (int i = projTargets.Size() - 1; i >= 0; i--)
+				{
+					let mo = projTargets[i];
+					if (!mo || mo.health <= 0)
+					{
+						projTargets.Delete(i);
+					}
+				}
 				let proj = ToM_EyestaffProjectile(Spawn("ToM_EyestaffProjectile", ppos));
 				if (proj)
 				{
@@ -1159,15 +1167,18 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 					proj.altMode = true;
 					if (projTargets.Size() > 0)
 					{
-						proj.tracer = projTargets[targetID];
 						if (++targetID >= projTargets.Size())
 						{
 							targetID = 0;
 						}
-						Vector3 dir = level.Vec3Diff(proj.pos, proj.tracer.pos).Unit();
-						proj.vel = dir * proj.speed;
+						proj.tracer = projTargets[targetID];
+						if (proj.tracer)
+						{
+							Vector3 dir = level.Vec3Diff(proj.pos, proj.tracer.pos).Unit();
+							proj.vel = dir * proj.speed;
+						}
 					}
-					else
+					if (!proj.tracer)
 					{
 						proj.vel.z = -proj.speed;
 						double hvel = 2.8;

@@ -344,12 +344,13 @@ class ToM_IceWandProjectileReal : ToM_PiercingProjectile
 			dmg = victim.ApplyDamageFactor('Ice', random[icewand](3,5));
 			if (dmg > 0)
 			{
+				dmg = victim.DamageMobj(self, target? target : Actor(self), dmg, 'Normal', DMG_THRUSTLESS|DMG_NO_PAIN);
+			}
+			//Console.Printf("Victim \cd%s\c- received \cg%d\c- damage from Ice Wand", victim.GetClassName(), dmg);
+			if (dmg > 0)
+			{
 				ToM_FreezeController.AddFreeze(victim);
 			}
-		}
-		if (dmg > 0)
-		{
-			victim.DamageMobj(self, target? target : Actor(self), dmg, 'Normal', DMG_THRUSTLESS|DMG_NO_PAIN);
 		}
 	}
 
@@ -527,7 +528,10 @@ class ToM_FreezeController : Powerup
 		if (effectTics && owner.health > 0 && owner.curstate != slowstate)
 		{
 			slowstate = owner.curstate;
-			owner.tics = round(owner.curstate.tics * ToM_Utils.LinearMap(effectTics, 0, MAXDURATION, 2, 4));
+			if (owner.curstate.tics > 0)
+			{
+				owner.tics = round(owner.curstate.tics * ToM_Utils.LinearMap(effectTics, 0, MAXDURATION, 2, 4));
+			}
 			if (colorLayer)
 			{
 				colorLayer.alpha = ToM_Utils.LinearMap(effectTics, 0, MAXDURATION, 0.0, 1.0, true);

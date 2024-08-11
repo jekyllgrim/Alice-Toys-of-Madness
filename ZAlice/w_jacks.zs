@@ -404,7 +404,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 	override void Tick()
 	{
 		super.Tick();
-		Console.Printf("\cyJACKS\c- age: \cd%d\c-/%d | tracer: \cd%d\c- | bMissile: \cd%d\c-", age, JSLIFETIME, tracer != null, bMISSILE);
+		//Console.Printf("\cyJACKS\c- age: \cd%d\c-/%d | tracer: \cd%d\c- | bMissile: \cd%d\c-", age, JSLIFETIME, tracer != null, bMISSILE);
 		if (isFrozen() || bNoInteraction) return;
 		
 		// Reduce duration faster if the jack

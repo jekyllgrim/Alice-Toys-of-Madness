@@ -4,6 +4,9 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	int totalcombo;
 	int fallAttackForce;
 	double curPSProtation;
+	Vector2 curPSPscale;
+	int swingHoldTime; //incremented if the player presses and holds the attack button, adding extra damage
+	const MAXHOLDTIME = 40;
 	
 	Default
 	{
@@ -22,6 +25,33 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		A_PrepareSwing(eye1start.x, eye1start.y, 0);
 		A_PrepareSwing(eye2start.x, eye2start.y, 1);
 	}
+
+	action void A_PrepareHorseHold()
+	{
+		let psp = player.FindPSprite(OverlayID());
+		invoker.curPSProtation = psp.rotation;
+		invoker.curPSPscale = psp.scale;
+		invoker.swingHoldTime = 0;
+	}
+
+	action State A_HoldHorseSwing(StateLabel nextSlashState)
+	{
+		State st = ResolveState(nextSlashState);
+		if (!st)
+		{
+			return ResolveState("Ready");
+		}
+		if (invoker.atkButtonState == ABS_Held)
+		{
+			invoker.swingHoldTime = invoker.swingHoldTime < MAXHOLDTIME? invoker.swingHoldTime + 1 : MAXHOLDTIME;
+			double rot = ToM_Utils.LinearMap(invoker.swingHoldTime, 0, MAXHOLDTIME, 0, 0.25, true);
+			A_OverlayRotate(OverlayID(), invoker.curPSProtation + frandom(-rot, rot), WOF_INTERPOLATE);
+			double sc = ToM_Utils.LinearMap(invoker.swingHoldTime, 0, MAXHOLDTIME, 0, 0.05);
+			A_OverlayScale(OverlayID(), invoker.curPSPscale.x + sc, invoker.curPSPscale.y + sc, WOF_INTERPOLATE);
+			return ResolveState(null);
+		}
+		return st;
+	}
 	
 	// Do the attack and move the offset one step as defined above:
 	action void A_HorseSwing(int damage, double stepX, double stepY)
@@ -29,17 +59,23 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		let psp = player.FindPSprite(PSP_WEAPON);
 		if (!psp) return;
 		name decaltype;
-		if (InStateSequence(psp.curstate, ResolveState("RightSwing")))
+		switch (invoker.combo)
 		{
-			decaltype = 'HorseDecalLeft';
+			case 0:
+			case 1:
+				decaltype = 'HorseDecalLeft';
+				break;
+			case 2:
+				decaltype = 'HorseDecalRight';
+				break;
+			default:
+				decaltype = 'HorseDecalDown';
+				break;
 		}
-		else if (InStateSequence(psp.curstate, ResolveState("LeftSwing")))
+
+		if (invoker.swingHoldTime > 0)
 		{
-			decaltype = 'HorseDecalRight';
-		}
-		else
-		{
-			decaltype = 'HorseDecalDown';
+			damage += int(round(ToM_Utils.LinearMap(invoker.swingHoldTime, 0, MAXHOLDTIME, 0, 20, true)));
 		}
 
 		Actor victim, puff;
@@ -77,19 +113,23 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 					pushspeed *= 2;
 				}
 
-				Vector3 pushdir = (pushspeed, 0, 0);
-				switch (decaltype)
+				Vector3 pushdir;
+				double ang;
+				switch (invoker.combo)
 				{
-				case 'HorseDecalLeft':
-					pushdir.xy = Actor.RotateVector(pushdir.xy, self.angle + 90);
-					break;
-				case 'HorseDecalRight':
-					pushdir.xy = Actor.RotateVector(pushdir.xy, self.angle - 90);
-					break;
-				default:
-					pushdir.z = pushspeed;
-					break;
+					case 0:
+					case 1:
+						ang = self.angle + 90;
+						break;
+					case 2:
+						ang = self.angle - 90;
+						break;
+					default:
+						ang = self.angle;
+						pushdir.z = pushspeed;
+						break;
 				}
+				pushdir.xy = Actor.RotateVector((pushspeed, 0), ang);
 				victim.vel = pushdir;
 			}
 
@@ -326,11 +366,12 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		Super.OnDeselect(dropper);
 		if (dropper)
 		{
-			if (dropper.IsActorPlayingSound(CHAN_BODY, "weapons/hhorse/freefall"));
+			if (dropper.IsActorPlayingSound(CHAN_BODY, "weapons/hhorse/freefall"))
 			{
 				dropper.A_StopSound(CHAN_BODY);
 			}
 			combo = totalcombo = 0;
+			swingHoldTime = 0;
 		}
 	}
 	
@@ -394,6 +435,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		HHRS A 1 
 		{
 			A_WeaponReady();
+			invoker.swingHoldTime = 0;
 			if (invoker.totalcombo > 0 && level.maptime % 3 == 0)
 			{
 				invoker.totalcombo--;
@@ -460,20 +502,8 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_WeaponOffset(3, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -0.5, WOF_ADD);
 		}
-		#### # 0 
-		{
-			let psp = player.FindPSprite(OverlayID());
-			invoker.curPSProtation = psp.rotation;
-		}
-		#### # 1
-		{
-			if (invoker.atkButtonState == ABS_Held)
-			{
-				A_OverlayRotate(OverlayID(), invoker.curPSProtation + frandom(-0.2, 0.2), WOF_INTERPOLATE);
-				return ResolveState(null);
-			}
-			return ResolveState("RightSwingDo");
-		}
+		#### # 0 A_PrepareHorseHold();
+		#### # 1 A_HoldHorseSwing("RightSwingDo");
 		wait;
 	RightSwingDo:
 		TNT1 A 0 
@@ -513,20 +543,8 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_WeaponOffset(-3, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.5, WOF_ADD);
 		}
-		#### # 0 
-		{
-			let psp = player.FindPSprite(OverlayID());
-			invoker.curPSProtation = psp.rotation;
-		}
-		#### # 1
-		{
-			if (invoker.atkButtonState == ABS_Held)
-			{
-				A_OverlayRotate(OverlayID(), invoker.curPSProtation + frandom(-0.2, 0.2), WOF_INTERPOLATE);
-				return ResolveState(null);
-			}
-			return ResolveState("LeftSwingDo");
-		}
+		#### # 0 A_PrepareHorseHold();
+		#### # 1 A_HoldHorseSwing("LeftSwingDo");
 		wait;
 	LeftSwingDo:
 		TNT1 A 0 
@@ -568,20 +586,8 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), -0.3, WOF_ADD);
 			A_ScalePSprite(OverlayID(), 0.0025, 0.0025,WOF_ADD);
 		}
-		#### # 0 
-		{
-			let psp = player.FindPSprite(OverlayID());
-			invoker.curPSProtation = psp.rotation;
-		}
-		#### # 1
-		{
-			if (invoker.atkButtonState == ABS_Held)
-			{
-				A_OverlayRotate(OverlayID(), invoker.curPSProtation + frandom(-0.2, 0.2), WOF_INTERPOLATE);
-				return ResolveState(null);
-			}
-			return ResolveState("OverheadDo");
-		}
+		#### # 0 A_PrepareHorseHold();
+		#### # 1 A_HoldHorseSwing("OverheadDo");
 		wait;
 	OverheadDo:
 		TNT1 A 0 

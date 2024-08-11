@@ -16,7 +16,7 @@ class ToM_Ammo : Ammo
 	Default 
 	{
 		xscale 0.4;
-		yscale 0.33334;
+		yscale 0.4 / 1.2;
 		+BRIGHT
 		+RANDOMIZE
 		+ROLLSPRITE
@@ -82,6 +82,12 @@ class ToM_Ammo : Ammo
 			velz: -frandom(0.2, 0.85),
 			sizestep: 4 / double(-life)
 		);
+	}
+	
+	override void PostBeginPlay()
+	{
+		Super.PostBeginPlay();
+		scale.y = scale.x / level.pixelstretch;
 	}
 	
 	States {

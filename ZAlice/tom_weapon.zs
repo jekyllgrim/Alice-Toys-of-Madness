@@ -3,16 +3,15 @@ class ToM_BaseWeapon : Weapon abstract
 	mixin ToM_PlayerSightCheck;
 	mixin ToM_CheckParticles;
 	
+	protected bool isSelected;
 	protected vector2 targOfs; //used by DampedRandomOffset
 	protected vector2 shiftOfs; //used by DampedRandomOffset
 	protected int idleCounter; //used by idle animations 
 	protected int particleLayer_bottom; //used by multi-layer particle effects
 	protected int particleLayer_top; //used by multi-layer particle effects
 	protected double atkzoom;
-	protected bool isSelected;
-	
-	protected state kickstate;
-	protected double prekickspeed;
+	protected int atkButtonState;
+	protected int atkButtonStateAlt;
 	
 	color pickupParticleColor;
 	Property PickupParticleColor : pickupParticleColor;
@@ -42,7 +41,7 @@ class ToM_BaseWeapon : Weapon abstract
 	protected state s_althold;
 	protected state s_idle;
 	
-	enum PABCheck
+	enum EPABCheck
 	{
 		PAB_ANY,		//pressed now (doesn't matter if held)
 		PAB_HELD,		//pressed AND held
@@ -50,11 +49,19 @@ class ToM_BaseWeapon : Weapon abstract
 		PAB_HELDONLY	//NOT pressed but held
 	}
 	
-	enum PABbuttonCheck
+	enum EPABbuttonCheck
 	{
 		PAB_AUTO,
 		PAB_PRIMARY,
 		PAB_SECONDARY
+	}
+
+	enum EAtkButtonStates
+	{
+		ABS_None,
+		ABS_Held,
+		ABS_Lifted,
+		ABS_PressedAgain,
 	}
 	
 	Default 
@@ -780,6 +787,20 @@ class ToM_BaseWeapon : Weapon abstract
 		return A_FireProjectile(missiletype, angle, useammo, spawnofs_xy, spawnheight, flags, pitchOfs);
 	}
 
+	action State A_CheckNextSlash(StateLabel nextSlashState = "Fire", bool allowSwitch = true)
+	{
+		if (allowSwitch)
+		{
+			player.WeaponState |= WF_WEAPONSWITCHOK;
+		}
+		if (invoker.atkButtonState == ABS_PressedAgain)
+		{
+			invoker.atkButtonState = ABS_Held;
+			return ResolveState(nextSlashState);
+		}
+		return ResolveState(null);
+	}
+
 	virtual void OnRemoval(Actor dropper)
 	{
 		if (dropper)
@@ -796,6 +817,7 @@ class ToM_BaseWeapon : Weapon abstract
 			dropper.A_StopSound(CHAN_WEAPON);
 		}
 		FOVScale = 1.0;
+		atkButtonState = atkButtonStateAlt = ABS_None;
 	}
 	
 	override void BeginPlay()
@@ -849,7 +871,10 @@ class ToM_BaseWeapon : Weapon abstract
 		{
 			swingSndCounter--;
 		}
-			
+		
+		let player = owner.player;
+		if (!player) return;
+
 		let weap = owner.player.readyweapon;
 
 		if (weap && weap == self &&  owner.health > 0)
@@ -864,6 +889,77 @@ class ToM_BaseWeapon : Weapon abstract
 				isSelected = false;
 			}
 			return;
+		}
+
+		if (bMELEEWEAPON)
+		{
+			let psp = player.FindPSprite(PSP_WEAPON);
+			String statestr = "Other";
+			if (psp)
+			{
+				if (InStateSequence(psp.curstate, GetReadyState()))
+				{
+					atkButtonState = atkButtonStateAlt = ABS_None;
+					statestr = "Ready";
+				}
+				else 
+				{
+					if (atkButtonState == ABS_None && InStateSequence(psp.curstate, GetAtkState(false)))
+					{
+						atkButtonState = ABS_Held;
+						statestr = "Attack";
+					}
+					if (atkButtonStateAlt == ABS_None && InStateSequence(psp.curstate, GetAltAtkState(false)))
+					{
+						atkButtonStateAlt = ABS_Held;
+						statestr = "Alt attack";
+					}
+				}
+			}
+			// primary attack:
+			if (atkButtonState == ABS_Held && !(player.cmd.buttons & BT_ATTACK))
+			{
+				atkButtonState = ABS_Lifted;
+			}
+			if (atkButtonState == ABS_Lifted && (player.cmd.buttons & BT_ATTACK))
+			{
+				atkButtonState = ABS_PressedAgain;
+			}
+			// secondary attack:
+			if (atkButtonStateAlt == ABS_Held && !(player.cmd.buttons & BT_ALTATTACK))
+			{
+				atkButtonStateAlt = ABS_Lifted;
+			}
+			if (atkButtonStateAlt == ABS_Lifted && (player.cmd.buttons & BT_ALTATTACK))
+			{
+				atkButtonStateAlt = ABS_PressedAgain;
+			}
+			if (tom_debugmessages > 2)
+			{
+				String absString, absStringAlt;
+				switch (atkButtonState)
+				{
+					default:               absString = "\cg None"; break;
+					case ABS_Held:         absString = "\cq Held"; break;
+					case ABS_Lifted:       absString = "\cd Lifted"; break;
+					case ABS_PressedAgain: absString = "\cv Pressed again"; break;
+				}
+				switch (atkButtonStateAlt)
+				{
+					default:               absStringAlt = "\cg None"; break;
+					case ABS_Held:         absStringAlt = "\cq Held"; break;
+					case ABS_Lifted:       absStringAlt = "\cd Lifted"; break;
+					case ABS_PressedAgain: absStringAlt = "\cv Pressed again"; break;
+				}
+				Console.MidPrint(NewConsoleFont, 
+					String.Format(
+						"\cfPrimary button state:\c- %s"
+						"\n\cfSecondary button state:\c- %s"
+						"\n\cfWeapon state:\c- \cd%s\c-", 
+						absString, absStringAlt, statestr
+					)
+				);
+			}
 		}
 		
 		if (SwayTics >= 0) 

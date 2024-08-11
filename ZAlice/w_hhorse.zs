@@ -3,6 +3,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	int combo;
 	int totalcombo;
 	int fallAttackForce;
+	double curPSProtation;
 	
 	Default
 	{
@@ -393,7 +394,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		HHRS A 1 
 		{
 			A_WeaponReady();
-			if (invoker.totalcombo > 0)
+			if (invoker.totalcombo > 0 && level.maptime % 3 == 0)
 			{
 				invoker.totalcombo--;
 			}
@@ -454,11 +455,27 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_WeaponOffset(6, -13, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -1.2, WOF_ADD);
 		}		
-		HHRS CCCC 1 
+		HHRS CCC 1 
 		{
 			A_WeaponOffset(3, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -0.5, WOF_ADD);
 		}
+		#### # 0 
+		{
+			let psp = player.FindPSprite(OverlayID());
+			invoker.curPSProtation = psp.rotation;
+		}
+		#### # 1
+		{
+			if (invoker.atkButtonState == ABS_Held)
+			{
+				A_OverlayRotate(OverlayID(), invoker.curPSProtation + frandom(-0.2, 0.2), WOF_INTERPOLATE);
+				return ResolveState(null);
+			}
+			return ResolveState("RightSwingDo");
+		}
+		wait;
+	RightSwingDo:
 		TNT1 A 0 
 		{
 			A_PrepareHorseSwing((-25, -10), (-20, -20));
@@ -496,6 +513,22 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_WeaponOffset(-3, 0, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.5, WOF_ADD);
 		}
+		#### # 0 
+		{
+			let psp = player.FindPSprite(OverlayID());
+			invoker.curPSProtation = psp.rotation;
+		}
+		#### # 1
+		{
+			if (invoker.atkButtonState == ABS_Held)
+			{
+				A_OverlayRotate(OverlayID(), invoker.curPSProtation + frandom(-0.2, 0.2), WOF_INTERPOLATE);
+				return ResolveState(null);
+			}
+			return ResolveState("LeftSwingDo");
+		}
+		wait;
+	LeftSwingDo:
 		TNT1 A 0 
 		{
 			A_PrepareHorseSwing((25, -10), (20, -20));
@@ -535,6 +568,22 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), -0.3, WOF_ADD);
 			A_ScalePSprite(OverlayID(), 0.0025, 0.0025,WOF_ADD);
 		}
+		#### # 0 
+		{
+			let psp = player.FindPSprite(OverlayID());
+			invoker.curPSProtation = psp.rotation;
+		}
+		#### # 1
+		{
+			if (invoker.atkButtonState == ABS_Held)
+			{
+				A_OverlayRotate(OverlayID(), invoker.curPSProtation + frandom(-0.2, 0.2), WOF_INTERPOLATE);
+				return ResolveState(null);
+			}
+			return ResolveState("OverheadDo");
+		}
+		wait;
+	OverheadDo:
 		TNT1 A 0 
 		{
 			A_PrepareHorseSwing((-2, -30), (-18, -30));
@@ -635,13 +684,13 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		{
 			A_WeaponOffset(24, 90+WEAPONTOP);
 			A_RotatePSprite(OverlayID(), -30);
-			A_WeaponReady(WRF_NOBOB);
+			return A_CheckNextSlash();
 		}
 		HHRS AAAAAA 1
 		{
 			A_WeaponOffset(-4, -15, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
-			A_WeaponReady(WRF_NOBOB);
+			return A_CheckNextSlash();
 		}
 		TNT1 A 0 
 		{ 

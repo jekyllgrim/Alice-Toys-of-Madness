@@ -139,7 +139,8 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			}
 			else
 			{
-				victim.freezeTics = max(victim.freezeTics, int(ToM_Utils.LinearMap(invoker.totalcombo, 1, 8, 12, 35, true)));
+				int freezebonus = int(round(invoker.swingHoldTime / 3.0));
+				victim.freezeTics = max(victim.freezeTics, int(ToM_Utils.LinearMap(invoker.totalcombo, 1, 8, 12 + freezebonus, 35 + freezebonus, true)));
 				if (victim.freezeTics > 0)
 				{
 					let stunflash = ToM_ActorLayer.Create(victim, STYLE_TranslucentStencil, alpha: 0.7, fade: 0.7 / victim.freezeTics, fullbright: true);

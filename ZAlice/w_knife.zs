@@ -142,7 +142,7 @@ class ToM_Knife : ToM_BaseWeapon
 			style: PBS_Fade|PBS_Fullbright|PBS_Untextured,
 			decaltype: decaltype,
 			id: 0);
-		if (victim && victim.health > 0 && damaged && random[knifepain](0, 100) <= ToM_Utils.LinearMap(invoker.combo, 0, 5, 15, 80))
+		if (victim && damaged && victim.health > 0 && random[knifepain](0, 100) <= ToM_Utils.LinearMap(invoker.combo, 0, 5, 15, 80))
 		{
 			let st = victim.FindState("Pain");
 			if (st)
@@ -622,7 +622,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_ResetPSprite(OverlayID(), 10);
 			A_SetKnifeSprite("VKNF", "VKRF");
 		}
-		#### CCCHHHHAAA 1 A_KnifeReady(WRF_NOBOB);
+		#### CCCHHHHAAA 1 A_CheckNextSlash();
 		goto ready;
 	RightSlash:
 		TNT1 A 0 
@@ -663,7 +663,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_ResetPSprite(OverlayID(), 10);
 			A_SetKnifeSprite("VKNF", "VKRF");
 		}
-		#### FFFEEEDDAA 1 A_KnifeReady(WRF_NOBOB);
+		#### FFFEEEDDAA 1 A_CheckNextSlash();
 		goto ready;
 	DownSlash:
 		TNT1 A 0 
@@ -693,7 +693,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_ResetPSprite(OverlayID(), 9);
 			A_SetKnifeSprite("VKNF", "VKRF");
 		}
-		#### HHHHZZZZZ 1 A_KnifeReady(WRF_NOBOB);
+		#### HHHHZZZZZ 1 A_CheckNextSlash();
 		goto ready;
 	RecallKnife:
 		#### # 1 A_RecallKnife();

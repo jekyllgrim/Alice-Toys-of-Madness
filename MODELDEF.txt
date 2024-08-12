@@ -225,6 +225,17 @@ Model "ToM_EyestaffBeam"
 	FrameIndex M000 A 0 0
 }
 
+Model "ToM_EyestaffBeamInner"
+{
+	Path "Models/GZBeam"
+	Model 0 "beam_cyl.md3"
+	Skin 0 "beam_cyl.png"
+	USEACTORPITCH
+	DONTCULLBACKFACES
+	
+	FrameIndex M000 A 0 0
+}
+
 Model ToM_EyestaffProjectile
 {
 	Path "models/Eyestaff"

@@ -197,9 +197,6 @@ class ToM_LaserBeam : Actor
 			// Do linetrace to determine aim distance.
 			double zoffs = source.player ? (source.player.viewz-source.pos.z) : source.height * 0.5;
 			source.LineTrace(angle, maxDist, pitch - 90, 0, zoffs+offsets.z-bob.y, offsets.x, offsets.y-bob.x, data:hitData);
-			//let tr = ToM_GZBeamTracer.Create(source, offsets, maxDist);
-			//dist = tr.results.Distance;
-			//hitpos = tr.results.HitPos;
 			dist = hitdata.Distance;
 			hitpos = hitdata.HitLocation;
 
@@ -211,8 +208,6 @@ class ToM_LaserBeam : Actor
 		
 		if( ontics == 2 || (ontics >= 2 && continuousHit) )
 		{ 
-
-			//OnImpact(hitData.hitLocation, hitdata.hitActor);
 			OnImpact(hitPos, hitdata.hitActor);
 		}
 					
@@ -225,44 +220,4 @@ class ToM_LaserBeam : Actor
 			M000 A -1 Bright;
 			stop;
 	}
-}
-
-class ToM_GZBeamTracer : LineTracer
-{
-	//Actor owner;
-
-	static play ToM_GZBeamTracer Create(Actor origin, Vector3 offset, double distance)
-	{
-		let t = new('ToM_GZBeamTracer');
-		if (t)
-		{
-			//t.owner = origin;
-			Vector3 startPos = origin.pos + offset;
-			double pitch = origin.pitch - 90;
-			Vector3 dir = (Actor.AngleToVector(origin.angle, cos(pitch)), -sin(pitch));
-			t.Trace(startPos, origin.cursector, dir, distance, TRACE_HitSky, wallmask: Line.ML_BLOCKHITSCAN, ignore: origin);
-		}
-		return t;
-	}
-
-	/*override ETraceStatus TraceCallBack()
-	{
-		switch (results.hitType)
-		{
-			case TRACE_HitActor:
-				let a = results.HitActor;
-				if (!a || (owner && a == owner) || !(a.bShootable || a.bSolid))
-				{
-					return TRACE_Skip;
-					break;
-				}
-			case TRACE_HitWall:
-			case TRACE_HitCeiling:
-			case TRACE_HitFloor:
-			case TRACE_HasHitSky:
-				return TRACE_Stop;
-				break;
-		}
-		return TRACE_Continue;
-	}*/
 }

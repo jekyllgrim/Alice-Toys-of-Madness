@@ -60,11 +60,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 		if (!beam2)
 		{
-			beam2 = ToM_EyestaffBeam(ToM_LaserBeam.Create(owner, 10, 4.2, -1.25, type: "ToM_EyestaffBeam"));
-			beam2.alphadir = 0.05;
-			beam2.alpha = 0.5;
-			beam2.shade = "ffee00";
-			beam2.scale.x = 1.6;
+			beam2 = ToM_EyestaffBeam(ToM_LaserBeam.Create(owner, 10, 4.2, -1.25, type: "ToM_EyestaffBeamInner"));
 		}
 		if (!outerBeamPos)
 		{
@@ -76,8 +72,8 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			outerBeam = ToM_EyestaffBeam(ToM_LaserBeam.Create(outerBeamPos, 0, 0, 0, type: "ToM_EyestaffBeam"));
 			outerBeam.master = owner;
 			outerBeam.bMASTERNOSEE = true;
+			outerBeam.source = outerBeamPos;
 		}
-		outerBeam.source = outerBeamPos;
 	}
 	
 	action void A_FireBeam()
@@ -100,46 +96,6 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			invoker.beam2.SetEnabled(true);
 			invoker.outerBeam.SetEnabled(true);
 		}
-
-		/*let psp = player.FindPSprite(OverlayID());
-		if (puf && psp)
-		{
-			//double bob = player.bob * sin(Level.maptime / (player.mo.ViewBobSpeed * TICRATE / 35.) * 360.) * (waterlevel > 1 ? 0.25f : 0.5f);
-			//Console.Printf("Player viewz: \cd%.1f\c- Player bob: \cd%f\c-", player.viewz, bob);
-			double vz = player.viewz;// - bob*0.025;
-			Vector3 beampos = (10, 4.2 + psp.x, -1.25 + psp.y - WEAPONTOP);
-			beampos = ToM_Utils.RelativeToGlobalOffset((pos.xy, vz), (angle+viewangle, pitch+viewpitch, roll+viewroll), beampos, true);
-			ToM_Utils.DrawParticlesFromTo(beampos, puf.pos, 
-				density: 3, 
-				size: 9,
-				lifetime: 1,
-				texture: "JEYCP0",
-				style: PBS_Fullbright,
-				maxdistance: 512,
-				playerSource: self.player);
-			if (!(player.cheats & CF_PREDICTING))
-			{
-				player.cheats |= CF_INTERPVIEW;
-			}
-		}*/
-
-		/*Vector3 dir = (AngleToVector(angle, cos(pitch)), -sin(pitch));
-		Vector3 firepos = (pos.xy, player.viewz);
-		let bt = new('ToM_BeamPosController');
-		bt.Trace(firepos, cursector, dir, PLAYERMISSILERANGE, TRACE_HitSky, wallmask: Line.ML_BLOCKHITSCAN, ignore: self);
-		Vector3 beamEnd = bt.results.HitPos;
-		if (beamEnd != (0,0,0))
-		{
-			invoker.beam1.trackingpos = true;
-			invoker.beam2.trackingpos = true;
-			invoker.outerBeam.trackingpos = true;
-			invoker.beam1.targetPos = beamEnd;
-			invoker.beam2.targetPos = beamEnd;
-			invoker.outerBeam.targetPos = beamEnd;
-			invoker.beam1.SetEnabled(true);
-			invoker.beam2.SetEnabled(true);
-			invoker.outerBeam.SetEnabled(true);
-		}*/
 	}
 	
 	action void A_StopBeam()
@@ -625,18 +581,17 @@ class ToM_EyestaffPuff : ToM_BasePuff
 
 class ToM_EyestaffBeam : ToM_LaserBeam
 {
-	double alphadir;
-	
+	const PULSEFREQ = 25;
+
 	Default
 	{
 		ToM_LaserBeam.LaserColor "c334eb";
-		xscale 3.4;
+		XScale 3.4;
 	}
 	
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
-		alphadir = -0.05;
 		if (!bMASTERNOSEE && source && source.player)
 		{
 			if (source.player == players[consoleplayer])
@@ -648,9 +603,7 @@ class ToM_EyestaffBeam : ToM_LaserBeam
 	
 	override void BeamTick()
 	{
-		alpha += alphadir;
-		if (alpha > 1 || alpha < 0.5)
-			alphadir *= -1;
+		alpha = 1.0 - 0.5 * ToM_Utils.SinePulse(PULSEFREQ, GetAge());
 	}
 
 	override vector3 GetSourcePos()
@@ -663,6 +616,20 @@ class ToM_EyestaffBeam : ToM_LaserBeam
 		}
 		
 		return srcPos;
+	}
+}
+
+class ToM_EyestaffBeamInner : ToM_EyestaffBeam
+{
+	Default
+	{
+		ToM_LaserBeam.LaserColor "ffee00";
+		XScale 1.6;
+	}
+	
+	override void BeamTick()
+	{
+		alpha = 0.25 + 0.5 * ToM_Utils.SinePulse(PULSEFREQ, GetAge());
 	}
 }
 

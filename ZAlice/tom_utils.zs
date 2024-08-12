@@ -270,24 +270,27 @@ class ToM_Utils
 	}
 	
 	// Draws particles along a vector between two points in space:
-	static void DrawParticlesFromTo(Vector3 from,
-									Vector3 to,
-									double density				= 8,
-									double size					= 10,
-									double alpha				= 1.0,
-									int lifetime				= 10,
-									Vector3 vel					= (0,0,0),
-									double posOfs				= 2,
-									String texture				= "",
-									Color pcolor				= 0xFFCCCCFF,
-									ERenderStyle renderstyle	= STYLE_Add,
-									EParticleBeamStyle style	= PBS_Solid,
-									PlayerInfo playerSource = null)
+	static void DrawParticlesFromTo(
+		Vector3 from,
+		Vector3 to,
+		double density              = 8,
+		double size                 = 10,
+		double alpha                = 1.0,
+		int lifetime                = 10,
+		Vector3 vel                 = (0,0,0),
+		double posOfs               = 0,
+		String texture              = "",
+		Color pcolor                = 0xFFCCCCFF,
+		ERenderStyle renderstyle    = STYLE_Add,
+		EParticleBeamStyle style    = PBS_Solid,
+		double maxdistance          = PLAYERMISSILERANGE,
+		PlayerInfo playerSource     = null)
 	{
 		density = Clamp(density, 0.025, 1024);
 		let diff = Level.Vec3Diff(from, to); // difference between two points
 		let dir = diff.Unit(); // direction from point 1 to point 2
-		int steps = int(ceil(diff.Length() / density)); // how many steps to take:
+		double dist = min(diff.Length(), maxdistance);
+		int steps = int(ceil(dist / density)); // how many steps to take:
 
 		// Generic particle properties:
 		FSpawnParticleParams pp;
@@ -558,7 +561,9 @@ class ToM_Utils
 		to.bSpecialFloorclip = from.bSpecialFloorclip;
 
 		if (size)
+		{
 			to.A_SetSize(from.height, from.radius);
+		}
 			
 		if (style) 
 		{

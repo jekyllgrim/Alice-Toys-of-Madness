@@ -155,7 +155,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			}
 			else
 			{
-				int freezebonus = int(round(invoker.swingHoldTime / 3.0));
+				int freezebonus = int(round(ToM_Utils.LinearMap(invoker.swingHoldTime, 0, MAXHOLDTIME, 0, 13, true)));
 				victim.freezeTics = max(victim.freezeTics, int(ToM_Utils.LinearMap(invoker.totalcombo, 1, 8, 12 + freezebonus, 35 + freezebonus, true)));
 				if (victim.freezeTics > 0)
 				{

@@ -1448,7 +1448,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		double distance = path.length() / clamp(int(trailscale * 50),1,8); 
 		Vector3 direction = path / distance;
 		int steps = int( distance );
-		for(int i = 0; i < steps; i++)
+		for(int i = 0; i <= steps; i++)
 		{
 			SpawnTrail(oldpos);
 			oldPos = level.vec3Offset(oldPos, direction);

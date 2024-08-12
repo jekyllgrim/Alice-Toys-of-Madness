@@ -1,5 +1,7 @@
 class ToM_Knife : ToM_BaseWeapon
-{	
+{
+	const KNIFE_ParticleTrails = 20;
+
 	bool LeftSlash; //right slash or left slash?
 	int combo; //combo counter
 	int clawCombo; //claw combo counter
@@ -9,13 +11,6 @@ class ToM_Knife : ToM_BaseWeapon
 	protected int recallWait; //recall timer
 	protected int otherHandWait;
 
-	/*static const String pickupLines[] =
-	{
-		"$TOM_WEAPONMSG_KNIFE1",
-		"$TOM_WEAPONMSG_KNIFE2",
-		"$TOM_WEAPONMSG_KNIFE3"
-	};*/
-	
 	Default 
 	{
 		Tag "$TOM_WEAPON_KNIFE";
@@ -27,13 +22,6 @@ class ToM_Knife : ToM_BaseWeapon
 		weapon.slotnumber 1;
 		//weapon.upsound "weapons/knife/draw";
 	}
-
-	/*override String PickupMessage()
-	{
-		String weapname = StringTable.Localize(GetTag());
-		String comment = StringTable.Localize(pickupLines[random[msg](0, pickupLines.Size()-1)]);
-		return String.Format("%s %s", weapname, comment);
-	}*/
 	
 	action void A_KnifeReady(int flags = 0)
 	{
@@ -72,13 +60,22 @@ class ToM_Knife : ToM_BaseWeapon
 		if (!HasRageBox())
 			return;
 		
-		if (player.cmd.buttons & BT_ATTACK && !(player.oldbuttons & BT_ATTACK))
+		if ((player.cmd.buttons & BT_ATTACK && !(player.oldbuttons & BT_ATTACK)))
 		{
-			let psp = player.FindPSprite(APSP_LeftHand);
-			if (psp)
-				player.SetPSprite(APSP_LeftHand, ResolveState("ClawLeftSlash"));
+			player.SetPSprite(APSP_LeftHand, ResolveState("ClawLeftSlash"));
 		}
-	}	
+	}
+
+	action State A_ClawRefire()
+	{
+		player.WeaponState |= WF_WEAPONSWITCHOK;
+		if (player && invoker.wasThrown && HasRageBox() && invoker.atkButtonState == ABS_PressedAgain)
+		{
+			invoker.atkButtonState = ABS_Held;
+			return ResolveState("ClawLeftSlash");
+		}
+		return ResolveState(null);
+	}
 	
 	action void A_SetKnifeSprite(name defsprite, name ragesprite = '')
 	{
@@ -95,8 +92,6 @@ class ToM_Knife : ToM_BaseWeapon
 		else
 			psp.sprite = GetSpriteIndex(defsprite);
 	}
-
-	const KNIFE_ParticleTrails = 20;
 
 	action void A_PrepareKnifeSwing(Vector2 eye1start)
 	{
@@ -167,7 +162,7 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		for (int i = 0; i < 4; i++)
 		{
-			let victim = A_SwingAttack(
+			A_SwingAttack(
 				(i == 0)? damage : 0,
 				stepX, stepY,
 				range: 60,
@@ -306,6 +301,41 @@ class ToM_Knife : ToM_BaseWeapon
 			}
 		}
 	}
+
+	override void HandleInputBuffering()
+	{
+		if (!ToM_RageBox.HasRageBox(owner) || !wasThrown)
+		{
+			Super.HandleInputBuffering();
+			return;
+		}
+
+		Console.Printf("Vorpal knife input buffering");
+		let player = owner.player;
+		let psp = player.FindPSprite(APSP_LeftHand);
+		if (psp)
+		{
+			if (InStateSequence(psp.curstate, ResolveState("ClawHandReady")))
+			{
+				atkButtonState = ABS_None;
+			}
+			else 
+			{
+				if (atkButtonState == ABS_None && ( InStateSequence(psp.curstate, ResolveState("ClawLeftSlash")) || InStateSequence(psp.curstate, ResolveState("ClawDownSlash")) ) )
+				{
+					atkButtonState = ABS_Held;
+				}
+			}
+		}
+		if (atkButtonState == ABS_Held && !(player.cmd.buttons & BT_ATTACK))
+		{
+			atkButtonState = ABS_Lifted;
+		}
+		if (atkButtonState == ABS_Lifted && (player.cmd.buttons & BT_ATTACK))
+		{
+			atkButtonState = ABS_PressedAgain;
+		}
+	}
 	
 	States
 	{
@@ -338,7 +368,7 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			if (!HasRageBox())
 			{
-				return ResolveState("ClawHandReadyLower");
+				return ResolveState("ClawHadDeselect");
 			}
 			
 			let psw = player.FindPSprite(PSP_WEAPON);
@@ -368,7 +398,7 @@ class ToM_Knife : ToM_BaseWeapon
 			return ResolveState(null);
 		}
 		wait;
-	ClawHandReadyLower:
+	ClawHadDeselect:
 		TNT1 A 0 
 		{
 			A_StopPSpriteReset();
@@ -431,9 +461,9 @@ class ToM_Knife : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), -3, WOF_ADD);
 			A_ClawSwing(25, -18, 2);
 		}
-		TNT1 A 0 A_ResetPSprite(OverlayID(), 8);
-		VCLW FFFF 1;
-		VCLW AAAA 1 A_ClawReady();
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 6);
+		VCLW FF 1;
+		VCLW AAAA 1 A_ClawRefire();
 		goto ClawHandReady;
 	ClawDownSlash:
 		VCLW A 0 
@@ -467,9 +497,9 @@ class ToM_Knife : ToM_BaseWeapon
 			A_OverlayOffset(OverlayID(), 30, 30, WOF_ADD);
 			A_ClawSwing(30, -4, 15);
 		}
-		TNT1 A 0 A_ResetPSprite(OverlayID(), 8);
-		VCLW LLLL 1;
-		VCLW AAAA 1 A_ClawReady();
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 6);
+		VCLW LL 1;
+		VCLW AAAA 1 A_ClawRefire();
 		goto ClawHandReady;
 	Select:
 		VKNF A 0 

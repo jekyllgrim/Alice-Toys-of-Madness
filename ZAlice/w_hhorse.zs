@@ -52,6 +52,22 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		return st;
 	}
+
+	action State A_HorseRefire(StateLabel nextSlashState = "Fire")
+	{
+		player.WeaponState |= WF_WEAPONSWITCHOK;
+		if (player.cmd.buttons & BT_ALTATTACK)
+		{
+			invoker.atkButtonState = ABS_None;
+			return ResolveState("AltFire");
+		}
+		if (invoker.atkButtonState == ABS_PressedAgain)
+		{
+			invoker.atkButtonState = ABS_Held;
+			return ResolveState(nextSlashState);
+		}
+		return ResolveState(null);
+	}
 	
 	// Do the attack and move the offset one step as defined above:
 	action void A_HorseSwing(int damage, double stepX, double stepY)
@@ -691,13 +707,13 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		{
 			A_WeaponOffset(24, 90+WEAPONTOP);
 			A_RotatePSprite(OverlayID(), -30);
-			return A_CheckNextSlash();
+			return A_HorseRefire();
 		}
 		HHRS AAAAAA 1
 		{
 			A_WeaponOffset(-4, -15, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
-			return A_CheckNextSlash();
+			return A_HorseRefire();
 		}
 		TNT1 A 0 
 		{ 

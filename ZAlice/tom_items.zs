@@ -108,7 +108,7 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 		// items:
 		"GreenArmor:ToM_SilverArmor",
 		"BlueArmor:ToM_GoldArmor",
-		"Berserk:ToM_RageBoxMainEffect",
+		"Berserk:ToM_RageBoxEffect",
 		/*"InvulnerabilitySphere:PK_Pentagram",
 		"Backpack:PK_AmmoPack",
 		"AllMap:PK_AllMap",

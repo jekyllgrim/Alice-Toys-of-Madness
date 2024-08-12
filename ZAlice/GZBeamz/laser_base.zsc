@@ -30,8 +30,9 @@ class ToM_LaserBeam : Actor
 	Default
 	{
 		Scale 1.0;
-		+NOINTERACTION;
-		+INTERPOLATEANGLES;
+		+NOINTERACTION
+		+NOBLOCKMAP
+		+INTERPOLATEANGLES
 		RenderStyle "AddShaded";
 		
 		ToM_LaserBeam.LaserColor "Blue";
@@ -116,29 +117,27 @@ class ToM_LaserBeam : Actor
 		if(!enabled || !source) 
 		{
 			ontics = 0;
-			bInvisible = true;
+			renderRequired = -1;
 			return;
 		}
 		ontics++;
-		bInvisible = ontics < 3;
+		renderRequired = (ontics < 3)? -1 : 0;
 		if(shade) SetShade(shade);
-		
-		if( ontics == 2 || (ontics >= 2 && continuousHit) )
-		{ 
-			OnImpact(hitData.hitLocation, hitdata.hitActor);
-		}
 				
 		// PSprite tracking?
 		vector2 bob = (0,0);
 		if(trackPSprite && PlayerPawn(source))
 		{
-			let psp = source.player.GetPSprite(trackPSLayer);
 			bob = PlayerPawn(source).BobWeapon(1.0);
-			
-			bob.x += psp.x;
-			bob.y += (psp.y - 32);
-			bob.x *= 0.031;
-			bob.y *= 0.035;
+		
+			let psp = source.player.FindPSprite(trackPSLayer);	
+			if (psp)
+			{
+				bob.x += psp.x;
+				bob.y += (psp.y - 32);
+				bob.x *= 0.031;
+				bob.y *= 0.035;
+			}
 		}
 		
 		// Update laser and tracking.
@@ -158,19 +157,19 @@ class ToM_LaserBeam : Actor
 		if(aimWithWeapon) 
 		{
 			toAngle -= (bob.x * 10);
-			toPitch += (bob.y * 10);  
+			toPitch += (bob.y * 10);
 		}	
 		
+		vector3 diff = level.vec3diff(finalPos, targetPos);
 		// Track target and source's angles.
 		if(trackingPos)
 		{
-			vector3 diff = level.vec3diff(finalPos, targetPos);
 			vector3 dir = diff.Unit();
 			
 			toAngle = angleOffsets.x + atan2(dir.y, dir.x) + 180; 
 			toPitch = angleOffsets.y + asin(dir.z);
 			A_SetAngle(toAngle, SPF_INTERPOLATE);
-			A_SetPitch(toPitch - 90, SPF_INTERPOLATE);		
+			A_SetPitch(toPitch - 90, SPF_INTERPOLATE);
 		} 
 		else if(followAngles)
 		{
@@ -185,14 +184,37 @@ class ToM_LaserBeam : Actor
 			source.player.cheats |= CF_INTERPVIEW;
 		}
 		
-		// Do linetrace to determine aim distance.
-		double zoffs = source.player ? (source.player.viewz-source.pos.z) : source.height * 0.5;
-		source.LineTrace(angle, maxDist, pitch - 90, 0, zoffs+offsets.z-bob.y, offsets.x, offsets.y-bob.x, data:hitData);
-		
 		// Scale to Distance.
-		double dist = min(hitData.Distance, maxDist);
-		double dirPitch = pitch - 90;
-		scale.y = dist * level.pixelstretch;
+		double dist;
+		Vector3 hitpos;
+		if (trackingpos)
+		{
+			dist = diff.Length();
+			hitpos = targetPos;
+		}
+		else
+		{
+			// Do linetrace to determine aim distance.
+			double zoffs = source.player ? (source.player.viewz-source.pos.z) : source.height * 0.5;
+			source.LineTrace(angle, maxDist, pitch - 90, 0, zoffs+offsets.z-bob.y, offsets.x, offsets.y-bob.x, data:hitData);
+			//let tr = ToM_GZBeamTracer.Create(source, offsets, maxDist);
+			//dist = tr.results.Distance;
+			//hitpos = tr.results.HitPos;
+			dist = hitdata.Distance;
+			hitpos = hitdata.HitLocation;
+
+		}
+
+		double distance = min(dist, maxDist);
+		//double dirPitch = pitch - 90;
+		scale.y = distance * level.pixelstretch;
+		
+		if( ontics == 2 || (ontics >= 2 && continuousHit) )
+		{ 
+
+			//OnImpact(hitData.hitLocation, hitdata.hitActor);
+			OnImpact(hitPos, hitdata.hitActor);
+		}
 					
 		BeamTick();
 	}
@@ -203,4 +225,44 @@ class ToM_LaserBeam : Actor
 			M000 A -1 Bright;
 			stop;
 	}
+}
+
+class ToM_GZBeamTracer : LineTracer
+{
+	//Actor owner;
+
+	static play ToM_GZBeamTracer Create(Actor origin, Vector3 offset, double distance)
+	{
+		let t = new('ToM_GZBeamTracer');
+		if (t)
+		{
+			//t.owner = origin;
+			Vector3 startPos = origin.pos + offset;
+			double pitch = origin.pitch - 90;
+			Vector3 dir = (Actor.AngleToVector(origin.angle, cos(pitch)), -sin(pitch));
+			t.Trace(startPos, origin.cursector, dir, distance, TRACE_HitSky, wallmask: Line.ML_BLOCKHITSCAN, ignore: origin);
+		}
+		return t;
+	}
+
+	/*override ETraceStatus TraceCallBack()
+	{
+		switch (results.hitType)
+		{
+			case TRACE_HitActor:
+				let a = results.HitActor;
+				if (!a || (owner && a == owner) || !(a.bShootable || a.bSolid))
+				{
+					return TRACE_Skip;
+					break;
+				}
+			case TRACE_HitWall:
+			case TRACE_HitCeiling:
+			case TRACE_HitFloor:
+			case TRACE_HasHitSky:
+				return TRACE_Stop;
+				break;
+		}
+		return TRACE_Continue;
+	}*/
 }

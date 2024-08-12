@@ -49,52 +49,97 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		invoker.altCharge = 0;
 		invoker.aimCircle = null;
 	}
+
+	void MakeBeams()
+	{
+		if (!owner) return;
+
+		if (!beam1)
+		{
+			beam1 = ToM_EyestaffBeam(ToM_LaserBeam.Create(owner, 10, 4.2, -1.4, type: "ToM_EyestaffBeam"));
+		}
+		if (!beam2)
+		{
+			beam2 = ToM_EyestaffBeam(ToM_LaserBeam.Create(owner, 10, 4.2, -1.25, type: "ToM_EyestaffBeam"));
+			beam2.alphadir = 0.05;
+			beam2.alpha = 0.5;
+			beam2.shade = "ffee00";
+			beam2.scale.x = 1.6;
+		}
+		if (!outerBeamPos)
+		{
+			outerBeamPos = ToM_OuterBeamPos(Spawn('ToM_OuterBeamPos', pos));
+			outerBeamPos.master = owner;
+		}
+		if (!outerBeam)
+		{
+			outerBeam = ToM_EyestaffBeam(ToM_LaserBeam.Create(outerBeamPos, 0, 0, 0, type: "ToM_EyestaffBeam"));
+			outerBeam.master = owner;
+			outerBeam.bMASTERNOSEE = true;
+		}
+		outerBeam.source = outerBeamPos;
+	}
 	
 	action void A_FireBeam()
 	{
 		if (!self || !self.player)
 			return;
+		
+		if (player.refire % 2 == 0 && !invoker.DepleteAmmo(invoker.bAltFire))
+			return;
 			
 		A_StartSound(invoker.loopedAttackSound, CHAN_WEAPON, CHANF_LOOPING);
 
-		if (!invoker.beam1)
+		let puf = LineAttack(angle, PLAYERMISSILERANGE, pitch, 8, 'normal', 'ToM_EyestaffPuff', LAF_NORANDOMPUFFZ|LAF_OVERRIDEZ, offsetz: player.viewz - pos.z);
+		if (puf)
 		{
-			invoker.beam1 = ToM_EyestaffBeam(ToM_LaserBeam.Create(self, 10, 4.2, -1.4, type: "ToM_EyestaffBeam"));
+			invoker.MakeBeams();
+			invoker.beam1.trackingpos = invoker.beam2.trackingpos = invoker.outerBeam.trackingpos = true;
+			invoker.beam1.targetPos = invoker.beam2.targetPos = invoker.outerBeam.targetPos = puf.pos;
+			invoker.beam1.SetEnabled(true);
+			invoker.beam2.SetEnabled(true);
+			invoker.outerBeam.SetEnabled(true);
 		}
-		if (!invoker.beam2)
+
+		/*let psp = player.FindPSprite(OverlayID());
+		if (puf && psp)
 		{
-			invoker.beam2 = ToM_EyestaffBeam(ToM_LaserBeam.Create(self, 10, 4.2, -1.25, type: "ToM_EyestaffBeam"));
-			invoker.beam2.alphadir = 0.05;
-			invoker.beam2.alpha = 0.5;
-			invoker.beam2.shade = "ffee00";
-			invoker.beam2.scale.x = 1.6;
-		}
-		if (!invoker.outerBeamPos)
+			//double bob = player.bob * sin(Level.maptime / (player.mo.ViewBobSpeed * TICRATE / 35.) * 360.) * (waterlevel > 1 ? 0.25f : 0.5f);
+			//Console.Printf("Player viewz: \cd%.1f\c- Player bob: \cd%f\c-", player.viewz, bob);
+			double vz = player.viewz;// - bob*0.025;
+			Vector3 beampos = (10, 4.2 + psp.x, -1.25 + psp.y - WEAPONTOP);
+			beampos = ToM_Utils.RelativeToGlobalOffset((pos.xy, vz), (angle+viewangle, pitch+viewpitch, roll+viewroll), beampos, true);
+			ToM_Utils.DrawParticlesFromTo(beampos, puf.pos, 
+				density: 3, 
+				size: 9,
+				lifetime: 1,
+				texture: "JEYCP0",
+				style: PBS_Fullbright,
+				maxdistance: 512,
+				playerSource: self.player);
+			if (!(player.cheats & CF_PREDICTING))
+			{
+				player.cheats |= CF_INTERPVIEW;
+			}
+		}*/
+
+		/*Vector3 dir = (AngleToVector(angle, cos(pitch)), -sin(pitch));
+		Vector3 firepos = (pos.xy, player.viewz);
+		let bt = new('ToM_BeamPosController');
+		bt.Trace(firepos, cursector, dir, PLAYERMISSILERANGE, TRACE_HitSky, wallmask: Line.ML_BLOCKHITSCAN, ignore: self);
+		Vector3 beamEnd = bt.results.HitPos;
+		if (beamEnd != (0,0,0))
 		{
-			invoker.outerBeamPos = ToM_OuterBeamPos(Spawn('ToM_OuterBeamPos', pos));
-			invoker.outerBeamPos.master = self;
-		}
-		if (!invoker.outerBeam)
-		{
-			invoker.outerBeam = ToM_EyestaffBeam(ToM_LaserBeam.Create(invoker.outerBeamPos, 0, 0, 0, type: "ToM_EyestaffBeam"));
-			invoker.outerBeam.master = self;
-			invoker.outerBeam.bMASTERNOSEE = true;
-		}
-		
-		invoker.beam1.SetEnabled(true);
-		invoker.beam2.SetEnabled(true);
-		invoker.outerBeam.SetEnabled(true);
-		invoker.outerBeam.source = invoker.outerBeamPos;
-		FLineTraceData bd;
-		LineTrace(angle, PLAYERMISSILERANGE, pitch, TRF_SOLIDACTORS, offsetz: ToM_Utils.GetPlayerAtkHeight(player.mo), data: bd);
-		invoker.outerBeam.startTracking(bd.HitLocation);
-			
-		int fflags = FBF_NORANDOM|FBF_NOFLASH;
-		if (player.refire & 2 == 0)
-		{
-			fflags |= FBF_USEAMMO;
-		}
-		A_FireBullets(0, 0, 1, 8, pufftype: "ToM_EyestaffPuff", flags:fflags);
+			invoker.beam1.trackingpos = true;
+			invoker.beam2.trackingpos = true;
+			invoker.outerBeam.trackingpos = true;
+			invoker.beam1.targetPos = beamEnd;
+			invoker.beam2.targetPos = beamEnd;
+			invoker.outerBeam.targetPos = beamEnd;
+			invoker.beam1.SetEnabled(true);
+			invoker.beam2.SetEnabled(true);
+			invoker.outerBeam.SetEnabled(true);
+		}*/
 	}
 	
 	action void A_StopBeam()
@@ -361,12 +406,14 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	FireBeam:
 		JEYC A 1
 		{
-			A_PlayerAttackAnim(-1, 'attack_eyestaff', 30, flags: SAF_LOOP|SAF_NOOVERRIDE);
-			A_EyestaffFlash("BeamFlash", frandom[eye](0.3, 1));
-			A_EyestaffRecoil();
+			if (player.refire % 2 == 0)
+			{
+				A_PlayerAttackAnim(-1, 'attack_eyestaff', 30, flags: SAF_LOOP|SAF_NOOVERRIDE);
+				A_EyestaffFlash("BeamFlash", frandom[eye](0.3, 1));
+				A_EyestaffRecoil();
+			}
 			A_FireBeam();
 		}
-		JEYC A 1 A_FireBeam();
 		TNT1 A 0 A_ReFire("FireBeam");
 		goto FireEnd;
 	BeamFlash:
@@ -514,11 +561,43 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	}
 }
 
+class ToM_BeamPosController : LineTracer
+{
+	override ETraceStatus TraceCallback()
+	{
+		int res = TRACE_Continue;
+
+		switch (results.HitType)
+		{
+		case TRACE_HitActor:
+			if (results.HitActor && (results.HitActor.bShootable || results.HitActor.bSolid))
+			{
+				res = TRACE_Stop;
+			}
+			break;
+		case TRACE_HitWall:
+		case TRACE_HasHitSky:
+		case TRACE_HitFloor:
+		case TRACE_HitCeiling:
+			res = TRACE_Stop;
+			break;
+		}
+
+		if (res == TRACE_Stop && results.Distance < 128)
+		{
+			results.HitPos = results.SrcFromTarget + results.HitVector * 128;
+		}
+
+		return res;
+	}
+}
+
 class ToM_EyestaffPuff : ToM_BasePuff
 {
 	Default
 	{
 		+NODAMAGETHRUST
+		+PUFFONACTORS
 		DamageType 'Eyestaff';
 		ToM_BasePuff.ParticleAmount 15;
 		//ToM_BasePuff.ParticleColor 0xf44dde;
@@ -528,6 +607,9 @@ class ToM_EyestaffPuff : ToM_BasePuff
 	}
 
 	States {
+	XDeath:
+		TNT1 A 1;
+		stop;
 	Crash:
 		TNT1 A 1
 		{
@@ -566,7 +648,6 @@ class ToM_EyestaffBeam : ToM_LaserBeam
 	
 	override void BeamTick()
 	{
-		AimAtCrosshair();
 		alpha += alphadir;
 		if (alpha > 1 || alpha < 0.5)
 			alphadir *= -1;

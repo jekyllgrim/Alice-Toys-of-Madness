@@ -6,7 +6,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	double curPSProtation;
 	Vector2 curPSPscale;
 	int swingHoldTime; //incremented if the player presses and holds the attack button, adding extra damage
-	const MAXHOLDTIME = 40;
+	const MAXHOLDTIME = 18;
 	
 	Default
 	{

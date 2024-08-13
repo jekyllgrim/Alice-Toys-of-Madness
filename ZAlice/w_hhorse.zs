@@ -618,6 +618,25 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		TNT1 A 0 { invoker.combo = 0; }
 		goto AttackEnd;
+	AttackEnd:
+		TNT1 A 5
+		{
+			A_WeaponOffset(24, 90+WEAPONTOP);
+			A_RotatePSprite(OverlayID(), -30);
+			return A_HorseRefire();
+		}
+		HHRS AAAAAA 1
+		{
+			A_WeaponOffset(-4, -15, WOF_ADD);
+			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
+			return A_HorseRefire();
+		}
+		TNT1 A 0 
+		{ 
+			A_ResetPSprite();
+			invoker.combo = 0;
+		}
+		goto Ready;
 	Altfire:
 		TNT1 A 0 
 		{
@@ -650,6 +669,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), 0.03, WOF_ADD);
 			A_ScalePSprite(OverlayID(), -0.001, -0.001, WOF_ADD);
 		}
+		goto FallLoop;
 	FallLoop:
 		HHRS O 1
 		{
@@ -684,6 +704,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_PlayerAttackAnim(45, 'attack_horse_jump_end', 15);
 		}
 		HHRS OOOO 1 A_WeaponOffset(3, -6, WOF_ADD);
+		goto AltAttackEnd;
 	AltAttackEnd:
 		HHRS OOOOOOOOO 1 
 		{
@@ -691,25 +712,6 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), 2, WOF_ADD);
 		}
 		goto AttackEnd;
-	AttackEnd:
-		TNT1 A 5
-		{
-			A_WeaponOffset(24, 90+WEAPONTOP);
-			A_RotatePSprite(OverlayID(), -30);
-			return A_HorseRefire();
-		}
-		HHRS AAAAAA 1
-		{
-			A_WeaponOffset(-4, -15, WOF_ADD);
-			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
-			return A_HorseRefire();
-		}
-		TNT1 A 0 
-		{ 
-			A_ResetPSprite();
-			invoker.combo = 0;
-		}
-		goto Ready;
 	}
 }
 

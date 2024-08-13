@@ -53,20 +53,9 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		return st;
 	}
 
-	action State A_HorseRefire(StateLabel nextSlashState = "Fire")
+	action State A_HorseRefire()
 	{
-		player.WeaponState |= WF_WEAPONSWITCHOK;
-		if (player.cmd.buttons & BT_ALTATTACK)
-		{
-			invoker.atkButtonState = ABS_None;
-			return ResolveState("AltFire");
-		}
-		if (invoker.atkButtonState == ABS_PressedAgain)
-		{
-			invoker.atkButtonState = ABS_Held;
-			return ResolveState(nextSlashState);
-		}
-		return ResolveState(null);
+		return A_CheckNextSlash("Fire", "AltFire", true);
 	}
 	
 	// Do the attack and move the offset one step as defined above:

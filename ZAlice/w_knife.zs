@@ -68,13 +68,16 @@ class ToM_Knife : ToM_BaseWeapon
 
 	action State A_ClawRefire()
 	{
-		player.WeaponState |= WF_WEAPONSWITCHOK;
-		if (player && invoker.wasThrown && HasRageBox() && invoker.atkButtonState == ABS_PressedAgain)
+		if (!invoker.wasThrown || !HasRageBox())
 		{
-			invoker.atkButtonState = ABS_Held;
-			return ResolveState("ClawLeftSlash");
+			return ResolveState(null);
 		}
-		return ResolveState(null);
+		return A_CheckNextSlash("ClawLeftSlash", allowSwitch: false);
+	}
+
+	action State A_KnifeRefire()
+	{
+		return A_CheckNextSlash("Fire", "AltFire", allowSwitch: !HasRageBox());
 	}
 	
 	action void A_SetKnifeSprite(name defsprite, name ragesprite = '')
@@ -652,7 +655,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_ResetPSprite(OverlayID(), 10);
 			A_SetKnifeSprite("VKNF", "VKRF");
 		}
-		#### CCCHHHHAAA 1 A_CheckNextSlash();
+		#### CCCHHHHAAA 1 A_KnifeRefire();
 		goto ready;
 	RightSlash:
 		TNT1 A 0 
@@ -693,7 +696,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_ResetPSprite(OverlayID(), 10);
 			A_SetKnifeSprite("VKNF", "VKRF");
 		}
-		#### FFFEEEDDAA 1 A_CheckNextSlash();
+		#### FFFEEEDDAA 1 A_KnifeRefire();
 		goto ready;
 	DownSlash:
 		TNT1 A 0 
@@ -723,7 +726,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_ResetPSprite(OverlayID(), 9);
 			A_SetKnifeSprite("VKNF", "VKRF");
 		}
-		#### HHHHZZZZZ 1 A_CheckNextSlash();
+		#### HHHHZZZZZ 1 A_KnifeRefire();
 		goto ready;
 	RecallKnife:
 		#### # 1 A_RecallKnife();

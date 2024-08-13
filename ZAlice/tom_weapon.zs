@@ -966,11 +966,14 @@ class ToM_BaseWeapon : Weapon abstract
 
 	override bool Use(bool pickup)
 	{
-		if (CheshireSound && canPlayCheshireSound && !bTOSSED && pickup && 
-			owner && owner.player)
+		if (pickup)
 		{
-			canPlayCheshireSound = false;
-			ToM_CheshireCat.SpawnAndTalk(owner.player.mo, CheshireSound);
+			if (CheshireSound && canPlayCheshireSound && !bTOSSED && owner && owner.player)
+			{
+				canPlayCheshireSound = false;
+				ToM_CheshireCat.SpawnAndTalk(owner.player.mo, CheshireSound);
+			}
+			return false;
 		}
 		return Super.Use(pickup);
 	}

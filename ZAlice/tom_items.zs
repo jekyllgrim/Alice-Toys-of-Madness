@@ -109,10 +109,12 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 		"GreenArmor:ToM_SilverArmor",
 		"BlueArmor:ToM_GoldArmor",
 		"Berserk:ToM_RageBoxEffect",
-		/*"InvulnerabilitySphere:PK_Pentagram",
-		"Backpack:PK_AmmoPack",
-		"AllMap:PK_AllMap",
-		"RadSuit:PK_AntiRadArmor",*/
+		"InvulnerabilitySphere:ToM_GrowthPotion",
+		"Blursphere:ToM_InvisibilityEffect",
+		"Backpack:ToM_Backpack",
+		"AllMap:ToM_Allmap",
+		"RadSuit:ToM_Radsuit",
+		"Infrared:ToM_Infrared",
 		
 		/*
 		// HERETIC
@@ -239,12 +241,14 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 	
 	// This overrides the player's ability to receive vanilla weapons
 	// to account for cheats and GiveInventory ACS scripts:
-    override bool HandlePickup (Inventory item) {	
+	override bool HandlePickup (Inventory item)
+	{
 		let oldItemClass = item.GetClassName();
-        Class<Inventory> replacement = null;
+		Class<Inventory> replacement = null;
 		
 		// Iterate through the array:
-		for (int i = 0; i < ReplacementPairs.Size(); i++) {
+		for (int i = 0; i < ReplacementPairs.Size(); i++)
+		{
 			// Split the entry to get the replacement
 			// an the replacee:
 			array<string> classes;
@@ -258,7 +262,8 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 			
 			// Otherwise, check against the original class name,
 			// and if it matches, replace with the new one:
-			if (oldItemClass == classes[0]) {
+			if (oldItemClass == classes[0])
+			{
 				replacement = classes[1];
 				break;
 			}
@@ -284,8 +289,8 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 			return true;
 		}		
 		
-        return false;
-    }
+		return false;
+	}
 }
 
 mixin class ToM_PickupSound 

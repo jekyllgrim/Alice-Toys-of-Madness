@@ -794,12 +794,14 @@ class ToM_BaseWeapon : Weapon abstract
 		if (sNext1 && invoker.atkButtonState == ABS_PressedAgain)
 		{
 			player.WeaponState &= ~WF_WEAPONSWITCHOK;
+			player.pendingweapon = invoker;
 			invoker.atkButtonState = ABS_Held;
 			return sNext1;
 		}
 		else if (sNext2 && invoker.atkButtonStateAlt == ABS_PressedAgain)
 		{
 			player.WeaponState &= ~WF_WEAPONSWITCHOK;
+			player.pendingweapon = invoker;
 			invoker.atkButtonStateAlt = ABS_Held;
 			return sNext2;
 		}
@@ -810,6 +812,7 @@ class ToM_BaseWeapon : Weapon abstract
 		else 
 		{
 			player.WeaponState &= ~WF_WEAPONSWITCHOK;
+			player.pendingweapon = invoker;
 		}
 		return ResolveState(null);
 	}

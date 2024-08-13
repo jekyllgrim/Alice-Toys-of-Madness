@@ -837,49 +837,74 @@ class ToM_BaseWeapon : Weapon abstract
 	{
 		let player = owner.player;
 		let psp = player.FindPSprite(PSP_WEAPON);
-		String statestr = "Other";
-		if (psp)
+		// If no PSprite, reset button states:
+		if (!psp)
 		{
-			if (InStateSequence(psp.curstate, GetReadyState()))
+			atkButtonState = atkButtonStateAlt = ABS_None;
+			return;
+		}
+
+		// If ready, both button states are none:
+		if (InStateSequence(psp.curstate, GetReadyState()))
+		{
+			atkButtonState = atkButtonStateAlt = ABS_None;
+		}
+		// Otherwise do buffering:
+		else
+		{
+			// Primary attack button held:
+			if (atkButtonState == ABS_None && InStateSequence(psp.curstate, GetAtkState(false)))
 			{
-				atkButtonState = atkButtonStateAlt = ABS_None;
-				statestr = "Ready";
+				atkButtonState = ABS_Held;
 			}
-			else 
+			// Secondary attack button held:
+			if (atkButtonStateAlt == ABS_None && InStateSequence(psp.curstate, GetAltAtkState(false)))
 			{
-				if (atkButtonState == ABS_None && InStateSequence(psp.curstate, GetAtkState(false)))
-				{
-					atkButtonState = ABS_Held;
-					statestr = "Attack";
-				}
-				if (atkButtonStateAlt == ABS_None && InStateSequence(psp.curstate, GetAltAtkState(false)))
-				{
-					atkButtonStateAlt = ABS_Held;
-					statestr = "Alt attack";
-				}
+				atkButtonStateAlt = ABS_Held;
+			}
+			
+			// If primary was held but player is not pressing
+			// the attack button, store it as Lifted:
+			if (atkButtonState == ABS_Held && !(player.cmd.buttons & BT_ATTACK))
+			{
+				atkButtonState = ABS_Lifted;
+			}
+			// If primary is NOT held (and it's also not None
+			// because the state is not Ready) and the player IS
+			// pressing the button, record it as Pressed Again.
+			// This is what will allow the weapon to go to the next
+			// slash:
+			if (atkButtonState != ABS_Held && (player.cmd.buttons & BT_ATTACK))
+			{
+				// Pressing primary button records the
+				// alt button as lifted, so they can override
+				// each other:
+				atkButtonState = ABS_PressedAgain;
+				atkButtonStateAlt = ABS_Lifted;
+			}
+			// Do the same for secondary attack:
+			if (atkButtonStateAlt == ABS_Held && !(player.cmd.buttons & BT_ALTATTACK))
+			{
+				atkButtonStateAlt = ABS_Lifted;
+			}
+			if (atkButtonStateAlt != ABS_Held && (player.cmd.buttons & BT_ALTATTACK))
+			{
+				atkButtonStateAlt = ABS_PressedAgain;
+				atkButtonState = ABS_Lifted;
 			}
 		}
-		// primary attack:
-		if (atkButtonState == ABS_Held && !(player.cmd.buttons & BT_ATTACK))
-		{
-			atkButtonState = ABS_Lifted;
-		}
-		if (atkButtonState == ABS_Lifted && (player.cmd.buttons & BT_ATTACK))
-		{
-			atkButtonState = ABS_PressedAgain;
-		}
-		// secondary attack:
-		if (atkButtonStateAlt == ABS_Held && !(player.cmd.buttons & BT_ALTATTACK))
-		{
-			atkButtonStateAlt = ABS_Lifted;
-		}
-		if (atkButtonStateAlt == ABS_Lifted && (player.cmd.buttons & BT_ALTATTACK))
-		{
-			atkButtonStateAlt = ABS_PressedAgain;
-		}
+
 		if (tom_debugmessages > 2)
 		{
-			String absString, absStringAlt;
+			String absString, absStringAlt, statestr;
+
+			if (InStateSequence(psp.curstate, GetReadyState()))
+				statestr = "Ready";
+			else if (InStateSequence(psp.curstate, GetAtkState(false)))
+				statestr = "Attack";
+			else if (InStateSequence(psp.curstate, GetAltAtkState(false)))
+				statestr = "Alt Attack";
+
 			switch (atkButtonState)
 			{
 				default:               absString = "\cg None"; break;
@@ -887,6 +912,7 @@ class ToM_BaseWeapon : Weapon abstract
 				case ABS_Lifted:       absString = "\cd Lifted"; break;
 				case ABS_PressedAgain: absString = "\cv Pressed again"; break;
 			}
+
 			switch (atkButtonStateAlt)
 			{
 				default:               absStringAlt = "\cg None"; break;
@@ -894,6 +920,7 @@ class ToM_BaseWeapon : Weapon abstract
 				case ABS_Lifted:       absStringAlt = "\cd Lifted"; break;
 				case ABS_PressedAgain: absStringAlt = "\cv Pressed again"; break;
 			}
+
 			Console.MidPrint(NewConsoleFont, 
 				String.Format(
 					"\cfPrimary button state:\c- %s"

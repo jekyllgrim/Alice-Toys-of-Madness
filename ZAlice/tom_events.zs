@@ -171,7 +171,7 @@ class ToM_Mainhandler : EventHandler
 			}
 		}
 
-		if (e.Inflictor && e.DamageSource && e.DamageSource.player && e.DamageFlags & DMG_EXPLOSION)
+		if (!e.thing.bDontThrust && e.Damage > 0 && e.Inflictor && e.DamageSource && e.DamageSource.player && e.DamageFlags & DMG_EXPLOSION)
 		{
 			let player = e.DamageSource.player;
 			if (!player)

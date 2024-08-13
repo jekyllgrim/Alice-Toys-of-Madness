@@ -134,7 +134,7 @@ class ToM_Cards : ToM_BaseWeapon
 			if (!t)
 				continue;
 			
-			if (t.health <= 0 || !t.bSHOOTABLE || t.bNONSHOOTABLE)
+			if (t.health <= 0 || !t.bSHOOTABLE || t.bNONSHOOTABLE || !(t.bIsMonster || t.player))
 				continue;
 			
 			vector3 coords = Level.SphericalCoords(eyes, t.pos + (0,0,t.height*0.5), (angle, pitch));

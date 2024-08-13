@@ -881,30 +881,6 @@ class ToM_GrowthPotionEffect : Powerup
 	}
 }
 
-class StatPrinter : Inventory
-{
-	override void DoEffect()
-	{
-		if (!owner || !owner.player)
-		{
-			Destroy();
-			return;
-		}
-
-		let player = owner.player;
-		let pmo = player.mo;
-		Console.MidPrint(smallfont, 
-			String.Format(
-				"Viewheight: \cd%.2f (\cd%.2f) \n"
-				"Height: \cd%.2f \n"
-				"AttackZ: \cd%.2f \n",
-				pmo.viewheight, player.viewheight,
-				pmo.height,
-				pmo.attackZOffset)
-		);
-	}
-}
-
 class ToM_Invisibility : PowerupGiver
 {
 	double pickupBobFactor;

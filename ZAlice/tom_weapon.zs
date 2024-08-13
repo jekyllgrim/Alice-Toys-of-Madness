@@ -787,16 +787,29 @@ class ToM_BaseWeapon : Weapon abstract
 		return A_FireProjectile(missiletype, angle, useammo, spawnofs_xy, spawnheight, flags, pitchOfs);
 	}
 
-	action State A_CheckNextSlash(StateLabel nextSlashState = "Fire", bool allowSwitch = true)
+	action State A_CheckNextSlash(StateLabel nextPrimaryState = "Fire", StateLabel nextSecondaryState = null, bool allowSwitch = true)
 	{
-		if (allowSwitch)
+		State sNext1 = ResolveState(nextPrimaryState);
+		State sNext2 = ResolveState(nextSecondaryState);
+		if (sNext1 && invoker.atkButtonState == ABS_PressedAgain)
+		{
+			player.WeaponState &= ~WF_WEAPONSWITCHOK;
+			invoker.atkButtonState = ABS_Held;
+			return sNext1;
+		}
+		else if (sNext2 && invoker.atkButtonStateAlt == ABS_PressedAgain)
+		{
+			player.WeaponState &= ~WF_WEAPONSWITCHOK;
+			invoker.atkButtonStateAlt = ABS_Held;
+			return sNext2;
+		}
+		else if (allowSwitch)
 		{
 			player.WeaponState |= WF_WEAPONSWITCHOK;
 		}
-		if (invoker.atkButtonState == ABS_PressedAgain)
+		else 
 		{
-			invoker.atkButtonState = ABS_Held;
-			return ResolveState(nextSlashState);
+			player.WeaponState &= ~WF_WEAPONSWITCHOK;
 		}
 		return ResolveState(null);
 	}

@@ -104,7 +104,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				continue;
 			}
 
-			double stunchance = ToM_Utils.LinearMap(victim.health, 300, 2000, 100, 25, true);
+			double stunchance = ToM_Utils.LinearMap(victim.health, 80, 2000, 100, 15, true);
 			if (stunchance < random(0, 100))
 			{
 				continue;

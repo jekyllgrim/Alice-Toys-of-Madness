@@ -616,10 +616,10 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), 0.1, WOF_ADD);
 			A_ScalePSprite(OverlayID(), -0.003, -0.003, WOF_ADD);
 		}
-		TNT1 A 0 { invoker.combo = 0; }
+		#### A 0 { invoker.combo = 0; }
 		goto AttackEnd;
 	AttackEnd:
-		TNT1 A 5
+		#### A 5
 		{
 			A_SetSelectPosition(24, 90+WEAPONTOP);
 			A_RotatePSprite(OverlayID(), -30);

@@ -235,7 +235,7 @@ class ToM_VisualTrace play abstract
 		originator.LineTrace(originator.angle, dist, originator.pitch, flags, atkheight, data: tr);
 		
 		// Get start and end positions:
-		vector3 startpos = originator.pos + (0,0, atkheight);
+		vector3 startpos = level.Vec3Offset(originator.pos, (0,0, atkheight));
 		vector3 endpos = tr.HitLocation;
 
 		ToM_VisualTrace.DrawParticlesBetweenPoints(startpos, endpos, partDist, partTics, partColor);

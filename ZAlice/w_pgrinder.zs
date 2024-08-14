@@ -448,7 +448,7 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 			FSpawnParticleParams pp;
 			pp.color1 = color(pcolor[random[ppsfx](0, pcolor.Size()-1)]);
 			pp.lifetime = random[ppsfx](20,35);
-			pp.pos = pos + (frandom[ppsfx](-5,5), frandom[ppsfx](-5,5), 0);
+			pp.pos = level.Vec3Offset(pos, (frandom[ppsfx](-5,5), frandom[ppsfx](-5,5), 0));
 			pp.vel.x = frandom[ppsfx](-0.5, 0.5);
 			pp.vel.y = frandom[ppsfx](-0.5, 0.5);
 			pp.vel.z = frandom[ppsfx](0.5, 1.2);

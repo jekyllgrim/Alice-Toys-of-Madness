@@ -84,7 +84,7 @@ class ToM_Icewand : ToM_BaseWeapon
 		{
 			let proj = inflictor? inflictor : source;
 			if (!proj) return;
-			let dir = level.Vec3Diff(proj.pos, owner.pos+(0,0,owner.height*0.5)).Unit();
+			let dir = level.Vec3Diff(proj.pos, level.Vec3Offset(owner.pos, (0,0,owner.height*0.5))).Unit();
 			let tr = new('ToM_IceSplashDetector');
 			tr.Trace(proj.pos, proj.cursector, dir, proj.Distance3D(owner) + owner.radius*2, 0);
 			if (tr.hitIceWall)

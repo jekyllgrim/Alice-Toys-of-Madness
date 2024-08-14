@@ -352,7 +352,7 @@ class ToM_Utils
 		for (int i = 64; i > 0; i--)
 		{
 			// Pick a random position:
-			vector3 ppos = actorpos + (frandom[frpa](-ofs, ofs), frandom[frpa](-ofs, ofs), 0);
+			vector3 ppos = level.Vec3Offset(actorpos, (frandom[frpa](-ofs, ofs), frandom[frpa](-ofs, ofs), 0));
 			if (!Level.IsPointInLevel(ppos))
 			{
 				continue;

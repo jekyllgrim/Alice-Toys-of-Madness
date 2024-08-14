@@ -140,14 +140,14 @@ class ToM_Knife : ToM_BaseWeapon
 			style: PBS_Fade|PBS_Fullbright|PBS_Untextured,
 			decaltype: decaltype,
 			id: 0);
-		if (victim && damaged && victim.health > 0 && random[knifepain](0, 100) <= ToM_Utils.LinearMap(invoker.combo, 0, 5, 15, 80))
+		/*if (victim && damaged && victim.health > 0 && random[knifepain](0, 100) <= ToM_Utils.LinearMap(invoker.combo, 0, 5, 15, 80))
 		{
 			let st = victim.FindState("Pain");
 			if (st)
 			{
 				victim.SetState(st);
 			}
-		}
+		}*/
 	}
 
 	action void A_ClawSwing(int damage, double stepX, double stepY)
@@ -639,11 +639,6 @@ class ToM_Knife : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), 10, WOF_ADD);
 			A_KnifeSwing(25, 20, 2);
 		}
-		/*TNT1 A 0 
-		{
-			A_KnifeSlash(25);
-			A_SetKnifeSprite("VKNS", "VKRS");
-		}*/
 		#### CCC 1
 		{
 			A_WeaponOffset(-44, 5, WOF_ADD);
@@ -655,7 +650,8 @@ class ToM_Knife : ToM_BaseWeapon
 			A_ResetPSprite(OverlayID(), 10);
 			A_SetKnifeSprite("VKNF", "VKRF");
 		}
-		#### CCCHHHHAAA 1 A_KnifeRefire();
+		#### CCC 1;
+		#### HHHHAAA 1 A_KnifeRefire();
 		goto ready;
 	RightSlash:
 		TNT1 A 0 
@@ -679,12 +675,7 @@ class ToM_Knife : ToM_BaseWeapon
 			A_WeaponOffset(80, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -5, WOF_ADD);
 			A_KnifeSwing(25, -25, -3);
-		}		
-		/*#### E 0 
-		{
-			A_KnifeSlash(25);
-			A_SetKnifeSprite("VKNS", "VKRS");
-		}*/
+		}
 		#### FFF 1
 		{
 			A_WeaponOffset(65, 4, WOF_ADD);
@@ -696,7 +687,8 @@ class ToM_Knife : ToM_BaseWeapon
 			A_ResetPSprite(OverlayID(), 10);
 			A_SetKnifeSprite("VKNF", "VKRF");
 		}
-		#### FFFEEEDDAA 1 A_KnifeRefire();
+		#### FFF 1;
+		#### EEEDDAA 1 A_KnifeRefire();
 		goto ready;
 	DownSlash:
 		TNT1 A 0 
@@ -726,7 +718,8 @@ class ToM_Knife : ToM_BaseWeapon
 			A_ResetPSprite(OverlayID(), 9);
 			A_SetKnifeSprite("VKNF", "VKRF");
 		}
-		#### HHHHZZZZZ 1 A_KnifeRefire();
+		#### HHH 1;
+		#### HZZZZZ 1 A_KnifeRefire();
 		goto ready;
 	RecallKnife:
 		#### # 1 A_RecallKnife();

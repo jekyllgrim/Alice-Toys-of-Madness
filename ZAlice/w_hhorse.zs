@@ -621,14 +621,13 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	AttackEnd:
 		TNT1 A 5
 		{
-			A_WeaponOffset(24, 90+WEAPONTOP);
+			A_SetSelectPosition(24, 90+WEAPONTOP);
 			A_RotatePSprite(OverlayID(), -30);
 			return A_HorseRefire();
 		}
-		HHRS AAAAAA 1
+		TNT1 A 0 A_ResetPSprite(OverlayID(), 12, true);
+		HHRS AAAAAAAAAAAA 1
 		{
-			A_WeaponOffset(-4, -15, WOF_ADD);
-			A_RotatePSprite(OverlayID(), 5, WOF_ADD);
 			return A_HorseRefire();
 		}
 		TNT1 A 0 

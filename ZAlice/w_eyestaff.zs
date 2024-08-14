@@ -1156,7 +1156,7 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 			vector3 ppos = pos;
 			ppos.xy = Vec2Angle(frandom[eye](0, circleRad), random[eye](0, 359));
 
-			double toplimit = Level.PointInSector(ppos.xy).NextHighestCeilingAt(ppos.x, ppos.y, ppos.z, ppos.z, ppos.z+ height);
+			double toplimit = Level.PointInSector(ppos.xy).NextHighestCeilingAt(ppos.x, ppos.y, ppos.z, ppos.z);
 			ppos.z = Clamp(ppos.z, floorz, toplimit);
 
 			pp.pos = ppos;

@@ -801,10 +801,9 @@ class ToM_SteamProjectile : ToM_PiercingProjectile
 	
 	override void HitVictim(actor victim)
 	{
-		if (target)
+		if (target && victim && !victim.bDontThrust)
 		{
-			let norm = LevelLocals.Vec3Diff(pos, pos+vel);
-			let dir = norm.unit();
+			let dir = level.Vec3Diff(pos, level.Vec3Offset(pos, vel)).Unit();
 			let fac = ToM_Utils.LinearMap(victim.mass, 100, 1000, 2, 1);
 			victim.vel = vel.length() * dir * fac;
 			victim.target = null;

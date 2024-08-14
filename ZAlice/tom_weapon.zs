@@ -256,11 +256,11 @@ class ToM_BaseWeapon : Weapon abstract
 				{
 					if (hit.hittype == TRACE_HitWall)
 					{
-						puffpos += hitnormal * puff.radius;
+						puffpos = level.Vec3Offset(puffpos, hitnormal * puff.radius);
 					}
 					else if (hit.hittype == TRACE_HitCeiling)
 					{
-						puffpos += hitnormal * puff.height;
+						puffpos += level.Vec3Offset(puffpos, hitnormal * puff.height);
 					}
 					else if (hit.hittype == TRACE_HitFloor)
 					{

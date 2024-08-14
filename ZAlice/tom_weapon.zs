@@ -787,34 +787,37 @@ class ToM_BaseWeapon : Weapon abstract
 		return A_FireProjectile(missiletype, angle, useammo, spawnofs_xy, spawnheight, flags, pitchOfs);
 	}
 
-	action State A_CheckNextSlash(StateLabel nextPrimaryState = "Fire", StateLabel nextSecondaryState = null, bool allowSwitch = true)
+	action State A_CheckNextSlash(StateLabel nextPrimary = "Fire", StateLabel nextSecondary = null, bool allowSwitch = true)
 	{
-		State sNext1 = ResolveState(nextPrimaryState);
-		State sNext2 = ResolveState(nextSecondaryState);
+		State sNext1 = ResolveState(nextPrimary);
+		State sNext2 = ResolveState(nextSecondary);
+		State togo = null;
+
 		if (sNext1 && invoker.atkButtonState == ABS_PressedAgain)
 		{
-			player.WeaponState &= ~WF_WEAPONSWITCHOK;
-			player.pendingweapon = invoker;
 			invoker.atkButtonState = ABS_Held;
-			return sNext1;
+			togo = sNext1;
 		}
 		else if (sNext2 && invoker.atkButtonStateAlt == ABS_PressedAgain)
 		{
-			player.WeaponState &= ~WF_WEAPONSWITCHOK;
-			player.pendingweapon = invoker;
+			togo = sNext2;
 			invoker.atkButtonStateAlt = ABS_Held;
-			return sNext2;
 		}
-		else if (allowSwitch)
+
+		if (togo || !allowSwitch)
+		{
+			player.WeaponState &= ~WF_WEAPONSWITCHOK;
+			if (player.pendingweapon != WP_NOCHANGE && player.pendingweapon != invoker)
+			{
+				player.pendingweapon = invoker;
+			}
+		}
+		else
 		{
 			player.WeaponState |= WF_WEAPONSWITCHOK;
 		}
-		else 
-		{
-			player.WeaponState &= ~WF_WEAPONSWITCHOK;
-			player.pendingweapon = invoker;
-		}
-		return ResolveState(null);
+
+		return togo;
 	}
 
 	virtual void OnRemoval(Actor dropper)

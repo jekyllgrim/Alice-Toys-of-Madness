@@ -83,6 +83,8 @@ Texture JEYCC0 NoTrim
 Texture JEYCD0 NoTrim
 Texture JEYCE0 NoTrim
 Texture JEYCF0 NoTrim
+Texture JEYCG0 NoTrim
+Texture JEYCH0 NoTrim
 
 Texture PPGRA0 NoTrim
 Texture PPGRB0 NoTrim

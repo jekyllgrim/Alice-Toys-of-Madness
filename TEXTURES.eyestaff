@@ -14,11 +14,26 @@ Sprite "JEYCQ0", 64, 64
 	Patch "JCPART", 0, 0
 }
 
+Sprite "JEYCR0", 64, 64
+{
+	XScale 4.200
+	YScale 4.800
+	Offset -916, -401
+	Patch "JCPART2", 0, 0
+}
+
 Sprite "JEYCF0", 309, 294
 {
 	YScale 1.200
 	Offset -116, 64
 	Patch "JEYCF", 0, 0
+}
+
+Sprite "JEYCH0", 309, 294
+{
+	YScale 1.200
+	Offset -116, 64
+	Patch "JEYCH", 0, 0
 }
 
 Sprite "JEYCA0", 309, 294

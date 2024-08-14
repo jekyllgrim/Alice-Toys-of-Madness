@@ -1,11 +1,14 @@
 class ToM_Eyestaff : ToM_BaseWeapon
 {
-	int charge;
+	const APSP_EyeChargeFlash = PSP_Flash -1;
+
+	double charge;
 	private ToM_EyestaffBeam beam1;	//outer beam (purple)
 	private ToM_EyestaffBeam beam2; //inner beam (yellow)
 	private ToM_EyestaffBeam outerBeam; //rendered for other players and mirrors
 	
-	const ES_FULLCHARGE = 30;
+	const ES_FULLBEAMCHARGE = 12;
+	const ES_FULLROCKETCHARGE = 70;
 	const ES_FULLALTCHARGE = 42;
 	const ES_PARTALTCHARGE = 8;
 	const ES_MAXCIRCLES = 4;
@@ -40,11 +43,11 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		A_StopCharge();
 		A_StopBeam();
 		A_RemoveAimCircle();
+		A_StopSound(CHAN_7);
 	}
 	
 	action void A_StopCharge()
 	{
-		A_StopSound(CHAN_WEAPON);
 		invoker.charge = 0;
 		invoker.altCharge = 0;
 		invoker.aimCircle = null;
@@ -76,17 +79,19 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 	}
 	
-	action void A_FireBeam()
+	action void A_FireBeam(int damage = 5)
 	{
 		if (!self || !self.player)
 			return;
 		
-		if (player.refire % 2 == 0 && !invoker.DepleteAmmo(invoker.bAltFire))
+		if (player.refire % 3 == 0 && !invoker.DepleteAmmo(invoker.bAltFire))
+		{
 			return;
+		}
 			
 		A_StartSound(invoker.loopedAttackSound, CHAN_WEAPON, CHANF_LOOPING);
 
-		let puf = LineAttack(angle, PLAYERMISSILERANGE, pitch, 8, 'normal', 'ToM_EyestaffPuff', LAF_NORANDOMPUFFZ|LAF_OVERRIDEZ, offsetz: player.viewz - pos.z);
+		let puf = LineAttack(angle, PLAYERMISSILERANGE, pitch, damage, 'Eyestaff', 'ToM_EyestaffPuff', LAF_NORANDOMPUFFZ|LAF_OVERRIDEZ, offsetz: player.viewz - pos.z);
 		if (puf)
 		{
 			invoker.MakeBeams();
@@ -131,10 +136,18 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			psp.SetState(st);
 			A_OverlayFlags(PSP_Flash, PSPF_Renderstyle|PSPF_ForceAlpha, true);
 			A_OverlayRenderstyle(PSP_Flash, Style_Add);
+			let psw = player.FindPSprite(PSP_WEAPON);
+			if (psw)
+			{
+				//psp.x = 0;
+				//psp.y = 0;
+				psp.pivot = psw.pivot;
+				psp.scale = psw.scale;
+			}
 		}
 		if (alpha <= 0)
 		{
-			alpha = ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLCHARGE, 0.0, 1.0);
+			alpha = ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLBEAMCHARGE, 0.0, 1.0);
 		}
 		psp.alpha = alpha;
 	}
@@ -144,9 +157,11 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		//A_DampedRandomOffset(3,3, 2);
 		A_OverlayPivot(OverlayID(),0, 0);
 		A_OverlayPivot(PSP_Flash, 0, 0);
+		A_OverlayPivot(APSP_EyeChargeFlash, 0, 0);
 		double sc = frandom[eye](0, 0.025);
 		A_OverlayScale(OverlayID(), 1 + sc, 1 + sc, WOF_INTERPOLATE);
 		A_OverlayScale(PSP_Flash, 1 + sc, 1 + sc, WOF_INTERPOLATE);
+		A_OverlayScale(APSP_EyeChargeFlash, 1 + sc, 1 + sc, WOF_INTERPOLATE);
 		A_AttackZoom(0.001, 0.05, 0.002);
 	}
 	
@@ -216,11 +231,11 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	
 	action void A_RemoveAimCircle()
 	{
-		if (invoker.aimCircle)
+		for (int i = 0; i < ES_MAXCIRCLES; i++)
 		{
-			invoker.aimCircle.Destroy();
-			for (int i = 0; i < ES_MAXCIRCLES; i++)
+			if (invoker.aimCircles[i])
 			{
+				invoker.aimCircles[i].Destroy();
 				invoker.aimCircles[i] = null;
 			}
 		}
@@ -324,22 +339,22 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			if (invoker.charge > 0)
 			{
-				invoker.charge--;
+				invoker.charge = clamp(invoker.charge -= 0.2, 0, ES_FULLBEAMCHARGE);
 			}
 			A_ResetZoom();
 			A_WeaponReady();
 		}
-		wait;
+		loop;
 	Fire:
 		JEYC A 1
 		{
 			A_EyestaffFlash("BeamFlash");
 			A_PlayerAttackAnim(-1, 'attack_eyestaff', 30, endframe: 1, flags: SAF_LOOP|SAF_NOOVERRIDE);
 		}
-		TNT1 A 0
+		#### A 0
 		{
-			A_StartSound("weapons/eyestaff/charge1", CHAN_WEAPON, CHANF_LOOPING);
-			if (invoker.charge >= ES_FULLCHARGE)
+			A_StartSound("weapons/eyestaff/charge1", CHAN_7, CHANF_NOSTOP);
+			if (invoker.charge >= ES_FULLBEAMCHARGE)
 			{
 				A_StopCharge();
 				A_PlayerAttackAnim(-1, 'attack_eyestaff', 30, flags: SAF_LOOP);
@@ -347,46 +362,114 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			}
 			if (PressingAttackButton(holdCheck:PAB_HELD))
 			{
-				A_SpawnPSParticle("ChargeParticle", bottom: true, density: ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLCHARGE, 1, 10), xofs: 120, yofs: 120);
-				invoker.charge++;
-				//A_DampedRandomOffset(2, 2, 1.2);
+				invoker.charge = clamp(invoker.charge + 1, 0, ES_FULLBEAMCHARGE);
+				A_SpawnPSParticle("ChargeParticle", bottom: true, density: ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLBEAMCHARGE, 1, 10), xofs: 120, yofs: 120);
 				A_AttackZoom(0.001, 0.08, 0.002);
 				return ResolveState("Fire");
 			}
-			player.SetPsprite(PSP_Flash, ResolveState("FlashEnd"));
-			A_StartSound("weapons/eyestaff/chargeoff", CHAN_WEAPON);
-			A_PlayerAttackAnim(1, 'attack_eyestaff');
-			return ResolveState("Ready");
+			return ResolveState("FireEndFast");
 		}
 		goto Ready;
 	FireBeam:
 		JEYC A 1
 		{
+			invoker.charge = clamp(invoker.charge + 1, 0, ES_FULLROCKETCHARGE);
+			if (invoker.charge < ES_FULLROCKETCHARGE)
+			{
+				A_SoundVolume(CHAN_7, ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLROCKETCHARGE, 1.0, 0.0));
+			}
 			if (player.refire % 2 == 0)
 			{
+				A_SpawnPSParticle("ChargeParticle", bottom: true, density: 10, xofs: 120, yofs: 120);
 				A_PlayerAttackAnim(-1, 'attack_eyestaff', 30, flags: SAF_LOOP|SAF_NOOVERRIDE);
 				A_EyestaffFlash("BeamFlash", frandom[eye](0.3, 1));
 				A_EyestaffRecoil();
 			}
+			A_Overlay(APSP_EyeChargeFlash, "ProjReadyFlash", true);
 			A_FireBeam();
 		}
-		TNT1 A 0 A_ReFire("FireBeam");
-		goto FireEnd;
+		#### A 0 A_ReFire("FireBeam");
+		#### A 0 
+		{
+			if (invoker.charge >= ES_FULLROCKETCHARGE)
+			{
+				return ResolveState("FireEndProjectile");
+			}
+			return ResolveState("FireEndFast");
+		}
+		goto Ready;
+	FireEndFast:
+		#### A 0
+		{
+			A_Overlay(APSP_EyeChargeFlash, "FlashEnd");
+			A_StopBeam();
+			A_StopSound(CHAN_7);
+			A_StartSound("weapons/eyestaff/chargeoff", CHAN_WEAPON, volume: 0.7, startTime: ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLROCKETCHARGE, 0.7, 0.0, true));
+			A_PlayerAttackAnim(1, 'attack_eyestaff');
+		}
+		goto Ready;
 	BeamFlash:
-		JEYC F -1 bright;
-		stop;
+		JEYC F 1 bright
+		{
+			let psp = player.FindPSprite(OverlayID());
+			let psw = player.FindPSprite(PSP_WEAPON);
+			if (psp && psw && InStateSequence(psw.curstate, invoker.GetReadyState()))
+			{
+				if (invoker.charge <= 0)
+				{
+					return ResolveState("Null");
+				}
+				psp.alpha = ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLBEAMCHARGE, 0, 0.7, true);
+			}
+			return ResolveState(null);
+		}
+		loop;
 	FlashEnd:
 		#### # 1 bright A_PSPFadeOut(0.15);
 		loop;
-	FireEnd:
+	ProjReadyFlash:
 		TNT1 A 0 
 		{
+			A_OverlayFlags(OverlayID(), PSPF_Renderstyle|PSPF_ForceAlpha, true);
+			A_OverlayRenderstyle(OverlayID(), STYLE_Add);
+			A_OverlayAlpha(OverlayID(), 0);
+			let psp = player.FindPSprite(OverlayID());
+			let psw = player.FindPSprite(PSP_WEAPON);
+			if (psp && psw)
+			{
+				psp.pivot = psw.pivot;
+				psp.scale = psw.scale;
+			}
+		}
+		JEYC H 1 bright
+		{
+			double alph;
+			if (invoker.charge < ES_FULLROCKETCHARGE)
+			{
+				alph = ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLROCKETCHARGE, 0, 0.35, true);
+			}
+			else
+			{
+				alph = frandom[sfx](0.6, 0.8);
+			}
+			A_OverlayAlpha(OverlayID(), alph);
+		}
+		wait;
+	FireEndProjectile:
+		TNT1 A 0 
+		{
+			invoker.charge = 0;
 			A_PlayerAttackAnim(20, 'attack_eyestaff_alt_end', 30, interpolateTics:6);
+			A_Overlay(PSP_Flash, "Null");
+			A_Overlay(APSP_EyeChargeFlash, "Null");
+			A_ClearPSParticles(bottom: true);
+			A_StopSound(CHAN_7);
 			A_StopBeam();
-			player.SetPsprite(PSP_Flash, ResolveState("FlashEnd"));
 			let proj = A_FireProjectile("ToM_EyestaffProjectile", useammo: false);
 			if (proj)
+			{
 				proj.A_StartSound("weapons/eyestaff/fireProjectile");
+			}
 		}
 		JEYC ACE 1 A_AttackZoom(0.03, 0.1);
 		JEYC EEEEEE 1 
@@ -407,7 +490,14 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		JEYC G -1 bright;
 		stop;
 	AltFire:
-		TNT1 A 0 A_PlayerAttackAnim(-1, 'attack_eyestaff_alt_start');
+		TNT1 A 0 
+		{
+			A_PlayerAttackAnim(-1, 'attack_eyestaff_alt_start');
+			A_Overlay(PSP_Flash, "Null");
+			A_Overlay(APSP_EyeChargeFlash, "Null");
+			A_StopCharge();
+			A_ClearPSParticles(bottom: true);
+		}
 		JEYC AAABBBCCCDDDEEE 1 
 		{
 			A_WeaponOffset(-5, 1.4, WOF_ADD);
@@ -495,19 +585,35 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			A_OverlayRenderstyle(OverlayID(),Style_Add);
 			A_OverlayAlpha(OverlayID(),0);
 			A_OverlayScale(OverlayID(),0.5,0.5);
-			if (invoker.bAltFire)
+			let psp = player.FindPSprite(OverlayID());
+			if (psp)
 			{
-				let psp = player.FindPSprite(OverlayID());
-				psp.frame++;
+				// If this is used by alt attack, use JEYCQ
+				// sprite instead of JEYCP:
+				if (invoker.bAltFire)
+				{
+					psp.frame++;
+				}
+				// If this is for primary and we've fired long enough
+				// to charge an after-beam rocket, use JEYCR:
+				else if (invoker.charge >= ES_FULLROCKETCHARGE && random[sfx](0,1) == 1)
+				{
+					psp.frame += 2;
+				}
 			}
 		}
 		#### ############## 1 bright 
 		{
-			double scalestep = invoker.bAltFire ? 0.1 : 0.05;
-			A_OverlayScale(OverlayID(),scalestep,scalestep,WOF_ADD);
 			let psp = player.FindPSprite(OverlayID());
-			if (psp) 
+			let psw = player.FindPSprite(PSP_WEAPON);
+			if (psp && psw)
 			{
+				if (InStateSequence(psw.curstate, invoker.GetReadyState()))
+				{
+					A_SetTics(2);
+				}
+				double scalestep = invoker.bAltFire ? 0.1 : 0.05;
+				A_OverlayScale(OverlayID(),scalestep,scalestep,WOF_ADD);
 				double alpahstep = invoker.bAltFire ? 0.075 : 0.05;
 				psp.alpha = Clamp(psp.alpha + alpahstep, 0, 0.85);
 				A_OverlayOffset(OverlayID(),psp.x * 0.85, psp.y * 0.85, WOF_INTERPOLATE);
@@ -1151,7 +1257,7 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 		pp.vel.x = frandom[eyec](-hv,hv);
 		pp.vel.y = frandom[eyec](-hv,hv);
 		pp.vel.z = frandom[eyec](-hv,0);
-		for (int i = int(ToM_Utils.LinearMap(charge, 0, ToM_Eyestaff.ES_FULLCHARGE, 1, 7)); i > 0; i--)
+		for (int i = int(ToM_Utils.LinearMap(charge, 0, ToM_Eyestaff.ES_FULLBEAMCHARGE, 1, 7)); i > 0; i--)
 		{		
 			vector3 ppos = pos;
 			ppos.xy = Vec2Angle(frandom[eye](0, circleRad), random[eye](0, 359));
@@ -1236,16 +1342,13 @@ class ToM_SkyMissilesSpawner : ToM_BaseActor
 				}
 				charge--;
 			}
+			else if (tracer)
+			{
+				tracer.A_FadeOut(0.05);
+			}
 			else
 			{
-				if (tracer)
-				{
-					tracer.A_FadeOut(0.05);
-				}
-				if (!tracer)
-				{
-					return ResolveState("Null");
-				}
+				return ResolveState("Null");
 			}
 			return ResolveState(null);
 		}

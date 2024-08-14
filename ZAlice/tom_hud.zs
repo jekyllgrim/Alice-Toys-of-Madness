@@ -326,7 +326,7 @@ class ToM_AliceHUD : BaseStatusBar
 		let eyestaff = ToM_Eyestaff(weap);
 		if (eyestaff && eyestaff.charge > 0)
 		{
-			double fac = Clamp(double(eyestaff.charge) / eyestaff.ES_FULLCHARGE, 0.0, 1.0);
+			double fac = Clamp(double(eyestaff.charge) / eyestaff.ES_FULLBEAMCHARGE, 0.0, 1.0);
 			let psp = CPlayer.FindPSprite(PSP_WEAPON);
 			if (psp && psp.curstate.InStateSequence(eyestaff.FindState("FireBeam")))
 			{

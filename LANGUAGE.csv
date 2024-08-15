@@ -1,11 +1,11 @@
 default,identifier,remarks,ru
 HP,TOM_UNIT_HP,Units,ОЗ
 Armor,TOM_UNIT_ARMOR,Units,ед. брони
-Rose petal,TOM_ITEM_HEALTH1,Alice items,
-Rose bud,TOM_ITEM_HEALTH10,Alice items,
-Rose flower,TOM_ITEM_HEALTH25,Alice items,
-Magic rose bud,TOM_ITEM_HEALTH100,Alice items,
-Magic rose flower,TOM_ITEM_HEALTH200,Alice items,
+Rose petals,TOM_ITEM_HEALTH1,Alice items,
+Small rose,TOM_ITEM_HEALTH10,Alice items,
+Large rose,TOM_ITEM_HEALTH25,Alice items,
+Magic rose,TOM_ITEM_HEALTH100,Alice items,
+Large magic rose,TOM_ITEM_HEALTH200,Alice items,
 Armor Sigil,TOM_ITEM_ARMOR_SMALL,Alice items,
 Silver Armor,TOM_ITEM_ARMOR_MED,Alice items,
 Golden Armor,TOM_ITEM_ARMOR_BIG,Alice items,

@@ -835,7 +835,11 @@ class ToM_JackBombProjectile : ToM_Projectile
 		{
 			bDECOUPLEDANIMATIONS = false;
 			rotangle -= 360.0 / (TICRATE * 3);
-			A_SpawnProjectile('DoomImpBall', 32, angle: rotangle, flags: CMF_AimDirection);
+			let p = A_SpawnProjectile('DoomImpBall', 32, angle: rotangle, flags: CMF_AimDirection);
+			if (target && p)
+			{
+				p.target = target;
+			}
 		}
 		loop;
 	DeathBoom:

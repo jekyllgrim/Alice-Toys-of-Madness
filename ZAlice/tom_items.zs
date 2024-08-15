@@ -514,7 +514,7 @@ class ToM_HealthPickup : ToM_Health
 	override void PostBeginPlay()
 	{
 		Super.PostBeginPlay();
-		scale.y = scale.x /= level.pixelstretch;
+		scale.y = default.scale.x / level.pixelstretch;
 	}
 	
 	override string GetPickupNote()
@@ -555,6 +555,8 @@ class ToM_StimPack : ToM_HealthPickup
 		Inventory.amount 10;
 		Inventory.maxamount 100;
 		Inventory.Pickupsound "pickups/health/bud";
+		XScale 0.4;
+		YScale 0.4 / 1.2;
 	}
 	
 	States {
@@ -889,7 +891,7 @@ class ToM_Backpack : Backpack
 	override void PostBeginPlay()
 	{
 		Super.PostBeginPlay();
-		scale.y = scale.x /= level.pixelstretch;
+		scale.y = default.scale.x / level.pixelstretch;
 
 		for (int i = 0; i < manaClasses.Size(); i++)
 		{
@@ -1150,7 +1152,7 @@ class ToM_Allmap : AllMap
 	override void PostBeginPlay()
 	{
 		Super.PostBeginPlay();
-		scale.y = scale.x /= level.pixelstretch;
+		scale.y = default.scale.x / level.pixelstretch;
 	}
 
 	States {

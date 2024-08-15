@@ -294,98 +294,40 @@ Model ToM_RageBox
 
 Model ToM_JackBombPickup
 {
+	// Animations: handle_turn, doll_popout, doll_lean, doll_rotate
 	Path "Models/Jackbomb"
 	Model 0 "jackbomb.iqm"
-	
-	FrameIndex	M000	A	0	0
+	BaseFrame
 }
 
 Model ToM_JackBombProjectile
 {
 	Path "Models/Jackbomb"
 	Model 0 "jackbomb.iqm"
-	
-	// handle rotate:
-	FrameIndex	M000	A	0	0
-	FrameIndex	M000	B	0	1
-	FrameIndex	M000	C	0	2
-	FrameIndex	M000	D	0	3
-	FrameIndex	M000	E	0	4
-	FrameIndex	M000	F	0	5
-	FrameIndex	M000	G	0	6
-	FrameIndex	M000	H	0	7
-	FrameIndex	M000	I	0	8
-	FrameIndex	M000	J	0	9
-	FrameIndex	M000	K	0	10
-	FrameIndex	M000	L	0	11
-	FrameIndex	M000	M	0	12
-	FrameIndex	M000	N	0	13
-	FrameIndex	M000	O	0	14
-	FrameIndex	M000	P	0	15
-	FrameIndex	M000	Q	0	16
-	FrameIndex	M000	R	0	17
-	FrameIndex	M000	S	0	18
-	FrameIndex	M000	T	0	19
-	// lid open:				
-	FrameIndex	M001	A	0	20
-	FrameIndex	M001	B	0	21
-	FrameIndex	M001	C	0	22
-	FrameIndex	M001	D	0	23
-	FrameIndex	M001	E	0	24
-	FrameIndex	M001	F	0	25
-	FrameIndex	M001	G	0	26
-	FrameIndex	M001	H	0	27
-	FrameIndex	M001	I	0	28
-	// doll pop out				
-	FrameIndex	M002	A	0	29
-	FrameIndex	M002	B	0	30
-	FrameIndex	M002	C	0	31
-	FrameIndex	M002	D	0	32
-	FrameIndex	M002	E	0	33
-	FrameIndex	M002	F	0	34
-	FrameIndex	M002	G	0	35
-	FrameIndex	M002	H	0	36
-	FrameIndex	M002	I	0	37
-	FrameIndex	M002	J	0	38
-	// doll roll back				
-	FrameIndex	M003	A	0	39
-	FrameIndex	M003	B	0	40
-	FrameIndex	M003	C	0	41
-	FrameIndex	M003	D	0	42
-	// doll roll forward and back loop				
-	FrameIndex	M004	A	0	43
-	FrameIndex	M004	B	0	44
-	FrameIndex	M004	C	0	45
-	FrameIndex	M004	D	0	46
-	FrameIndex	M004	E	0	47
-	FrameIndex	M004	F	0	48
-	FrameIndex	M004	G	0	49
-					
-	/*FrameIndex	M005	A	0	50
-	// rotate:				
-	FrameIndex	M006	A	0	51
-	FrameIndex	M006	B	0	52
-	FrameIndex	M006	C	0	53
-	FrameIndex	M006	D	0	54
-	FrameIndex	M006	E	0	55
-	FrameIndex	M006	F	0	56
-	FrameIndex	M006	G	0	57
-	FrameIndex	M006	H	0	58
-	FrameIndex	M006	I	0	59
-	FrameIndex	M006	J	0	60
-	FrameIndex	M006	K	0	61
-	FrameIndex	M006	L	0	62
-	FrameIndex	M006	M	0	63
-	FrameIndex	M006	N	0	64
-	FrameIndex	M006	O	0	65
-	FrameIndex	M006	P	0	66
-	FrameIndex	M006	Q	0	67
-	FrameIndex	M006	R	0	68
-	FrameIndex	M006	S	0	69
-	FrameIndex	M006	T	0	70
-	FrameIndex	M006	U	0	71
-	FrameIndex	M006	V	0	72
-	FrameIndex	M006	W	0	73
-	FrameIndex	M006	X	0	74
-	FrameIndex	M006	Y	0	75*/
+	BaseFrame
+
+	Frame M001 A 0 "doll_rotate:0"
+	Frame M001 B 0 "doll_rotate:1"
+	Frame M001 C 0 "doll_rotate:2"
+	Frame M001 D 0 "doll_rotate:3"
+	Frame M001 E 0 "doll_rotate:4"
+	Frame M001 F 0 "doll_rotate:5"
+	Frame M001 G 0 "doll_rotate:6"
+	Frame M001 H 0 "doll_rotate:7"
+	Frame M001 I 0 "doll_rotate:8"
+	Frame M001 J 0 "doll_rotate:9"
+	Frame M001 K 0 "doll_rotate:10"
+	Frame M001 L 0 "doll_rotate:11"
+	Frame M001 M 0 "doll_rotate:12"
+	Frame M001 N 0 "doll_rotate:13"
+	Frame M001 O 0 "doll_rotate:14"
+	Frame M001 P 0 "doll_rotate:15"
+	Frame M001 Q 0 "doll_rotate:16"
+	Frame M001 R 0 "doll_rotate:17"
+	Frame M001 S 0 "doll_rotate:18"
+	Frame M001 T 0 "doll_rotate:19"
+	Frame M001 U 0 "doll_rotate:20"
+	Frame M001 V 0 "doll_rotate:21"
+	Frame M001 W 0 "doll_rotate:22"
+	Frame M001 X 0 "doll_rotate:23"
 }

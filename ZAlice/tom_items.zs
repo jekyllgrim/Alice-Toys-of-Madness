@@ -722,10 +722,18 @@ class ToM_JackBombPickup : ToM_Inventory
 {
 	Default
 	{
+		+DECOUPLEDANIMATIONS
 		Tag "$TOM_ITEM_JACKBOMB";
 		Inventory.pickupmessage "$TOM_ITEM_JACKBOMB";
 		Inventory.amount 1;
 		Inventory.maxamount 15;
+		Scale 1.5;
+	}
+
+	override void PostBeginPlay()
+	{
+		Super.PostBeginPlay();
+		SetAnimation('handle_turn', endframe: 0, flags: SAF_INSTANT);
 	}
 
 	States {
@@ -737,6 +745,8 @@ class ToM_JackBombPickup : ToM_Inventory
 
 class ToM_JackBombProjectile : ToM_Projectile
 {
+	double rotangle;
+
 	static const color popcolors[] = 
 	{
 		"ff0000",
@@ -756,6 +766,7 @@ class ToM_JackBombProjectile : ToM_Projectile
 		+ALLOWBOUNCEONACTORS
 		+BOUNCEONACTORS
 		+CANBOUNCEWATER
+		+DECOUPLEDANIMATIONS
 		BounceFactor 0.5;
 		WallBounceFactor 0.8;
 		Damage 0;
@@ -764,26 +775,34 @@ class ToM_JackBombProjectile : ToM_Projectile
 		Scale 1.5;
 	}
 
+	override void PostBeginPlay()
+	{
+		Super.PostBeginPlay();
+		SetAnimation('handle_turn', endframe: 0, flags: SAF_INSTANT);
+	}
+
 	States {
 	Spawn:
-		M000 A 1
+		M000 A 1 
 		{
-			if (bMISSILE && vel.length() < 3)
+			if (vel.Length() < 3)
 			{
-				return ResolveState("Death");
+				bMissile = false;
+				SetStateLabel("Death");
 			}
-			A_SetAngle(angle + vel.xy.Length());
-			return ResolveState(null);
+			rotangle += vel.xy.Length();
+			A_SetAngle(rotangle, SPF_INTERPOLATE);
 		}
 		loop;
 	Death:
-		M000 A 10 { bMISSILE = false; }
-		TNT1 A 0 A_StartSound("weapons/jackbomb/music");
-		M000 BCDEFGHIJKLMNOPQRST 1;
-		M000 BCDEFGHIJKLMNOPQRST 2;
-		M001 ABCDEFGHI 1;
-		TNT1 A 0 
+		M000 A 80 
 		{
+			SetAnimation('handle_turn', flags: SAF_LOOP);
+			A_StartSound("weapons/jackbomb/music");
+		}
+		M000 A 25
+		{
+			SetAnimation('doll_popout', 22);
 			A_StartSound("weapons/jackbomb/dollpop");
 			FSpawnParticleParams pp;
 			pp.style = STYLE_Normal;
@@ -793,10 +812,10 @@ class ToM_JackBombProjectile : ToM_Projectile
 			pp.fadestep = -1;
 			pp.lifetime = 35;
 			pp.pos = pos+(0,0,10);
+			double v = 3;
 			for (int i = 25; i > 0; i--)
 			{
 				pp.color1 = popcolors[random[popc](0, popcolors.Size()-1)];
-				double v = 3;
 				pp.vel.x = frandom[popc](-v, v);
 				pp.vel.y = frandom[popc](-v, v);
 				pp.vel.z = frandom[popc](4, 7);
@@ -805,10 +824,22 @@ class ToM_JackBombProjectile : ToM_Projectile
 				Level.SpawnParticle(pp);
 			}
 		}
-		M002 ABCDEFGHIJ 1;
-		M003 ABCD 2;
-		M004 ABCDEFGFEDCB 1;
-		M004 ABCDEFGFEDCB 1;
+	DeathFlame:
+		M000 A TICRATE * 3 
+		{
+			rotangle = angle;
+			SetAnimation('doll_lean', 30, flags:SAF_LOOP);
+		}
+	DeathFlameRotate:
+		M001 ABCDEFGHIJKLMNOPQRSTUVWX 1
+		{
+			bDECOUPLEDANIMATIONS = false;
+			rotangle -= 360.0 / (TICRATE * 3);
+			A_SpawnProjectile('DoomImpBall', 32, angle: rotangle, flags: CMF_AimDirection);
+		}
+		loop;
+	DeathBoom:
+		M000 A 42 SetAnimation('doll_lean', 32, flags:SAF_LOOP);
 		TNT1 A 0
 		{
 			A_StartSound("weapons/jackbomb/explode");

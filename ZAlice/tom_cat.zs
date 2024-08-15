@@ -109,14 +109,16 @@ class ToM_CheshireCat : ToM_CheshireCatBase
 			// stop looking if position is good:
 			if (spawngood)
 			{
-				Console.Printf("Found good spawn position");
+				if (tom_debugmessages)
+					Console.Printf("Found good spawn position");
 				break;
 			}
 		}
 		// Not a single valid position found:
 		if (spawnpos == pmo.pos)
 		{
-			Console.Printf("Can't find any cat positions");
+			if (tom_debugmessages)
+				Console.Printf("Can't find any cat positions");
 			return;
 		}
 

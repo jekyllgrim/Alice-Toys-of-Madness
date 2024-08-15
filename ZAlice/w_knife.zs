@@ -313,7 +313,6 @@ class ToM_Knife : ToM_BaseWeapon
 			return;
 		}
 
-		Console.Printf("Vorpal knife input buffering");
 		let player = owner.player;
 		let psp = player.FindPSprite(APSP_LeftHand);
 		if (psp)

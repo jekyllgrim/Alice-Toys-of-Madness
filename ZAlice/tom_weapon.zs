@@ -1514,9 +1514,32 @@ Class ToM_Projectile : ToM_BaseActor abstract
 class ToM_PiercingProjectile : ToM_Projectile
 {
 	array <Actor> hitvictims;
+
+	Default
+	{
+		+BLOODSPLATTER
+	}
+
+	virtual int GetProjectileDamage()
+	{
+		return damage * random(1,8);
+	}
 	
-	virtual void HitVictim(Actor victim)
-	{}
+	virtual int HitVictim(Actor victim)
+	{
+		int dmg = GetProjectileDamage();
+		if (dmg > 0)
+		{
+			int dmg = victim.DamageMobj(self, target? target : Actor(self), dmg, damagetype);
+			if (dmg && bBLOODSPLATTER && !victim.bNoBlood)
+			{
+				victim.TraceBleed(damage, self);
+				victim.SpawnBlood(pos, AngleTo(victim), damage);
+			}
+			return dmg;
+		}
+		return 0;
+	}
 	
 	virtual bool CheckValid(Actor victim)
 	{
@@ -1527,17 +1550,12 @@ class ToM_PiercingProjectile : ToM_Projectile
 	{
 		if (victim)
 		{
-			if (!CheckValid(victim))
-			{
-				return victim.bDontRip? MHIT_DEFAULT : MHIT_PASS;
-			}
-			
-			if (hitvictims.Find(victim) == hitvictims.Size())
+			if (CheckValid(victim) && hitvictims.Find(victim) == hitvictims.Size())
 			{
 				hitvictims.Push(victim);
 				HitVictim(victim);
 			}
-			return victim.bDontRip? MHIT_DEFAULT : MHIT_PASS;
+			return (victim.bDontRip && !bRipper)? MHIT_DEFAULT : MHIT_PASS;
 		}
 		
 		return MHIT_PASS;

@@ -324,9 +324,8 @@ class ToM_IceWandProjectileReal : ToM_PiercingProjectile
 		return ret;
 	}
 
-	override void HitVictim(Actor victim)
+	override int HitVictim(Actor victim)
 	{
-		if (!victim) return;
 		int dmg;
 		// Bosses, Arch-Viles and +NOICEDEATH actors cannot be frozen
 		// and receive *slightly* reduced damage:
@@ -352,6 +351,7 @@ class ToM_IceWandProjectileReal : ToM_PiercingProjectile
 				ToM_FreezeController.AddFreeze(victim);
 			}
 		}
+		return dmg;
 	}
 
 	override void PostBeginPlay()
@@ -410,9 +410,6 @@ class ToM_IceWandProjectileVisual : ToM_IceWandProjectileReal
 	{
 		return false;
 	}
-
-	override void HitVictim(Actor victim)
-	{}
 
 	override void Tick()
 	{

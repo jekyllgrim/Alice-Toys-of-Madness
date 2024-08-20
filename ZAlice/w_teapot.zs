@@ -799,7 +799,7 @@ class ToM_SteamProjectile : ToM_PiercingProjectile
 		return (!target || victim != target) && (victim.bSHOOTABLE || victim.bVULNERABLE) && victim.health > 0;
 	}
 	
-	override void HitVictim(actor victim)
+	override int HitVictim(actor victim)
 	{
 		if (target && victim && !victim.bDontThrust)
 		{
@@ -811,6 +811,7 @@ class ToM_SteamProjectile : ToM_PiercingProjectile
 			if (!victim.bFLOAT)
 				victim.vel.z += 3;
 		}
+		return 0;
 	}
 	
 	override void PostBeginPlay()

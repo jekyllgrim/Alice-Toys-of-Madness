@@ -381,18 +381,14 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 		speed 60;
 	}
 
-	override void HitVictim(Actor victim)
+	override int HitVictim(Actor victim)
 	{
-		if (self && victim)
+		int dmg = Super.HitVictim(victim);
+		if (dmg > 0)
 		{
-			victim.DamageMobj(self, target? target : Actor(self), damage, 'Pepper');
-			if (!victim.bNoBlood)
-			{
-				victim.TraceBleed(damage, self);
-				victim.SpawnBlood(pos, AngleTo(victim), damage);
-			}
 			SetDamage(damage - int(round(ToM_Utils.LinearMap(victim.GetMaxHealth(true), 60, 500, 1, 10))));
 		}
+		return dmg;
 	}
 	override int SpecialMissileHit(actor victim)
 	{

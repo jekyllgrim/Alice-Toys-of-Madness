@@ -1,15 +1,19 @@
 class ToM_AliceHUD : BaseStatusBar
 {
 	const noYStretch = 0.833333;
+	InventoryBarState invbarstate;
 	
 	protected transient CVar aspectScale;
-	HUDFont mIndexFont;
+	HUDFont hfIndexfont;
+	HUDFont hfAsrafel;
 	protected ToM_HUDFaceController FaceController;
 	protected int hudstate;
 	
 	protected int weakAmmoFrame;
 	protected int mediumAmmoFrame;
 	protected int strongAmmoFrame;
+
+	protected TextureID jackbombTex;
 	
 	protected transient CVar userHudScale;
 	protected transient CVar userOldHudScale;
@@ -133,7 +137,10 @@ class ToM_AliceHUD : BaseStatusBar
 	{
 		super.Init();
 		Font fnt = "INDEXFONT";
-		mIndexFont = HUDFont.Create(fnt, fnt.GetCharWidth("0"), Mono_CellLeft, 1, 1);
+		hfIndexfont = HUDFont.Create(fnt, fnt.GetCharWidth("0"), Mono_CellLeft, 1, 1);
+		hfAsrafel = HUDFont.Create(Font.FindFont('AsrafelComplete'));
+
+		invbarstate = InventoryBarstate.Create();
 	}
 	
 	override void Tick()
@@ -185,6 +192,11 @@ class ToM_AliceHUD : BaseStatusBar
 		DrawWeaponIcons();
 		//DrawTeapotIcon(pos: (128, -69), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_TOP);
 		DrawPowerupClock();
+
+		if (isInventoryBarVisible())
+		{
+			DrawInventoryBar(invbarstate, (0, 0), 7, DI_SCREEN_CENTER_BOTTOM, HX_SHADOW);
+		}
 	}
 
 	static const string clockhands[] =
@@ -448,7 +460,7 @@ class ToM_AliceHUD : BaseStatusBar
 		if (armor && armor.amount > 0)
 		{
 			ToM_DrawInventoryIcon(armor, ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
-			ToM_DrawString(mIndexFont, String.Format("%d",GetArmorAmount()), (81, -147) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetArmorColor(armor), scale: (1.5, 1.5));
+			ToM_DrawString(hfIndexfont, String.Format("%d",GetArmorAmount()), (81, -147) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetArmorColor(armor), scale: (1.5, 1.5));
 		}
 		
 		// mirror's background:
@@ -467,7 +479,7 @@ class ToM_AliceHUD : BaseStatusBar
 		ToM_DrawImage("graphics/HUD/mirror_frame.png", ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		
 		// finally, health numbers:
-		ToM_DrawString(mIndexFont, String.Format("%d",CPlayer.health), (81, -43) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetHealthColor(), scale: (1.55, 1.55));
+		ToM_DrawString(hfIndexfont, String.Format("%d",CPlayer.health), (81, -43) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetHealthColor(), scale: (1.55, 1.55));
 	}
 	
 	// Draws a single mana vessel (3 of them used in right corner)
@@ -632,6 +644,19 @@ class ToM_AliceHUD : BaseStatusBar
 	
 	void DrawRightcorner()
 	{
+		let jackbomb = CPlayer.mo.FindInventory('ToM_JackBombPickup');
+		if (jackbomb && jackbomb.amount > 0)
+		{
+			if (!jackbombTex || !jackbombTex.IsValid())
+			{
+				jackbombTex = TexMan.CheckForTexture("graphics/hud/jackbomb_icon.png");
+			}
+			double sc = 0.75;
+			Vector2 size = TexMan.GetScaledSize(jackbombTex) * sc;
+			ToM_DrawTexture(jackbombTex, (0, -160), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM, scale:(sc, sc));
+			ToM_DrawString(hfAsrafel, ""..jackbomb.amount, (-size.x + 4, -160 - size.y + 4), DI_SCREEN_RIGHT_BOTTOM, translation: Font.CR_RED, scale:(0.5, 0.5));
+		}
+
 		vector2 ofs = GetSbarOffsets(right: true);
 	
 		// weak mana:

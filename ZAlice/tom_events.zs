@@ -6,6 +6,7 @@ class ToM_Mainhandler : EventHandler
 	array < Class<Weapon> > mapweapons;
 	array < Actor > allmonsters;
 	array < ToM_StakeProjectile > stakeprojectiles;
+	array < ToM_JackBombPickup > jackbombPickups;
 	
 	bool IsVoodooDoll(PlayerPawn mo) 
 	{
@@ -86,10 +87,37 @@ class ToM_Mainhandler : EventHandler
 		{
 			allmonsters.Push(thing);
 		}
+
 		let stake = ToM_StakeProjectile(thing);
 		if (stake)
 		{
 			stakeprojectiles.Push(stake);
+		}
+
+		let am = ToM_Ammo(thing);
+		if (am && !am.bTossed)
+		{
+			double closestDist = double.infinity;
+			foreach (mo : jackbombPickups)
+			{
+				if (mo && !mo.bNoSector && mo.Distance3D(am) < closestDist)
+				{
+					closestDist = mo.Distance3D(am);
+				}
+			}
+			double jackchance = ToM_Utils.LinearMap(closestDist, 320, 2048, 0, 5, true);
+			if (jackchance > frandom[jbombspawn](0, 10))
+			{
+				Vector3 ppos = ToM_Utils.FindRandomPosAround(am.pos, 256, 48, maxHeightDiff: 32);
+				if (ppos != am.pos)
+				{
+					let jb = ToM_JackbombPickup(Actor.Spawn('ToM_JackbombPickup', ppos));
+					if (jb)
+					{
+						jackbombPickups.Push(jb);
+					}
+				}
+			}
 		}
 	}
 
@@ -160,6 +188,7 @@ class ToM_Mainhandler : EventHandler
 			ToM_ControlToken.Refresh(e.thing, "ToM_TeaBurnControl", e.Inflictor.target);
 		}
 
+		// Radius thrust from Hobby Horse's plunging splash attack:
 		if (!e.thing.bDontThrust && e.Damage > 0 && e.Inflictor && e.DamageSource && e.DamageSource.player && e.DamageFlags & DMG_EXPLOSION)
 		{
 			let player = e.DamageSource.player;
@@ -172,7 +201,7 @@ class ToM_Mainhandler : EventHandler
 			double ang = (e.thing.angle + e.thing.AngleTo(e.DamageSource)) + 180;
 			double distFac = ToM_Utils.LinearMap(e.thing.Distance3D(e.DamageSource), 128, 0, 0.5, 1.5);
 			double massFac = ToM_Utils.LinearMap(e.thing.mass, 300, 1000, 1.0, 0.0, true);
-			double forceFac = ToM_Utils.LinearMap(weap.falLAttackForce, 1, 40, 1.0, 3.0);
+			double forceFac = ToM_Utils.LinearMap(weap.fallAttackForce, 1, 40, 1.0, 3.0);
 			double force = 10 * distFac * massFac * forceFac;
 			e.thing.Vel3DFromAngle(force, ang, -50);
 		}

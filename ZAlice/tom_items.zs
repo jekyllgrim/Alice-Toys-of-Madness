@@ -565,18 +565,22 @@ class ToM_JackBombPickup : ToM_Inventory
 {
 	Default
 	{
-		+DECOUPLEDANIMATIONS
 		Tag "$TOM_ITEM_JACKBOMB";
 		Inventory.pickupmessage "$TOM_ITEM_JACKBOMB";
 		Inventory.amount 1;
 		Inventory.maxamount 15;
+		Inventory.icon "APOWJBOM";
 		Scale 1.5;
 	}
 
-	override void PostBeginPlay()
+	override bool Use(bool pickup)
 	{
-		Super.PostBeginPlay();
-		SetAnimation('handle_turn', endframe: 0, flags: SAF_INSTANT);
+		if (owner && owner.player)
+		{
+			owner.SpawnPlayerMissile('ToM_JackBombProjectile');
+			return true;
+		}
+		return false;
 	}
 
 	States {
@@ -588,6 +592,8 @@ class ToM_JackBombPickup : ToM_Inventory
 
 class ToM_JackBombProjectile : ToM_Projectile
 {
+	const ROTANGSTEP = 360.0 / (24 * 3);
+
 	double rotangle;
 
 	static const color popcolors[] = 
@@ -609,19 +615,12 @@ class ToM_JackBombProjectile : ToM_Projectile
 		+ALLOWBOUNCEONACTORS
 		+BOUNCEONACTORS
 		+CANBOUNCEWATER
-		+DECOUPLEDANIMATIONS
 		BounceFactor 0.5;
 		WallBounceFactor 0.8;
 		Damage 0;
 		SeeSound "weapons/jackbomb/throw";
 		Speed 20;
 		Scale 1.5;
-	}
-
-	override void PostBeginPlay()
-	{
-		Super.PostBeginPlay();
-		SetAnimation('handle_turn', endframe: 0, flags: SAF_INSTANT);
 	}
 
 	States {
@@ -638,14 +637,11 @@ class ToM_JackBombProjectile : ToM_Projectile
 		}
 		loop;
 	Death:
-		M000 A 80 
+		TNT1 A 0 A_StartSound("weapons/jackbomb/music");
+		M000 ABCDEFGHIJKLMNOPQRS 2;
+		M000 ABCDEFGHIJKLMNOPQRS 2;
+		TNT1 A 0
 		{
-			SetAnimation('handle_turn', flags: SAF_LOOP);
-			A_StartSound("weapons/jackbomb/music");
-		}
-		M000 A 25
-		{
-			SetAnimation('doll_popout', 22);
 			A_StartSound("weapons/jackbomb/dollpop");
 			FSpawnParticleParams pp;
 			pp.style = STYLE_Normal;
@@ -667,33 +663,166 @@ class ToM_JackBombProjectile : ToM_Projectile
 				Level.SpawnParticle(pp);
 			}
 		}
-	DeathFlame:
-		M000 A TICRATE * 3 
-		{
-			rotangle = angle;
-			SetAnimation('doll_lean', 30, flags:SAF_LOOP);
-		}
-	DeathFlameRotate:
-		M001 ABCDEFGHIJKLMNOPQRSTUVWX 1
-		{
-			bDECOUPLEDANIMATIONS = false;
-			rotangle -= 360.0 / (TICRATE * 3);
-			let p = A_SpawnProjectile('DoomImpBall', 32, angle: rotangle, flags: CMF_AimDirection);
-			if (target && p)
-			{
-				p.target = target;
-			}
-		}
-		loop;
-	DeathBoom:
-		M000 A 42 SetAnimation('doll_lean', 32, flags:SAF_LOOP);
+		M001 ABCDEFGHIJKLMNOPQRST 2;
+	LeanSlow:
+		//M002 ABCDEFGHIJKLMNOP 2;
+		//M002 ABCDEFGHIJKLMNOP 2;
 		TNT1 A 0
 		{
-			A_StartSound("weapons/jackbomb/explode");
+			rotangle = 0;
+		}
+	DeathFlameRotate:
+		M003 AAABBBCCCDDDEEEFFFGGGHHHIIIJJJKKKLLLMMMNNNOOOPPPQQQRRRSSSTTTUUUVVVWWWXXX 1
+		{
+			A_StartSound("weapons/jackbomb/flame", CHAN_BODY, CHANF_LOOPING);
+			A_SpawnProjectile('ToM_JackbombFlame', 25, angle: rotangle, flags:CMF_TrackOwner|CMF_AimDirection);
+			if (abs(rotangle) > 360 * 3)
+			{
+				return ResolveState("DeathBoom");
+			}
+			rotangle -= ROTANGSTEP;
+			return ResolveState(null);
+		}
+		loop;
+	LeanFast:
+		M002 ABCDEFGHIJKLMNOP 1;
+		M002 ABCDEFGHIJKLMNOP 1;
+		M002 ABCDEFGHIJKLMNOP 1;
+	DeathBoom:
+		TNT1 A 1
+		{
+			A_StartSound("weapons/jackbomb/explode", CHAN_BODY);
 			A_Explode();
-			ToM_GenericExplosion.Create(pos, scale: 0.8, randomdebris: 5, smokingdebris: 0);
+			ToM_GenericExplosion.Create(pos, scale: 0.9, randomdebris: 8, smokingdebris: 4);
 		}
 		stop;
+	}
+}
+
+class ToM_JackbombBurnControl : ToM_BurnController
+{
+	static const name flametex[] =
+	{
+		'BOM1N0',
+		'BOM1P0',
+		'BOM1S0',
+		'BOM1J0'
+	};
+	
+	Default
+	{
+		ToM_ControlToken.duration 140;
+		ToM_ControlToken.EffectFrequency 4;
+		Alpha 1;
+		Scale 0.6;
+		RenderStyle 'Add';
+	}
+
+	override void ResetTimer()
+	{
+		Super.ResetTimer();
+		A_SetRenderstyle(1.0, STYLE_Add);
+		scale = default.scale;
+	}
+
+	override TextureID GetFlameTexture()
+	{
+		if (GetRenderStyle() == STYLE_Translucent)
+		{
+			return TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
+		}
+		return TexMan.CheckForTexture(flametex[random[sfx](0, flametex.Size()-1)]);
+	}
+
+	override color GetFlameColor()
+	{
+		if (GetRenderStyle() == STYLE_Translucent)
+		{
+			return color(0,0,0);
+		}
+		return -1;
+	}
+	
+	override void DoEffect() 
+	{
+		super.DoEffect();
+		if (!self || !owner) return;
+
+		if (timer >= duration*0.5 && GetRenderStyle() == STYLE_Add)
+		{
+			A_SetRenderstyle(clamp(alpha, 0, 0.5), STYLE_Translucent);
+			A_SetScale(1);
+		}
+
+		if (target && owner.health > 0 && (timer % TICRATE == 0))
+		{
+			int fl = (random[tsfx](1,3) == 1) ? 0 : DMG_NO_PAIN;
+			owner.DamageMobj(self, target, 4, "Normal", flags:DMG_THRUSTLESS|fl);
+		}
+	}
+}
+
+class ToM_JackbombFlame : ToM_PiercingProjectile
+{
+	Default
+	{
+		+BRIGHT
+		+ROLLSPRITE
+		+FORCEXYBILLBOARD
+		+NODAMAGETHRUST
+		-BLOODSPLATTER
+		Renderstyle 'Add';
+		Damagetype 'Fire';
+		Radius 8;
+		Height 8;
+		Speed 15;
+		Scale 0.03;
+	}
+
+	override int GetProjectileDamage()
+	{
+		return 15;
+	}
+
+	override int HitVictim(Actor victim)
+	{
+		int dmg = Super.HitVictim(victim);
+		if (dmg > 0 && !(victim is 'ArchVile') && !(victim is 'LostSoul'))
+		{
+			ToM_ControlToken.Refresh(victim, "ToM_JackbombBurnControl", target);
+		}
+		return dmg;
+	}
+
+	override void Tick()
+	{
+		Super.Tick();
+		if (!IsFrozen())
+		{
+			if (age < 30)
+			{
+				scale *= 1.09;
+				vel *= 0.95;
+			}
+			else
+			{
+				vel *= 0.6;
+				A_FadeOut(0.05);
+			}
+		}
+	}
+
+	override void PostBeginPlay()
+	{
+		roll = frandom[sfx](0,360);
+		Super.PostBeginPlay();
+	}
+
+	States {
+	Spawn:
+		TNT1 A 1;
+		BOM1 FGHIJKLMNOPQRSTUVWX 2;
+		wait;
 	}
 }
 

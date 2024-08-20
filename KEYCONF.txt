@@ -1,3 +1,7 @@
 addKeySection "Alice: Toys of Madness" AliceToMKeys
 addMenuKey "$TOM_MENU_QKICK" +user4
 defaultBind Q +user4
+
+alias ThrowJackbomb "use ToM_JackbombPickup"
+addMenuKey "$TOM_JACKBOMB_THROW" ThrowJackbomb
+defaultbind G ThrowJackbomb

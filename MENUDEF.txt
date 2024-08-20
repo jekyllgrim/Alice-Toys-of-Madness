@@ -50,6 +50,7 @@ OptionMenu "ToM_Settings"
 	Title "$TOM_MENU_ALICESETTINGS"
 
 	Control "$TOM_MENU_QKICK", "+user4"
+	Control "$TOM_JACKBOMB_THROW", "ThrowJackbomb"
 	StaticText ""
 
 	Option "$TOM_MENU_PARTICLES", "tom_particles", "ToM_ParticleIntensity"

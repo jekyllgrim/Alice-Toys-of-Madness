@@ -743,7 +743,7 @@ class ToM_EyestaffProjectile : ToM_Projectile
 {
 	bool visualMode;
 	bool altMode;
-	const TRAILOFS = 6;
+	int eyeProjDamage;
 	
 	static const color SmokeColors[] =
 	{
@@ -770,8 +770,8 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		deathsound "weapons/eyestaff/boom1";
 		height 13;
 		radius 10;
-		speed 22;		
-		DamageFunction EyeProjDamage();
+		speed 22;
+		DamageFunction GetEyeProjDamage();
 		Renderstyle 'Add';
 		alpha 0.5;
 		xscale 5;
@@ -779,8 +779,12 @@ class ToM_EyestaffProjectile : ToM_Projectile
 		Decal "EyestaffProjectileDecal";
 	}
 
-	int EyeProjDamage()
+	int GetEyeProjDamage()
 	{
+		if (eyeProjDamage)
+		{
+			return eyeProjDamage;
+		}
 		return altMode? 15 : 100;
 	}
 	
@@ -839,11 +843,12 @@ class ToM_EyestaffProjectile : ToM_Projectile
 	{
 		FSpawnParticleParams trail;
 
-		vector3 projpos = ToM_Utils.RelativeToGlobalCoords(self, (-TRAILOFS, -TRAILOFS, 0), isPosition: false);
+		double trailofs = radius * 0.6;
+		vector3 projpos = ToM_Utils.RelativeToGlobalCoords(self, (-trailofs, -trailofs, 0), isPosition: false);
 		CreateParticleTrail(trail, ppos + projpos, trailvel);
 		Level.SpawnParticle(trail);
 		
-		projpos = ToM_Utils.RelativeToGlobalCoords(self, (-TRAILOFS, TRAILOFS, 0), isPosition: false);
+		projpos = ToM_Utils.RelativeToGlobalCoords(self, (-trailofs, trailofs, 0), isPosition: false);
 		CreateParticleTrail(trail, ppos + projpos, trailvel);
 		Level.SpawnParticle(trail);
 	}

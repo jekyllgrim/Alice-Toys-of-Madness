@@ -341,7 +341,7 @@ class ToM_Utils
 		}
 	}
 
-	static play vector3 FindRandomPosAround(vector3 actorpos, double rad = 512, double mindist = 16, double fovlimit = 0, double viewangle = 0, bool checkheight = false)
+	static play vector3 FindRandomPosAround(vector3 actorpos, double rad = 512, double mindist = 16, double fovlimit = 0, double viewangle = 0, double maxHeightDiff = 4096)
 	{
 		if (!level.IsPointInLevel(actorpos))
 			return actorpos;
@@ -374,7 +374,7 @@ class ToM_Utils
 			// in view (optionally), on the same elevation
 			// (optionally) and not closer than necessary
 			// (optionally):
-			if (inFOV && (!checkheight || secfz == actorpos.z) && (mindist <= 0 || diff.Length() >= mindist))
+			if (inFOV && (abs(secfz - actorpos.z) <= maxHeightDiff) && (mindist <= 0 || diff.Length() >= mindist))
 			{
 				finalpos = (ppos.xy, secfz);
 				//console.printf("Final pos: %.1f,%.1f,%.1f", finalpos.x,finalpos.y,finalpos.z);

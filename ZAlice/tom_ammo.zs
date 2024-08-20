@@ -422,7 +422,7 @@ class ToM_EquipmentSpawner : Inventory abstract
 				// radius around it:
 				else 
 				{	
-					let spawnpos = ToM_Utils.FindRandomPosAround(pos, 128, mindist: 32);
+					let spawnpos = ToM_Utils.FindRandomPosAround(pos, 128, mindist: 32, maxHeightDiff: 32);
 					SpawnInvPickup(spawnpos,tospawn2);
 				}
 			}

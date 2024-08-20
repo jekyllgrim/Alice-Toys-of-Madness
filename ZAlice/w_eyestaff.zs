@@ -931,7 +931,7 @@ class ToM_ESAimingCircle_AfterImage : ToM_ESAimingCircle
 	}
 }
 
-class ToM_EyestaffBurnControl : ToM_ControlToken
+class ToM_EyestaffBurnControl : ToM_BurnController
 {
 	Default
 	{
@@ -939,31 +939,20 @@ class ToM_EyestaffBurnControl : ToM_ControlToken
 		ToM_ControlToken.EffectFrequency 3;
 	}
 
+	override color GetFlameColor()
+	{
+		return ToM_EyestaffProjectile.SmokeColors[random[sfx](0, ToM_EyestaffProjectile.SmokeColors.Size() - 1)];
+	}
+
+	override TextureID GetFlameTexture()
+	{
+		return TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
+	}
+
 	override void DoControlEffect()
 	{
-		if (GetParticlesQuality() >= TOMPART_MED) 
-		{
-			FSpawnParticleParams smoke;
-			double rad = owner.radius * 0.6;
-			smoke.pos = owner.pos + (
-				frandom[tsfx](-rad,rad), 
-				frandom[tsfx](-rad,rad), 
-				frandom[tsfx](owner.height*0.4,owner.height)
-			);
-			smoke.texture = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
-			smoke.color1 = ToM_EyestaffProjectile.SmokeColors[random[sfx](0, ToM_EyestaffProjectile.SmokeColors.Size() - 1)];
-			smoke.style = STYLE_AddShaded;
-			smoke.vel = (frandom[sfx](-0.2,0.2),frandom[sfx](-0.2,0.2),frandom[sfx](0.5,1.2));
-			smoke.size = frandom[sfx](35, 50);
-			smoke.flags = SPF_ROLL|SPF_REPLACE;
-			smoke.lifetime = random[sfx](60, 100);
-			smoke.sizestep = smoke.size * 0.03;
-			smoke.startalpha = ToM_Utils.LinearMap(timer, 0, duration, 1, 0.15);
-			smoke.fadestep = -1;
-			smoke.startroll = random[sfx](0, 359);
-			smoke.rollvel = frandom[sfx](-4,4);
-			Level.SpawnParticle(smoke);
-		}
+		alpha = ToM_Utils.LinearMap(timer, 0, duration, 1, 0.15);
+		Super.DoControlEffect();
 	}
 }
 

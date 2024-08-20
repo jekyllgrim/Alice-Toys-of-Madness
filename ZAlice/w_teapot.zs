@@ -470,28 +470,23 @@ class ToM_Teapot : ToM_BaseWeapon
 	}
 }
 
-class ToM_TeaBurnControl : ToM_ControlToken 
+class ToM_TeaBurnControl : ToM_BurnController 
 {
 	ToM_ActorLayer burnlayer;
-	protected TranslationID prevtrans;
 	
 	Default
 	{
 		ToM_ControlToken.duration 175;
-		ToM_ControlToken.EffectFrequency 35;
+		ToM_ControlToken.EffectFrequency 4;
+		Alpha 0.7;
 	}
 	
-	override void AttachToOwner(actor other) 
+	override void InitController()
 	{
-		super.AttachToOwner(other);
-		if (!owner)
-			return;
 		ResetTimer();
-		prevtrans = owner.translation;
-		if (burnlayer)
-			burnlayer.Destroy();
+		if (!burnlayer)
+			burnlayer = ToM_ActorLayer(Spawn("ToM_TeaBurnLayer", owner.pos));
 
-		burnlayer = ToM_ActorLayer(Spawn("ToM_TeaBurnLayer", owner.pos));
 		if (burnlayer)
 		{
 			burnlayer.bISMONSTER = owner.bISMONSTER;
@@ -499,66 +494,34 @@ class ToM_TeaBurnControl : ToM_ControlToken
 			burnlayer.fade = 0;
 		}
 	}
-	
-	override void DoControlEffect()
+
+	override color GetFlameColor()
 	{
-		if (owner && target)
-		{
-			int fl = (random[tsfx](1,3) == 1) ? 0 : DMG_NO_PAIN;
-			owner.DamageMobj(self,target,4,"Normal",flags:DMG_THRUSTLESS|fl);
-		}
+		return 0x24e23f;
+	}
+
+	override TextureID GetFlameTexture()
+	{
+		return TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
 	}
 	
 	override void DoEffect() 
 	{
 		super.DoEffect();
-		
-		if (!owner || !target)
-		{
-			Destroy();
-			return;
-		}
 
-		if (timer % 4 == 0)
-		{	
-			if (GetParticlesQuality() >= TOMPART_MED) 
-			{
-				FSpawnParticleParams smoke;
-				double rad = owner.radius * 0.6;
-				smoke.pos = owner.pos + (
-					frandom[tsfx](-rad,rad), 
-					frandom[tsfx](-rad,rad), 
-					frandom[tsfx](owner.height*0.4,owner.height)
-				);
-				smoke.texture = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
-				smoke.color1 = "24e23f";
-				smoke.style = STYLE_AddShaded;
-				smoke.vel = (frandom[tsfx](-0.2,0.2),frandom[tsfx](-0.2,0.2),frandom[tsfx](0.5,1.2));
-				smoke.size = frandom[tsfx](35, 50);
-				smoke.flags = SPF_ROLL|SPF_REPLACE;
-				smoke.lifetime = random[tsfx](60, 100);
-				smoke.sizestep = smoke.size * 0.03;
-				smoke.startalpha = 0.7;
-				smoke.fadestep = -1;
-				smoke.startroll = random[tsfx](0, 359);
-				smoke.rollvel = frandom[tsfx](-1,1);
-				Level.SpawnParticle(smoke);
-			}
+		if (self && owner && target && (timer % TICRATE == 0))
+		{
+			int fl = (random[tsfx](1,3) == 1) ? 0 : DMG_NO_PAIN;
+			owner.DamageMobj(self, target, 4, "Normal", flags:DMG_THRUSTLESS|fl);
 		}
 	}
 	
-	override void DetachFromOwner() 
+	override void EndController() 
 	{
-		if (owner)
+		if (burnlayer)
 		{
-			/*owner.translation = prevtrans;
-			let al = Spawn("ToM_TeaBurnLayer", owner.pos);
-			if (al)
-				al.master = owner;*/
-			if (burnlayer)
-				burnlayer.fade = burnlayer.default.fade;
-		}	
-		super.DetachFromOwner();
+			burnlayer.fade = burnlayer.default.fade;
+		}
 	}
 }
 

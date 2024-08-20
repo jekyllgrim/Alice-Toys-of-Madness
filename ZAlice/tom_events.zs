@@ -148,27 +148,16 @@ class ToM_Mainhandler : EventHandler
 			}
 		}
 
+		// Purple smoke above monsters killed by the Eyestaff beam or projectile:
 		if (e.thing.health <= 0 && e.DamageType == 'Eyestaff')
 		{
 			e.thing.GiveInventory("ToM_EyestaffBurnControl", 1);
 		}
 
-		// Handle DoT from Teapot Cannon projectiles
-		// (has to be done here, since that's the only
-		// way to make sure the DoT is triggered by
-		// explosions, not just a direct hit of the 
-		// projectile):
+		// DoT inflicted by from Teapot Cannon projectile explosion:
 		if (e.Inflictor && e.Inflictor.GetClass() == 'ToM_TeaProjectile' && e.Inflictor.target && e.thing != e.Inflictor.target)
 		{
-			let act = e.thing;
-			if (!act.CountInv("ToM_TeaBurnControl"))
-				act.GiveInventory("ToM_TeaBurnControl", 1);
-			let cont = ToM_TeaBurnControl(act.FindInventory("ToM_TeaBurnControl"));
-			if (cont)
-			{
-				cont.ResetTimer();
-				cont.target = e.Inflictor.target;
-			}
+			ToM_ControlToken.Refresh(e.thing, "ToM_TeaBurnControl", e.Inflictor.target);
 		}
 
 		if (!e.thing.bDontThrust && e.Damage > 0 && e.Inflictor && e.DamageSource && e.DamageSource.player && e.DamageFlags & DMG_EXPLOSION)

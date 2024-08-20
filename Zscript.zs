@@ -2,6 +2,7 @@ version "4.12.2"
 
 #include "ZAlice/tom_constants.zs"
 #include "ZAlice/tom_utils.zs"
+#include "ZAlice/tom_invutils.zs"
 #include "ZAlice/tom_menu.zs"
 #include "ZAlice/tom_main.zs"
 #include "ZAlice/tom_events.zs"

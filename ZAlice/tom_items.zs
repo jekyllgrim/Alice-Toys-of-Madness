@@ -590,25 +590,26 @@ class ToM_JackBombPickup : ToM_Inventory
 	}
 }
 
-class ToM_JackBombProjectile : ToM_Projectile
+class ToM_JackBombProjectile : ToM_BaseActor
 {
-	const ROTANGSTEP = 360.0 / (24 * 3);
+	const ROTANGSTEP = 360.0 / 24;
+	const MAXLOOPS = 10;
 
 	double rotangle;
+	bool flamespraying;
 
 	static const color popcolors[] = 
 	{
-		"ff0000",
-		"2448ff",
-		"ffed24",
-		"ff8124",
-		"11ea11"
+		0xff0000,
+		0x2448ff,
+		0xffed24,
+		0xff8124,
+		0x11ea11
 	};
 
 	Default
 	{
-		Projectile;
-		-NOGRAVITY
+		+MISSILE
 		+BOUNCEONFLOORS
 		+BOUNCEONCEILINGS
 		+BOUNCEONWALLS
@@ -623,25 +624,38 @@ class ToM_JackBombProjectile : ToM_Projectile
 		Scale 1.5;
 	}
 
-	States {
-	Spawn:
-		M000 A 1 
+	Actor A_FireJackFlame(double ang)
+	{
+		return A_SpawnProjectile('ToM_JackbombFlame', 25, angle: ang, flags:CMF_TrackOwner|CMF_AimDirection, pitch:frandom(-1.5,1.5));
+	}
+
+	override int SpecialBounceHit(Actor bounceMobj, Line bounceLine, readonly<SecPlane> bouncePlane)
+	{
+		if (vel.length() < 3)
 		{
-			if (vel.Length() < 3)
-			{
-				bMissile = false;
-				SetStateLabel("Death");
-			}
+			bMissile = false;
+		}
+		return MHIT_DEFAULT;
+	}
+
+	override void Tick()
+	{
+		Super.Tick();
+		if (!isFrozen() && !flamespraying)
+		{
 			rotangle += vel.xy.Length();
 			A_SetAngle(rotangle, SPF_INTERPOLATE);
 		}
-		loop;
-	Death:
-		TNT1 A 0 A_StartSound("weapons/jackbomb/music");
+	}
+
+	States {
+	Spawn:
+		M000 A 1 Nodelay A_StartSound("weapons/jackbomb/music", CHAN_AUTO);
+		M000 ABCDEFGHIJKLMNOPQRS 1;
 		M000 ABCDEFGHIJKLMNOPQRS 2;
-		M000 ABCDEFGHIJKLMNOPQRS 2;
-		TNT1 A 0
+		#### # 0
 		{
+			A_AttachLight('0', DynamicLight.FlickerLight, 0xffcc00, 64, 56, DYNAMICLIGHT.LF_ATTENUATE, (0, 0, 30), param: 0.5);
 			A_StartSound("weapons/jackbomb/dollpop");
 			FSpawnParticleParams pp;
 			pp.style = STYLE_Normal;
@@ -663,27 +677,30 @@ class ToM_JackBombProjectile : ToM_Projectile
 				Level.SpawnParticle(pp);
 			}
 		}
-		M001 ABCDEFGHIJKLMNOPQRST 2;
-	LeanSlow:
-		//M002 ABCDEFGHIJKLMNOP 2;
-		//M002 ABCDEFGHIJKLMNOP 2;
-		TNT1 A 0
+		M001 ABCDEFGHIJKLMNOPQRST 1;
+		#### # 0
 		{
 			rotangle = 0;
+			flamespraying = true;
+			A_AttachLight('0', DynamicLight.FlickerLight, 0xffcc00, 144, 128, DYNAMICLIGHT.LF_ATTENUATE, (0, 0, 30), param: 0.5);
 		}
 	DeathFlameRotate:
-		M003 AAABBBCCCDDDEEEFFFGGGHHHIIIJJJKKKLLLMMMNNNOOOPPPQQQRRRSSSTTTUUUVVVWWWXXX 1
+		M003 ABCDEFGHIJKLMNOPQRSTUVWX 1
 		{
-			A_StartSound("weapons/jackbomb/flame", CHAN_BODY, CHANF_LOOPING);
-			A_SpawnProjectile('ToM_JackbombFlame', 25, angle: rotangle, flags:CMF_TrackOwner|CMF_AimDirection);
-			if (abs(rotangle) > 360 * 3)
+			if (waterlevel > 1 || abs(rotangle) > 360 * MAXLOOPS)
 			{
 				return ResolveState("DeathBoom");
+			}
+			A_StartSound("weapons/jackbomb/flame", CHAN_BODY, CHANF_LOOPING);
+			for (double rot = 0; rot < ROTANGSTEP; rot += ROTANGSTEP*0.34)
+			{
+				A_FireJackFlame(rotangle - rot);
 			}
 			rotangle -= ROTANGSTEP;
 			return ResolveState(null);
 		}
 		loop;
+	// unused sequence:
 	LeanFast:
 		M002 ABCDEFGHIJKLMNOP 1;
 		M002 ABCDEFGHIJKLMNOP 1;
@@ -693,7 +710,11 @@ class ToM_JackBombProjectile : ToM_Projectile
 		{
 			A_StartSound("weapons/jackbomb/explode", CHAN_BODY);
 			A_Explode();
-			ToM_GenericExplosion.Create(pos, scale: 0.9, randomdebris: 8, smokingdebris: 4);
+			ToM_GenericExplosion.Create(pos, scale: 1.1, randomdebris: 8, smokingdebris: 4);
+			for (int i = 0; i < 360; i += 10)
+			{
+				A_FireJackFlame(i);
+			}
 		}
 		stop;
 	}
@@ -777,11 +798,12 @@ class ToM_JackbombFlame : ToM_PiercingProjectile
 		Height 8;
 		Speed 15;
 		Scale 0.03;
+		Alpha 0.5;
 	}
 
 	override int GetProjectileDamage()
 	{
-		return 15;
+		return 8;
 	}
 
 	override int HitVictim(Actor victim)
@@ -802,12 +824,12 @@ class ToM_JackbombFlame : ToM_PiercingProjectile
 			if (age < 30)
 			{
 				scale *= 1.09;
-				vel *= 0.95;
+				vel *= 0.92;
 			}
 			else
 			{
-				vel *= 0.6;
-				A_FadeOut(0.05);
+				vel *= 0.7;
+				A_FadeOut(0.025);
 			}
 		}
 	}

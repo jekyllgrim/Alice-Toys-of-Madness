@@ -1,8 +1,24 @@
 
+/* 
+	Controller for first-person leg/skirt sprites AND
+	for quick kick behavior.
+	Quick kick is converted to AoE stomp when using the
+	Growth Cake powerup.
+
+	The leg/skirt sprites are offset and scaled vertically
+	base on the player's current pitch to create an
+	effect of standing on the floor.
+*/
+
 class ToM_KickWeapon : CustomInventory
 {
+	// safety to track that we were kicking (kicking slows down speed,
+	// so this is used as a check to make sure the speed was reset
+	// post-kick):
 	protected bool wasKicking;
+	// player owner:
 	protected ToM_AlicePlayer alice;
+	// state pointers for quick access:
 	protected State s_standing;
 	protected State s_idlestates;
 	protected State s_walking;
@@ -13,6 +29,10 @@ class ToM_KickWeapon : CustomInventory
 	protected State s_finishJumping;
 	protected State s_prevstate;
 
+	// Pitch ranges. The sprites' vertical offset
+	// is not mapped to pitch linearly, but instead
+	// maps to different values for different pitch
+	// ranges:
 	const PITCHTH0 = 90.0;
 	const PITCHTH1 = 30.0;
 	const PITCHTH2 = -20.0;
@@ -29,18 +49,23 @@ class ToM_KickWeapon : CustomInventory
 	double arcKickAngle;
 	array <Actor> kickedActors;
 
-	action void A_AliceKick(int steps, double endPitch = -30)
+	// The kick is a vertical swing attack, but in contrast to
+	// ToM_Weapon's A_SwingAttack it's *not* relative to camera pitch.
+	// The kick always covers the same arc, starting straight down
+	// and going upwards until the 'endPitch' value:
+	action void A_AliceKick(int steps, double endPitch = -30.0)
 	{
-		if (invoker.arcKickAngle < endPitch)
-		{
-			invoker.ResetKick();
-		}
 		FLineTraceData tr;
 		double atkheight = ToM_Utils.GetPlayerAtkHeight(player.mo);
 		LineTrace(angle, 70, invoker.arcKickAngle, TRF_NOSKY, atkheight, data: tr);
 		int hitType;
 		Actor hitactor;
 		[hitType, hitactor] = ToM_Utils.GetHitType(tr);
+
+		if (tom_debugmessages > 1)
+		{
+			ToM_Utils.DrawParticlesFromTo(level.Vec3Offset(pos, (0, 0, atkheight)), tr.HitLocation, lifetime: 5);
+		}
 
 		if (hitType == ToM_Utils.HT_ShootableThing && hitactor && invoker.kickedActors.Find(hitactor) == invoker.kickedActors.Size())
 		{
@@ -104,7 +129,7 @@ class ToM_KickWeapon : CustomInventory
 				}
 			}
 		}
-		invoker.arcKickAngle -= (90 - endPitch) / steps;
+		invoker.arcKickAngle -= (90.0 + abs(endPitch)) / steps;
 	}
 
 	action void A_AliceStomp()
@@ -139,6 +164,10 @@ class ToM_KickWeapon : CustomInventory
 	
 	override void Tick() {}
 	
+	// Aside from offset logic, the behavior of legs
+	// is somewhat similar to our custom mugshot:
+	// different states are assigned based on what
+	// the player is doing, with different priorities:
 	override void DoEffect()
 	{
 		super.DoEffect();
@@ -332,8 +361,12 @@ class ToM_KickWeapon : CustomInventory
 				return ResolveState(null);
 			}
 			FEK1 A 1;
-			TNT1 A 0 A_StartSound("weapons/kick/whip", CHAN_AUTO);
-			FEK1 BCDEE 1 A_AliceKick(5);
+			TNT1 A 0 
+			{
+				A_StartSound("weapons/kick/whip", CHAN_AUTO);
+				invoker.ResetKick();
+			}
+			FEK1 BCDEE 1 A_AliceKick(4);
 			FEK1 FGHIJLKM 1;
 			TNT1 A 0 
 			{

@@ -44,6 +44,9 @@ class ToM_AlicePlayer : DoomPlayer
 	protected int airJumpTics;
 	array <ToM_PspResetController> pspcontrols;
 
+	array <Actor> collideFilter;
+	bool doingPlungingAttack;
+
 	Default
 	{
 		+INTERPOLATEANGLES
@@ -180,6 +183,34 @@ class ToM_AlicePlayer : DoomPlayer
 		{
 			curWeaponID = newmodel;
 			A_ChangeModel("", 1, "models/alice/weapons", modelnames[newmodel]);
+		}
+	}
+
+	override void Tick()
+	{
+		Super.Tick();
+		if (!player) return;
+
+		let weap = player.readyweapon;
+		let psp = player.FindPSprite(PSP_WEAPON);
+		doingPlungingAttack = weap && psp && weap is 'ToM_HobbyHorse' && InStateSequence(psp.curstate, weap.FindState("AltFireDo"));
+
+		if (!doingPlungingAttack)
+		{
+			for (int i = collideFilter.Size() - 1; i >= 0; i--)
+			{
+				let act = collideFilter[i];
+				if (!act)
+				{
+					collideFilter.Delete(i);
+					continue;
+				}
+				Vector2 pdiff = level.Vec2Diff(pos.xy, act.pos.xy);
+				if (abs(pdiff.x) > radius + act.radius || abs(pdiff.y) > radius + act.radius)
+				{
+					collideFilter.Delete(i);
+				}
+			}
 		}
 	}
 	
@@ -490,6 +521,22 @@ class ToM_AlicePlayer : DoomPlayer
 		{
 			ToM_GrowthPotionEffect.DoStepDamage(self, damage: 108, distance: 320);
 		}
+	}
+
+	override bool CanCollideWith(Actor other, bool passive)
+	{
+		if (collideFilter.Find(other) != collideFilter.Size())
+		{
+			return false;
+		}
+
+		if (doingPlungingAttack && other.bShootable && (other.bIsMonster || other.player))
+		{
+			collideFilter.Push(other);
+			return false;
+		}
+
+		return Super.CanCollideWith(other, passive);
 	}
 
 	override void MovePlayer ()

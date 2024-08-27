@@ -668,6 +668,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_CameraSway(0, 5, 7);
 			//A_Overlay(APSP_Overlayer, "OverheadTrail");
 		}
+	AltFireDo:
 		HHRS NNNOOOOOOO 1 
 		{
 			A_HorseSwing(0, 0.5, 8);

@@ -55,7 +55,14 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 
 	action State A_HorseRefire()
 	{
-		return A_CheckNextSlash("Fire", "AltFire", true);
+		// Pressing altfire twice will not buffer;
+		// only pressing altfire after fire is buffered:
+		StateLabel nextSecondary = null;
+		if (invoker.recentAtkButtons.Size() < 2 || invoker.recentAtkButtons[invoker.recentAtkButtons.Size()-2] != BT_ALTATTACK)
+		{
+			nextSecondary = "AltFire";
+		}
+		return A_CheckNextSlash("Fire", nextSecondary, true);
 	}
 	
 	// Do the attack and move the offset one step as defined above:

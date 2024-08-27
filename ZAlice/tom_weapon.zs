@@ -12,6 +12,8 @@ class ToM_BaseWeapon : Weapon abstract
 	protected double atkzoom;
 	protected int atkButtonState;
 	protected int atkButtonStateAlt;
+	protected Array<int> recentAtkButtons; //tracks the last presses
+	const TRACKED_ATK_BUTTONS_MAX = 10;
 	
 	color pickupParticleColor;
 	Property PickupParticleColor : pickupParticleColor;
@@ -787,31 +789,38 @@ class ToM_BaseWeapon : Weapon abstract
 		return A_FireProjectile(missiletype, angle, useammo, spawnofs_xy, spawnheight, flags, pitchOfs);
 	}
 
+	// Dedicated refire for melee weapons that utilizes
+	// input buffering to jump states:
 	action State A_CheckNextSlash(StateLabel nextPrimary = "Fire", StateLabel nextSecondary = null, bool allowSwitch = true)
 	{
 		State sNext1 = ResolveState(nextPrimary);
 		State sNext2 = ResolveState(nextSecondary);
 		State togo = null;
 
+		// If nextPrimary state is valid and primary button
+		// is pressed again, jump to it:
 		if (sNext1 && invoker.atkButtonState == ABS_PressedAgain)
 		{
 			invoker.atkButtonState = ABS_Held;
 			togo = sNext1;
 		}
+		// Otherwise check if it should jump to secondary:
 		else if (sNext2 && invoker.atkButtonStateAlt == ABS_PressedAgain)
 		{
 			togo = sNext2;
 			invoker.atkButtonStateAlt = ABS_Held;
 		}
 
+		// If we're supposed to jump OR if we can't jump
+		// but allowSwitch is false, disable the ability
+		// to switch weapons (like WRF_DISABLESWITCH):
 		if (togo || !allowSwitch)
 		{
 			player.WeaponState &= ~WF_WEAPONSWITCHOK;
-			if (player.pendingweapon != WP_NOCHANGE && player.pendingweapon != invoker)
-			{
-				player.pendingweapon = invoker;
-			}
+			player.pendingweapon = WP_NOCHANGE;
 		}
+		// Otherwise (we're not supposed to jump and
+		// we are allowed to switch), allow switching:
 		else
 		{
 			player.WeaponState |= WF_WEAPONSWITCHOK;
@@ -824,7 +833,6 @@ class ToM_BaseWeapon : Weapon abstract
 	{
 		if (dropper)
 		{
-			dropper.A_StopSound(CHAN_WEAPON);
 			OnDeselect(dropper);
 		}
 	}
@@ -847,6 +855,10 @@ class ToM_BaseWeapon : Weapon abstract
 		if (!psp)
 		{
 			atkButtonState = atkButtonStateAlt = ABS_None;
+			if (recentAtkButtons.Size() > 0)
+			{
+				recentAtkButtons.Clear();
+			}
 			return;
 		}
 
@@ -854,6 +866,10 @@ class ToM_BaseWeapon : Weapon abstract
 		if (InStateSequence(psp.curstate, GetReadyState()))
 		{
 			atkButtonState = atkButtonStateAlt = ABS_None;
+			if (recentAtkButtons.Size() > 0)
+			{
+				recentAtkButtons.Clear();
+			}
 		}
 		// Otherwise do buffering:
 		else
@@ -862,11 +878,13 @@ class ToM_BaseWeapon : Weapon abstract
 			if (atkButtonState == ABS_None && InStateSequence(psp.curstate, GetAtkState(false)))
 			{
 				atkButtonState = ABS_Held;
+				recentAtkButtons.Push(BT_ATTACK);
 			}
 			// Secondary attack button held:
 			if (atkButtonStateAlt == ABS_None && InStateSequence(psp.curstate, GetAltAtkState(false)))
 			{
 				atkButtonStateAlt = ABS_Held;
+				recentAtkButtons.Push(BT_ALTATTACK);
 			}
 			
 			// If primary was held but player is not pressing
@@ -882,12 +900,26 @@ class ToM_BaseWeapon : Weapon abstract
 			// slash:
 			if (atkButtonState != ABS_Held && (player.cmd.buttons & BT_ATTACK))
 			{
+				// If primary is pressed again for the first time,
+				// track it:
+				if (atkButtonState != ABS_PressedAgain)
+				{
+					// If secondary was pressed before (during the same
+					// buffering window), overwrite it with primary:
+					if (atkButtonStateAlt == ABS_PressedAgain && recentAtkButtons.Size() > 0 && recentAtkButtons[recentAtkButtons.Size()-1] == BT_ALTATTACK)
+					{
+						recentAtkButtons.Pop();
+					}
+					// Otherwise add primary to the array:
+					recentAtkButtons.Push(BT_ATTACK);
+				}
 				// Pressing primary button records the
 				// alt button as lifted, so they can override
 				// each other:
 				atkButtonState = ABS_PressedAgain;
 				atkButtonStateAlt = ABS_Lifted;
 			}
+			
 			// Do the same for secondary attack:
 			if (atkButtonStateAlt == ABS_Held && !(player.cmd.buttons & BT_ALTATTACK))
 			{
@@ -895,8 +927,21 @@ class ToM_BaseWeapon : Weapon abstract
 			}
 			if (atkButtonStateAlt != ABS_Held && (player.cmd.buttons & BT_ALTATTACK))
 			{
+				if (atkButtonStateAlt != ABS_PressedAgain)
+				{
+					if (atkButtonState == ABS_PressedAgain && recentAtkButtons.Size() > 0 && recentAtkButtons[recentAtkButtons.Size()-1] == BT_ATTACK)
+					{
+						recentAtkButtons.Pop();
+					}
+					recentAtkButtons.Push(BT_ALTATTACK);
+				}
 				atkButtonStateAlt = ABS_PressedAgain;
 				atkButtonState = ABS_Lifted;
+			}
+
+			while (recentAtkButtons.Size() > TRACKED_ATK_BUTTONS_MAX)
+			{
+				recentAtkButtons.Delete(0);
 			}
 		}
 
@@ -927,12 +972,26 @@ class ToM_BaseWeapon : Weapon abstract
 				case ABS_PressedAgain: absStringAlt = "\cv Pressed again"; break;
 			}
 
+			String btnstr;
+			for (int i = 0; i < recentAtkButtons.Size(); i++)
+			{
+				String str;
+				switch (recentAtkButtons[i])
+				{
+					default: str = " \cg(x)"; break;
+					case BT_ATTACK: str = " \cd(1)"; break;
+					case BT_ALTATTACK: str = " \cy(2)"; break;
+				}
+				btnstr.AppendFormat(str);
+			}
+
 			Console.MidPrint(NewConsoleFont, 
 				String.Format(
 					"\cfPrimary button state:\c- %s"
 					"\n\cfSecondary button state:\c- %s"
-					"\n\cfWeapon state:\c- \cd%s\c-", 
-					absString, absStringAlt, statestr
+					"\n\cfWeapon state:\c- \cd%s\c-"
+					"\n\cfRecent btns:%s", 
+					absString, absStringAlt, statestr, btnstr
 				)
 			);
 		}

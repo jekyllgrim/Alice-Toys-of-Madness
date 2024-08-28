@@ -2126,6 +2126,10 @@ class ToM_PspResetController : Thinker
 	protected int tics;
 	protected bool interpolate;
 	
+	protected vector2 sourceofs;
+	protected vector2 sourcescale;
+	protected double sourcerotation;
+	
 	protected vector2 ofs;
 	protected vector2 scale;
 	protected double rotation;
@@ -2150,9 +2154,9 @@ class ToM_PspResetController : Thinker
 			ppRC.tics = tics;
 			ppRC.interpolate = interpolate && tics > 0;
 			
-			ppRC.ofs = (psp.x, psp.y);
-			ppRC.scale = psp.scale;
-			ppRC.rotation = psp.rotation;
+			ppRC.ofs = ppRC.sourceofs = (psp.x, psp.y);
+			ppRC.scale = ppRC.sourcescale = psp.scale;
+			ppRC.rotation = ppRC.sourcerotation = psp.rotation;
 			
 			ppRC.targetofs = tofs;
 			ppRC.targetscale = tscale;
@@ -2190,13 +2194,17 @@ class ToM_PspResetController : Thinker
 			return;
 		}
 		psp.bInterpolate = interpolate;
-		psp.x += ofs_step.x;
-		psp.y += ofs_step.y;
-		psp.scale += scale_step;
-		psp.rotation += rotation_step;
+		psp.x = clamp(psp.x + ofs_step.x, min(sourceofs.x, targetofs.x), max(sourceofs.x, targetofs.x));
+		psp.y = clamp(psp.y + ofs_step.y, min(sourceofs.y, targetofs.y), max(sourceofs.y, targetofs.y));
+
+		psp.scale.x = clamp(psp.scale.x + scale_step.x, min(sourcescale.x, targetscale.x), max(sourcescale.x, targetscale.x));
+		psp.scale.y = clamp(psp.scale.y + scale_step.y, min(sourcescale.y, targetscale.y), max(sourcescale.y, targetscale.y));
+
+		psp.rotation = clamp(psp.rotation + rotation_step, min(sourcerotation, targetrotation), max(sourcerotation, targetrotation));
+		
 		if (tom_debugmessages > 1)
 		{
-			console.printf("\cYPSPRC:\c- Updating psprite values. Tics left: %d", tics);
+			console.printf("\cYPSPRC:\c- Updating PSprite | Pos \cd%.1f, %.1f | Rot \cd%.1f\c- | Scale \cd%.1f,%.1f\c-| Tics left: \cd%d\c-", psp.x, psp.y, psp.rotation, psp.scale.x, psp.scale.y, tics);
 		}
 		
 		tics--;

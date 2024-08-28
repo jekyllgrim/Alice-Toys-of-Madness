@@ -25,6 +25,7 @@ class ToM_Knife : ToM_BaseWeapon
 	
 	action void A_KnifeReady(int flags = 0)
 	{
+		
 		if (!player)
 			return;
 		
@@ -313,6 +314,7 @@ class ToM_Knife : ToM_BaseWeapon
 			return;
 		}
 
+		// Input buffering for the Rage claw layer:
 		let player = owner.player;
 		let psp = player.FindPSprite(APSP_LeftHand);
 		if (psp)
@@ -327,15 +329,15 @@ class ToM_Knife : ToM_BaseWeapon
 				{
 					atkButtonState = ABS_Held;
 				}
+				if (atkButtonState == ABS_Held && !(player.cmd.buttons & BT_ATTACK))
+				{
+					atkButtonState = ABS_Lifted;
+				}
+				if (atkButtonState != ABS_Held && (player.cmd.buttons & BT_ATTACK))
+				{
+					atkButtonState = ABS_PressedAgain;
+				}
 			}
-		}
-		if (atkButtonState == ABS_Held && !(player.cmd.buttons & BT_ATTACK))
-		{
-			atkButtonState = ABS_Lifted;
-		}
-		if (atkButtonState == ABS_Lifted && (player.cmd.buttons & BT_ATTACK))
-		{
-			atkButtonState = ABS_PressedAgain;
 		}
 	}
 	
@@ -599,7 +601,6 @@ class ToM_Knife : ToM_BaseWeapon
 				A_ResetPSprite(OverlayID());
 			
 			A_KnifeReady();
-			return ResolveState(null);
 		}
 		wait;
 	Fire:
@@ -763,16 +764,16 @@ class ToM_Knife : ToM_BaseWeapon
 		}
 		#### KKK 1 A_WeaponOffset(-1.6, 2, WOF_ADD);
 		#### KK 1 A_WeaponOffset(-0.5, 1, WOF_ADD);
-		TNT1 A 0 
+		#### A 0 
 		{
 			A_SetKnifeSprite("VKNR", "VKRR");
-			A_ResetPSprite(OverlayID(), 6);
 			A_RotatePSprite(OverlayID(), 10, WOF_ADD);
+			A_ResetPSprite(OverlayID(), 6);
 		}
 		#### AAAAAA 1 A_KnifeReady(WRF_NOBOB|WRF_NOFIRE);
 		goto Ready;
 	CatchKnife:
-		TNT1 A 0 
+		#### A 0 
 		{
 			A_SetKnifeSprite("VKNR", "VKRR");
 			A_WeaponOffset(15, 20);
@@ -805,7 +806,8 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_OverlayScale(OverlayID(),0.05,0.05,WOF_ADD);
 			let psp = player.FindPSprite(OverlayID());
-			if (psp) {
+			if (psp)
+			{
 				psp.alpha = Clamp(psp.alpha + 0.05, 0, 0.5);
 				A_OverlayOffset(OverlayID(),psp.x * 0.9, psp.y * 0.9, WOF_INTERPOLATE);
 			}

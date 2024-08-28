@@ -303,6 +303,13 @@ class ToM_BaseWeapon : Weapon abstract
 			// Do this if we hit an actor:
 			else if (damage > 0 && type == ToM_Utils.HT_ShootableThing && victim && invoker.swingVictims.Find(victim) == invoker.swingVictims.Size())
 			{
+				if (pos.z > floorz && invoker.swingVictims.Size() == 0 && (victim.bFloat || victim.bNoGravity) && !self.bNoGravity && !self.bFloat && !self.bFLYCHEAT && !(player.cheats & CF_FLY) && !(player.cheats & CF_NOCLIP2))
+				{
+					if (vel.z < 0) vel.z = 0;
+					vel.z += 5;
+					ToM_AlicePlayer(self).ResetAirJump();
+				}
+
 				invoker.swingVictims.Push(victim);
 				victim.DamageMobj(puff? puff : self, self, damage, 'normal');
 				damaged = true;
@@ -919,7 +926,7 @@ class ToM_BaseWeapon : Weapon abstract
 				atkButtonState = ABS_PressedAgain;
 				atkButtonStateAlt = ABS_Lifted;
 			}
-			
+
 			// Do the same for secondary attack:
 			if (atkButtonStateAlt == ABS_Held && !(player.cmd.buttons & BT_ALTATTACK))
 			{

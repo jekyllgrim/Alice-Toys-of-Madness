@@ -84,6 +84,11 @@ class ToM_AlicePlayer : DoomPlayer
 		return bFLYCHEAT || (player.cheats & CF_FLY) || (player.cheats & CF_NOCLIP2);
 	}
 
+	void ResetAirJump()
+	{
+		airJumps = 0;
+	}
+
 	void UpdateMovementAnimation()
 	{
 		double hvel = vel.xy.Length();
@@ -260,7 +265,9 @@ class ToM_AlicePlayer : DoomPlayer
 			airJumpTics--;
 
 		if (player.onground || waterlevel > 0)
-			airJumps = 0;
+		{
+			ResetAirJump();
+		}
 
 		double downlim = -6;
 		double downfac = 2.6;

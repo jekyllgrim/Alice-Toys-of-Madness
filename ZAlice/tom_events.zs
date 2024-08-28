@@ -383,6 +383,22 @@ Class ToM_StaticStuffHandler : StaticEventHandler
 
 	override void WorldLoaded(WorldEvent e)
 	{
+		for (int i = 0; i < MAXPLAYERS; i++)
+		{
+			if (!PlayerInGame[i]) continue;
+			let player = players[i];
+			if (!player || !player.mo) continue;
+			if (!(player.mo is 'ToM_AlicePlayer'))
+			{
+				ThrowAbortException(String.Format(
+					"Player \cd%d\c- is using \cd%s\c- as their player class. \cyAlice: Toys of Madness\c- requires using \cdToM_AlicePlayer\c- as your player class and cannot function otherwise.\n"
+					"If you are currently playing with a mod that defines a custom playerclass through KEYCONF, you will have to edit it manually and remove the \cdclearplayerclasses\c- and \cdaddplayerclass\c- definitions from it.", 
+					i, player.mo.GetClassName())
+				);
+				return;
+			}
+		}
+
 		if (!e.isSaveGame)
 			return;
 		let handler = ToM_Mainhandler(EventHandler.Find("ToM_Mainhandler"));

@@ -1,26 +1,26 @@
 class ToM_Eyestaff : ToM_BaseWeapon
 {
-	const APSP_EyeChargeFlash = PSP_Flash -1;
-
 	double charge;
 	private ToM_EyestaffBeam beam1;	//outer beam (purple)
 	private ToM_EyestaffBeam beam2; //inner beam (yellow)
 	private ToM_EyestaffBeam outerBeam; //rendered for other players and mirrors
 	
+	const APSP_EyeChargeFlash = PSP_Flash -1;
 	const ES_FULLBEAMCHARGE = 12;
-	const ES_FULLROCKETCHARGE = 70;
+	const ES_FULLROCKETCHARGE = 85;
 	const ES_FULLALTCHARGE = 42;
 	const ES_PARTALTCHARGE = 8;
 	const ES_MAXCIRCLES = 4;
 	int altStartupFrame;
 	
 	int altCharge;
-	vector2 altChargeOfs;
+	Vector2 altChargeOfs;
 	ToM_ESAimingCircle aimCircle;
 	ToM_ESAimingCircle aimCircles[ES_MAXCIRCLES]; //keep track of circles existing simultaneously
 	int aimCircleID;
-	vector3 aimCirclePos;
+	Vector3 aimCirclePos;
 	ToM_OuterBeamPos outerBeamPos;
+	int chargeSndPitchTime;
 	
 	Default
 	{
@@ -43,7 +43,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		A_StopCharge();
 		A_StopBeam();
 		A_RemoveAimCircle();
-		A_StopSound(CHAN_7);
+		A_StopSound(CH_EYECHARGE);
 	}
 	
 	action void A_StopCharge()
@@ -122,6 +122,20 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			invoker.outerBeamPos.Destroy();
 		}
 		A_StopSound(CHAN_WEAPON);
+	}
+
+	action void A_FireEyestaffProjectile(double powerfac = 1.0)
+	{
+		Actor p1, p2;
+		[p1, p2] = A_FireProjectile("ToM_EyestaffProjectile", useammo: false);
+		let proj = ToM_EyestaffProjectile(p2);
+		if (proj)
+		{
+			//proj.powerfac = powerfac;
+			proj.A_StartSound("weapons/eyestaff/fireProjectile"/*, 
+				volume: ToM_Utils.LinearMap(powerfac, 0.0, 1.0, 0.5, 1.0, true),
+				pitch: ToM_Utils.LinearMap(powerfac, 0.0, 1.0, 1.1, 1.0, true)*/);
+		}
 	}
 	
 	action void A_EyestaffFlash(StateLabel label, double alpha = 0)
@@ -353,7 +367,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 		#### A 0
 		{
-			A_StartSound("weapons/eyestaff/charge1", CHAN_7, CHANF_NOSTOP);
+			A_StartSound("weapons/eyestaff/charge1", CH_EYECHARGE, CHANF_NOSTOP);
 			if (invoker.charge >= ES_FULLBEAMCHARGE)
 			{
 				A_StopCharge();
@@ -373,10 +387,14 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	FireBeam:
 		JEYC A 1
 		{
-			invoker.charge = clamp(invoker.charge + 1, 0, ES_FULLROCKETCHARGE);
+			invoker.charge += 1.0;
 			if (invoker.charge < ES_FULLROCKETCHARGE)
 			{
-				A_SoundVolume(CHAN_7, ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLROCKETCHARGE, 1.0, 0.0));
+				A_SoundVolume(CH_EYECHARGE, ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLROCKETCHARGE, 1.0, 0.0));
+			}
+			else
+			{
+				A_StopSound(CH_EYECHARGE);
 			}
 			if (player.refire % 2 == 0)
 			{
@@ -386,6 +404,16 @@ class ToM_Eyestaff : ToM_BaseWeapon
 				A_EyestaffRecoil();
 			}
 			A_Overlay(APSP_EyeChargeFlash, "ProjReadyFlash", true);
+			// Temporarily dip the pitch of the beam sound at the moment
+			// when the charge reaches the "rocket ready" threshold:
+			if (invoker.charge >= ES_FULLROCKETCHARGE)
+			{
+				if (invoker.charge == ES_FULLROCKETCHARGE)
+				{
+					invoker.chargeSndPitchTime = level.maptime;
+				}
+				A_SoundPitch(CHAN_WEAPON, ToM_Utils.LinearMap(level.maptime, invoker.chargeSndPitchTime, invoker.chargeSndPitchTime + 15, 0.9, 1.0, true));
+			}
 			A_FireBeam();
 		}
 		#### A 0 A_ReFire("FireBeam");
@@ -403,9 +431,17 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		{
 			A_Overlay(APSP_EyeChargeFlash, "FlashEnd");
 			A_StopBeam();
-			A_StopSound(CHAN_7);
+			A_StopSound(CH_EYECHARGE);
 			A_StartSound("weapons/eyestaff/chargeoff", CHAN_WEAPON, volume: 0.7, startTime: ToM_Utils.LinearMap(invoker.charge, 0, ES_FULLROCKETCHARGE, 0.7, 0.0, true));
 			A_PlayerAttackAnim(1, 'attack_eyestaff');
+			// Discarded concept for firing weaker projectiles
+			// if the beam was cut off before full projectile
+			// charge. It looks and feels odd, so while the
+			// system is there, it's commented:
+			/*if (invoker.charge > ES_FULLBEAMCHARGE)
+			{
+				A_FireEyestaffProjectile(ToM_Utils.LinearMap(invoker.charge, ES_FULLBEAMCHARGE, ES_FULLROCKETCHARGE, 0.25, 1.0, true));
+			}*/
 		}
 		goto Ready;
 	BeamFlash:
@@ -463,13 +499,9 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			A_Overlay(PSP_Flash, "Null");
 			A_Overlay(APSP_EyeChargeFlash, "Null");
 			A_ClearPSParticles(bottom: true);
-			A_StopSound(CHAN_7);
+			A_StopSound(CH_EYECHARGE);
 			A_StopBeam();
-			let proj = A_FireProjectile("ToM_EyestaffProjectile", useammo: false);
-			if (proj)
-			{
-				proj.A_StartSound("weapons/eyestaff/fireProjectile");
-			}
+			A_FireEyestaffProjectile();
 		}
 		JEYC ACE 1 A_AttackZoom(0.03, 0.1);
 		JEYC EEEEEE 1 
@@ -744,6 +776,8 @@ class ToM_EyestaffProjectile : ToM_Projectile
 	bool visualMode;
 	bool altMode;
 	int eyeProjDamage;
+	double powerfac;
+	property PowerFactor : powerfac;
 	
 	static const color SmokeColors[] =
 	{
@@ -754,6 +788,7 @@ class ToM_EyestaffProjectile : ToM_Projectile
 
 	Default
 	{
+		ToM_EyestaffProjectile.PowerFactor 1.0;
 		ToM_Projectile.flarecolor "ff38f5";
 		ToM_Projectile.trailtexture "LENGA0";
 		ToM_Projectile.trailcolor "c334eb";
@@ -781,16 +816,21 @@ class ToM_EyestaffProjectile : ToM_Projectile
 
 	int GetEyeProjDamage()
 	{
+		int dmg;
 		if (eyeProjDamage)
 		{
-			return eyeProjDamage;
+			dmg = eyeProjDamage;
 		}
-		return altMode? 15 : 100;
+		dmg = altMode? 15 : 100;
+		return int(round(dmg * powerfac));
 	}
 	
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
+		scale *= powerfac;
+		trailscale *= powerfac;
+		A_SetSize(radius * powerfac, -1);
 		A_FaceMovementDirection();
 		if (visualMode)
 		{
@@ -886,9 +926,9 @@ class ToM_EyestaffProjectile : ToM_Projectile
 			}
 			else
 			{
-				A_Explode(128, 160, 0);
+				A_Explode(128 * powerfac, 160 * powerfac, 0);
 			}
-			ToM_SphereFX.SpawnExplosion(pos, col1: flarecolor, col2: "fcb126");
+			ToM_SphereFX.SpawnExplosion(pos, size: 48 * powerfac, col1: flarecolor, col2: "fcb126");
 			double svel = 2;
 			for (int i = 10; i > 0; i--)
 			{

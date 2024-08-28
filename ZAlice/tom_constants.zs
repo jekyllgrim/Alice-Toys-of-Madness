@@ -1,7 +1,8 @@
 enum ToMChannels
 {
 	CH_TPOTHEAT = 10,
-	CH_TPOTCHARGE = 11,
+	CH_TPOTCHARGE,
+	CH_EYECHARGE,
 }
 
 enum ToM_ParticlesQuality

@@ -1,5 +1,15 @@
 class ToM_AlicePlayer : DoomPlayer
 {
+	const MAXAIRJUMPTICS = 6;
+	const MAXAIRJUMPS = 1;
+	const AIRJUMPTICTHRESHOLD = -4;
+	const AIRJUMPFACTOR = 0.8;
+
+	static const name leaftex[] =
+	{ 
+		'AIRLEAF1', 'AIRLEAF2', 'AIRLEAF3', 'AIRLEAF4', 'AIRLEAF5', 'AIRLEAF6', 'AIRLEAF7', 'AIRLEAF8' 
+	};
+
 	static const name modelnames[] =
 	{
 		"aliceweap_knife.iqm",
@@ -27,12 +37,13 @@ class ToM_AlicePlayer : DoomPlayer
 		AW_NoWeapon = -1000,
 	}
 
-	static const name leaftex[] = { 'AIRLEAF1', 'AIRLEAF2', 'AIRLEAF3', 'AIRLEAF4', 'AIRLEAF5', 'AIRLEAF6', 'AIRLEAF7', 'AIRLEAF8' };
-	
-	const MAXAIRJUMPTICS = 6;
-	const MAXAIRJUMPS = 1;
-	const AIRJUMPTICTHRESHOLD = -4;
-	const AIRJUMPFACTOR = 0.8;
+	protected Canvas pcCanv_body;
+	protected Canvas pcCanv_body2;
+	protected Canvas pcCanv_arm;
+	protected TextureID pcTex_body_top;
+	protected TextureID pcTex_body2_top;
+	protected TextureID pcTex_arm_top;
+	const PCTEX_SIZE = 512;
 	
 	protected int curWeaponID;
 	protected vector2 prevMoveDir;
@@ -66,6 +77,25 @@ class ToM_AlicePlayer : DoomPlayer
 		curWeaponID = AW_NoWeapon;
 		s_jump = ResolveState("Jump");
 		s_airjump = ResolveState("JumpAir");
+
+		String pcTex = "AlicePlayer.PlayerColor.Body."..PlayerNumber();
+		pcCanv_body = TexMan.GetCanvas(pcTex);
+		if (pcCanv_body)
+			A_ChangeModel("", skinindex: 0, skin: pcTex, flags: CMDL_USESURFACESKIN);
+
+		pcTex = "AlicePlayer.PlayerColor.Body2."..PlayerNumber();
+		pcCanv_body2 = TexMan.GetCanvas(pcTex);
+		if (pcCanv_body2)
+			A_ChangeModel("", skinindex: 2, skin: pcTex, flags: CMDL_USESURFACESKIN);
+
+		pcTex = "AlicePlayer.PlayerColor.Arm."..PlayerNumber();
+		pcCanv_arm = TexMan.GetCanvas(pcTex);
+		if (pcCanv_arm)
+			A_ChangeModel("", skinindex: 3, skin: pcTex, flags: CMDL_USESURFACESKIN);
+
+		pcTex_body_top = TexMan.CheckForTexture("models/alice/alice_body_trns.png");
+		pcTex_body2_top = TexMan.CheckForTexture("models/alice/alice_body2_trns.png");
+		pcTex_arm_top = TexMan.CheckForTexture("models/alice/alice_arm_trns.png");
 	}
 	
 	bool IsPlayerMoving()
@@ -191,6 +221,27 @@ class ToM_AlicePlayer : DoomPlayer
 		}
 	}
 
+	// Called from ToM_UiHandler:
+	ui void UpdateTextureColors()
+	{
+		Color playerCol = player.GetColor();
+		if (pcCanv_body)
+		{
+			pcCanv_body.Clear(0, 0, PCTEX_SIZE, PCTEX_SIZE, playerCol);
+			pcCanv_body.DrawTexture(pcTex_body_top, false, 0, 0, DTA_FlipY, true);
+		}
+		if (pcCanv_body2)
+		{
+			pcCanv_body2.Clear(0, 0, PCTEX_SIZE, PCTEX_SIZE, playerCol);
+			pcCanv_body2.DrawTexture(pcTex_body2_top, false, 0, 0, DTA_FlipY, true);
+		}
+		if (pcCanv_arm)
+		{
+			pcCanv_arm.Clear(0, 0, PCTEX_SIZE, PCTEX_SIZE, playerCol);
+			pcCanv_arm.DrawTexture(pcTex_arm_top, false, 0, 0, DTA_FlipY, true);
+		}
+	}
+
 	override void Tick()
 	{
 		Super.Tick();
@@ -205,7 +256,7 @@ class ToM_AlicePlayer : DoomPlayer
 			for (int i = collideFilter.Size() - 1; i >= 0; i--)
 			{
 				let act = collideFilter[i];
-				if (!act)
+				if (!act || !act.bSolid)
 				{
 					collideFilter.Delete(i);
 					continue;

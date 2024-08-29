@@ -6,7 +6,6 @@ Sprite "APLRA0", 401, 777
 	XScale 12.000
 	YScale 12.000
 	Offset 197, 690
-	Patch "APLRA0", 0, 0
 }
 
 Graphic "ACARM_0", 128, 160

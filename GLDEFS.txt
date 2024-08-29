@@ -6,6 +6,12 @@ Material Sprite "LGMRC0"
 	Texture maskTex "materials/mirror_mask.png"
 }
 
+Material Sprite "APLRA0"
+{
+	Shader "shaders/Alice_CamTexWeapon.fp"
+	Texture camTex "AlicePlayer.menuPortrait"
+}
+
 // PSprite cameratexture used by Ice Wand:
 Material Sprite "AICWA0"
 {

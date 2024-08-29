@@ -1,7 +1,6 @@
 class ToM_Mainhandler : EventHandler
 {
 	ToM_HUDFaceController HUDfaces[MAXPLAYERS];
-	ToM_ReflectionCamera weaponCameras[MAXPLAYERS];
 	int playerCheshireTimers[MAXPLAYERS];
 	array < Class<Weapon> > mapweapons;
 	array < Actor > allmonsters;
@@ -249,24 +248,6 @@ class ToM_Mainhandler : EventHandler
 		if (pmo)
 		{
 			ToM_CheshireCat.SpawnAndTalk(pmo, "cheshire/vo/paincomment", mapevent:true);
-		}
-	}
-
-	ui TextureID mirrortex;
-	override void RenderOverlay(renderEvent e) 
-	{
-		if (!PlayerInGame[consoleplayer])
-			return;
-		
-		if (weaponCameras[consoleplayer])
-		{
-			if (!mirrortex || !mirrortex.IsValid())
-				mirrortex = TexMan.CheckForTexture(ToM_ReflectionCamera.TOM_CAMERATEXTURE, TexMan.Type_Any);
-			let pmo = players[consoleplayer].mo;
-			if (pmo && pmo.player.camera == pmo)
-			{
-				Screen.DrawTexture(mirrortex, false, 0.0, 0.0, DTA_Alpha, 0.0);
-			}
 		}
 	}
 	
@@ -529,6 +510,69 @@ Class ToM_StaticStuffHandler : StaticEventHandler
 			else
 				i++;
 		}
+	}	
+}
+
+class ToM_UiHandler : StaticEventHandler
+{
+	ui TextureID portraitTex;
+	ui TextureID portraitTexBase;
+	ui Vector2 portraitSize;
+	ui Canvas portraitCanvas;
+	ui TextureID mirrortex;
+	ToM_ReflectionCamera weaponCameras[MAXPLAYERS];
+
+	override void RenderOverlay(renderEvent e) 
+	{
+		if (!PlayerInGame[consoleplayer])
+			return;
+		
+		if (weaponCameras[consoleplayer])
+		{
+			if (!mirrortex || !mirrortex.IsValid())
+				mirrortex = TexMan.CheckForTexture(ToM_ReflectionCamera.TOM_CAMERATEXTURE, TexMan.Type_Any);
+			let pmo = players[consoleplayer].mo;
+			if (pmo && pmo.player.camera == pmo)
+			{
+				Screen.DrawTexture(mirrortex, false, 0.0, 0.0, DTA_Alpha, 0.0);
+			}
+		}
 	}
-	
+
+	override void UiTick()
+	{
+		// Update canvases representing player colors
+		// (see ToM_AlicePlayer - UpdateTextureColors());
+		for (int i = 0; i < MAXPLAYERS; i++)
+		{
+			if (!PlayerInGame[i]) continue;
+			let player = players[i];	
+			let alice = ToM_AlicePlayer(player.mo);
+			if (alice)
+			{
+				alice.UpdateTextureColors();
+			}
+		}
+
+		// Update portrait showin Player Menu:
+		if (!Menu.GetCurrentMenu()) return;
+		let player = players[consoleplayer];
+		if (!portraitTex)
+		{
+			portraitTex = TexMan.CheckForTexture("graphics/AliceImg.png");
+			portraitSize = TexMan.GetScaledSize(portraitTex);
+		}
+		if (!portraitTexBase)
+		{
+			portraitTexBase = TexMan.CheckForTexture("graphics/AliceImgBase.png");
+		}
+		if (!portraitCanvas)
+		{
+			portraitCanvas = TexMan.GetCanvas("AlicePlayer.menuPortrait");
+		}
+		
+		portraitCanvas.Clear(0, 0, portraitSize.x, portraitSize.y, 0xff000000);
+		portraitCanvas.DrawTexture(portraitTexBase, false, 0, 0, DTA_FillColor, player.GetColor());
+		portraitCanvas.DrawTexture(portraitTex, false, 0, 0);
+	}
 }

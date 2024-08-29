@@ -1,5 +1,32 @@
 CameraTexture "AliceWeapon.camtex" 400 400
 
+CanvasTexture "AlicePlayer.PlayerColor.Body.0" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body2.0" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Arm.0" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body.1" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body2.1" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Arm.1" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body.2" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body2.2" 512 5122
+CanvasTexture "AlicePlayer.PlayerColor.Arm.2" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body.3" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body2.3" 512 5122
+CanvasTexture "AlicePlayer.PlayerColor.Arm.3" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body.4" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body2.4" 512 5122
+CanvasTexture "AlicePlayer.PlayerColor.Arm.4" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body.5" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body2.5" 512 5122
+CanvasTexture "AlicePlayer.PlayerColor.Arm.5" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body.6" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body2.6" 512 5122
+CanvasTexture "AlicePlayer.PlayerColor.Arm.6" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body.7" 512 512
+CanvasTexture "AlicePlayer.PlayerColor.Body2.7" 512 5122
+CanvasTexture "AlicePlayer.PlayerColor.Arm.7" 512 512
+
+CanvasTexture "AlicePlayer.menuPortrait" 401 777
+
 CanvasTexture "EyestaffAimCircle00" 512 512
 CanvasTexture "EyestaffAimCircle01" 512 512
 CanvasTexture "EyestaffAimCircle02" 512 512

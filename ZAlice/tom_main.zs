@@ -1209,7 +1209,7 @@ class ToM_ReflectionCamera : Actor
 			cam.cam_offset = offset;
 			cam.cam_angles = angles;
 			TexMan.SetCameraToTexture(cam, TOM_CAMERATEXTURE, fov);
-			let handler = ToM_Mainhandler(EventHandler.Find('ToM_Mainhandler'));
+			let handler = ToM_UiHandler(EventHandler.Find('ToM_UiHandler'));
 			if (handler)
 			{
 				handler.weaponCameras[cam.ppawnNumber] = cam;
@@ -1220,7 +1220,7 @@ class ToM_ReflectionCamera : Actor
 
 	override void OnDestroy()
 	{
-		let handler = ToM_Mainhandler(EventHandler.Find('ToM_Mainhandler'));
+		let handler = ToM_UiHandler(EventHandler.Find('ToM_UiHandler'));
 		if (handler)
 		{
 			handler.weaponCameras[ppawnNumber] = null;

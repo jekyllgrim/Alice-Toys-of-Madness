@@ -39,3 +39,7 @@ enum EParticleBeamStyle
 }
 
 const ToM_MaxMoveInput = 12800;
+
+const ToM_PCANTEX_BODY = "AlicePlayer.PlayerColor.Body.";
+const ToM_PCANTEX_BODY2 = "AlicePlayer.PlayerColor.Body2.";
+const ToM_PCANTEX_ARM = "AlicePlayer.PlayerColor.Arm.";

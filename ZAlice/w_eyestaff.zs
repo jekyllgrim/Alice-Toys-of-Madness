@@ -1003,20 +1003,20 @@ class ToM_EyestaffBurnControl : ToM_BurnController
 
 class ToM_ESAimingCircle : ToM_BaseActor
 {
+	bool chargeFinished;
 	protected PlayerPawn shooter;
 	protected ToM_Eyestaff eyestaff;
-	protected int circleID;
-	protected int charge;
-	protected Canvas circleCanvas;
 	protected String canvasTexName;
 	protected TextureID circleOut;
 	protected TextureID circleIn;
-	protected Shape2DTransform circleTransform;
-	protected Shape2D outerShape;
-	protected Shape2D innerShape;
-	protected Shape2D innerEdgeShape;
+	protected int circleID;
+	protected int charge;
 	protected double circleOutAngle;
-	bool chargeFinished;
+	protected transient Canvas circleCanvas;
+	protected transient Shape2DTransform circleTransform;
+	protected transient Shape2D outerShape;
+	protected transient Shape2D innerShape;
+	protected transient Shape2D innerEdgeShape;
 
 	Default
 	{
@@ -1046,18 +1046,6 @@ class ToM_ESAimingCircle : ToM_BaseActor
 	{
 		Super.PostBeginPlay();
 		canvasTexName = String.Format("EyestaffAimCircle%d%d", shooter? shooter.PlayerNumber() : 0, circleID);
-		if (tom_debugmessages)
-		{
-			Console.Printf("Created canvas texture \cd%s\c- for \cy%s\c-", canvasTexName, GetClassName());
-		}
-		circleCanvas = TexMan.GetCanvas(canvasTexName);
-		if (!circleCanvas)
-		{
-			Console.Printf("\cgAToM Error:\c- \cg%s\c- is not a valid texture; couldn't obtain Canvas. Destroying \cy%s\c-...", canvasTexName, GetClassName());
-			Destroy();
-			return;
-		}
-		A_ChangeModel("", skin: canvasTexName);
 		circleOut = TexMan.CheckForTexture("Models/Eyestaff/eyestaff_circle_out.png");
 		circleIn = TexMan.CheckForTexture("Models/Eyestaff/eyestaff_circle_in.png");
 		if (!circleOut.IsValid() || !circleIn.IsValid())
@@ -1066,6 +1054,7 @@ class ToM_ESAimingCircle : ToM_BaseActor
 			Destroy();
 			return;
 		}
+		A_ChangeModel("", skin: canvasTexName);
 	}
 
 	void UpdateTransform(double ang = 0)
@@ -1195,6 +1184,17 @@ class ToM_ESAimingCircle : ToM_BaseActor
 		Super.Tick();
 		SetZ(floorz+1);
 		
+		if (!circleCanvas)
+		{
+			circleCanvas = TexMan.GetCanvas(canvasTexName);
+			if (!circleCanvas)
+			{
+				Console.Printf("\cgAToM Error:\c- \cg%s\c- is not a valid texture; couldn't obtain Canvas. Destroying \cy%s\c-...", canvasTexName, GetClassName());
+				Destroy();
+				return;
+			}
+		}
+
 		double width = radius*2;
 		circleCanvas.Clear(0, 0, width, width, 0xff000000);
 		

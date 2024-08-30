@@ -515,10 +515,21 @@ Class ToM_StaticStuffHandler : StaticEventHandler
 
 class ToM_UiHandler : StaticEventHandler
 {
+	const PCTEX_SIZE = 512;
+	
+	transient Canvas pcCanv_body[MAXPLAYERS];
+	transient Canvas pcCanv_body2[MAXPLAYERS];
+	transient Canvas pcCanv_arm[MAXPLAYERS];
+	
+	TextureID pcTex_body_top;
+	TextureID pcTex_body2_top;
+	TextureID pcTex_arm_top;
+
 	ui TextureID portraitTex;
 	ui TextureID portraitTexBase;
 	ui Vector2 portraitSize;
 	ui Canvas portraitCanvas;
+
 	ui TextureID mirrortex;
 	ToM_ReflectionCamera weaponCameras[MAXPLAYERS];
 
@@ -539,19 +550,61 @@ class ToM_UiHandler : StaticEventHandler
 		}
 	}
 
-	override void UiTick()
+	override void WorldTick()
 	{
-		// Update canvases representing player colors
-		// (see ToM_AlicePlayer - UpdateTextureColors());
+		if (!pcTex_body_top || !pcTex_body_top.isValid())
+			pcTex_body_top = TexMan.CheckForTexture("models/alice/alice_body_trns.png");
+		if (!pcTex_body2_top || !pcTex_body2_top.isValid())
+			pcTex_body2_top = TexMan.CheckForTexture("models/alice/alice_body2_trns.png");
+		if (!pcTex_arm_top || !pcTex_arm_top.isValid())
+			pcTex_arm_top = TexMan.CheckForTexture("models/alice/alice_arm_trns.png");
+			
 		for (int i = 0; i < MAXPLAYERS; i++)
 		{
 			if (!PlayerInGame[i]) continue;
-			let player = players[i];	
-			let alice = ToM_AlicePlayer(player.mo);
-			if (alice)
-			{
-				alice.UpdateTextureColors();
-			}
+
+			if (!pcCanv_body[i])
+				pcCanv_body[i] = TexMan.GetCanvas(String.Format("%s%d", ToM_PCANTEX_BODY, i));
+			if (!pcCanv_body2[i])
+				pcCanv_body2[i] = TexMan.GetCanvas(String.Format("%s%d", ToM_PCANTEX_BODY2, i));
+			if (!pcCanv_arm[i])
+				pcCanv_arm[i] = TexMan.GetCanvas(String.Format("%s%d", ToM_PCANTEX_ARM, i));
+			
+//			Console.MidPrint(smallfont, String.Format(
+//				"Updating canvases for player %d\n"
+//				"body: \cd%s\n"
+//				"body2: \cd%s\n"
+//				"arm: \cd%s\n"
+//				"body canvas: %s\n"
+//				"body2 canvas: %s\n"
+//				"arm canvas: %s",
+//				i, TexMan.GetName(pcTex_body_top), TexMan.GetName(pcTex_body2_top), TexMan.GetName(pcTex_arm_top),
+//				pcCanv_body[i]? "\cdtrue" : "\cgFALSE",
+//				pcCanv_body2[i]? "\cdrue" : "\cgFALSE",
+//				pcCanv_arm[i]? "\cdtrue" : "\cgFALSE")
+//			);
+		}
+	}
+
+	ui void UpdatePlayerColorCanvas(Canvas cv, TextureID toptexture, Color playercol, Vector2 texSize = (PCTEX_SIZE, PCTEX_SIZE))
+	{
+		if (!cv || !toptexture || !toptexture.IsValid()) return;
+		
+		cv.Clear(0, 0, texSize.x, texSize.y, playerCol);
+		cv.DrawTexture(toptexture, false, 0, 0, DTA_FlipY, true);
+	}
+
+	override void UiTick()
+	{
+		// Update canvases representing player colors
+		for (int i = 0; i < MAXPLAYERS; i++)
+		{
+			if (!PlayerInGame[i]) continue;
+
+			Color playerCol = players[i].GetColor();
+			UpdatePlayerColorCanvas(pcCanv_body[i], pcTex_body_top, playerCol);
+			UpdatePlayerColorCanvas(pcCanv_body2[i], pcTex_body2_top, playerCol);
+			UpdatePlayerColorCanvas(pcCanv_arm[i], pcTex_arm_top, playerCol);
 		}
 
 		// Update portrait showin Player Menu:

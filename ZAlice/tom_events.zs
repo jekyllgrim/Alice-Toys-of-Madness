@@ -524,6 +524,7 @@ class ToM_UiHandler : StaticEventHandler
 	TextureID pcTex_body_top;
 	TextureID pcTex_body2_top;
 	TextureID pcTex_arm_top;
+	TextureID pcTex_arm_top_rage;
 
 	ui TextureID portraitTex;
 	ui TextureID portraitTexBase;
@@ -558,6 +559,8 @@ class ToM_UiHandler : StaticEventHandler
 			pcTex_body2_top = TexMan.CheckForTexture("models/alice/alice_body2_trns.png");
 		if (!pcTex_arm_top || !pcTex_arm_top.isValid())
 			pcTex_arm_top = TexMan.CheckForTexture("models/alice/alice_arm_trns.png");
+		if (!pcTex_arm_top_rage || !pcTex_arm_top_rage.isValid())
+			pcTex_arm_top_rage = TexMan.CheckForTexture("models/alice/alice_arm_trns_rage.png");
 			
 		for (int i = 0; i < MAXPLAYERS; i++)
 		{
@@ -600,11 +603,14 @@ class ToM_UiHandler : StaticEventHandler
 		for (int i = 0; i < MAXPLAYERS; i++)
 		{
 			if (!PlayerInGame[i]) continue;
+			let pmo = players[i].mo;
+			if (!pmo) continue;
 
 			Color playerCol = players[i].GetColor();
 			UpdatePlayerColorCanvas(pcCanv_body[i], pcTex_body_top, playerCol);
 			UpdatePlayerColorCanvas(pcCanv_body2[i], pcTex_body2_top, playerCol);
-			UpdatePlayerColorCanvas(pcCanv_arm[i], pcTex_arm_top, playerCol);
+			TextureID tex = ToM_RageBox.HasRageBox(pmo)? pcTex_arm_top_rage : pcTex_arm_top;
+			UpdatePlayerColorCanvas(pcCanv_arm[i], tex, playerCol);
 		}
 
 		// Update portrait showin Player Menu:

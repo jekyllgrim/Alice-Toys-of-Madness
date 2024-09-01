@@ -4,6 +4,7 @@ class ToM_AlicePlayer : DoomPlayer
 	const MAXAIRJUMPS = 1;
 	const AIRJUMPTICTHRESHOLD = -4;
 	const AIRJUMPFACTOR = 0.8;
+	const BASEMODELPATH = "models/alice";
 
 	static const name leaftex[] =
 	{ 
@@ -36,6 +37,25 @@ class ToM_AlicePlayer : DoomPlayer
 		AW_Blunderbuss,
 		AW_NoWeapon = -1000,
 	}
+
+	enum EModelIndexes
+	{
+		MI_Character   = 0,
+		MI_Weapon      = 1,
+		MI_LeftArm     = 2,
+		MI_RageParts   = 3,
+	}
+
+	enum ESurfaceIndexes
+	{
+		SI_TorsoLegs,
+		SI_Head,
+		SI_Skirt,
+		SI_Arms,
+		SI_BowStraps,
+		SI_BowSkull,
+		SI_Hair,
+	}
 	
 	protected int curWeaponID;
 	protected vector2 prevMoveDir;
@@ -67,17 +87,18 @@ class ToM_AlicePlayer : DoomPlayer
 		super.PostBeginPlay();
 		SetAnimation('basepose', flags:SAF_LOOP|SAF_INSTANT);
 		curWeaponID = AW_NoWeapon;
+
 		s_jump = ResolveState("Jump");
 		s_airjump = ResolveState("JumpAir");
 
 		String pcTex = ToM_PCANTEX_BODY..PlayerNumber();
-		A_ChangeModel("", skinindex: 0, skin: pcTex, flags: CMDL_USESURFACESKIN);
+		A_ChangeModel("", skinindex: SI_TorsoLegs, skin: pcTex, flags: CMDL_USESURFACESKIN);
 
 		pcTex = ToM_PCANTEX_BODY2..PlayerNumber();
-		A_ChangeModel("", skinindex: 2, skin: pcTex, flags: CMDL_USESURFACESKIN);
+		A_ChangeModel("", skinindex: SI_Skirt, skin: pcTex, flags: CMDL_USESURFACESKIN);
 
 		pcTex = ToM_PCANTEX_ARM..PlayerNumber();
-		A_ChangeModel("", skinindex: 3, skin: pcTex, flags: CMDL_USESURFACESKIN);
+		A_ChangeModel("", skinindex: SI_Arms, skin: pcTex, flags: CMDL_USESURFACESKIN);
 	}
 	
 	bool IsPlayerMoving()
@@ -158,7 +179,7 @@ class ToM_AlicePlayer : DoomPlayer
 		if (!weap || weap.wasThrown)
 		{
 			curWeaponID = AW_NoWeapon;
-			A_ChangeModel("", 1, flags: CMDL_HIDEMODEL);
+			A_ChangeModel("", MI_Weapon, flags: CMDL_HIDEMODEL);
 			return;
 		}
 
@@ -199,7 +220,7 @@ class ToM_AlicePlayer : DoomPlayer
 		if (newmodel != curWeaponID)
 		{
 			curWeaponID = newmodel;
-			A_ChangeModel("", 1, "models/alice/weapons", modelnames[newmodel]);
+			A_ChangeModel("", MI_Weapon, "models/alice/weapons", modelnames[newmodel]);
 		}
 	}
 

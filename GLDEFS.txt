@@ -34,6 +34,11 @@ Material Texture "models/alice/weapons/icewand_skin02.png"
 	Brightmap "models/alice/weapons/icewand_skin02.png"
 }
 
+Brightmap Texture "Models/alice/rage_face.png"
+{
+	map "brightmaps/rage_face.png"
+}
+
 // The block of ice encasing monsters killed by Ice Wand:
 Material Texture "AICECASE"
 {

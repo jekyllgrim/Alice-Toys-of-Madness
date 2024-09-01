@@ -284,12 +284,32 @@ class ToM_RageBoxEffect : ToM_Powerup
 		+Inventory.ALWAYSPICKUP
 	}
 
+	static void SwapRageModel(Actor who, bool enable)
+	{
+		let alice = ToM_AlicePlayer(who);
+		if (!alice) return;
+
+		if (enable)
+		{
+			alice.A_ChangeModel("", ToM_AlicePlayer.MI_RageParts, modelpath: ToM_AlicePlayer.BASEMODELPATH, model: "alice_rageParts.iqm");
+			alice.A_ChangeModel("", ToM_AlicePlayer.MI_LeftArm, flags: CMDL_HIDEMODEL);
+			alice.A_ChangeModel("", skinindex: ToM_AlicePlayer.SI_Head, skinpath: ToM_AlicePlayer.BASEMODELPATH, skin: "rage_face.png", flags: CMDL_USESURFACESKIN);
+		}
+		else
+		{
+			alice.A_ChangeModel("", ToM_AlicePlayer.MI_RageParts, flags: CMDL_HIDEMODEL);
+			alice.A_ChangeModel("", ToM_AlicePlayer.MI_LeftArm, modelpath: ToM_AlicePlayer.BASEMODELPATH, model: "alice_leftarm.iqm");
+			alice.A_ChangeModel("", skinindex: ToM_AlicePlayer.SI_Head, skinpath: ToM_AlicePlayer.BASEMODELPATH, skin: "alice_body3.png", flags: CMDL_USESURFACESKIN);
+		}
+	}
+
 	override void InitEffect()
 	{
 		Super.InitEffect();
 		if (owner)
 		{
 			owner.GiveBody(100);
+			//SwapRageModel(owner, true);
 		}
 	}
 
@@ -330,8 +350,15 @@ class ToM_RageBoxEffect : ToM_Powerup
 		if (owner)
 		{
 			owner.bNOPAIN = owner.default.bNOPAIN;
+			SwapRageModel(owner, false);
 		}
 		Super.EndEffect();
+	}
+
+	override void OnDestroy()
+	{
+		SwapRageModel(owner, false);
+		Super.OnDestroy();
 	}
 }
 
@@ -412,6 +439,8 @@ class ToM_RageBoxSelector : ToM_ArtifactSelector
 			A_OverlayPivot(OverlayID(), piv.x, piv.y);
 			A_Overlay(APSP_LeftHand, "SelectRageLeftHand");
 			A_OverlayPivot(APSP_LeftHand, -piv.x, piv.y);
+			let alice = ToM_AlicePlayer(self);
+			A_PlayerAttackAnim(-1, "rage_start", loopframe: 51, flags:SAF_LOOP);
 		}
 		VRAG ABCDEF 2 { player.viewheight -= 2; }
 		VRAG FFFGGGHHHIIIIIIIIIIIIIIIIIIIIIIIIII 5 A_OverlayOffset(OverlayID(), frandom[sfx](-1,1), frandom[sfx](-1,1), WOF_ADD);
@@ -429,7 +458,12 @@ class ToM_RageBoxSelector : ToM_ArtifactSelector
 		TNT1 A 0 A_OverlayFlags(OverlayID(), PSPF_FLIP|PSPF_MIRROR, true);
 		VRAG ABCDEF 2;
 		VRAG FFFGGGHHHIIIIIIIIIIIIIIIIIIIIIIIIII 5 A_OverlayOffset(OverlayID(), frandom[sfx](-1,1), frandom[sfx](-1,1), WOF_ADD);
-		TNT1 A 0 A_OverlayPivot(OverlayID(), 0.6, 0.6);
+		#### # 0 
+		{
+			A_OverlayPivot(OverlayID(), 0.6, 0.6);
+			A_PlayerAttackAnim(41, "rage_scream", framerate: 30);
+			ToM_RageBoxEffect.SwapRageModel(self, true);
+		}
 		VRAG JKL 2;
 		VRAG MMMMM 1 A_OverlayOffset(OverlayID(), frandom(-0.5, 0.5), frandom(-0.5, 0.5), WOF_INTERPOLATE);
 		TNT1 A 0 A_OverlayFlags(OverlayID(), PSPF_FLIP|PSPF_MIRROR, false);
@@ -441,12 +475,13 @@ class ToM_RageBoxSelector : ToM_ArtifactSelector
 			A_OverlayScale(OverlayID(), -0.03, -0.03, WOF_ADD);
 			A_OverlayRotate(OverlayID(), -1, WOF_ADD);
 		}
-		TNT1 A 0 
+		#### # 0 
 		{
 			A_OverlayScale(OverlayID(), 1.1, 1.1);
 			A_ResetPSprite(0, 5);
 		}
 		VCLW A 5;
+		#### # 0 { self.SetState(self.spawnstate); }
 		goto EndEffect;
 	}
 }

@@ -70,6 +70,9 @@ class ToM_AlicePlayer : DoomPlayer
 	array <Actor> collideFilter;
 	bool doingPlungingAttack;
 
+	protected ToM_PlayerCamera specialCamera;
+	protected ToM_CrosshairSpot crosshairSpot;
+
 	Default
 	{
 		+INTERPOLATEANGLES
@@ -248,6 +251,27 @@ class ToM_AlicePlayer : DoomPlayer
 				{
 					collideFilter.Delete(i);
 				}
+			}
+		}
+
+		if (!crosshairSpot)
+		{
+			crosshairSpot = ToM_CrosshairSpot.Create(self);
+		}
+
+		if (!specialCamera)
+		{
+			specialCamera = ToM_PlayerCamera.Create(self);
+		}
+		else
+		{
+			if (player.cheats & CF_CHASECAM)
+			{
+				specialCamera.Update(true, (-96, 32, 128), crosshairSpot);
+			}
+			else
+			{
+				specialCamera.Update(false);
 			}
 		}
 	}
@@ -780,5 +804,175 @@ class ToM_AlicePlayer : DoomPlayer
 			SetAnimation('death_fall');
 		}
 		Stop;
+	}
+}
+
+class ToM_PlayerCamera : Actor
+{
+	Actor targetpoint;
+	ToM_AlicePlayer alice;
+	protected bool enabled;
+	Vector3 cameraOfs;
+
+	Default
+	{
+		+NOINTERACTION
+		+NOBLOCKMAP
+	}
+	
+	static ToM_PlayerCamera Create(Actor who)
+	{
+		if (!who) return null;
+
+		let alice = ToM_AlicePlayer(who);
+		if (!alice) return null;
+
+		let cam = ToM_PlayerCamera(Actor.Spawn('ToM_PlayerCamera', alice.pos));
+		if (cam)
+		{
+			cam.alice = alice;
+		}
+		return cam;
+	}
+
+	void Update(bool on = true, Vector3 ofs = (0,0,0), Actor targetpoint = null)
+	{
+		if (!alice) return;
+
+		enabled = on;
+		if (enabled)
+		{
+			alice.player.camera = self;
+			if (ofs != (0,0,0))
+			{
+				cameraOfs = ofs;
+			}
+			self.targetPoint = targetpoint;
+		}
+		else
+		{
+			alice.player.camera = alice;
+		}
+	}
+
+	override void Tick()
+	{
+		if (!enabled)
+		{
+			return;
+		}
+
+		if (!alice)
+		{
+			Destroy();
+			return;
+		}
+
+		Vector3 cofs = cameraOfs;
+		//cofs.z *= ToM_Utils.LinearMap(alice.pitch + alice.viewpitch, -90, 90, 2.0, -1.0, true);
+		cofs.z *= ToM_Utils.LinearMap(alice.pitch + alice.viewpitch, -90, 90, 1.0, 0, true);
+		SetOrigin(ToM_Utils.RelativeToGlobalCoords(alice, cofs), true);
+		/*if (targetpoint)
+		{
+			A_Face(targetpoint, 0, 0);
+		}
+		else
+		{*/
+			A_SetAngle(alice.angle, SPF_INTERPOLATE);
+			A_SetPitch(alice.pitch, SPF_INTERPOLATE);
+		//}
+	}
+}
+
+class ToM_CrosshairSpot : ToM_BaseDebris
+{
+	ToM_AlicePlayer alice;
+
+	Default
+	{
+		+NOINTERACTION
+		+NOBLOCKMAP
+		+BRIGHT
+		+FORCEXYBILLBOARD
+		scale 0.24;
+		+NOTIMEFREEZE
+		radius 4;
+		height 4;
+		renderstyle "Add";
+		+DONTBLAST
+		+SYNCHRONIZED
+		FloatBobphase 0;
+	}
+
+	static ToM_CrosshairSpot Create(Actor who)
+	{
+		if (!who) return null;
+
+		let alice = ToM_AlicePlayer(who);
+		if (!alice) return null;
+
+		let spot = ToM_CrosshairSpot(Spawn("ToM_CrosshairSpot", who.pos));
+		if (spot)
+		{
+			spot.alice = alice;
+		}
+		return spot;
+	}
+
+	override void Tick()
+	{
+		if (!alice)
+		{
+			Destroy();
+			return;
+		}
+
+		if (!(alice.player.cheats & CF_CHASECAM))
+		{
+			renderRequired = -1;
+			return;
+		}
+
+		if (alice.player == players[consoleplayer])
+		{
+			renderRequired = 1;
+		}
+		else
+		{
+			renderRequired = -1;
+		}
+
+		FLineTracedata tr;
+		double atkheight = ToM_Utils.GetPlayerAtkHeight(alice);
+		alice.LineTrace(alice.angle, PLAYERMISSILERANGE, alice.pitch, TRF_SOLIDACTORS, atkheight, data: tr);
+		Vector3 newpos = tr.HitLocation;
+		if (tr.HitType != TRACE_HitNone)
+		{
+			let norm = ToM_Utils.GetNormalFromTrace(tr);
+			newpos = level.Vec3Offset(tr.HitLocation, norm * 12);
+		}
+		SetOrigin(newpos, true);
+
+		scale.x = scale.y = ToM_Utils.LinearMap(Distance3D(alice), 320, PLAYERMISSILERANGE, default.scale.x, default.scale.x * 16.0, true);
+
+		TextureID tex = curstate.GetSpriteTexture(0);
+		FSpawnParticleParams p;
+		p.color1 = "";
+		p.texture = tex;
+		p.pos = prev;
+		p.lifetime = 10;
+		p.flags = SPF_FULLBRIGHT|SPF_NOTIMEFREEZE;
+		p.startalpha = alpha;
+		p.fadestep = -1;
+		p.size = TexMan.GetSize(tex) * scale.x;
+		p.style = GetRenderstyle();
+		Level.SpawnParticle(p);
+	}
+	
+	States
+	{
+	Spawn:
+		AMCR X -1;
+		stop;
 	}
 }

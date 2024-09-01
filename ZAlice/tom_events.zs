@@ -51,7 +51,6 @@ class ToM_Mainhandler : EventHandler
 			return;
 		if (IsVoodooDoll(plr))
 			return;
-		plr.GiveInventory("ToM_CrosshairSpawner", 1);
 		plr.GiveInventory("ToM_InvReplacementControl", 1);
 		plr.GiveInventory("ToM_KickWeapon", 1);
 	}

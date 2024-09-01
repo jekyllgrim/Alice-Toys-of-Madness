@@ -2063,69 +2063,7 @@ Class ToM_GenericExplosion : ToM_SmallDebris
 	}
 }
 
-class ToM_CrosshairSpawner : ToM_InventoryToken
-{
-	protected vector3 aimPos;
-	protected PlayerPawn ppawn;
-	
-	vector3 GetAimPos()
-	{
-		return aimPos;
-	}
-	
-	override void DoEffect()
-	{
-		return;
-		////////////////		
-		super.DoEffect();
-		if (!owner || !owner.player || owner.player != players[consoleplayer] || !owner.player.readyweapon || owner.health <= 0)
-			return;
-				
-		if (!ppawn) ppawn = PlayerPawn(owner);
-		
-		let weap = owner.player.readyweapon;
-		if (!weap || weap.bMELEEWEAPON)
-			return;
-		
-		FLineTracedata tr;
-		double atkheight = ToM_Utils.GetPlayerAtkHeight(ppawn);
-		//owner.LineTrace(owner.angle, 2048, owner.pitch, TRF_SOLIDACTORS, atkheight, data: tr);
-		owner.LineTrace(owner.angle, 320, owner.pitch, TRF_THRUACTORS, atkheight, data: tr);
-		console.printf("trace distance: %1.f", tr.Distance);
-		
-		/*let hitnormal = -tr.HitDir;
-		if ( tr.HitType == TRACE_HitFloor ) {
-			if ( tr.Hit3DFloor ) 
-				hitnormal = -tr.Hit3DFloor.top.Normal;
-			else 
-				hitnormal = tr.HitSector.floorplane.Normal;
-		}
-		else if ( tr.HitType == TRACE_HitCeiling )    {
-			if ( tr.Hit3DFloor ) 
-				hitnormal = -tr.Hit3DFloor.bottom.Normal;
-			else 
-				hitnormal = tr.HitSector.ceilingplane.Normal;
-		}
-		else if ( tr.HitType == TRACE_HitWall ) {
-			hitnormal = (-tr.HitLine.delta.y,tr.HitLine.delta.x,0).unit();
-			if ( !tr.LineSide ) 
-				hitnormal *= -1;
-		}*/
-		
-		aimPos = tr.hitLocation;// + (hitnormal * 8);
-		SpawnCrosshair(weap.GetClass());
-	}
-	
-	void SpawnCrosshair(class<Weapon> weapclass = null)
-	{
-		let spot = Spawn("ToM_CrosshairSpot", aimPos);
-		if (weapclass && weapclass == 'ToM_Blunderbuss')
-		{
-			spot.A_SetRenderstyle(spot.alpha, Style_AddShaded);
-			spot.SetShade("c00003");
-		}
-	}
-}
+
 
 class ToM_PspResetController : Thinker
 {
@@ -2261,29 +2199,5 @@ class ToM_PspResetController : Thinker
 			Console.Printf("\cyPSPRC:\c- Controller for layer \cd%s\c- \cgdestroyed\c-", psp? ""..psp.id : "'unknown'");
 		}
 		Super.OnDestroy();
-	}
-}
-	
-
-class ToM_CrosshairSpot : ToM_BaseDebris
-{
-	Default
-	{
-		+NOINTERACTION
-		+NOBLOCKMAP
-		+BRIGHT
-		+FORCEXYBILLBOARD
-		scale 0.24;
-		+NOTIMEFREEZE
-		radius 2;
-		height 2;
-		renderstyle "Add";
-	}
-	
-	States
-	{
-	Spawn:
-		AMCR X 1 A_FadeOut(0.1);
-		loop;
 	}
 }

@@ -536,7 +536,7 @@ class ToM_UiHandler : StaticEventHandler
 
 	override void RenderOverlay(renderEvent e) 
 	{
-		if (!PlayerInGame[consoleplayer])
+		if (gamestate != GS_LEVEL)
 			return;
 		
 		if (weaponCameras[consoleplayer])
@@ -614,24 +614,26 @@ class ToM_UiHandler : StaticEventHandler
 		}
 
 		// Update portrait showin Player Menu:
-		if (!Menu.GetCurrentMenu()) return;
-		let player = players[consoleplayer];
-		if (!portraitTex)
+		if (Menu.GetCurrentMenu())
 		{
-			portraitTex = TexMan.CheckForTexture("graphics/AliceImg.png");
-			portraitSize = TexMan.GetScaledSize(portraitTex);
+			let player = players[consoleplayer];
+			if (!portraitTex)
+			{
+				portraitTex = TexMan.CheckForTexture("graphics/AliceImg.png");
+				portraitSize = TexMan.GetScaledSize(portraitTex);
+			}
+			if (!portraitTexBase)
+			{
+				portraitTexBase = TexMan.CheckForTexture("graphics/AliceImgBase.png");
+			}
+			if (!portraitCanvas)
+			{
+				portraitCanvas = TexMan.GetCanvas("AlicePlayer.menuPortrait");
+			}
+			
+			portraitCanvas.Clear(0, 0, portraitSize.x, portraitSize.y, 0xff000000);
+			portraitCanvas.DrawTexture(portraitTexBase, false, 0, 0, DTA_FillColor, player.GetColor());
+			portraitCanvas.DrawTexture(portraitTex, false, 0, 0);
 		}
-		if (!portraitTexBase)
-		{
-			portraitTexBase = TexMan.CheckForTexture("graphics/AliceImgBase.png");
-		}
-		if (!portraitCanvas)
-		{
-			portraitCanvas = TexMan.GetCanvas("AlicePlayer.menuPortrait");
-		}
-		
-		portraitCanvas.Clear(0, 0, portraitSize.x, portraitSize.y, 0xff000000);
-		portraitCanvas.DrawTexture(portraitTexBase, false, 0, 0, DTA_FillColor, player.GetColor());
-		portraitCanvas.DrawTexture(portraitTex, false, 0, 0);
 	}
 }

@@ -118,7 +118,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 	action void A_FirePepperSpray(double spread = 2, double spawnheight = 5.5, double spawnofs_xy = 5.7, int projectiles = 10)
 	{
 		A_PepperFlash();
-		for (int i = 0; i < projectiles; i++)
+		while (projectiles > 0)
 		{
 			let proj = A_FirePepperGun(spread, spawnheight, spawnofs_xy, hitscan: false);
 			if (proj)
@@ -130,6 +130,7 @@ class ToM_PepperGrinder : ToM_BaseWeapon
 				proj.bBOUNCEONWALLS = true;
 				proj.bBOUNCEONCEILINGS = true;
 			}
+			projectiles--;
 		}
 		A_StartSound("weapons/pgrinder/fire", CHAN_WEAPON, CHANF_OVERLAP, startTime: 0.1);
 		A_StartSound("weapons/pgrinder/fire", CHAN_WEAPON, CHANF_OVERLAP, startTime: 0.3);
@@ -365,6 +366,8 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 	Default
 	{
 		mass 1;
+		damage 10;
+		speed 60;
 		renderstyle 'Normal';
 		scale 0.16;
 		+FORCEXYBILLBOARD
@@ -377,8 +380,15 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 		ToM_Projectile.flarecolor "fb4834";
 		ToM_Projectile.trailcolor "fb4834";
 		ToM_Projectile.flarescale 0.12;
-		damage 16;
-		speed 60;
+	}
+
+	override int GetProjectileDamage()
+	{
+		if (damage <= 0)
+		{
+			return 0;
+		}
+		return damage + random(0, 10);
 	}
 
 	override int HitVictim(Actor victim)
@@ -386,7 +396,18 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 		int dmg = Super.HitVictim(victim);
 		if (dmg > 0)
 		{
-			SetDamage(damage - int(round(ToM_Utils.LinearMap(victim.GetMaxHealth(true), 60, 500, 1, 10))));
+			int dmgRed = int(round(ToM_Utils.LinearMap(victim.GetMaxHealth(true), 100, 500, default.damage * 0.5, default.damage, true)));
+			SetDamage(damage - dmgRed);
+			/*Console.Printf("\cy%p\c- dealt \cd%d\c- damage to \cd%s\c-. Reduced damage by \cd%d\c- (new value \cd%d\c-)", 
+				Actor(self), 
+				dmg, 
+				victim.GetClassName(),
+				dmgRed,
+				damage);*/
+			if (damage <= 0)
+			{
+				ExplodeMissile();
+			}
 		}
 		return dmg;
 	}

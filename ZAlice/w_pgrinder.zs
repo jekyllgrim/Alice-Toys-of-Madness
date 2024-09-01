@@ -416,17 +416,12 @@ class ToM_PepperProjectile : ToM_PiercingProjectile
 		// Primary-fire projectiles have bNOGRAVITY,
 		// and they shouldn't exhibit any piercing
 		// behavior:
-		if (bNOGRAVITY)
+		if (bNOGRAVITY || damage <= 0)
 		{
 			return MHIT_DEFAULT;
 		}
 
-		int ret = super.SpecialMissileHit(victim);
-		if (damage <= 0)
-		{
-			return MHIT_DEFAULT;
-		}
-		return ret;
+		return super.SpecialMissileHit(victim);
 	}
 	
 	override void PostBeginPlay()

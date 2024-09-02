@@ -888,18 +888,23 @@ class ToM_PlayerCamera : Actor
 		}
 
 		Vector3 cofs = cameraOfs;
-		//cofs.z *= ToM_Utils.LinearMap(alice.pitch + alice.viewpitch, -90, 90, 2.0, -1.0, true);
 		cofs.z *= ToM_Utils.LinearMap(alice.pitch + alice.viewpitch, -90, 90, 1.0, 0, true);
-		SetOrigin(ToM_Utils.RelativeToGlobalCoords(alice, cofs), true);
-		/*if (targetpoint)
+		cofs = ToM_Utils.RelativeToGlobalCoords(alice, cofs);
+
+		SetOrigin(cofs, true);
+		A_SetAngle(alice.angle, SPF_INTERPOLATE);
+		A_SetPitch(alice.pitch, SPF_INTERPOLATE);
+
+		double pz = alice.height*0.7;
+		let camdiff = level.Vec3Diff(alice.pos + (0, 0, pz), cofs);
+		double camdist = camdiff.Length();
+		FLineTraceData tr;
+		alice.LineTrace(alice.angle + 180, camdist, -alice.pitch, flags:TRF_THRUACTORS, offsetz: pz, data: tr);
+		if (tr.Distance < camdist)
 		{
-			A_Face(targetpoint, 0, 0);
+			cofs = level.Vec3Offset(alice.pos + (0, 0, pz), camdiff.Unit() * (tr.Distance - 8));
+			SetOrigin(cofs, true);
 		}
-		else
-		{*/
-			A_SetAngle(alice.angle, SPF_INTERPOLATE);
-			A_SetPitch(alice.pitch, SPF_INTERPOLATE);
-		//}
 	}
 }
 

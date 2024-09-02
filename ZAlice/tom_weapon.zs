@@ -354,6 +354,7 @@ class ToM_BaseWeapon : Weapon abstract
 		let alice = ToM_AlicePlayer(player.mo);
 		if (alice)
 		{
+			//Console.Printf("Applying player animation \cd%s\c-", animName);
 			alice.SetState(alice.MissileState);
 			alice.A_SetTics(animTics);
 			alice.SetAnimation(animName, framerate, startFrame, loopFrame, endFrame, interpolateTics, flags);

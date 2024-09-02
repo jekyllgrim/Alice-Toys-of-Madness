@@ -232,10 +232,29 @@ class ToM_AlicePlayer : DoomPlayer
 		Super.Tick();
 		if (!player) return;
 
+		// Make sure these are always there:
+		if (!FindInventory('ToM_InvReplacementControl'))
+		{
+			GiveInventory('ToM_InvReplacementControl', 1);
+		}
+		if (!FindInventory('ToM_KickWeapon'))
+		{
+			GiveInventory('ToM_KickWeapon', 1);
+		}
+
+		// Prevent Mad Vision shader from being active
+		// if you don't have it (e.g. after loading
+		// a save):
+		if (!FindInventory('ToM_MadVisionEffect') && player == players[consoleplayer])
+		{
+			PPShader.SetEnabled("Alice_ScreenWarp", false);
+		}
+
+		// Update collision during and after Hobby Horse's
+		// alt jump attack:
 		let weap = player.readyweapon;
 		let psp = player.FindPSprite(PSP_WEAPON);
 		doingPlungingAttack = weap && psp && weap is 'ToM_HobbyHorse' && InStateSequence(psp.curstate, weap.FindState("AltFireDo"));
-
 		if (!doingPlungingAttack)
 		{
 			for (int i = collideFilter.Size() - 1; i >= 0; i--)
@@ -254,11 +273,11 @@ class ToM_AlicePlayer : DoomPlayer
 			}
 		}
 
+		// 3rd-person camera and crosshair spot:
 		if (!crosshairSpot)
 		{
 			crosshairSpot = ToM_CrosshairSpot.Create(self);
 		}
-
 		if (!specialCamera)
 		{
 			specialCamera = ToM_PlayerCamera.Create(self);

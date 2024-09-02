@@ -379,7 +379,7 @@ class ToM_RageBoxSelector : ToM_ArtifactSelector
 		owner.player.cheats |= CF_TOTALLYFROZEN;
 		owner.bNODAMAGE = true;
 		owner.vel = (0,0,0);
-		if (!multiplayer && !deathmatch)
+		if (!multiplayer)
 		{
 			owner.bNOTIMEFREEZE = true;
 			Level.SetFrozen(true);

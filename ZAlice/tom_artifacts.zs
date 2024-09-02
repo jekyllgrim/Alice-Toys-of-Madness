@@ -379,8 +379,9 @@ class ToM_RageBoxSelector : ToM_ArtifactSelector
 		owner.player.cheats |= CF_TOTALLYFROZEN;
 		owner.bNODAMAGE = true;
 		owner.vel = (0,0,0);
-		if (!multiplayer)
+		if (!multiplayer && !deathmatch)
 		{
+			owner.bNOTIMEFREEZE = true;
 			Level.SetFrozen(true);
 		}
 	}
@@ -394,6 +395,7 @@ class ToM_RageBoxSelector : ToM_ArtifactSelector
 		prevWeapon = Weapon(owner.FindInventory('ToM_Knife'));
 		owner.player.cheats &= ~CF_TOTALLYFROZEN;
 		owner.bNODAMAGE = false;
+		owner.bNOTIMEFREEZE = false;
 		Level.SetFrozen(false);
 		super.EndSelectorAnimation();
 	}
@@ -440,7 +442,7 @@ class ToM_RageBoxSelector : ToM_ArtifactSelector
 			A_Overlay(APSP_LeftHand, "SelectRageLeftHand");
 			A_OverlayPivot(APSP_LeftHand, -piv.x, piv.y);
 			let alice = ToM_AlicePlayer(self);
-			A_PlayerAttackAnim(-1, "rage_start", loopframe: 51, flags:SAF_LOOP);
+			A_PlayerAttackAnim(-1, 'rage_start', loopframe: 51, flags:SAF_LOOP);
 		}
 		VRAG ABCDEF 2 { player.viewheight -= 2; }
 		VRAG FFFGGGHHHIIIIIIIIIIIIIIIIIIIIIIIIII 5 A_OverlayOffset(OverlayID(), frandom[sfx](-1,1), frandom[sfx](-1,1), WOF_ADD);
@@ -461,7 +463,7 @@ class ToM_RageBoxSelector : ToM_ArtifactSelector
 		#### # 0 
 		{
 			A_OverlayPivot(OverlayID(), 0.6, 0.6);
-			A_PlayerAttackAnim(41, "rage_scream", framerate: 30);
+			A_PlayerAttackAnim(41, 'rage_scream', framerate: 30);
 			ToM_RageBoxEffect.SwapRageModel(self, true);
 		}
 		VRAG JKL 2;

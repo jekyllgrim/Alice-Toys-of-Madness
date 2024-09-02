@@ -913,6 +913,7 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 		+NOBLOCKMAP
 		+BRIGHT
 		+FORCEXYBILLBOARD
+		+INVISIBLEINMIRRORS
 		scale 0.24;
 		+NOTIMEFREEZE
 		radius 4;

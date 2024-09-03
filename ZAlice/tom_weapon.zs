@@ -357,6 +357,10 @@ class ToM_BaseWeapon : Weapon abstract
 			//Console.Printf("Applying player animation \cd%s\c-", animName);
 			alice.SetState(alice.MissileState);
 			alice.A_SetTics(animTics);
+			if (interpolateTics <= 0)
+			{
+				flags |= SAF_INSTANT;
+			}
 			alice.SetAnimation(animName, framerate, startFrame, loopFrame, endFrame, interpolateTics, flags);
 		}
 	}

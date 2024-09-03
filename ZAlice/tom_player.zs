@@ -147,7 +147,7 @@ class ToM_AlicePlayer : DoomPlayer
 		}
 		if (waterLevel >= 2)
 		{
-			SetAnimation('swim_loop', interpolateTics: 10, flags:SAF_LOOP|SAF_NOOVERRIDE);
+			SetAnimation('swim_loop', interpolateTics: 5, flags:SAF_LOOP|SAF_NOOVERRIDE);
 			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 3, 18, minFr, maxFr));
 		}
 		// falling (not jumping)
@@ -155,7 +155,7 @@ class ToM_AlicePlayer : DoomPlayer
 		{
 			if (!InStateSequence(curstate, s_jump))
 			{
-				SetAnimation('jump', startframe: 9, loopframe: 9, interpolateTics: 6, flags:SAF_LOOP|SAF_NOOVERRIDE);
+				SetAnimation('jump', startframe: 9, loopframe: 9, interpolateTics: 6, flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
 				SetStateLabel("JumpLoop");
 			}
 		}
@@ -167,13 +167,13 @@ class ToM_AlicePlayer : DoomPlayer
 		// walking
 		else if (hvel <= 7.5)
 		{
-			SetAnimation(twohanded? 'walk_bigweapon' : 'walk_smallweapon', interpolateTics: 5, flags:SAF_LOOP|SAF_NOOVERRIDE);
+			SetAnimation(twohanded? 'walk_bigweapon' : 'walk_smallweapon', interpolateTics: 5, flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
 			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 2, 7.5, minFr, maxFr));
 		}
 		// running
 		else
 		{
-			SetAnimation(twohanded? 'run_bigweapon' : 'run_smallweapon', flags:SAF_LOOP|SAF_NOOVERRIDE);
+			SetAnimation(twohanded? 'run_bigweapon' : 'run_smallweapon', flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
 			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 7.5, 20, minFr, maxFr));
 		}
 	}

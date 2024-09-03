@@ -3,6 +3,7 @@ Model ToM_AlicePlayer
 	path "Models/alice"
 	Model 0 "alice_base.iqm"
 	Model 2 "alice_leftarm.iqm"
+	Scale 1.0 1.0 1.0
 	MODELSAREATTACHMENTS
 	BaseFrame
 }
@@ -10,11 +11,10 @@ Model ToM_AlicePlayer
 /*
 list of actions:
 
-idle,basepose,walk_smallweapon,walk_bigweapon,run_smallweapon,run_bigweapon,pain,death_faint,death_fall,swim_loop,attack_knife,attack_knife_alt,attack_cards,attack_horse,attack_horse_alt,attack_horse_jump_end,attack_peppergrinder,attack_peppergrinder_alt,attack_teapot,attack_eyestaff,attack_eyestaff_alt_start,attack_eyestaff_alt_end,attack_blunderbuss,jump,jump_air,jump_end,rage_start,rage_scream
+basepose,idle,walk_smallweapon,walk_bigweapon,run_smallweapon,run_bigweapon,pain,death_faint,death_fall,swim_loop,attack_knife,attack_knife2,attack_knife3,attack_knife_alt,attack_claw,attack_claw2,attack_horse,attack_horse2,attack_horse3,attack_horse_alt,attack_horse_jump_end,attack_cards,attack_peppergrinder,attack_peppergrinder_alt,attack_teapot,attack_eyestaff,attack_eyestaff_alt_start,attack_eyestaff_alt_end,attack_blunderbuss,jump,jump_air,jump_end,rage_start,rage_scream
 
-action //dummy action
-idle
 basepose
+idle
 walk_smallweapon
 walk_bigweapon
 run_smallweapon
@@ -24,11 +24,17 @@ death_faint
 death_fall
 swim_loop
 attack_knife
+attack_knife2
+attack_knife3
 attack_knife_alt
-attack_cards
+attack_claw
+attack_claw2
 attack_horse
+attack_horse2
+attack_horse3
 attack_horse_alt
 attack_horse_jump_end
+attack_cards
 attack_peppergrinder
 attack_peppergrinder_alt
 attack_teapot
@@ -39,3 +45,5 @@ attack_blunderbuss
 jump
 jump_air
 jump_end
+rage_start
+rage_scream

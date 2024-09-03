@@ -433,6 +433,7 @@ class ToM_Knife : ToM_BaseWeapon
 				invoker.LeftSlash = false;
 				return ResolveState("ClawDownSlash");
 			}
+			A_PlayerAttackAnim(20, 'attack_claw', 30);
 			invoker.LeftSlash = true;
 			
 			A_OverlayPivot(OverlayID(), 0.5, 0.5);
@@ -472,6 +473,7 @@ class ToM_Knife : ToM_BaseWeapon
 	ClawDownSlash:
 		VCLW A 0 
 		{
+			A_PlayerAttackAnim(20, 'attack_claw2', 30);
 			A_StopPSpriteReset();
 			A_OverlayPivot(OverlayID(), 0.5, 0.5);
 			A_RotatePSprite(OverlayID(), frandom[psprot](-20,0), WOF_INTERPOLATE);
@@ -619,6 +621,7 @@ class ToM_Knife : ToM_BaseWeapon
 	LeftSlash:
 		TNT1 A 0 
 		{
+			A_PlayerAttackAnim(15, 'attack_knife', 40);
 			A_SetKnifeSprite("VKNF", "VKRF");
 			A_OverlayPivot(OverlayID(), 0.5, 0.5);
 			A_RotatePSprite(OverlayID(), frandom[psprot](-20,0), WOF_INTERPOLATE);
@@ -656,6 +659,7 @@ class ToM_Knife : ToM_BaseWeapon
 	RightSlash:
 		TNT1 A 0 
 		{
+			A_PlayerAttackAnim(15, 'attack_knife2', 40);
 			A_SetKnifeSprite("VKNF", "VKRF");
 			A_OverlayPivot(OverlayID(), 0.9, 0.7);
 			A_RotatePSprite(OverlayID(), frandom[psprot](0,20), WOF_INTERPOLATE);
@@ -693,6 +697,7 @@ class ToM_Knife : ToM_BaseWeapon
 	DownSlash:
 		TNT1 A 0 
 		{
+			A_PlayerAttackAnim(15, 'attack_knife3', 40);
 			A_SetKnifeSprite("VKNF", "VKRF");
 			A_OverlayPivot(OverlayID(), 0.5, 1);
 			A_RotatePSprite(OverlayID(), frandom[wrot](-5,25), WOF_INTERPOLATE);

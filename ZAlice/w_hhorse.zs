@@ -493,14 +493,14 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			invoker.combo++;
 			invoker.totalcombo++;
 			if (invoker.combo <= 1) {
-				A_PlayerAttackAnim(30, 'attack_horse', 15);
+				A_PlayerAttackAnim(30, 'attack_horse', 18);
 				return ResolveState("RightSwing");
 			}
 			if (invoker.combo == 2) {
-				A_PlayerAttackAnim(30, 'attack_horse', 15);
+				A_PlayerAttackAnim(30, 'attack_horse2', 18);
 				return ResolveState("LeftSwing");
 			}
-			A_PlayerAttackAnim(40, 'attack_horse', 10);
+			A_PlayerAttackAnim(40, 'attack_horse3', 18);
 			return ResolveState("Overhead");
 		}
 	RightSwing:

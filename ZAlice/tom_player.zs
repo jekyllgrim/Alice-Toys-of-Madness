@@ -70,6 +70,8 @@ class ToM_AlicePlayer : DoomPlayer
 	array <Actor> collideFilter;
 	bool doingPlungingAttack;
 
+	protected int fallingTics;
+
 	protected ToM_PlayerCamera specialCamera;
 	protected ToM_CrosshairSpot crosshairSpot;
 
@@ -137,7 +139,7 @@ class ToM_AlicePlayer : DoomPlayer
 		let weap = ToM_BaseWeapon(player.readyweapon);
 		twohanded = weap && weap.IsTwoHanded;
 
-		// swimming
+		// slow animations down when using Growth cake:
 		double minFr = 15;
 		double maxFr = 40;
 		if (FindInventory('ToM_GrowthPotionEffect'))
@@ -145,6 +147,8 @@ class ToM_AlicePlayer : DoomPlayer
 			minFr *= ToM_GrowthPotionEffect.SPEEDFACTOR;
 			maxFr *= ToM_GrowthPotionEffect.SPEEDFACTOR;
 		}
+
+		// swimming
 		if (waterLevel >= 2)
 		{
 			SetAnimation('swim_loop', interpolateTics: 5, flags:SAF_LOOP|SAF_NOOVERRIDE);
@@ -153,28 +157,42 @@ class ToM_AlicePlayer : DoomPlayer
 		// falling (not jumping)
 		else if (!player.onground && !IsPlayerFlying())
 		{
-			if (!InStateSequence(curstate, s_jump))
+			fallingTics++;
+			// after a few tics, switch to jump animation:
+			if (fallingTics > 14)
 			{
-				SetAnimation('jump', startframe: 9, loopframe: 9, interpolateTics: 6, flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
-				SetStateLabel("JumpLoop");
+				if (!InStateSequence(curstate, s_jump))
+				{
+					SetAnimation('jump', startframe: 9, loopframe: 9, interpolateTics: 10, flags:SAF_LOOP|SAF_NOOVERRIDE);
+					SetStateLabel("JumpLoop");
+				}
+			}
+			// otherwise slow down current falling animation:
+			else
+			{
+				SetAnimationFrameRate(3);
 			}
 		}
-		// standing still
-		else if (hvel <= 0.1)
-		{
-			SetAnimation('basepose', interpolateTics: 10, flags:SAF_LOOP|SAF_NOOVERRIDE);
-		}
-		// walking
-		else if (hvel <= 7.5)
-		{
-			SetAnimation(twohanded? 'walk_bigweapon' : 'walk_smallweapon', interpolateTics: 5, flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
-			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 2, 7.5, minFr, maxFr));
-		}
-		// running
 		else
 		{
-			SetAnimation(twohanded? 'run_bigweapon' : 'run_smallweapon', flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
-			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 7.5, 20, minFr, maxFr));
+			fallingTics = 0;
+			// standing still
+			if (hvel <= 0.1)
+			{
+				SetAnimation('basepose', interpolateTics: 10, flags:SAF_LOOP|SAF_NOOVERRIDE);
+			}
+			// walking
+			else if (hvel <= 7.5)
+			{
+				SetAnimation(twohanded? 'walk_bigweapon' : 'walk_smallweapon', interpolateTics: 5, flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
+				SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 2, 7.5, minFr, maxFr));
+			}
+			// running
+			else
+			{
+				SetAnimation(twohanded? 'run_bigweapon' : 'run_smallweapon', flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
+				SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 7.5, 20, minFr, maxFr));
+			}
 		}
 	}
 

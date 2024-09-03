@@ -127,6 +127,11 @@ class ToM_AlicePlayer : DoomPlayer
 
 	void UpdateMovementAnimation()
 	{
+		if (ToM_Utils.IsVoodooDoll(self))
+		{
+			return;
+		}
+
 		double hvel = vel.xy.Length();
 		bool twohanded;
 		let weap = ToM_BaseWeapon(player.readyweapon);
@@ -230,7 +235,7 @@ class ToM_AlicePlayer : DoomPlayer
 	override void Tick()
 	{
 		Super.Tick();
-		if (!player) return;
+		if (!player || ToM_Utils.IsVoodooDoll(self)) return;
 
 		// Make sure these are always there:
 		if (!FindInventory('ToM_InvReplacementControl'))
@@ -321,8 +326,10 @@ class ToM_AlicePlayer : DoomPlayer
 		super.PlayerThink();
 
 		let player = self.player;
-		if (!player)
+		if (!player || ToM_Utils.IsVoodooDoll(self))
+		{
 			return;
+		}
 		
 		UpdateWeaponModel();
 		// If firing, face the angle (no direction);
@@ -753,7 +760,10 @@ class ToM_AlicePlayer : DoomPlayer
 			if (player.cheats & CF_REVERTPLEASE)
 			{
 				player.cheats &= ~CF_REVERTPLEASE;
-				player.camera = player.mo;
+				if (!ToM_Utils.IsVoodooDoll(self))
+				{
+					player.camera = player.mo;
+				}
 			}
 		}
 	}
@@ -870,7 +880,7 @@ class ToM_PlayerCamera : Actor
 		}
 		else
 		{
-			alice.player.camera = alice;
+			alice.player.camera = alice.player.mo;
 		}
 	}
 

@@ -352,7 +352,7 @@ class ToM_BaseWeapon : Weapon abstract
 	{
 		let player = self.player;
 		let alice = ToM_AlicePlayer(player.mo);
-		if (alice)
+		if (alice && !ToM_Utils.IsVoodooDoll(alice))
 		{
 			//Console.Printf("Applying player animation \cd%s\c-", animName);
 			alice.SetState(alice.MissileState);

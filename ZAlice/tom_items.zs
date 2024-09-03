@@ -577,8 +577,8 @@ class ToM_JackBombPickup : ToM_Inventory
 	{
 		if (owner && owner.player)
 		{
-			owner.SpawnPlayerMissile('ToM_JackBombProjectile');
-			return true;
+			let [p1, p2] = owner.SpawnPlayerMissile('ToM_JackBombProjectile');
+			return p2 != null;
 		}
 		return false;
 	}
@@ -590,7 +590,7 @@ class ToM_JackBombPickup : ToM_Inventory
 	}
 }
 
-class ToM_JackBombProjectile : ToM_BaseActor
+class ToM_JackBombProjectile : Actor
 {
 	const ROTANGSTEP = 360.0 / 24;
 	const MAXLOOPS = 10;
@@ -622,6 +622,8 @@ class ToM_JackBombProjectile : ToM_BaseActor
 		SeeSound "weapons/jackbomb/throw";
 		Speed 20;
 		Scale 1.5;
+		Radius 4;
+		Height 8;
 	}
 
 	Actor A_FireJackFlame(double ang)
@@ -634,6 +636,15 @@ class ToM_JackBombProjectile : ToM_BaseActor
 		if (vel.length() < 3)
 		{
 			bMissile = false;
+		}
+		return MHIT_DEFAULT;
+	}
+
+	override int SpecialMissileHit(Actor victim)
+	{
+		if (victim && (victim.bIsMonster || victim.player) && victim.bShootable)
+		{
+			return MHIT_PASS;
 		}
 		return MHIT_DEFAULT;
 	}

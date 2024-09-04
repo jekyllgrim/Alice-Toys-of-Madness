@@ -253,7 +253,7 @@ class ToM_AlicePlayer : DoomPlayer
 	override void Tick()
 	{
 		Super.Tick();
-		if (!player || ToM_Utils.IsVoodooDoll(self)) return;
+		if (!player || !player.mo || player.mo != self) return;
 
 		// Make sure these are always there:
 		if (!FindInventory('ToM_InvReplacementControl'))
@@ -296,11 +296,7 @@ class ToM_AlicePlayer : DoomPlayer
 			}
 		}
 
-		// 3rd-person camera and crosshair spot:
-		if (!crosshairSpot)
-		{
-			crosshairSpot = ToM_CrosshairSpot.Create(self);
-		}
+		// 3rd-person camera:
 		if (!specialCamera)
 		{
 			specialCamera = ToM_PlayerCamera.Create(self);
@@ -309,49 +305,57 @@ class ToM_AlicePlayer : DoomPlayer
 		{
 			CVar tppMode, tppDist, tppVertOfs, tppHorOfs, tppSwap;
 			tppMode = CVar.GetCVar('tom_tppCamMode', player);
+			// custom 3rd person camera disabled:
 			if (tppMode && tppMode.GetInt() <= 0)
 			{
 				if (player.camera == specialCamera)
 				{
-					player.camera = player.mo;
+					specialCamera.Update(false);
 				}
 				return;
 			}
-			double cDist, cVOfs, cHOfs;
+			// custom 3rd-person camera enabled:
 			tppDist = CVar.GetCVar('tom_tppCamDist', player);
 			tppVertOfs = CVar.GetCVar('tom_tppCamVertOfs', player);
 			tppHorOfs = CVar.GetCVar('tom_tppCamHorOfs', player);
 			tppSwap = CVar.GetCVar('tom_tppSwapShoulder', player);
 			if (tppDist && tppVertOfs && tppHorOfs && tppSwap)
 			{
-				switch (tppMode.GetInt())
-				{
-					case 1:
-						cDist = 112;
-						cVOfs = 132;
-						cHofs = 0;
-						break;
-					case 2:
-						cDist = 96;
-						cVOfs = 128;
-						cHOfs = 32;
-						break;
-					case 3:
-						cDist = Clamp(abs(tppDist.GetFloat()), 32, 256);
-						cVOfs = Clamp(abs(tppVertOfs.GetFloat()), 0, 320);
-						cHOfs = Clamp(tppHorOfs.GetFloat(), -128, 128);
-						break;
-				}
-				if (tppSwap.GetBool())
-				{
-					cHofs = -cHOfs;
-				}
 				if (player.cheats & CF_CHASECAM)
 				{
-
-					specialCamera.Update(true, (-cDist, cHOfs, cVOfs), crosshairSpot);
+					// 3rd-person crosshair spot:
+					if (!crosshairSpot)
+					{
+						crosshairSpot = ToM_CrosshairSpot.Create(self);
+					}
+					Vector3 camOfs;
+					switch (tppMode.GetInt())
+					{
+						case 1:
+							camOfs = (86, 0, 24);
+							break;
+						case 2:
+							camOfs = (70, -28, 12);
+							break;
+						case 3:
+							camOfs.x = Clamp(abs(tppDist.GetFloat()), 32, 256);
+							camOfs.y = Clamp(tppHorOfs.GetFloat(), -128, 128);
+							camOfs.z = Clamp(abs(tppVertOfs.GetFloat()), 0, 84);
+							break;
+					}
+					camOfs.x *= -1;
+					if (tppSwap.GetBool())
+					{
+						camOfs.y *= -1;
+					}
+					// Only apply it if player's camera is set to player pawn (in order to not mess with
+					// camera-related scripts like ACS), OR if camera offsets got updated:
+					if (player.camera == player.mo || (player.camera == specialCamera && camOfs != specialCamera.cameraOfs))
+					{
+						specialCamera.Update(true, camOfs, crosshairSpot);
+					}
 				}
-				else
+				else if (player.camera == specialCamera)
 				{
 					specialCamera.Update(false);
 				}
@@ -906,6 +910,7 @@ class ToM_PlayerCamera : Actor
 	{
 		+NOINTERACTION
 		+NOBLOCKMAP
+		+CAMFOLLOWSPLAYER
 	}
 	
 	static ToM_PlayerCamera Create(Actor who)
@@ -935,11 +940,13 @@ class ToM_PlayerCamera : Actor
 			{
 				cameraOfs = ofs;
 			}
+			alice.viewbob = 0;
 			self.targetPoint = targetpoint;
 		}
 		else
 		{
 			alice.player.camera = alice.player.mo;
+			alice.viewbob = alice.default.viewbob;
 		}
 	}
 
@@ -956,29 +963,7 @@ class ToM_PlayerCamera : Actor
 			return;
 		}
 
-		Vector3 cofs = cameraOfs;
-		cofs.z *= ToM_Utils.LinearMap(alice.pitch + alice.viewpitch, -90, 90, 1.0, 0, true);
-		cofs = ToM_Utils.RelativeToGlobalCoords(alice, cofs);
-
-		A_SetAngle(alice.angle, SPF_INTERPOLATE);
-		A_SetPitch(alice.pitch, SPF_INTERPOLATE);
-
-		double pz = alice.height*0.7;
-		Vector3 fromPlayerPos = alice.Vec3Offset(0, 0, pz);
-		let camdiff = level.Vec3Diff(fromPlayerPos, cofs);
-		double camdist = camdiff.Length();
-		FLineTraceData tr;
-		alice.LineTrace(alice.AngleTo(self),
-			camdist,
-			alice.PitchTo(self, pz),
-			flags:TRF_THRUACTORS,
-			offsetz: pz,
-			data: tr);
-		if (tr.Distance < camdist)
-		{
-			cofs = level.Vec3Offset(fromPlayerPos, camdiff.Unit() * (tr.Distance - 8));
-		}
-		SetOrigin(cofs, true);
+		SetViewPos(cameraOfs);
 	}
 }
 

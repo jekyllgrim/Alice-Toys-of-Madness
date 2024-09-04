@@ -59,7 +59,7 @@ OptionMenu "ToM_Settings"
 	StaticText ""
 
 	Option "$TOM_MENU_TPP_MODE", "tom_tppCamMode", "ToM_TPPCameraModes"
-	Control "$TOM_MENU_TPP_MODE_SHOULDER", "TPPSwapShoulder"
+	Control "$TOM_MENU_TPP_SHOULDERBUT", "TPPSwapShoulder"
 	StaticText ""
 	StaticText "$TOM_MENU_TPP_CUSTOMOPTIONS", darkgrey
 	Slider "$TOM_MENU_TPP_DIST", "tom_tppCamDist", 32, 256, 4, 0, "tom_tppCamMode"

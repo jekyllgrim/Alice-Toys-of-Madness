@@ -5,7 +5,7 @@ user bool tom_cheshire_map = true;
 user bool tom_cheshire_items = true;
 
 user int tom_tppCamMode = 2;
-user float tom_tppCamDist = 96;
-user float tom_tppCamVertOfs = 128;
-user float tom_tppCamHorOfs = 32;
+user float tom_tppCamDist = 86;
+user float tom_tppCamHorOfs = 0;
+user float tom_tppCamVertOfs = 12;
 user bool tom_tppSwapShoulder = false;

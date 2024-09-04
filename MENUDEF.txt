@@ -56,8 +56,24 @@ OptionMenu "ToM_Settings"
 	Option "$TOM_MENU_PARTICLES", "tom_particles", "ToM_ParticleIntensity"
 	Option "$TOM_MENU_CHESHIRE_MAP", "tom_cheshire_map", "OnOff"
 	Option "$TOM_MENU_CHESHIRE_ITEMS", "tom_cheshire_items", "OnOff"
+	StaticText ""
+
+	Option "$TOM_MENU_TPP_MODE", "tom_tppCamMode", "ToM_TPPCameraModes"
+	Control "$TOM_MENU_TPP_MODE_SHOULDER", "TPPSwapShoulder"
+	StaticText ""
+	StaticText "$TOM_MENU_TPP_CUSTOMOPTIONS", darkgrey
+	Slider "$TOM_MENU_TPP_DIST", "tom_tppCamDist", 32, 256, 4, 0, "tom_tppCamMode"
+	Slider "$TOM_MENU_TPP_HOFS", "tom_tppCamHorOfs", -128, 128, 4, 0, "tom_tppCamMode"
+	Slider "$TOM_MENU_TPP_VOFS", "tom_tppCamVertOfs", 0, 320, 4, 0, "tom_tppCamMode"
 }
 
+OptionValue "ToM_TPPCameraModes"
+{
+	0, "$TOM_MENU_TPP_MODE_CHASECAM"
+	1, "$TOM_MENU_TPP_MODE_CLASSIC"
+	2, "$TOM_MENU_TPP_MODE_SHOULDER"
+	3, "$TOM_MENU_TPP_MODE_CUSTOM"
+}
 
 OptionValue "ToM_ParticleIntensity"
 {

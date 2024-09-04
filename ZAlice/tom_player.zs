@@ -307,13 +307,54 @@ class ToM_AlicePlayer : DoomPlayer
 		}
 		else
 		{
-			if (player.cheats & CF_CHASECAM)
+			CVar tppMode, tppDist, tppVertOfs, tppHorOfs, tppSwap;
+			tppMode = CVar.GetCVar('tom_tppCamMode', player);
+			if (tppMode && tppMode.GetInt() <= 0)
 			{
-				specialCamera.Update(true, (-96, 32, 128), crosshairSpot);
+				if (player.camera == specialCamera)
+				{
+					player.camera = player.mo;
+				}
+				return;
 			}
-			else
+			double cDist, cVOfs, cHOfs;
+			tppDist = CVar.GetCVar('tom_tppCamDist', player);
+			tppVertOfs = CVar.GetCVar('tom_tppCamVertOfs', player);
+			tppHorOfs = CVar.GetCVar('tom_tppCamHorOfs', player);
+			tppSwap = CVar.GetCVar('tom_tppSwapShoulder', player);
+			if (tppDist && tppVertOfs && tppHorOfs && tppSwap)
 			{
-				specialCamera.Update(false);
+				switch (tppMode.GetInt())
+				{
+					case 1:
+						cDist = 112;
+						cVOfs = 132;
+						cHofs = 0;
+						break;
+					case 2:
+						cDist = 96;
+						cVOfs = 128;
+						cHOfs = 32;
+						break;
+					case 3:
+						cDist = Clamp(abs(tppDist.GetFloat()), 32, 256);
+						cVOfs = Clamp(abs(tppVertOfs.GetFloat()), 0, 320);
+						cHOfs = Clamp(tppHorOfs.GetFloat(), -128, 128);
+						break;
+				}
+				if (tppSwap.GetBool())
+				{
+					cHofs = -cHOfs;
+				}
+				if (player.cheats & CF_CHASECAM)
+				{
+
+					specialCamera.Update(true, (-cDist, cHOfs, cVOfs), crosshairSpot);
+				}
+				else
+				{
+					specialCamera.Update(false);
+				}
 			}
 		}
 	}

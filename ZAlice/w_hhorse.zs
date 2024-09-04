@@ -48,8 +48,12 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_OverlayRotate(OverlayID(), invoker.curPSProtation + frandom(-rot, rot), WOF_INTERPOLATE);
 			double sc = ToM_Utils.LinearMap(invoker.swingHoldTime, 0, MAXHOLDTIME, 0, 0.05);
 			A_OverlayScale(OverlayID(), invoker.curPSPscale.x + sc, invoker.curPSPscale.y + sc, WOF_INTERPOLATE);
+			self.SetAnimationFrameRate(0);
+			self.tics = -1;
 			return ResolveState(null);
 		}
+		self.SetAnimationFrameRate(18);
+		self.tics = 15;
 		return st;
 	}
 
@@ -493,14 +497,14 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			invoker.combo++;
 			invoker.totalcombo++;
 			if (invoker.combo <= 1) {
-				A_PlayerAttackAnim(30, 'attack_horse', 18);
+				A_PlayerAttackAnim(30, 'attack_horse', 10);
 				return ResolveState("RightSwing");
 			}
 			if (invoker.combo == 2) {
-				A_PlayerAttackAnim(30, 'attack_horse2', 18);
+				A_PlayerAttackAnim(30, 'attack_horse2', 10);
 				return ResolveState("LeftSwing");
 			}
-			A_PlayerAttackAnim(40, 'attack_horse3', 18);
+			A_PlayerAttackAnim(30, 'attack_horse3', 10);
 			return ResolveState("Overhead");
 		}
 	RightSwing:

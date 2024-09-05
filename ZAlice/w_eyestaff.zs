@@ -774,6 +774,7 @@ class ToM_EyestaffBeamTPP : ToM_EyestaffBeam
 	Default
 	{
 		-INVISIBLEINMIRRORS
+		+ONLYVISIBLEINMIRRORS
 	}
 
 	override void UpdateVisibility()

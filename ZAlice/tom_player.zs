@@ -363,6 +363,13 @@ class ToM_AlicePlayer : DoomPlayer
 		}
 	}
 
+	// Safety for cases when you finish the level while frozen
+	// with some effect (like mid-firing Bluderbuss)
+	override void Travelled()
+	{
+		player.cheats &= ~(CF_FROZEN | CF_TOTALLYFROZEN);
+	}
+
 	override int DamageMobj (Actor inflictor, Actor source, int damage, Name mod, int flags, double angle)
 	{
 		int dmg = super.DamageMobj(inflictor, source, damage, mod, flags, angle);

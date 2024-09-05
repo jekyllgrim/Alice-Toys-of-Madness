@@ -57,14 +57,19 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	{
 		if (!owner) return;
 
+		// purple beam:
 		if (!beam1)
 		{
 			beam1 = ToM_EyestaffBeam(ToM_LaserBeam.Create(owner, 10, 4.2, -1.4, type: "ToM_EyestaffBeam"));
 		}
+		// yellow inside beam:
 		if (!beam2)
 		{
-			beam2 = ToM_EyestaffBeam(ToM_LaserBeam.Create(owner, 10, 4.2, -1.25, type: "ToM_EyestaffBeamInner"));
+			beam2 = ToM_EyestaffBeam(ToM_LaserBeam.Create(owner, 10, 4.2, -1.25, type: "ToM_EyestaffBeam"));
+			beam2.shade = "ffee00";
+			beam2.scale.x *= 0.45;
 		}
+		// third-person beam and its attach position:
 		if (!outerBeamPos)
 		{
 			outerBeamPos = ToM_OuterBeamPos(Spawn('ToM_OuterBeamPos', pos));
@@ -72,11 +77,10 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		}
 		if (!outerBeam)
 		{
-			outerBeam = ToM_EyestaffBeam(ToM_LaserBeam.Create(outerBeamPos, 0, 0, 0, type: "ToM_EyestaffBeam"));
+			outerBeam = ToM_EyestaffBeam(ToM_LaserBeam.Create(outerBeamPos, 0, 0, 0, type: "ToM_EyestaffBeamTPP"));
 			outerBeam.master = owner;
-			outerBeam.bMASTERNOSEE = true;
-			outerBeam.source = outerBeamPos;
 		}
+		outerBeam.source = outerBeamPos;
 	}
 	
 	action void A_FireBeam(int damage = 5)
@@ -725,49 +729,56 @@ class ToM_EyestaffBeam : ToM_LaserBeam
 	{
 		ToM_LaserBeam.LaserColor "c334eb";
 		XScale 3.4;
+		+INVISIBLEINMIRRORS
 	}
-	
-	override void PostBeginPlay()
+
+	virtual void UpdateVisibility()
 	{
-		super.PostBeginPlay();
-		if (!bMASTERNOSEE && source && source.player)
+		if (source && source.player && source.player == players[consoleplayer] && source.player.camera == source.player.mo)
 		{
-			if (source.player == players[consoleplayer])
-				bINVISIBLEINMIRRORS = true;
-			else
-				A_SetRenderstyle(alpha, Style_None);
+			renderRequired = 0;
+		}
+		else
+		{
+			renderRequired = -1;
 		}
 	}
 	
 	override void BeamTick()
 	{
-		alpha = 1.0 - 0.5 * ToM_Utils.SinePulse(PULSEFREQ, GetAge());
+		// main beam (purple):
+		if (scale.x >= default.scale.x)
+		{
+			alpha = 1.0 - 0.5 * ToM_Utils.SinePulse(PULSEFREQ, GetAge());
+		}
+		// inner beam (yellow) - its scale gets modified in MakeBeams() in ToM_Eyestaff:
+		else
+		{
+			alpha = 0.3 + 0.3 * ToM_Utils.SinePulse(PULSEFREQ, GetAge());
+		}
 	}
 
-	override vector3 GetSourcePos()
+	override void Tick()
 	{
-		vector3 srcPos = (source.pos.xy, source.pos.z + (source.height * 0.5));
-		// bob only first-person views:
-		if(!bMASTERNOSEE && source.player && source.player.camera == source && !(source.player.cheats & CF_CHASECAM)) 
+		Super.Tick();
+		if (enabled)
 		{
-			srcPos.z = source.player.viewz;
+			UpdateVisibility();
 		}
-		
-		return srcPos;
 	}
 }
 
-class ToM_EyestaffBeamInner : ToM_EyestaffBeam
+// 3rd-person mode beam:
+class ToM_EyestaffBeamTPP : ToM_EyestaffBeam
 {
 	Default
 	{
-		ToM_LaserBeam.LaserColor "ffee00";
-		XScale 1.6;
+		-INVISIBLEINMIRRORS
 	}
-	
-	override void BeamTick()
+
+	override void UpdateVisibility()
 	{
-		alpha = 0.25 + 0.5 * ToM_Utils.SinePulse(PULSEFREQ, GetAge());
+		bONLYVISIBLEINMIRRORS = (master.player == players[consoleplayer] && master.player.camera == master.player.mo);
 	}
 }
 

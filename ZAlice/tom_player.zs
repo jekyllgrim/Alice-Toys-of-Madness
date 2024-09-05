@@ -964,6 +964,7 @@ class ToM_PlayerCamera : Actor
 		}
 
 		SetViewPos(cameraOfs);
+		SetOrigin(alice.pos, true);
 	}
 }
 

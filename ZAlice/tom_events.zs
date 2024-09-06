@@ -1,6 +1,5 @@
 class ToM_Mainhandler : EventHandler
 {
-	ToM_HUDFaceController HUDfaces[MAXPLAYERS];
 	int playerCheshireTimers[MAXPLAYERS];
 	array < Class<Weapon> > mapweapons;
 	array < Actor > allmonsters;
@@ -41,19 +40,6 @@ class ToM_Mainhandler : EventHandler
 //			}
 //		}
 //	}
-	
-	void GiveStartingItems(int playerNumber)
-	{
-		if (!PlayerInGame[playerNumber])
-			return;
-		let plr = players[playerNumber].mo;
-		if (!plr)
-			return;
-		if (IsVoodooDoll(plr))
-			return;
-		plr.GiveInventory("ToM_InvReplacementControl", 1);
-		plr.GiveInventory("ToM_KickWeapon", 1);
-	}
 
 	override void WorldTick()
 	{
@@ -153,26 +139,11 @@ class ToM_Mainhandler : EventHandler
 			allmonsters.Push(thing);
 		}
 	}
-	
+		
 	override void WorldThingDamaged(worldEvent e)
 	{
 		if (!e.thing)
 			return;
-		
-		if (e.thing.player)
-		{
-			int pn = e.thing.PlayerNumber();
-			if (HUDFaces[pn])
-			{
-				double dmgAngle = 0;
-				Actor who = e.inflictor ? e.inflictor : e.damageSource;
-				if (who)
-				{
-					dmgAngle = e.thing.DeltaAngle(e.thing.angle, e.thing.AngleTo(who));
-				}
-				HUDFaces[pn].PlayerDamaged(e.damage, dmgAngle);
-			}
-		}
 
 		// Purple smoke above monsters killed by the Eyestaff beam or projectile:
 		if (e.thing.health <= 0 && e.DamageType == 'Eyestaff')
@@ -203,30 +174,6 @@ class ToM_Mainhandler : EventHandler
 			double force = 10 * distFac * massFac * forceFac;
 			e.thing.Vel3DFromAngle(force, ang, -50);
 		}
-	}
-	
-	override void PlayerSpawned(PlayerEvent e)
-	{
-		GiveStartingItems(e.PlayerNumber);
-		
-		// Spawn HUD face controller for every player:
-		int pn = e.PlayerNumber;
-		if (!PlayerInGame[pn])
-			return;
-
-		let pmo = players[pn].mo;
-		if (!pmo)
-			return;
-
-		if (!HUDfaces[e.PlayerNumber])
-		{
-			HUDfaces[e.PlayerNumber] = ToM_HUDFaceController.Create(players[pn]);
-		}
-	}
-	
-	override void PlayerRespawned(PlayerEvent e)
-	{
-		GiveStartingItems(e.PlayerNumber);
 	}
 	
 	override void PlayerDied(playerEvent e)

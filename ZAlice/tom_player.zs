@@ -56,6 +56,8 @@ class ToM_AlicePlayer : DoomPlayer
 		SI_BowSkull,
 		SI_Hair,
 	}
+
+	protected ToM_HUDFaceController hudFace;
 	
 	protected int curWeaponID;
 	protected vector2 prevMoveDir;
@@ -74,6 +76,11 @@ class ToM_AlicePlayer : DoomPlayer
 
 	protected ToM_PlayerCamera specialCamera;
 	protected ToM_CrosshairSpot crosshairSpot;
+
+	clearscope ToM_HUDFaceController GetHUDFace()
+	{
+		return hudface;
+	}
 
 	Default
 	{
@@ -255,6 +262,11 @@ class ToM_AlicePlayer : DoomPlayer
 		Super.Tick();
 		if (!player || !player.mo || player.mo != self) return;
 
+		if (!hudface)
+		{
+			hudface = ToM_HUDFaceController.Create(self);
+		}
+
 		// Make sure these are always there:
 		if (!FindInventory('ToM_InvReplacementControl'))
 		{
@@ -376,6 +388,20 @@ class ToM_AlicePlayer : DoomPlayer
 		if (dmg > 0)
 		{
 			A_Pain();
+			double dmgAngle = 0;
+			if (flags & DMG_USEANGLE)
+			{
+				dmgAngle = angle;
+			}
+			else
+			{
+				Actor who = inflictor ? inflictor : source;
+				if (who)
+				{
+					dmgAngle = self.DeltaAngle(self.angle, self.AngleTo(who));
+				}
+			}
+			hudface.PlayerDamaged(dmg, dmgAngle);
 		}
 		return dmg;
 	}

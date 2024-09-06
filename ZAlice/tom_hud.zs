@@ -772,29 +772,21 @@ class ToM_AliceHUD : BaseStatusBar
 		// use mirror's background as a mask:
 		ToM_DrawImage("graphics/HUD/mirror_back.png", pos, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		Screen.SetStencil(1, SOP_Keep, SF_AllOn);
-
-		/*int flags = Mugshot.STANDARD;
-		if (CPlayer.cheats & CF_GODMODE || CPlayer.cheats & CF_GODMODE2 || CPLayer.mo.FindInventory("PowerInvulnerable", true) || CPlayer.mo.FindInventory("ToM_RageBoxMainEffect"))
-		{
-			flags = Mugshot.DISABLERAMPAGE;
-		}
-		ToM_DrawTexture(GetMugShot(5, flags), pos + ofs,  DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER, alpha: CPlayer.mo.alpha);*/
 		
 		if (!FaceController)
 		{
-			let handler = ToM_Mainhandler(Eventhandler.Find("ToM_Mainhandler"));
-			if (handler)
-			{
-				FaceController = handler.HUDFaces[CPlayer.mo.PlayerNumber()];
-			}
+			FaceController = ToM_AlicePlayer(CPlayer.mo).GetHUDFace();
 		}
 
-		TextureID face = FaceController.GetFaceTexture();
-		if (face.isValid())
+		else
 		{
-			Vector2 size = TexMan.GetScaledSize(face);
-			double scaleFac = CPlayer.mo.scale.y / CPlayer.mo.default.scale.y;
-			ToM_DrawTexture(face, pos + ofs + (0, size.y*0.5), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER_BOTTOM, alpha:CPlayer.mo.alpha, scale: (scaleFac, scaleFac));
+			TextureID face = FaceController.GetFaceTexture();
+			if (face.isValid())
+			{
+				Vector2 size = TexMan.GetScaledSize(face);
+				double scaleFac = CPlayer.mo.scale.y / CPlayer.mo.default.scale.y;
+				ToM_DrawTexture(face, pos + ofs + (0, size.y*0.5), DI_SCREEN_LEFT_BOTTOM|DI_ITEM_CENTER_BOTTOM, alpha:CPlayer.mo.alpha, scale: (scaleFac, scaleFac));
+			}
 		}
 
 		Screen.EnableStencil(false);
@@ -936,17 +928,17 @@ class ToM_HUDFaceController : Actor
 		YScale 0.834;
 	}
 
-	static ToM_HUDFaceController Create(PlayerInfo player)
+	static ToM_HUDFaceController Create(PlayerPawn ppawn)
 	{
-		if (!player || !player.mo)
+		if (!ppawn || !ppawn.player || !ppawn.player.mo || ppawn.player.mo != ppawn)
 		{
 			return null;
 		}
-		let fc = ToM_HUDFaceController(Actor.Spawn("ToM_HUDFaceController", player.mo.pos));
+		let fc = ToM_HUDFaceController(Actor.Spawn("ToM_HUDFaceController", ppawn.pos));
 		if (fc)
 		{
-			fc.HPlayer = player;
-			fc.HPlayerPawn = player.mo;
+			fc.HPlayerPawn = ppawn;
+			fc.HPlayer = ppawn.player;
 		}
 		return fc;
 	}
@@ -977,6 +969,7 @@ class ToM_HUDFaceController : Actor
 
 	bool HasRageBox()
 	{
+		//Console.Printf("HPlayerPawn %d | has rage box: %d", HPlayerPawn != null, HPlayerPawn != null && (HPlayerPawn.CountInv("ToM_RageBoxSelector") || HPlayerPawn.CountInv("ToM_RageBoxEffect")));
 		return HPlayerPawn && ToM_RageBox.HasRageBox(HPlayerPawn);
 	}
 
@@ -1018,7 +1011,7 @@ class ToM_HUDFaceController : Actor
 	{
 		if (!HPlayer || !HPlayerPawn)
 			return;
-			
+		
 		super.Tick();
 		
 		// Rage box face takes priority:

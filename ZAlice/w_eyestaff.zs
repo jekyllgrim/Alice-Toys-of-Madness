@@ -734,7 +734,7 @@ class ToM_EyestaffBeam : ToM_LaserBeam
 
 	virtual void UpdateVisibility()
 	{
-		if (source && source.player && source.player == players[consoleplayer] && source.player.camera == source.player.mo)
+		if (ToM_Utils.IsInFirstPerson(source))
 		{
 			renderRequired = 0;
 		}
@@ -779,7 +779,7 @@ class ToM_EyestaffBeamTPP : ToM_EyestaffBeam
 
 	override void UpdateVisibility()
 	{
-		bONLYVISIBLEINMIRRORS = (master.player == players[consoleplayer] && master.player.camera == master.player.mo);
+		bONLYVISIBLEINMIRRORS = ToM_Utils.IsInFirstPerson(master);
 	}
 }
 
@@ -1420,6 +1420,6 @@ class ToM_OuterBeamPos : ToM_BaseActor
 		Vector3 ofs;
 		ofs.xy = Actor.RotateVector((master.radius+14, -9.5), master.angle);
 		ofs.z = master.height*0.46;
-		SetOrigin(master.pos + ofs + master.vel, true);
+		SetOrigin(master.Vec3Offset(ofs.x, ofs.y, ofs.z), true);
 	}
 }

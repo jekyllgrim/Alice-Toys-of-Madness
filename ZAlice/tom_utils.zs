@@ -21,6 +21,16 @@ class ToM_Utils
 		return !mo.player || !mo.player.mo || mo.player.mo != mo;
 	}
 
+	static clearscope bool IsInFirstPerson(Actor mo)
+	{
+		return mo && mo.player && 
+			mo.player.mo && 
+			mo.player.mo == mo && 
+			mo.player == players[consoleplayer] && 
+			mo.player.camera == mo && 
+			!(mo.player.cheats & CF_CHASECAM);
+	}
+
 	//By default returns true if ANY of the players has the item.
 	//If 'checkall' argument is true, the function returns true if ALL players have the item.
 	static clearscope bool CheckPlayersHave(Class<Inventory> itm, bool checkall = false)

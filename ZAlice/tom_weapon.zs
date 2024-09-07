@@ -256,20 +256,8 @@ class ToM_BaseWeapon : Weapon abstract
 				puff = Spawn(pufftype, puffpos, ALLOW_REPLACE);
 				if (puff)
 				{
-					if (hit.hittype == TRACE_HitWall)
-					{
-						puffpos = level.Vec3Offset(puffpos, hitnormal * puff.radius);
-					}
-					else if (hit.hittype == TRACE_HitCeiling)
-					{
-						puffpos += level.Vec3Offset(puffpos, hitnormal * puff.height);
-					}
-					else if (hit.hittype == TRACE_HitFloor)
-					{
-						puffpos.z += 1;
-					}
+					puffpos = level.Vec3Offset(puffpos, hitnormal * max(puff.radius, puff.height));
 					puff.SetOrigin(puffpos, false);
-					
 					puff.target = self;
 					puff.A_Face(self, 0, 0);
 					puff.tracer = victim;

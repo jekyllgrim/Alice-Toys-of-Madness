@@ -19,8 +19,6 @@ class ToM_Ammo : Ammo
 		yscale 0.4 / 1.2;
 		+BRIGHT
 		+RANDOMIZE
-		+ROLLSPRITE
-		+ROLLCENTER
 		+FORCEXYBILLBOARD
 		FloatBobStrength 0.65;
 		Inventory.pickupsound "pickups/ammo";
@@ -110,9 +108,7 @@ class ToM_Ammo : Ammo
 			}
 			scale *= 0.2;
 			alpha = 0;
-			//roll = -120;
 			gravity = 0.3;
-			//spriteOffset.Y = 8;
 			if (!manashade)
 			{
 				manashade = Spawn("ToM_ManaShade", pos);
@@ -133,7 +129,7 @@ class ToM_Ammo : Ammo
 			if (manashade)
 				manashade.alpha = Clamp(manashade.alpha - fac, 0., default.alpha);
 			alpha = Clamp(alpha + fac, 0., default.alpha);
-			if (spriteOffset == default.spriteOffset && scale == default.scale && alpha == default.alpha && roll == 0)
+			if (scale.x == default.scale.x && alpha == default.alpha)
 			{
 				if (manashade)
 					manashade.Destroy();

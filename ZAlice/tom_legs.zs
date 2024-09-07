@@ -43,6 +43,7 @@ class ToM_KickWeapon : CustomInventory
 		+INVENTORY.UNDROPPABLE
 		+INVENTORY.UNTOSSABLE
 		+INVENTORY.PERSISTENTPOWER
+		+NOEXTREMEDEATH
 		Inventory.Maxamount 1;
 	}
 	
@@ -70,7 +71,7 @@ class ToM_KickWeapon : CustomInventory
 		if (hitType == ToM_Utils.HT_ShootableThing && hitactor && invoker.kickedActors.Find(hitactor) == invoker.kickedActors.Size())
 		{
 			invoker.kickedActors.Push(hitactor);
-			hitactor.DamageMobj(self, self, 40, 'Normal');
+			hitactor.DamageMobj(invoker, self, 40, 'Melee', DMG_PLAYERATTACK);
 			hitactor.A_StartSound("weapons/kick/hitflesh", CHAN_BODY, CHANF_OVERLAP);
 			if (hitactor.bISMONSTER && !hitactor.bDONTTHRUST && !hitactor.bBOSS && !hitactor.bNOGRAVITY && !hitactor.bFLOAT && hitactor.mass <= 400)
 			{
@@ -94,11 +95,10 @@ class ToM_KickWeapon : CustomInventory
 			[hitType, hitactor] = ToM_Utils.GetHitType(tr);
 			if (hittype == ToM_Utils.HT_Solid)
 			{
-				Vector3 puffpos = tr.hitlocation;
+				let hitnormal = ToM_Utils.GetNormalFromTrace(tr);
+				Vector3 puffpos = level.Vec3Offset( tr.hitlocation, hitnormal * 8);
 				if (tr.HitLine)
 				{
-					let norm = ToM_Utils.GetLineNormal(pos.xy, tr.HitLine);
-					puffpos.xy += norm * 8;
 					tr.HitLine.RemoteActivate(self, tr.LineSide, SPAC_Impact, self.pos);
 				}
 				let spot = Spawn('ToM_DebugSpot', puffpos);
@@ -114,13 +114,17 @@ class ToM_KickWeapon : CustomInventory
 				pp.startalpha = 0.6;
 				pp.fadestep = -1;
 				pp.pos = puffpos;
-				double v = 0.5;
+				double v = 20;
+				double yaw = atan2(hitnormal.y, hitnormal.x);
+				double pch = -atan2(hitnormal.z, hitnormal.xy.Length());
+				Quat orientation = Quat.FromAngles(yaw, pch, 0.0);
 				for (int i = 4; i > 0; i--)
 				{
 					pp.texture = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
 					pp.size = frandom(14, 20);
 					pp.sizestep = pp.size*0.015;
-					pp.vel = (frandom[kickpuff](-v,v), frandom[kickpuff](-v,v), frandom[kickpuff](-v,v));
+					Quat offset = Quat.FromAngles(frandom[puffvis](-v, v), frandom[puffvis](-v, v), 0.0);
+					pp.vel = orientation * offset * (0.5 * frandom[puffvis](0.8, 1.2), 0.0, 0.0);
 					pp.accel = -(pp.vel / pp.lifetime);
 					pp.startroll = frandom[kickpuff](0,360);
 					pp.rollvel = frandom[kikcpuff](-15, 15);

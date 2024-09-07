@@ -371,6 +371,7 @@ weapons/jackbomb/throw			"sounds/jackbomb/jackbomb_toss.wav"
 
 //// ITEMS
 
+pickups/generic/item		"sounds/pickups/generic_pickup.wav"
 pickups/generic				"sounds/pickups/weapon_pickup.wav"
 pickups/generic/powerup		"sounds/pickups/ingame_powerup.ogg"
 pickups/weapon				"sounds/pickups/weaponpickup.ogg"
@@ -412,6 +413,8 @@ giantstep3	"sounds/player/giant_step03.ogg"
 pickups/manachest "sounds/pickups/shrinkflower_open.ogg"
 pickups/allmap	"sounds/pickups/book_open.wav"
 $alias pickups/infrared pickups/generic/powerup
+
+$alias pickups/jackbomb pickups/generic/item
 
 
 //// Cheshire Cat

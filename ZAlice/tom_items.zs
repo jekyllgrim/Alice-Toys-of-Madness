@@ -570,6 +570,7 @@ class ToM_JackBombPickup : ToM_Inventory
 	{
 		Tag "$TOM_ITEM_JACKBOMB";
 		Inventory.pickupmessage "$TOM_ITEM_JACKBOMB";
+		Inventory.pickupsound "pickups/jackbomb";
 		Inventory.amount 1;
 		Inventory.maxamount 15;
 		Inventory.icon "APOWJBOM";
@@ -605,8 +606,11 @@ class ToM_JackBombPickup : ToM_Inventory
 
 	States {
 	Spawn:
-		M000 A -1;
-		stop;
+		M000 A 1
+		{
+			lightlevel = 128 + int(round(128 * ToM_Utils.SinePulse(TICRATE*2, GetAge())));
+		}
+		loop;
 	}
 }
 

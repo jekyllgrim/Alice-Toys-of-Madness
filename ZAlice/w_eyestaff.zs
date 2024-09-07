@@ -83,12 +83,12 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		outerBeam.source = outerBeamPos;
 	}
 	
-	action void A_FireBeam(int damage = 5)
+	action void A_FireBeam(int damage)
 	{
 		if (!self || !self.player)
 			return;
 		
-		if (player.refire % 3 == 0 && !invoker.DepleteAmmo(invoker.bAltFire))
+		if (GetAge() % 4 == 0 && !invoker.DepleteAmmo(invoker.bAltFire))
 		{
 			return;
 		}
@@ -418,7 +418,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 				}
 				A_SoundPitch(CHAN_WEAPON, ToM_Utils.LinearMap(level.maptime, invoker.chargeSndPitchTime, invoker.chargeSndPitchTime + 15, 0.9, 1.0, true));
 			}
-			A_FireBeam();
+			A_FireBeam(7);
 		}
 		#### A 0 A_ReFire("FireBeam");
 		#### A 0 

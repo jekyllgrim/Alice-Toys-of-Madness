@@ -563,6 +563,9 @@ class ToM_Megasphere : ToM_HealthPickup
 
 class ToM_JackBombPickup : ToM_Inventory
 {
+	int throwTimer;
+	const JACKBOMB_FIRERATE = TICRATE * 3;
+
 	Default
 	{
 		Tag "$TOM_ITEM_JACKBOMB";
@@ -573,12 +576,29 @@ class ToM_JackBombPickup : ToM_Inventory
 		Scale 1.5;
 	}
 
+	override void DoEffect()
+	{
+		Super.DoEffect();
+		if (throwTimer > 0)
+		{
+			throwTimer--;
+		}
+	}
+
 	override bool Use(bool pickup)
 	{
+		if (throwTimer > 0)
+		{
+			return false;
+		}
 		if (owner && owner.player)
 		{
 			let [p1, p2] = owner.SpawnPlayerMissile('ToM_JackBombProjectile');
-			return p2 != null;
+			if (p2)
+			{
+				throwTimer = JACKBOMB_FIRERATE;
+			}
+			return throwTimer > 0;
 		}
 		return false;
 	}
@@ -703,7 +723,7 @@ class ToM_JackBombProjectile : Actor
 				return ResolveState("DeathBoom");
 			}
 			A_StartSound("weapons/jackbomb/flame", CHAN_BODY, CHANF_LOOPING);
-			for (double rot = 0; rot < ROTANGSTEP; rot += ROTANGSTEP*0.34)
+			for (double rot = 0; rot < ROTANGSTEP; rot += ROTANGSTEP*0.5)
 			{
 				A_FireJackFlame(rotangle - rot);
 			}
@@ -814,7 +834,7 @@ class ToM_JackbombFlame : ToM_PiercingProjectile
 
 	override int GetProjectileDamage()
 	{
-		return 8;
+		return 3;
 	}
 
 	override int HitVictim(Actor victim)

@@ -12,8 +12,6 @@ class ToM_AliceHUD : BaseStatusBar
 	protected int weakAmmoFrame;
 	protected int mediumAmmoFrame;
 	protected int strongAmmoFrame;
-
-	protected TextureID jackbombTex;
 	
 	protected transient CVar userHudScale;
 	protected transient CVar userOldHudScale;
@@ -100,6 +98,16 @@ class ToM_AliceHUD : BaseStatusBar
 			pos.y *= noYStretch;
 		}
 		DrawInventoryIcon(item, pos, flags, alpha, boxsize, scale);
+	}
+
+	void ToM_Fill(Color col, Vector2 pos, Vector2 size, int flags = 0)
+	{
+		if (IsAspectCorrected()) 
+		{
+			size.y *= noYStretch;
+			pos.y *= noYStretch;
+		}
+		Fill(col, pos.x, pos.y, size.x, size.y, flags);
 	}
 
 	override void DrawPowerups ()
@@ -641,21 +649,29 @@ class ToM_AliceHUD : BaseStatusBar
 			}
 		}
 	}
+
+	void DrawJackBomb(Vector2 pos, int flags, double scale =  1.0)
+	{
+		let jackbomb = ToM_JackBombPickup(CPlayer.mo.FindInventory('ToM_JackBombPickup'));
+		if (!jackbomb || jackbomb.amount <= 0) return;
+
+		TextureID back = TexMan.CheckForTexture("graphics/hud/jackbomb_icon_back.png");
+		TextureID front = TexMan.CheckForTexture("graphics/hud/jackbomb_icon_front.png");
+		Vector2 size = TexMan.GetScaledSize(back) * scale;
+
+		ToM_DrawTexture(back, pos, flags, scale:(scale, scale));
+		if (jackbomb.throwTimer > 0)
+		{
+			double fac = jackbomb.throwTimer / double(ToM_JackBombPickup.JACKBOMB_FIRERATE);
+			ToM_Fill(0xaaa0a0a0, pos + (-size.x, -size.y*fac), (size.x, size.y*fac), flags);
+		}
+		ToM_DrawTexture(front, pos, flags, scale:(scale, scale));
+		ToM_DrawString(hfAsrafel, ""..jackbomb.amount, pos - size + (15,10)*scale, flags|DI_TEXT_ALIGN_CENTER, scale: (0.4, 0.4) * scale);
+	}
 	
 	void DrawRightcorner()
 	{
-		let jackbomb = CPlayer.mo.FindInventory('ToM_JackBombPickup');
-		if (jackbomb && jackbomb.amount > 0)
-		{
-			if (!jackbombTex || !jackbombTex.IsValid())
-			{
-				jackbombTex = TexMan.CheckForTexture("graphics/hud/jackbomb_icon.png");
-			}
-			double sc = 0.75;
-			Vector2 size = TexMan.GetScaledSize(jackbombTex) * sc;
-			ToM_DrawTexture(jackbombTex, (0, -160), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM, scale:(sc, sc));
-			ToM_DrawString(hfAsrafel, ""..jackbomb.amount, (-size.x + 4, -160 - size.y + 4), DI_SCREEN_RIGHT_BOTTOM, translation: Font.CR_RED, scale:(0.5, 0.5));
-		}
+		DrawJackBomb((0, -160), DI_SCREEN_RIGHT_BOTTOM|DI_ITEM_RIGHT_BOTTOM, 0.75);
 
 		vector2 ofs = GetSbarOffsets(right: true);
 	

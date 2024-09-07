@@ -564,7 +564,7 @@ class ToM_Megasphere : ToM_HealthPickup
 class ToM_JackBombPickup : ToM_Inventory
 {
 	int throwTimer;
-	const JACKBOMB_FIRERATE = TICRATE * 3;
+	const JACKBOMB_FIRERATE = 85;
 
 	Default
 	{
@@ -808,8 +808,17 @@ class ToM_JackbombBurnControl : ToM_BurnController
 
 		if (target && owner.health > 0 && (timer % TICRATE == 0))
 		{
-			int fl = (random[tsfx](1,3) == 1) ? 0 : DMG_NO_PAIN;
-			owner.DamageMobj(self, target, 4, "Normal", flags:DMG_THRUSTLESS|fl);
+			int flags = DMG_THRUSTLESS;
+			switch (random[burn](0, 2))
+			{
+				case 1:
+					flags |= DMG_NO_PAIN;
+					break;
+				case 2:
+					bFORCEPAIN = true;
+					break;
+			}
+			owner.DamageMobj(self, target, 5, 'Fire', flags:flags);
 		}
 	}
 }
@@ -834,7 +843,7 @@ class ToM_JackbombFlame : ToM_PiercingProjectile
 
 	override int GetProjectileDamage()
 	{
-		return 3;
+		return 6;
 	}
 
 	override int HitVictim(Actor victim)

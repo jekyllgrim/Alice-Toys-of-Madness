@@ -461,6 +461,8 @@ Class ToM_StaticStuffHandler : StaticEventHandler
 
 class ToM_UiHandler : StaticEventHandler
 {
+	ui bool mainMenuOpened;
+
 	const PCTEX_SIZE = 512;
 	
 	transient Canvas pcCanv_body[MAXPLAYERS];
@@ -559,9 +561,11 @@ class ToM_UiHandler : StaticEventHandler
 			UpdatePlayerColorCanvas(pcCanv_arm[i], tex, playerCol);
 		}
 
-		// Update portrait showin Player Menu:
+		// Update portrait showing Player Menu:
 		if (Menu.GetCurrentMenu())
 		{
+			mainMenuOpened = true;
+
 			let player = players[consoleplayer];
 			if (!portraitTex)
 			{
@@ -580,6 +584,11 @@ class ToM_UiHandler : StaticEventHandler
 			portraitCanvas.Clear(0, 0, portraitSize.x, portraitSize.y, 0xff000000);
 			portraitCanvas.DrawTexture(portraitTexBase, false, 0, 0, DTA_FillColor, player.GetColor());
 			portraitCanvas.DrawTexture(portraitTex, false, 0, 0);
+		}
+
+		else if (!mainMenuOpened && gamestate == GS_TITLELEVEL)
+		{
+			Menu.SetMenu("MainMenu");
 		}
 	}
 }

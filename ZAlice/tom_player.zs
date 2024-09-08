@@ -768,11 +768,13 @@ class ToM_AlicePlayer : DoomPlayer
 
 		player.onground = (pos.z <= floorz) || bOnMobj || bMBFBouncer || (player.cheats & CF_NOCLIP2);
 		
-		// [AA] If the player just landed after a jump and
-		// isn't trying to move, aggressively reduce velocity
-		// to avoid uncontrollable after-jump sliding:
+		// [AA] Counter friction if the player is not moving, or
+		// moving in the opposite direction of their current momentum.
 		bool doBrake;
-		if (player.onground && !waterlevel && player.jumptics > 0)
+		// Do this when landing, or always do this in 3rd person
+		// (better movement control)
+		bool shouldBrake = player.jumptics > 0 || player.cheats & CF_CHASECAM;
+		if (player.onground && !waterlevel && shouldBrake)
 		{
 			// If the player isn't pressing movement keys
 			// at all, let them brake:

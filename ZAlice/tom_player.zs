@@ -63,8 +63,10 @@ class ToM_AlicePlayer : DoomPlayer
 	protected vector2 prevMoveDir;
 	double modelDirection;
 
-	protected state s_jump;
-	protected state s_airjump;
+	protected State s_jump;
+	protected State s_airjump;
+	protected State s_jumpLoop;
+	protected State s_pain;
 	protected int airJumps;
 	protected int airJumpTics;
 	array <ToM_PspResetController> pspcontrols;
@@ -87,6 +89,7 @@ class ToM_AlicePlayer : DoomPlayer
 		+INTERPOLATEANGLES
 		+DECOUPLEDANIMATIONS
 		+DONTTRANSLATE
+		+NOPAIN
 		player.StartItem "ToM_Knife", 1;
 		player.Viewheight 51;
 		player.AttackZOffset 18;
@@ -102,6 +105,8 @@ class ToM_AlicePlayer : DoomPlayer
 
 		s_jump = ResolveState("Jump");
 		s_airjump = ResolveState("JumpAir");
+		s_jumpLoop = ResolveState("JumpLoop");
+		s_pain = ResolveState("Pain");
 
 		String pcTex = ToM_PCANTEX_BODY..PlayerNumber();
 		A_ChangeModel("", skinindex: SI_TorsoLegs, skin: pcTex, flags: CMDL_USESURFACESKIN);
@@ -171,7 +176,7 @@ class ToM_AlicePlayer : DoomPlayer
 				if (!InStateSequence(curstate, s_jump))
 				{
 					SetAnimation('jump', startframe: 9, loopframe: 9, interpolateTics: 10, flags:SAF_LOOP|SAF_NOOVERRIDE);
-					SetStateLabel("JumpLoop");
+					SetState(s_jumpLoop);
 				}
 			}
 			// otherwise slow down current falling animation:
@@ -388,6 +393,10 @@ class ToM_AlicePlayer : DoomPlayer
 		if (dmg > 0)
 		{
 			A_Pain();
+			if (InStateSequence(curstate, spawnstate))
+			{
+				SetState(s_pain);
+			}
 			double dmgAngle = 0;
 			if (flags & DMG_USEANGLE)
 			{
@@ -576,7 +585,10 @@ class ToM_AlicePlayer : DoomPlayer
 			{
 				A_StartSound("*jump", CHAN_BODY);
 			}
-			SetState(s_jump);
+			if (InStateSequence(curstate, spawnstate))
+			{
+				SetState(s_jump);
+			}
 		}
 	}
 
@@ -628,7 +640,10 @@ class ToM_AlicePlayer : DoomPlayer
 			Thrust(sidemove, a);
 		}
 
-		SetState(s_airjump);
+		if (InStateSequence(curstate, spawnstate) || InStateSequence(curstate, s_jump))
+		{
+			SetState(s_airjump);
+		}
 
 		//console.printf("doing jump %d", airJumps);
 
@@ -874,6 +889,10 @@ class ToM_AlicePlayer : DoomPlayer
 	Missile:
 		APLR A 30;
 		goto Spawn;
+	
+	Pain:
+		APLR A 12 SetAnimation('pain');
+		Goto Spawn;
 	
 	Jump:
 		JumpGround:

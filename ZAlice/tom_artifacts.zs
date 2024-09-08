@@ -871,10 +871,12 @@ class ToM_GrowthPotionEffect : Powerup
 		}
 	}
 
-	override void OnDestroy()
+	override void EndEffect()
 	{
 		if (owner && owner.player)
 		{
+			owner.bInvulnerable = false;
+
 			let pmo = owner.player.mo;
 			let weap = owner.player.readyweapon;
 
@@ -914,7 +916,7 @@ class ToM_GrowthPotionEffect : Powerup
 				);
 			}
 		}
-		Super.OnDestroy();
+		Super.EndEffect();
 	}
 }
 

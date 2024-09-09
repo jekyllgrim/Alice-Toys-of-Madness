@@ -921,10 +921,6 @@ class ToM_AlicePlayer : DoomPlayer
 				SetAnimation('jump_end', 30);
 			}
 			goto Spawn;
-	
-	Pain:
-		APLR A 12 SetAnimation('pain');
-		Goto Spawn;
 		
 	Death:
 		APLR A -1

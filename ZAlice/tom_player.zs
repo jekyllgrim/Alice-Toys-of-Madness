@@ -767,41 +767,40 @@ class ToM_AlicePlayer : DoomPlayer
 		}
 
 		player.onground = (pos.z <= floorz) || bOnMobj || bMBFBouncer || (player.cheats & CF_NOCLIP2);
-		
 		// [AA] Counter friction if the player is not moving, or
 		// moving in the opposite direction of their current momentum.
-		bool doBrake;
-		// Do this when landing, or always do this in 3rd person
-		// (better movement control)
-		bool shouldBrake = player.jumptics > 0 || player.cheats & CF_CHASECAM;
-		if (player.onground && !waterlevel && shouldBrake)
+		// Do this after a jump, or, if in 3rd person, always
+		// (because sliding in 3rd person feels awful).
+		if (player.onground && !waterlevel && (player.jumptics > 0 || player.cheats & CF_CHASECAM))
 		{
+			double brakefac = 0.72;
 			// If the player isn't pressing movement keys
 			// at all, let them brake:
 			if (!(cmd.sidemove | cmd.forwardmove))
 			{
-				doBrake = true;
+				vel.xy *= brakefac;
 			}
 			else 
 			{
 				// Compare velocity to controls. If the player is pressing
 				// movement keys in the opposite direction of their
 				// current movement, let them brake:
-				let hvel = ToM_Utils.RelativeToGlobalCoords(self, vel, false);
-				vector2 movevel;
-				moveVel.x = ToM_Utils.LinearMap(cmd.forwardmove, -ToM_MaxMoveInput, ToM_MaxMoveInput, -hvel.x, hvel.x, true);
-				moveVel.y = ToM_Utils.LinearMap(cmd.sidemove, -ToM_MaxMoveInput, ToM_MaxMoveInput, -hvel.y, hvel.y, true);
-				if ( (movevel.x > 0 && hvel.x < 0 || movevel.x < 0 && hvel.x > 0) || (movevel.x > 0 && hvel.x < 0 || movevel.x < 0 && hvel.x > 0) )
+				Vector2 moveVel = vel.xy;
+				moveVel.y *= -1;
+				Vector2 moveInput = Actor.RotateVector((cmd.forwardmove, cmd.sidemove).Unit(), -angle) * vel.Length();
+				//Console.Printf("moveVel: %.2f, %.2f | moveInput: %.2f, %.2f", moveVel.x, moveVel.y, moveInput.x, moveInput.y);
+
+				if (abs(moveVel.x + moveInput.x) < abs(moveVel.x))
 				{
-					//console.printf("forwardmove/sidemove: %.2f, %.2f | vel.xy: %.2f, %.2f", movevel.x, movevel.y, hvel.x, hvel.y);
-					doBrake = true;
+					//vel.x *= brakefac;
+					vel.x = moveInput.x;
+				}
+				if (abs(moveVel.y + moveInput.y) < abs(moveVel.y))
+				{
+					//vel.y *= brakefac;
+					vel.y = -moveInput.y;
 				}
 			}
-		}
-		// Aggressive braking:
-		if (doBrake)
-		{
-			vel.xy *= 0.72;
 		}
 
 		if (cmd.forwardmove | cmd.sidemove)
@@ -861,13 +860,6 @@ class ToM_AlicePlayer : DoomPlayer
 				let a = Angle - 90;
 				Bob(a, cmd.sidemove * bobfactor / 256., false);
 				Thrust(sidemove, a);
-			}
-			
-			// [AA] Slow down the player just after jump if they're not pressing movement keys
-
-			if (!(player.cheats & CF_PREDICTING) && (forwardmove != 0 || sidemove != 0))
-			{
-				PlayRunning ();
 			}
 
 			if (player.cheats & CF_REVERTPLEASE)

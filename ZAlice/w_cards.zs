@@ -55,9 +55,10 @@ class ToM_Cards : ToM_BaseWeapon
 				Console.Printf("\cyCARDS\c- Playing card attack animation on layer \cd%d\c-", invoker.curCardLayer);
 			}
 		}
-		invoker.cardLayerID++;
-		if (invoker.cardLayerID >= invoker.cardLayerNum.Size())
+		if (++invoker.cardLayerID >= invoker.cardLayerNum.Size())
+		{
 			invoker.cardLayerID = 0;
+		}
 	}
 
 	action void A_RotateIdleCard()
@@ -121,31 +122,30 @@ class ToM_Cards : ToM_BaseWeapon
 		player.SetPSPrite(APSP_Card3, ResolveState("RemoveCard"));
 	}
 
-	action Actor A_FindCardTarget(double dist = 2048, double aimAngle = 15)
+	Actor FindCardTarget(double dist = 2048, double aimAngle = 15)
 	{
-		let it = BlockThingsIterator.Create(self, dist);
+		let it = BlockThingsIterator.Create(owner, dist);
 		Actor closest;
 		double closestDist = dist;
-		double atkheight = ToM_Utils.GetPlayerAtkHeight(player.mo);
-		vector3 eyes = pos + (0,0,atkheight);
+		vector3 eyes = owner.Vec3Offset(0,0,ToM_Utils.GetPlayerAtkHeight(owner.player.mo));
 		while (it.Next())
 		{
 			let t = it.thing;
-			if (!t)
+			if (!t || t == owner)
 				continue;
 			
 			if (t.health <= 0 || !t.bSHOOTABLE || t.bNONSHOOTABLE || !(t.bIsMonster || t.player))
 				continue;
 			
-			vector3 coords = Level.SphericalCoords(eyes, t.pos + (0,0,t.height*0.5), (angle, pitch));
+			Vector3 coords = Level.SphericalCoords(eyes, t.Vec3Offset(0,0,t.height*0.5), (owner.angle, owner.pitch));
 			if (coords.z > closestDist)
 				continue;
 			
-			double angFac = ToM_Utils.LinearMap(coords.z + radius + t.radius, 0, dist, 1.0, 0.1);
+			double angFac = ToM_Utils.LinearMap(coords.z + owner.radius + t.radius, 0, dist, 1.0, 0.1);
 			if (abs(coords.x) > aimAngle*angFac || abs(coords.y) > aimAngle*angFac)
 				continue;
 			
-			if (CheckSight(t,SF_IGNOREWATERBOUNDARY))
+			if (owner.CheckSight(t,SF_IGNOREWATERBOUNDARY))
 			{
 				//Console.Printf("Found %s. Coords: %.1f, %.1f, %1.f", t.GetClassName(), coords.x, coords.y, coords.z);
 				closestDist = coords.z;
@@ -166,7 +166,7 @@ class ToM_Cards : ToM_BaseWeapon
 			forward: radius,
 			leftright: xofs,
 			updown: yofs,
-			crosshairConverge: true,
+			crosshairConverge: false,
 			angleoffs: horspread, 
 			pitchoffs: vertspread
 		));
@@ -174,7 +174,7 @@ class ToM_Cards : ToM_BaseWeapon
 		if (proj)
 		{
 			proj.A_StartSound("weapons/cards/fire", pitch:frandom[sfx](0.95, 1.05));
-			proj.tracer = A_FindCardTarget();
+			proj.tracer = invoker.FindCardTarget();
 			//proj.altmode = altmode;
 			
 			int dmg;
@@ -206,11 +206,6 @@ class ToM_Cards : ToM_BaseWeapon
 				}
 			}
 			
-			//let sprt = GetSpriteIndex(spritename);
-			//if (sprt > 0)
-			//{
-			//	proj.sprite = sprt;
-			//}
 			String newskin = String.Format("models/cards/tx%s.png", spritename);
 			if (tom_debugmessages)
 			{
@@ -315,15 +310,19 @@ class ToM_Cards : ToM_BaseWeapon
 		return -1;
 	}
 
+	override void UpdateCrosshairSpot()
+	{
+		Actor trg = FindCardTarget();
+		if (trg && crosshairSpot)
+		{
+			crosshairSpot.Update(ToM_CrosshairSpot.CMODE_Seeker, newtarget: trg);
+		}
+	}
+
 	override void DoEffect()
 	{
 		super.DoEffect();
-		if (!owner || !owner.player)
-			return;
-		
-		let weap = owner.player.readyweapon;
-		if (!weap || weap != self)
-			return;
+		if (!owner || !owner.player || !isSelected) return;
 
 		int d = cardVertStep[0] + 1;
 		

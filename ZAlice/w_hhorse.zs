@@ -263,32 +263,6 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 	}
 
-	/*void DrawEyeFireParticles(Vector3 newpos)
-	{
-		for (int i = 0; i < MAXEYEFIRE-1; i++)
-		{
-			eyeFirePos[i] = eyeFirePos[i+1];
-		}
-		eyeFirePos[MAXEYEFIRE-1] = newPos;
-		for (int i = 0; i < MAXEYEFIRE-1; i++)
-		{
-			Vector3 from = eyeFirePos[i];
-			Vector3 to = eyeFirePos[i+1];
-			if (from != (0,0,0) && to != (0,0,0))
-			{
-				ToM_Utils.DrawParticlesFromTo(from, to, 
-					density: 0.5, 
-					size: 4,
-					lifetime: 12,
-					vel: (0,0,0.1),
-					texture: "LEGYA0",
-					pcolor: 0xffff0066,
-					renderstyle: STYLE_Shaded,
-					style: PBS_Fullbright|PBS_Fade);
-			}
-		}
-	}*/
-
 	action void A_StartJumpAttack()
 	{
 		invoker.combo = 0;
@@ -376,6 +350,11 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 
 		vel.z = 5;
+	}
+
+	override void UpdateCrosshairSpot()
+	{
+		crosshairSpot.Update(ToM_CrosshairSpot.CMODE_Hidden);
 	}
 
 	override void OnDeselect(Actor dropper)

@@ -117,6 +117,11 @@ class ToM_AlicePlayer : DoomPlayer
 		pcTex = ToM_PCANTEX_ARM..PlayerNumber();
 		A_ChangeModel("", skinindex: SI_Arms, skin: pcTex, flags: CMDL_USESURFACESKIN);
 	}
+
+	ToM_CrosshairSpot GetCrosshairSpot()
+	{
+		return crosshairSpot;
+	}
 	
 	bool IsPlayerMoving()
 	{
@@ -1013,6 +1018,21 @@ class ToM_PlayerCamera : Actor
 class ToM_CrosshairSpot : ToM_BaseDebris
 {
 	ToM_AlicePlayer alice;
+	protected Vector3 crosshairTargetPos;
+	protected bool isManualPos;
+	protected double crosshairRadius;
+	protected double crosshairRotAngle;
+	protected Actor crosshairAimActor;
+	private Vector3 prevParticlePos;
+	ECRosshairModes crosshairMode;
+
+	enum ECRosshairModes
+	{
+		CMODE_Normal, //regular spot
+		CMODE_AoE, //circular around a specific point
+		CMODE_Seeker, //circular around a target
+		CMODE_Hidden,
+	}
 
 	Default
 	{
@@ -1046,11 +1066,33 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 		return spot;
 	}
 
+	void Update(int newMode = -1, double newRadius = -1, Actor newTarget = null, Vector3 newPos = (0,0,0))
+	{
+		if (newMode > -1)
+			crosshairMode = newMode;
+		if (newRadius > -1)
+			crosshairRadius = newRadius;
+		if (newTarget)
+			crosshairAimActor = newtarget;
+		if (newPos != (0,0,0))
+		{
+			crosshairTargetPos = newPos;
+			isManualPos = true;
+		}
+	}
+
 	override void Tick()
 	{
 		if (!alice)
 		{
 			Destroy();
+			return;
+		}
+
+		if (crosshairMode == CMODE_Hidden)
+		{
+			renderRequired = -1;
+			crosshairMode = CMODE_Normal;
 			return;
 		}
 
@@ -1069,31 +1111,109 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 			renderRequired = -1;
 		}
 
-		FLineTracedata tr;
-		double atkheight = ToM_Utils.GetPlayerAtkHeight(alice);
-		alice.LineTrace(alice.angle, PLAYERMISSILERANGE, alice.pitch, TRF_SOLIDACTORS, atkheight, data: tr);
-		Vector3 newpos = tr.HitLocation;
-		if (tr.HitType != TRACE_HitNone)
+		Vector3 newpos;
+		// pos is being set by weapon:
+		if (isManualPos)
 		{
-			let norm = ToM_Utils.GetNormalFromTrace(tr);
-			newpos = level.Vec3Offset(tr.HitLocation, norm * 12);
+			newpos = crosshairTargetPos;
+			// reset this (to utilize crosshairTargetPos this flag
+			// has to be set every tic manually - see UpdateCrosshairSpot()
+			// in ToM_BaseWeapon):
+			isManualPos = false;
 		}
-		SetOrigin(newpos, true);
+		else
+		{
+			FLineTracedata tr;
+			double atkheight = ToM_Utils.GetPlayerAtkHeight(alice);
+			alice.LineTrace(alice.angle, PLAYERMISSILERANGE, alice.pitch, TRF_SOLIDACTORS, atkheight, data: tr);
+			newpos = tr.HitLocation;
+			if (tr.HitType != TRACE_HitNone)
+			{
+				let norm = ToM_Utils.GetNormalFromTrace(tr);
+				newpos = level.Vec3Offset(tr.HitLocation, norm * 12);
+			}
+		}
 
+		SetOrigin(newpos, true);
+		if (pos.z < floorz)
+		{
+			SetZ(floorz);
+		}
+
+		// The rest is visuals - skip if not rendered:
+		if (renderRequired < 0)
+		{
+			return;
+		}
+
+		// scale size inversely relative to distance from player:
 		scale.x = scale.y = ToM_Utils.LinearMap(Distance3D(alice), 320, PLAYERMISSILERANGE, default.scale.x, default.scale.x * 16.0, true);
 
 		TextureID tex = curstate.GetSpriteTexture(0);
 		FSpawnParticleParams p;
 		p.color1 = "";
 		p.texture = tex;
-		p.pos = prev;
-		p.lifetime = 10;
 		p.flags = SPF_FULLBRIGHT|SPF_NOTIMEFREEZE;
-		p.startalpha = alpha;
-		p.fadestep = -1;
+		p.startalpha = 1;
 		p.size = TexMan.GetSize(tex) * scale.x;
-		p.style = GetRenderstyle();
-		Level.SpawnParticle(p);
+		p.style = STYLE_Add;
+
+		switch (crosshairMode)
+		{
+			default:
+				alpha = 1;
+				p.fadestep = -1;
+				p.pos = prev;
+				p.lifetime = 10;
+				Level.SpawnParticle(p);
+				break;
+			case CMODE_AoE:
+			case CMODE_Seeker:
+				alpha = 0;
+				p.fadestep = 0;
+				p.lifetime = 2;
+				double angSec;
+				double angStep = 4;
+				double rad;
+				Vector3 targetpos;
+				if (crosshairMode == CMODE_Seeker && crosshairAimActor)
+				{
+					targetpos = crosshairAimActor.Vec3Offset(0, 0, crosshairAimActor.height*0.5);
+					crosshairRadius = crosshairAimActor.radius * 1.5;
+					angSec = 45;
+				}
+				else
+				{
+					targetpos = pos;
+					crosshairRadius = crosshairRadius > 0? crosshairRadius : 32;
+					angSec = 90;
+				}
+				if (prevParticlePos == (0,0,0))
+				{
+					prevParticlePos = targetpos;
+				}
+				p.size *= ToM_Utils.LinearMap(crosshairRadius, 16, 128, 0.3, 1.0, true);
+				// set position to prev, then give vel towards current
+				// to force interpolation:
+				p.vel = level.Vec3Diff(prevParticlePos, targetpos);
+				p.pos.z = prevParticlePos.z;
+				for (double i = 0; i < angSec; i += angStep)
+				{
+					Vector2 ofs = Actor.RotateVector((crosshairRadius, 0), crosshairRotAngle + i);
+					p.pos.xy = Level.Vec2Offset(prevParticlePos.xy, ofs);
+					Level.SpawnParticle(p);
+					p.pos.xy = Level.Vec2Offset(prevParticlePos.xy, -ofs);
+					Level.SpawnParticle(p);
+					p.startalpha -= 1.0 / (angSec / angStep);
+				}
+				crosshairRotAngle -= 8;
+				prevParticlePos = targetpos;
+		}
+		// reset everything
+		// weapons need to call UpdateCrosshairSpot() every tic
+		// in order to override this and apply custom mode:
+		crosshairMode = CMODE_Normal;
+		crosshairAimActor = Actor(null);
 	}
 	
 	States

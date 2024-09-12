@@ -10,10 +10,13 @@ class ToM_BaseWeapon : Weapon abstract
 	protected int particleLayer_bottom; //used by multi-layer particle effects
 	protected int particleLayer_top; //used by multi-layer particle effects
 	protected double atkzoom;
+
 	protected int atkButtonState;
 	protected int atkButtonStateAlt;
 	protected Array<int> recentAtkButtons; //tracks the last presses
 	const TRACKED_ATK_BUTTONS_MAX = 10;
+
+	ToM_CrosshairSpot crosshairSpot;
 	
 	color pickupParticleColor;
 	Property PickupParticleColor : pickupParticleColor;
@@ -1023,6 +1026,7 @@ class ToM_BaseWeapon : Weapon abstract
 	override void OnDrop (Actor dropper)
 	{
 		OnRemoval(dropper);
+		dropper.SetState(dropper.spawnstate);
 		Super.OnDrop(dropper);
 	}
 
@@ -1039,6 +1043,9 @@ class ToM_BaseWeapon : Weapon abstract
 		}
 		return Super.Use(pickup);
 	}
+
+	virtual void UpdateCrosshairSpot()
+	{}
 	
 	override void DoEffect()
 	{
@@ -1055,11 +1062,20 @@ class ToM_BaseWeapon : Weapon abstract
 		let player = owner.player;
 		if (!player) return;
 
+		if (!crosshairSpot)
+		{
+			crosshairSpot = ToM_AlicePlayer(owner).GetCrosshairSpot();
+		}
+
 		let weap = owner.player.readyweapon;
 
 		if (weap && weap == self &&  owner.health > 0)
 		{
 			isSelected = true;
+			if (crosshairSpot)
+			{
+				UpdateCrosshairSpot();
+			}
 		}
 		else
 		{

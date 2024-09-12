@@ -33,17 +33,31 @@ class ToM_Teapot : ToM_BaseWeapon
 		weapon.ammogive1 100;
 		+WEAPON.ALT_AMMO_OPTIONAL
 	}
-	
+
+	override void UpdateCrosshairSpot()
+	{
+		let teaProjDef = GetDefaultByType('ToM_TeaProjectile');
+		if (!teaProjDef) return;
+		Vector3 ppos = owner.Vec3Offset(0, 0, ToM_Utils.GetPlayerAtkHeight(owner.player.mo) + 5);
+		let hook = Spawn('ToM_TeapotAimHook', ppos);
+		if (!hook) return;
+		hook.target = owner;
+		hook.A_SetSize(teaProjDef.radius, teaProjDef.height);
+		hook.gravity = teaProjDef.gravity;
+		// a copy of how the original projectile is launched, more or less:
+		double pitchOfs = -11;
+		if (owner.pitch < 0)
+			pitchOfs = ToM_Utils.LinearMap(owner.pitch, 0, -90, pitchOfs, 0);
+		hook.Vel3DFromAngle(teaProjDef.speed, owner.angle, owner.pitch + pitchOfs);
+	}
 	
 	override void DoEffect()
 	{
 		super.DoEffect();
-		if (!owner || !owner.player)
-			return;
+		if (!owner || !owner.player) return;
 			
 		let weap = owner.player.readyweapon;
-		if (!weap)
-			return;
+		if (!weap) return;
 		
 		/*if (tom_debugmessages > 1 && weap == self)
 		{
@@ -531,6 +545,61 @@ class ToM_TeaBurnLayer : ToM_ActorLayer
 	{
 		Translation "ToM_GreenTea";
 		ToM_ActorLayer.Fade 0.075;
+	}
+}
+
+class ToM_TeapotAimHook : Actor
+{
+	Default
+	{
+		+MISSILE
+		+NOBLOCKMAP
+		+BRIGHT
+		Damage 0;
+	}
+
+	override void Tick()
+	{
+		while (InStateSequence(curstate, spawnstate))
+		{
+			Vector3 nextpos = Vec3Offset(vel.x, vel.y, vel.z);
+			if (!CheckMove(nextpos.xy) || !level.IsPointInLevel(nextpos) || !TestMobjLocation())
+			{
+				A_Stop();
+				SetStateLabel("Death");
+				break;
+			}
+			vel.z -= GetGravity();
+			SetOrigin(nextpos, false);
+		}
+		if (InStateSequence(curstate, FindState("Death")))
+		{
+			Super.Tick();
+		}
+	}
+
+	States {
+	Spawn:
+		TNT1 A -1;
+		stop;
+	Death:
+		TNT1 A 1
+		{
+			if (pos.z < floorz) 
+			{
+				SetZ(floorz);
+			}
+			let alice = ToM_AlicePlayer(target);
+			if (target)
+			{
+				let spot = alice.GetCrosshairSpot();
+				if (spot)
+				{
+					spot.Update(ToM_CrosshairSpot.CMODE_AoE, newRadius: 64, newPos: pos);
+				}
+			}
+		}
+		stop;
 	}
 }
 	

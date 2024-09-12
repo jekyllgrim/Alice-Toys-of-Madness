@@ -5,6 +5,7 @@ class ToM_AlicePlayer : DoomPlayer
 	const AIRJUMPTICTHRESHOLD = -4;
 	const AIRJUMPFACTOR = 0.8;
 	const BASEMODELPATH = "models/alice";
+	const MAXCOYOTETIME = 10;
 
 	static const name leaftex[] =
 	{ 
@@ -75,6 +76,8 @@ class ToM_AlicePlayer : DoomPlayer
 	bool doingPlungingAttack;
 
 	protected int fallingTics;
+	protected uint coyoteTime;
+	protected double coyoteZ;
 
 	protected ToM_PlayerCamera specialCamera;
 	protected ToM_CrosshairSpot crosshairSpot;
@@ -172,7 +175,7 @@ class ToM_AlicePlayer : DoomPlayer
 			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 3, 18, minFr, maxFr));
 		}
 		// falling (not jumping)
-		else if (!player.onground && !IsPlayerFlying())
+		else if (!player.onground && !coyoteTime && !IsPlayerFlying())
 		{
 			fallingTics++;
 			// after a few tics, switch to jump animation:
@@ -271,6 +274,11 @@ class ToM_AlicePlayer : DoomPlayer
 	{
 		Super.Tick();
 		if (!player || !player.mo || player.mo != self) return;
+
+		if (coyoteTime)
+		{
+			coyoteTime--;
+		}
 
 		if (!hudface)
 		{
@@ -470,6 +478,7 @@ class ToM_AlicePlayer : DoomPlayer
 		if (player.onground || waterlevel > 0)
 		{
 			ResetAirJump();
+			coyoteTime = 0;
 		}
 
 		double downlim = -6;
@@ -565,8 +574,10 @@ class ToM_AlicePlayer : DoomPlayer
 		{
 			Vel.Z = 3.;
 		}
-		else if (level.IsJumpingAllowed() && player.onground && player.jumpTics == 0)
+		else if (level.IsJumpingAllowed() && (player.onground || coyoteTime) && player.jumpTics == 0)
 		{
+			coyoteTime = 0;
+
 			double jumpvelz = JumpZ * 35 / TICRATE;
 			double jumpfac = 0;
 
@@ -613,6 +624,8 @@ class ToM_AlicePlayer : DoomPlayer
 		{
 			return;
 		}
+
+		coyoteTime = 0;
 
 		A_StartSound("alice/jumpair", CHAN_BODY);
 		airJumps++;
@@ -702,23 +715,36 @@ class ToM_AlicePlayer : DoomPlayer
 
 	override void FallAndSink(double grav, double oldfloorz)
 	{
-		let player = self.player;
-		bool done = false;
+		if (coyoteTime)
+		{
+			return;
+		}
 
 		// [AA] No falling in water if the player is
 		// moving:
 		if (waterlevel > 1 && vel.x != 0 && vel.y != 0)
 		{
-			done = true;
+			return;
 		}
 
-		else if (pos.z > floorz && waterlevel == 0 && !bNOGRAVITY)
+		let player = self.player;
+		bool done = false;
+
+		if (pos.z > floorz && waterlevel == 0 && !bNOGRAVITY)
 		{
 			// Handling for crossing ledges:
 			if (vel.z == 0 && pos.z == oldfloorz && oldfloorz > floorz)
 			{
-				vel.z -= grav * 1.; //[AA] default was * 2
-				done = true;
+				if (player.jumptics == 0)
+				{
+					coyoteTime = MAXCOYOTETIME;
+					done = true;
+				}
+				else
+				{
+					vel.z -= grav * 1.; //[AA] default was * 2
+					done = true;
+				}
 			}
 			// reduced gravity effect when jumping:
 			else if (player.jumptics != 0)
@@ -830,7 +856,8 @@ class ToM_AlicePlayer : DoomPlayer
 				// [AA] Aircontrol doesn't apply for a few tics after
 				// an air jump (see airJumpTics), to let the player
 				// reorient themselves when performing it:
-				if (airJumpTics <= 0)
+				// (also don't apply aircontrol during coyote time)
+				if (airJumpTics <= 0 && !coyoteTime)
 				{
 					movefactor *= aircontrol;
 					bobfactor*= aircontrol;

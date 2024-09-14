@@ -3,13 +3,24 @@
 
 Model ToM_Knife
 {
-	Model 0 "models/knife/vorpal_knifeMR.md3"
-	Skin 0 "models/knife/VorpalBlade2_DM.png"
+	Model 0 "models/knife/vorpal_knifeMR.obj"
+	Skin 0 "models/alice/weapons/VorpalBlade2_DM.png"
 	Offset 0 0 64
 	Scale 1.8 1.8 1.8
 	PitchOffset 100
 	ROTATING
 	Rotation-Speed 1
+	FrameIndex M000 A 0 0
+}
+Model ToM_KnifeProjectileModel 
+{
+	CORRECTPIXELSTRETCH
+	Model 0 "models/knife/vorpal_knifeMR.obj"
+	Skin 0 "models/alice/weapons/VorpalBlade2_DM.png"
+	Offset 12 0 0
+	USEACTORPITCH
+	USEACTORROLL
+	
 	FrameIndex M000 A 0 0
 }
 Model ToM_HobbyHorse
@@ -80,21 +91,6 @@ Model ToM_Blunderbuss
 	Scale 2.5 2.5 2.5
 	ROTATING
 	Rotation-Speed 1
-	FrameIndex M000 A 0 0
-}
-
-
-Model ToM_KnifeProjectileModel 
-{
-	CORRECTPIXELSTRETCH
-	path "Models/Knife"
-	Model 0 "vorpal_knifeMR.md3"
-	Skin 0 "VorpalBlade2_DM.png"
-	Scale 1 1 1
-	Offset 12 0 0
-	USEACTORPITCH
-	USEACTORROLL
-	
 	FrameIndex M000 A 0 0
 }
 

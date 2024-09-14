@@ -11,19 +11,26 @@ class ToM_Mainhandler : EventHandler
 		return ToM_Utils.IsVoodooDoll(mo);
 	}
 
-//	override void NetworkProcess(consoleevent e)
-//	{
-//		if (!PlayerInGame[e.Player] || e.Player < 0)
-//			return;
-//		
-//		let plr = players[e.Player].mo;
-//		if (!plr)
-//			return;
-//		
-//		string lcname = e.name.MakeLower();
-//
+	override void NetworkProcess(consoleevent e)
+	{
+		if (!PlayerInGame[e.Player] || e.Player < 0)
+			return;
+		
+		let plr = players[e.Player].mo;
+		if (!plr)
+			return;
+		
+		// Swap TPP camera shoulder:
+		if (e.name ~== "SwapShoulderCamera" && (plr.player.cheats & CF_CHASECAM))
+		{
+			let alice = ToM_AlicePlayer(plr);
+			if (!alice) return;
+			alice.isCamShoulderSwapped = !alice.isCamShoulderSwapped;
+			alice.camShoulderSwapTics = ToM_AlicePlayer.SHOULDERSWAPTIME;
+		}
+
 // 		FOV test:
-//		if (lcname.IndexOf("weapfov") >= 0)
+//		if (e.name.MakeLower().IndexOf("weapfov") >= 0)
 //		{
 //			let weap = plr.player.readyweapon;
 //			if (weap)
@@ -39,7 +46,7 @@ class ToM_Mainhandler : EventHandler
 //				console.printf("%s FOVscale: %.2f", weap.GetTag(), weap.FOVScale);
 //			}
 //		}
-//	}
+	}
 
 	override void WorldTick()
 	{

@@ -6,6 +6,7 @@ class ToM_AlicePlayer : DoomPlayer
 	const AIRJUMPFACTOR = 0.8;
 	const BASEMODELPATH = "models/alice";
 	const MAXCOYOTETIME = 10;
+	const SHOULDERSWAPTIME = 4;
 
 	static const name leaftex[] =
 	{ 
@@ -80,6 +81,8 @@ class ToM_AlicePlayer : DoomPlayer
 	protected double coyoteZ;
 
 	protected ToM_PlayerCamera specialCamera;
+	bool isCamShoulderSwapped;
+	uint camShoulderSwapTics;
 	protected ToM_CrosshairSpot crosshairSpot;
 
 	clearscope ToM_HUDFaceController GetHUDFace()
@@ -125,7 +128,7 @@ class ToM_AlicePlayer : DoomPlayer
 	{
 		return crosshairSpot;
 	}
-	
+
 	bool IsPlayerMoving()
 	{
 		let player = self.player;
@@ -348,8 +351,7 @@ class ToM_AlicePlayer : DoomPlayer
 			tppDist = CVar.GetCVar('tom_tppCamDist', player);
 			tppVertOfs = CVar.GetCVar('tom_tppCamVertOfs', player);
 			tppHorOfs = CVar.GetCVar('tom_tppCamHorOfs', player);
-			tppSwap = CVar.GetCVar('tom_tppSwapShoulder', player);
-			if (tppDist && tppVertOfs && tppHorOfs && tppSwap)
+			if (tppDist && tppVertOfs && tppHorOfs)
 			{
 				if (player.cheats & CF_CHASECAM)
 				{
@@ -374,9 +376,19 @@ class ToM_AlicePlayer : DoomPlayer
 							break;
 					}
 					camOfs.x *= -1;
-					if (tppSwap.GetBool())
+					if (camShoulderSwapTics)
 					{
-						camOfs.y *= -1;
+						camOfs.y = ToM_Utils.LinearMap(camShoulderSwapTics, 
+							SHOULDERSWAPTIME, 
+							0, 
+							isCamShoulderSwapped? camOfs.y : -camOfs.y,
+							isCamShoulderSwapped? -camOfs.y : camOfs.y,
+							true);
+						camShoulderSwapTics--;
+					}
+					else if (isCamShoulderSwapped)
+					{
+						camOfs.y = -camOfs.y;
 					}
 					// Only apply it if player's camera is set to player pawn (in order to not mess with
 					// camera-related scripts like ACS), OR if camera offsets got updated:

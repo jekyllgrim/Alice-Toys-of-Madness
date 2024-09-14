@@ -6,5 +6,5 @@ alias ThrowJackbomb "use ToM_JackbombPickup"
 addMenuKey "$TOM_JACKBOMB_THROW" ThrowJackbomb
 defaultbind G ThrowJackbomb
 
-alias TPPSwapShoulder "toggle tom_tppSwapShoulder"
+alias TPPSwapShoulder "netevent SwapShoulderCamera"
 defaultBind V TPPSwapShoulder

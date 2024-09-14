@@ -819,17 +819,31 @@ class ToM_AlicePlayer : DoomPlayer
 				Vector2 moveVel = vel.xy;
 				moveVel.y *= -1;
 				Vector2 moveInput = Actor.RotateVector((cmd.forwardmove, cmd.sidemove).Unit(), -angle) * vel.Length();
-				//Console.Printf("moveVel: %.2f, %.2f | moveInput: %.2f, %.2f", moveVel.x, moveVel.y, moveInput.x, moveInput.y);
 
+				// In 3rd person movement-based braking means your velocity is inverted, letting you
+				// instantly change directions.
+				// In 1st person movement-based braking simply slows your speed down.
 				if (abs(moveVel.x + moveInput.x) < abs(moveVel.x))
 				{
-					//vel.x *= brakefac;
-					vel.x = moveInput.x;
+					if (player.cheats & CF_CHASECAM)
+					{
+						vel.x = moveInput.x;
+					}
+					else
+					{
+						vel.x *= brakefac;
+					}
 				}
 				if (abs(moveVel.y + moveInput.y) < abs(moveVel.y))
 				{
-					//vel.y *= brakefac;
-					vel.y = -moveInput.y;
+					if (player.cheats & CF_CHASECAM)
+					{
+						vel.y = -moveInput.y;
+					}
+					else
+					{
+						vel.y *= brakefac;
+					}
 				}
 			}
 		}

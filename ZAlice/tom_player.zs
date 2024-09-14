@@ -68,14 +68,14 @@ class ToM_AlicePlayer : DoomPlayer
 	protected State s_airjump;
 	protected State s_jumpLoop;
 	protected State s_pain;
-	protected int airJumps;
-	protected int airJumpTics;
+	protected uint airJumps;
+	protected uint airJumpTics;
 	array <ToM_PspResetController> pspcontrols;
 
 	array <Actor> collideFilter;
 	bool doingPlungingAttack;
 
-	protected int fallingTics;
+	protected uint fallingTics;
 	protected uint coyoteTime;
 	protected double coyoteZ;
 
@@ -867,11 +867,12 @@ class ToM_AlicePlayer : DoomPlayer
 				{
 					aircontrol *= 50;
 				}
-				// [AA] Aircontrol doesn't apply for a few tics after
+				// [AA] Don't apply air control for a few tics after
 				// an air jump (see airJumpTics), to let the player
-				// reorient themselves when performing it:
-				// (also don't apply aircontrol during coyote time)
-				if (airJumpTics <= 0 && !coyoteTime)
+				// reorient themselves when performing it.
+				// Also don't apply aircontrol if we're NOT jumping
+				// but in coyote time:
+				if (airJumpTics <= 0 || (!coyoteTime  && player.jumptics == 0))
 				{
 					movefactor *= aircontrol;
 					bobfactor*= aircontrol;

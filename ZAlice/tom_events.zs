@@ -96,7 +96,7 @@ class ToM_Mainhandler : EventHandler
 					closestDist = mo.Distance3D(am);
 				}
 			}
-			double jackchance = ToM_Utils.LinearMap(closestDist, 320, 2048, 0, 5, true);
+			double jackchance = ToM_Utils.LinearMap(closestDist, 320, 2048, 0, 7.5, true);
 			if (jackchance > frandom[jbombspawn](0, 10))
 			{
 				Vector3 ppos = ToM_Utils.FindRandomPosAround(am.pos, 256, 48, maxHeightDiff: 32);

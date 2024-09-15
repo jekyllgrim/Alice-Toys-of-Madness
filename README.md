@@ -50,6 +50,8 @@ Play as Alice and lay waste to the demons! Features unique weapons, some unique 
 
 * Quick kick: At any time Alice can perform this elegant move to deal damage and push threats away.
 
+* Jackbomb: a throwable jack-in-the-box that will spray flames all around before exploding.
+
 ### Unique powerups
 
 * The Cake (replaces Invulnerability Sphere): It makes you grow, turning kicks into stomps, and enemy attacks into harmless tickling.
@@ -71,7 +73,7 @@ Released versions should be the most stable and bug-free ones. Some releases are
 gzdoom.exe -file AliceToysOfMadness###.pk3
 ```
 
-(`###` in the example above stand for the version number, e.g. 130 for version 1.3.0)
+(`###` in the example above stand for the version number, e.g. 100 for version 1.0.0)
 
 ### How to play the freshest dev build
 

@@ -1,2 +1,2 @@
-STARTUPTITLE="Alice: Toys of Madness 0.9.0"
+STARTUPTITLE="Alice: Toys of Madness 1.0.0"
 STARTUPCOLORS="8080CC","000000"

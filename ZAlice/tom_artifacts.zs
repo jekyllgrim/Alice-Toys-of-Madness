@@ -1412,4 +1412,24 @@ class ToM_RadSuitEffect : PowerIronFeet
 	{
 		Inventory.Icon "APOWSHEL";
 	}
+
+	override void InitEffect()
+	{
+		Super.InitEffect();
+		let alice = ToM_AlicePlayer(owner);
+		if (alice)
+		{
+			alice.A_ChangeModel("", ToM_AlicePlayer.MI_MockShell, modelpath: ToM_AlicePlayer.BASEMODELPATH, model: "mockshell.iqm");
+		}
+	}
+
+	override void EndEffect()
+	{
+		let alice = ToM_AlicePlayer(owner);
+		if (alice)
+		{
+			alice.A_ChangeModel("", ToM_AlicePlayer.MI_MockShell, flags: CMDL_HIDEMODEL);
+		}
+		Super.EndEffect();
+	}
 }

@@ -42,10 +42,11 @@ class ToM_AlicePlayer : DoomPlayer
 
 	enum EModelIndexes
 	{
-		MI_Character   = 0,
-		MI_Weapon      = 1,
-		MI_LeftArm     = 2,
-		MI_RageParts   = 3,
+		MI_Character,
+		MI_Weapon,
+		MI_LeftArm,
+		MI_RageParts,
+		MI_MockShell,
 	}
 
 	enum ESurfaceIndexes

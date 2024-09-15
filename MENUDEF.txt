@@ -58,6 +58,9 @@ OptionMenu "ToM_Settings"
 	Option "$TOM_MENU_CHESHIRE_ITEMS", "tom_cheshire_items", "OnOff"
 	StaticText ""
 
+	Option "$TOM_MENU_CROSSHAIRMODE", "tom_tppCrosshair", "ToM_CrosshairModes"
+	StaticText ""
+
 	Option "$TOM_MENU_TPP_MODE", "tom_tppCamMode", "ToM_TPPCameraModes"
 	Control "$TOM_MENU_TPP_SHOULDERBUT", "TPPSwapShoulder"
 	StaticText ""
@@ -65,6 +68,13 @@ OptionMenu "ToM_Settings"
 	Slider "$TOM_MENU_TPP_DIST", "tom_tppCamDist", 32, 256, 4, 0, "tom_tppCamMode"
 	Slider "$TOM_MENU_TPP_HOFS", "tom_tppCamHorOfs", -128, 128, 4, 0, "tom_tppCamMode"
 	Slider "$TOM_MENU_TPP_VOFS", "tom_tppCamVertOfs", 0, 320, 4, 0, "tom_tppCamMode"
+}
+
+OptionValue "ToM_CrosshairModes"
+{
+	0, "$TOM_MENU_CROSSHAIRMODE_OFF"
+	1, "$TOM_MENU_CROSSHAIRMODE_TPP"
+	2, "$TOM_MENU_CROSSHAIRMODE_ALWAYS"
 }
 
 OptionValue "ToM_TPPCameraModes"

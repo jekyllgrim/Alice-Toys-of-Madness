@@ -18,6 +18,11 @@ class ToM_Blunderbuss : ToM_BaseWeapon
 		weapon.ammouse1 60;
 		weapon.ammogive1 100;
 	}
+
+	override void UpdateCrosshairSpot()
+	{
+		crosshairSpot.Update(specialsprite: "AMCRY0");
+	}
 	
 	action void A_FireBlunderbuss()
 	{

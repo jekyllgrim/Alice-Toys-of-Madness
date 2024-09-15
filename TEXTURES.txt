@@ -35,6 +35,13 @@ Sprite "AMCRX0", 64, 64
 	Patch "PATCHES/AMACROSSH.PNG", 0, 0
 }
 
+Sprite "AMCRY0", 64, 64
+{
+	YScale 1.200
+	Offset 32, 33
+	Patch "PATCHES/AMACROSSHBB.PNG", 0, 0
+}
+
 Sprite "LGMRA0", 208, 300
 {
 	YScale 1.200

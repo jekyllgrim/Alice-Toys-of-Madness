@@ -329,6 +329,16 @@ class ToM_AlicePlayer : DoomPlayer
 			}
 		}
 
+		// 3rd-person crosshair spot:
+		if (!crosshairSpot)
+		{
+			crosshairSpot = ToM_CrosshairSpot.Create(self);
+		}
+		else if (player.readyweapon)
+		{
+			player.readyweapon.crosshair = crosshairSpot.renderRequired >= 0? -1 : 0;
+		}
+
 		// 3rd-person camera:
 		if (!specialCamera)
 		{
@@ -355,11 +365,6 @@ class ToM_AlicePlayer : DoomPlayer
 			{
 				if (player.cheats & CF_CHASECAM)
 				{
-					// 3rd-person crosshair spot:
-					if (!crosshairSpot)
-					{
-						crosshairSpot = ToM_CrosshairSpot.Create(self);
-					}
 					Vector3 camOfs;
 					switch (tppMode.GetInt())
 					{
@@ -1077,7 +1082,9 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 	protected double crosshairRadius;
 	protected double crosshairRotAngle;
 	protected Actor crosshairAimActor;
+	protected TextureID crosshairTexture;
 	private Vector3 prevParticlePos;
+	private TextureID defGraphic;
 	ECRosshairModes crosshairMode;
 
 	enum ECRosshairModes
@@ -1096,10 +1103,10 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 		+FORCEXYBILLBOARD
 		+INVISIBLEINMIRRORS
 		scale 0.24;
+		Renderstyle 'Add';
 		+NOTIMEFREEZE
 		radius 4;
 		height 4;
-		renderstyle "Add";
 		+DONTBLAST
 		+SYNCHRONIZED
 		FloatBobphase 0;
@@ -1120,7 +1127,7 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 		return spot;
 	}
 
-	void Update(int newMode = -1, double newRadius = -1, Actor newTarget = null, Vector3 newPos = (0,0,0))
+	void Update(int newMode = -1, double newRadius = -1, Actor newTarget = null, Vector3 newPos = (0,0,0), String specialsprite = "")
 	{
 		if (newMode > -1)
 			crosshairMode = newMode;
@@ -1132,6 +1139,14 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 		{
 			crosshairTargetPos = newPos;
 			isManualPos = true;
+		}
+		if (specialsprite != "")
+		{
+			TextureID tex = TexMan.CheckForTexture(specialsprite);
+			if (tex.isValid())
+			{
+				crosshairTexture = tex;
+			}
 		}
 	}
 
@@ -1150,19 +1165,25 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 			return;
 		}
 
-		if (!(alice.player.cheats & CF_CHASECAM))
+		if (alice.player != players[consoleplayer])
 		{
 			renderRequired = -1;
-			return;
-		}
-
-		if (alice.player == players[consoleplayer])
-		{
-			renderRequired = 1;
 		}
 		else
 		{
-			renderRequired = -1;
+			CVar crossMode = CVar.GetCvar('tom_tppCrosshair', alice.player);
+			switch (crossMode.GetInt())
+			{
+				default:
+					renderRequired = -1;
+					break;
+				case 1:
+					renderRequired = (alice.player.cheats & CF_CHASECAM)? 1 : -1;
+					break;
+				case 2:
+					renderRequired = 1;
+					break;
+			}
 		}
 
 		Vector3 newpos;
@@ -1184,7 +1205,7 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 			if (tr.HitType != TRACE_HitNone)
 			{
 				let norm = ToM_Utils.GetNormalFromTrace(tr);
-				newpos = level.Vec3Offset(tr.HitLocation, norm * 12);
+				newpos = level.Vec3Offset(tr.HitLocation, norm * 4);
 			}
 		}
 
@@ -1200,10 +1221,27 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 			return;
 		}
 
+		if (!defGraphic.IsValid())
+		{
+			defGraphic = spawnstate.GetSpriteTexture(0);
+		}
+
+		if (crosshairTexture.IsValid())
+		{
+			picnum = crosshairTexture;
+			crosshairTexture.SetInvalid();
+		}
+		else
+		{
+			picnum = defGraphic;
+		}
+
+		alice.player.cheats |= CF_INTERPVIEW;
+
 		// scale size inversely relative to distance from player:
 		scale.x = scale.y = ToM_Utils.LinearMap(Distance3D(alice), 320, PLAYERMISSILERANGE, default.scale.x, default.scale.x * 16.0, true);
 
-		TextureID tex = curstate.GetSpriteTexture(0);
+		TextureID tex = picnum; //curstate.GetSpriteTexture(0);
 		FSpawnParticleParams p;
 		p.color1 = "";
 		p.texture = tex;

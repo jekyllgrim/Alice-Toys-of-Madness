@@ -421,7 +421,7 @@ class ToM_AlicePlayer : DoomPlayer
 	override int DamageMobj (Actor inflictor, Actor source, int damage, Name mod, int flags, double angle)
 	{
 		int dmg = super.DamageMobj(inflictor, source, damage, mod, flags, angle);
-		if (dmg > 0)
+		if (dmg > 0 && health > 0)
 		{
 			A_Pain();
 			if (InStateSequence(curstate, spawnstate))

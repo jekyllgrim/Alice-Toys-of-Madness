@@ -106,6 +106,7 @@ class ToM_Mainhandler : EventHandler
 					if (jb)
 					{
 						jackbombPickups.Push(jb);
+						jb.angle = frandom[jbpk](0,360);
 					}
 				}
 			}

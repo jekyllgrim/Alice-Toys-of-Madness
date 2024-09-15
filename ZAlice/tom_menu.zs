@@ -1,3 +1,5 @@
+// Skill menu is a simple black background with white text-only elements
+
 class ToM_SkillMenu : ListMenu 
 {
 	override void Drawer()
@@ -62,6 +64,8 @@ class ToM_SkillMenu : ListMenu
 	}
 }
 
+// Background element drawn behind the maun menu if
+// it's opened during gameplay:
 class ListMenuItemToM_DrawMainMenuBackground : ListMenuItem 
 {
 	mixin ToM_MainMenuDrawer;
@@ -74,6 +78,7 @@ class ListMenuItemToM_DrawMainMenuBackground : ListMenuItem
 
 	override void Draw(bool selected, ListMenuDescriptor desc)
 	{
+		Super.Draw(selected, desc);
 		if (gamestate == GS_LEVEL)
 		{
 			MMD_Draw();
@@ -90,6 +95,8 @@ class ListMenuItemToM_DrawMainMenuBackground : ListMenuItem
 	}
 }
 
+// This controls individual smoke elements
+// for the handle shown on the main menu background:
 class ToM_MenuCandleSmokeController ui
 {
 	int age;
@@ -151,6 +158,19 @@ class ToM_MenuCandleSmokeController ui
 	}
 }
 
+// The actual dynamic background has to be done in two places:
+// an event handler, and a menu element. If the menu is opened
+// during gameplay, it's drawn by the menu element above.
+// However, when the game is started, the menu is initially
+// hidden, and thus its element isn't drawn, and Doom's vanilla
+// titlepic will be drawn instead. To circumvent that, I have to
+// insert a dummy TITLEMAP to replace the title pic, and attach
+// an event handler to that TITLEMAP that draws the desired
+// menu background. To avoid copy-pasting, the actual menu background
+// is defined in a mixin below, which is inserted both into the
+// menu element and the event handler.
+
+// TITLEMAP-only event handler:
 class ToM_MenuBackGroundHandler : EventHandler
 {
 	mixin ToM_MainMenuDrawer;
@@ -161,21 +181,19 @@ class ToM_MenuBackGroundHandler : EventHandler
 			MMD_Init();
 		else
 			MMD_Tick();
-		
-		/*let mnu = OptionMenu(Menu.GetCurrentMenu());
-		if (mnu)
-		{
-			console.printf("options menu open (%d)", mnu.MenuTime());
-		}*/
 	}
 
 	override void RenderOverlay(RenderEvent e)
 	{
-		MMD_Draw();
+		if (started)
+		{
+			MMD_Draw();
+		}
 	}
 }
 
-
+// A mixin that is included into the background menu element
+// and into TITLEMAP-specific event handler:
 mixin class ToM_MainMenuDrawer
 {
 	ui bool started;
@@ -210,6 +228,9 @@ mixin class ToM_MainMenuDrawer
 
 	ui void MMD_Draw()
 	{
+		// Textures for regular background, and another version of it
+		// lit by a lightning strike, with different shadows and visible
+		// window outlines:
 		if (!tex_bg)
 			tex_bg = TexMan.CheckForTexture("graphics/menu/menu_background.png");
 		if (!tex_lightning)
@@ -224,7 +245,7 @@ mixin class ToM_MainMenuDrawer
 
 		Screen.Dim("000000", 1, 0, 0, int(screenRes.x), int(screenRes.y));
 
-		
+		// The base background is always drawn:
 		Screen.DrawTexture(tex_bg, false,
 			0, 0,
 			DTA_VirtualWidthF, size.X,
@@ -232,6 +253,8 @@ mixin class ToM_MainMenuDrawer
 			DTA_FullscreenScale, FSMode_ScaleToFit43
 		);
 
+		// The lit background is drawn on top whenever
+		// lightning triggers, and gradually fades out:
 		Screen.DrawTexture(tex_lightning, false,
 			0, 0,
 			DTA_VirtualWidthF, size.X,
@@ -240,6 +263,7 @@ mixin class ToM_MainMenuDrawer
 			DTA_FullscreenScale, FSMode_ScaleToFit43
 		);
 
+		// Draw smoke elements rising above the candle:
 		if (!smokeTex)
 			smokeTex = TexMan.CheckForTexture("SMO2C0");
 		vector2 smokePos = (-60, 46);
@@ -260,6 +284,8 @@ mixin class ToM_MainMenuDrawer
 			);
 		}
 
+		// Draw flickering light spot on top of
+		// the candle's wick:
 		if (!candleLighTex)
 			candleLighTex = TexMan.CheckForTexture("graphics/menu/menu_background_candlelight.png");
 		Screen.DrawTexture(candleLighTex, false,
@@ -271,10 +297,9 @@ mixin class ToM_MainMenuDrawer
 		);
 	}
 
-	//ui double smoketime;
 	ui void MMD_Tick()
 	{
-		// smoke:
+		// create a new smoke element:
 		let csc = ToM_MenuCandleSmokeController.Create(
 			//pos 
 			(frandom[tomMenu](-2.5,2.5), frandom[tomMenu](-2,2)), 
@@ -307,6 +332,7 @@ mixin class ToM_MainMenuDrawer
 			}
 		}
 
+		// Tick smoke elements:
 		for (int i = smokeElements.Size() -1; i >= 0; i--)
 		{
 			let csc = smokeElements[i];
@@ -332,7 +358,7 @@ mixin class ToM_MainMenuDrawer
 		
 		// count down lightning phase:
 		if (lightningPhase > 0)
-		{			
+		{
 			lightningPhase--;
 			if (lightningPhase % LIGHT_FREQUENCY == 0)
 			{

@@ -32,6 +32,7 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 		"GreenArmor:ToM_SilverArmor",
 		"BlueArmor:ToM_GoldArmor",
 		"Berserk:ToM_RageBoxEffect",
+		"PowerStrength:ToM_RageBoxEffect",
 		"InvulnerabilitySphere:ToM_GrowthPotion",
 		"Blursphere:ToM_InvisibilityEffect",
 		"Backpack:ToM_Backpack",

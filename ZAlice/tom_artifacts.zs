@@ -309,7 +309,12 @@ class ToM_RageBoxEffect : ToM_Powerup
 		if (owner)
 		{
 			owner.GiveBody(100);
-			//SwapRageModel(owner, true);
+			// assign rage model if this powerup is given directly for some reason
+			// (otherwise the selector will activate it)
+			if (!owner.FindInventory('ToM_RageBoxSelector'))
+			{
+				SwapRageModel(owner, true);
+			}
 		}
 	}
 

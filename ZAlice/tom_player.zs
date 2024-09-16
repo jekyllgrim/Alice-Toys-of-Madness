@@ -77,6 +77,7 @@ class ToM_AlicePlayer : DoomPlayer
 	array <Actor> collideFilter;
 	bool doingPlungingAttack;
 
+	Actor externalcamera; // from other mods
 	protected uint fallingTics;
 	protected uint coyoteTime;
 	protected double coyoteZ;
@@ -123,6 +124,15 @@ class ToM_AlicePlayer : DoomPlayer
 
 		pcTex = ToM_PCANTEX_ARM..PlayerNumber();
 		A_ChangeModel("", skinindex: SI_Arms, skin: pcTex, flags: CMDL_USESURFACESKIN);
+
+		if (player.camera != self)
+		{
+			externalcamera = player.camera;
+		}
+		else
+		{
+			externalcamera = null;
+		}
 	}
 
 	ToM_CrosshairSpot GetCrosshairSpot()
@@ -344,6 +354,7 @@ class ToM_AlicePlayer : DoomPlayer
 		if (!specialCamera)
 		{
 			specialCamera = ToM_PlayerCamera.Create(self);
+			specialCamera.player = player;
 		}
 		else
 		{
@@ -469,7 +480,7 @@ class ToM_AlicePlayer : DoomPlayer
 		
 		UpdateWeaponModel();
 		// If firing, face the angle (no direction);
-		if (InStateSequence(curstate, missilestate))
+		if (InStateSequence(curstate, missilestate) || (externalcamera && vel.xy.Length() == 0))
 		{
 			prevMoveDir = (0,0);
 		}
@@ -932,6 +943,14 @@ class ToM_AlicePlayer : DoomPlayer
 				if (!ToM_Utils.IsVoodooDoll(self))
 				{
 					player.camera = player.mo;
+					if (externalcamera)
+					{
+						player.camera = externalcamera;
+					}
+					else
+					{
+						player.camera = player.mo;
+					}
 				}
 			}
 		}
@@ -1052,6 +1071,14 @@ class ToM_PlayerCamera : Actor
 		else
 		{
 			alice.player.camera = alice.player.mo;
+			if (alice.externalcamera)
+			{
+				alice.player.camera = alice.externalcamera;
+			}
+			else
+			{
+				alice.player.camera = alice.player.mo;
+			}
 			alice.viewbob = alice.default.viewbob;
 		}
 	}

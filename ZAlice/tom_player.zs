@@ -594,7 +594,11 @@ class ToM_AlicePlayer : DoomPlayer
 		}
 		else if (level.IsJumpingAllowed() && (player.onground || coyoteTime) && player.jumpTics == 0)
 		{
-			coyoteTime = 0;
+			if (coyoteTime)
+			{
+				vel.z = max(vel.z, 0);
+				coyoteTime = 0;
+			}
 
 			double jumpvelz = JumpZ * 35 / TICRATE;
 			double jumpfac = 0;
@@ -612,7 +616,7 @@ class ToM_AlicePlayer : DoomPlayer
 			}
 			if (jumpfac > 0) jumpvelz *= jumpfac;
 
-			Vel.Z += jumpvelz;
+			vel.z += jumpvelz;
 			bOnMobj = false;
 			player.jumpTics = -1;
 			if (!(player.cheats & CF_PREDICTING)) 
@@ -733,11 +737,6 @@ class ToM_AlicePlayer : DoomPlayer
 
 	override void FallAndSink(double grav, double oldfloorz)
 	{
-		if (coyoteTime)
-		{
-			return;
-		}
-
 		// [AA] No falling in water if the player is
 		// moving:
 		if (waterlevel > 1 && vel.x != 0 && vel.y != 0)
@@ -753,10 +752,10 @@ class ToM_AlicePlayer : DoomPlayer
 			// Handling for crossing ledges:
 			if (vel.z == 0 && pos.z == oldfloorz && oldfloorz > floorz)
 			{
-				if (player.jumptics == 0)
+				// Coyote time:
+				if (player.jumptics == 0 && coyoteTime == 0 && level.IsJumpingAllowed()&& oldfloorz - floorz  > maxStepHeight)
 				{
 					coyoteTime = MAXCOYOTETIME;
-					done = true;
 				}
 				else
 				{

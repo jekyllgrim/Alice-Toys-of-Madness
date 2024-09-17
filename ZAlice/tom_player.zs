@@ -468,11 +468,13 @@ class ToM_AlicePlayer : DoomPlayer
 		}
 		
 		UpdateWeaponModel();
-		// If firing, face the angle (no direction);
+		// If firing, face the angle (no direction):
 		if (InStateSequence(curstate, missilestate))
 		{
 			prevMoveDir = (0,0);
 		}
+		// Otherwise calculate direction to turn the model in
+		// from movement direction:
 		else if (vel.xy.Length() > 0 && IsPlayerMoving())
 		{
 			prevMoveDir = Level.Vec2Diff(pos.xy, Level.Vec2Offset(pos.xy, vel.xy));
@@ -481,7 +483,7 @@ class ToM_AlicePlayer : DoomPlayer
 
 		// Make the model face the direction of movement, if the player
 		// is in third person or seen from outside:
-		if (PlayerNumber() != consoleplayer || (player.cheats & CF_CHASECAM) || player.camera != self)
+		if (PlayerNumber() != consoleplayer || ((player.cheats & CF_CHASECAM) && (player.camera == self || player.camera == specialCamera)))
 		{
 			spriteRotation = modelDirection;
 		}
@@ -1178,10 +1180,10 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 					renderRequired = -1;
 					break;
 				case 1:
-					renderRequired = (alice.player.cheats & CF_CHASECAM)? 1 : -1;
+					renderRequired = (alice.player.cheats & CF_CHASECAM)? 0 : -1;
 					break;
 				case 2:
-					renderRequired = 1;
+					renderRequired = 0;
 					break;
 			}
 		}

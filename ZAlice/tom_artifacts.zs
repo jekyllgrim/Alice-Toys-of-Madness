@@ -37,15 +37,10 @@ class ToM_ArtifactSelector : ToM_BaseWeapon abstract
 		// AND if anySelector is false or they don't have ANY selectors:
 		bool hasPower = t_powerup || t_selector || (anySelector && who.FindInventory('ToM_ArtifactSelector', true));
 		
-		// If the player already has the powerup, update its tics,
-		// otherwise give it:
+		// If the player already has the powerup, update its tics:
 		if (t_powerup)
 		{
 			t_powerup.effectTics = ToM_Powerup(GetDefaultByType(def.poweruptype)).effectTics;
-		}
-		else
-		{
-			t_powerup = ToM_Powerup(who.GiveInventoryType(def.powerupType));
 		}
 
 		// Do the rest if they're picking it up for the first time:
@@ -53,6 +48,11 @@ class ToM_ArtifactSelector : ToM_BaseWeapon abstract
 		{
 			// Give selector:
 			t_selector = ToM_ArtifactSelector(who.GiveInventoryType(def.GetClass()));
+			// Give powerup. This could be done sooner, but I
+			// want powerup to be given AFTER the selector in
+			// case the powerup needs to check if selector is
+			// in inventory or not in its InitEffect():
+			t_powerup = ToM_Powerup(who.GiveInventoryType(def.powerupType));
 			// Set the powerup as inactive, so that the selector
 			// can activate it. Store the current readyweapon in 
 			// the selector, then switch to selector:
@@ -245,7 +245,7 @@ class ToM_RageBox : Actor replaces Berserk
 	{
 		super.PostbeginPlay();
 		double hpos = 25;
-		flare = ToM_BaseFlare.Spawn(pos + (0,0,hpos), scale: 0.3, alpha: 0.45, col: "FF0000");
+		flare = ToM_BaseFlare.Spawn(Vec3Offset(0, 0, hpos), scale: 0.3, alpha: 0.45, col: "FF0000");
 		A_AttachLight('rageBoxLight', DynamicLight.PointLight, "cc0000", 48, 0, flags: DYNAMICLIGHT.LF_ATTENUATE|DYNAMICLIGHT.LF_DONTLIGHTSELF, ofs: (0,0, hpos));
 	}
 	

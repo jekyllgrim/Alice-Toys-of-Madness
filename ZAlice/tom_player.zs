@@ -354,7 +354,6 @@ class ToM_AlicePlayer : DoomPlayer
 		if (!specialCamera)
 		{
 			specialCamera = ToM_PlayerCamera.Create(self);
-			specialCamera.player = player;
 		}
 		else
 		{
@@ -1070,7 +1069,6 @@ class ToM_PlayerCamera : Actor
 		}
 		else
 		{
-			alice.player.camera = alice.player.mo;
 			if (alice.externalcamera)
 			{
 				alice.player.camera = alice.externalcamera;

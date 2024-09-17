@@ -61,6 +61,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 		if (!beam1)
 		{
 			beam1 = ToM_EyestaffBeam(ToM_LaserBeam.Create(owner, 10, 4.2, -1.4, type: "ToM_EyestaffBeam"));
+			beam1.baseWidthScale = beam1.scale.x;
 		}
 		// yellow inside beam:
 		if (!beam2)
@@ -68,6 +69,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 			beam2 = ToM_EyestaffBeam(ToM_LaserBeam.Create(owner, 10, 4.2, -1.25, type: "ToM_EyestaffBeam"));
 			beam2.shade = "ffee00";
 			beam2.scale.x *= 0.45;
+			beam2.baseWidthScale = beam2.scale.x;
 		}
 		// third-person beam and its attach position:
 		if (!outerBeamPos)
@@ -725,6 +727,7 @@ class ToM_EyestaffPuff : ToM_BasePuff
 class ToM_EyestaffBeam : ToM_LaserBeam
 {
 	const PULSEFREQ = 25;
+	double baseWidthScale;
 
 	Default
 	{
@@ -756,6 +759,15 @@ class ToM_EyestaffBeam : ToM_LaserBeam
 		else
 		{
 			alpha = 0.3 + 0.3 * ToM_Utils.SinePulse(PULSEFREQ, GetAge());
+		}
+
+		if (source && source.player)
+		{
+			let psp = source.player.FindPSprite(PSP_WEAPON);
+			if (psp)
+			{
+				scale.x = baseWidthScale * psp.scale.x;
+			}
 		}
 	}
 

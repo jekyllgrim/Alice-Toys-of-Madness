@@ -469,7 +469,7 @@ class ToM_Cards : ToM_BaseWeapon
 	Hold:
 		TNT1 A 0 
 		{
-			A_PlayerAttackAnim(-1, 'attack_cards', 30, endframe: 2, interpolateTics: 6);
+			A_PlayerAttackAnim(-1, 'attack_cards', 30, endframe: 2, flags:SAF_NOOVERRIDE);
 			A_FireCardLayer();
 			A_OverlayPivot(OverlayID(), 0, 0);
 			vector2 ofs;

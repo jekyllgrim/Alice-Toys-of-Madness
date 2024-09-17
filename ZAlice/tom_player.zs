@@ -753,7 +753,7 @@ class ToM_AlicePlayer : DoomPlayer
 			if (vel.z == 0 && pos.z == oldfloorz && oldfloorz > floorz)
 			{
 				// Coyote time:
-				if (player.jumptics == 0 && coyoteTime == 0 && level.IsJumpingAllowed()&& oldfloorz - floorz  > maxStepHeight)
+				if (player.jumptics == 0 && coyoteTime == 0 && level.IsJumpingAllowed())
 				{
 					coyoteTime = MAXCOYOTETIME;
 				}

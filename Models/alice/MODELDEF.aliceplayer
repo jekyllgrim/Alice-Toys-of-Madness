@@ -8,6 +8,16 @@ Model ToM_AlicePlayer
 	BaseFrame
 }
 
+Model ToM_PlayerShadow 
+{
+	path "Models/alice"
+	Model 0 "alice_base.iqm"
+	Model 2 "alice_leftarm.iqm"
+	Scale 1.0 1.0 0.05
+	MODELSAREATTACHMENTS
+	BaseFrame
+}
+
 /*
 list of actions:
 

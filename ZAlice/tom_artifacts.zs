@@ -291,15 +291,15 @@ class ToM_RageBoxEffect : ToM_Powerup
 
 		if (enable)
 		{
-			alice.A_ChangeModel("", ToM_AlicePlayer.MI_RageParts, modelpath: ToM_AlicePlayer.BASEMODELPATH, model: "alice_rageParts.iqm");
-			alice.A_ChangeModel("", ToM_AlicePlayer.MI_LeftArm, flags: CMDL_HIDEMODEL);
-			alice.A_ChangeModel("", skinindex: ToM_AlicePlayer.SI_Head, skinpath: ToM_AlicePlayer.BASEMODELPATH, skin: "rage_face.png", flags: CMDL_USESURFACESKIN);
+			alice.ToM_ChangeModel("", ToM_AlicePlayer.MI_RageParts, modelpath: ToM_AlicePlayer.BASEMODELPATH, model: "alice_rageParts.iqm");
+			alice.ToM_ChangeModel("", ToM_AlicePlayer.MI_LeftArm, flags: CMDL_HIDEMODEL);
+			alice.ToM_ChangeModel("", skinindex: ToM_AlicePlayer.SI_Head, skinpath: ToM_AlicePlayer.BASEMODELPATH, skin: "rage_face.png", flags: CMDL_USESURFACESKIN);
 		}
 		else
 		{
-			alice.A_ChangeModel("", ToM_AlicePlayer.MI_RageParts, flags: CMDL_HIDEMODEL);
-			alice.A_ChangeModel("", ToM_AlicePlayer.MI_LeftArm, modelpath: ToM_AlicePlayer.BASEMODELPATH, model: "alice_leftarm.iqm");
-			alice.A_ChangeModel("", skinindex: ToM_AlicePlayer.SI_Head, skinpath: ToM_AlicePlayer.BASEMODELPATH, skin: "alice_body3.png", flags: CMDL_USESURFACESKIN);
+			alice.ToM_ChangeModel("", ToM_AlicePlayer.MI_RageParts, flags: CMDL_HIDEMODEL);
+			alice.ToM_ChangeModel("", ToM_AlicePlayer.MI_LeftArm, modelpath: ToM_AlicePlayer.BASEMODELPATH, model: "alice_leftarm.iqm");
+			alice.ToM_ChangeModel("", skinindex: ToM_AlicePlayer.SI_Head, skinpath: ToM_AlicePlayer.BASEMODELPATH, skin: "alice_body3.png", flags: CMDL_USESURFACESKIN);
 		}
 	}
 
@@ -1424,7 +1424,7 @@ class ToM_RadSuitEffect : PowerIronFeet
 		let alice = ToM_AlicePlayer(owner);
 		if (alice)
 		{
-			alice.A_ChangeModel("", ToM_AlicePlayer.MI_MockShell, modelpath: ToM_AlicePlayer.BASEMODELPATH, model: "mockshell.iqm");
+			alice.ToM_ChangeModel("", ToM_AlicePlayer.MI_MockShell, modelpath: ToM_AlicePlayer.BASEMODELPATH, model: "mockshell.iqm");
 		}
 	}
 
@@ -1433,7 +1433,7 @@ class ToM_RadSuitEffect : PowerIronFeet
 		let alice = ToM_AlicePlayer(owner);
 		if (alice)
 		{
-			alice.A_ChangeModel("", ToM_AlicePlayer.MI_MockShell, flags: CMDL_HIDEMODEL);
+			alice.ToM_ChangeModel("", ToM_AlicePlayer.MI_MockShell, flags: CMDL_HIDEMODEL);
 		}
 		Super.EndEffect();
 	}

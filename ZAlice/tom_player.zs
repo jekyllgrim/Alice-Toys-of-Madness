@@ -61,6 +61,7 @@ class ToM_AlicePlayer : DoomPlayer
 	}
 
 	protected ToM_HUDFaceController hudFace;
+	protected ToM_PlayerShadow aliceShadow;
 	
 	protected int curWeaponID;
 	protected vector2 prevMoveDir;
@@ -107,7 +108,7 @@ class ToM_AlicePlayer : DoomPlayer
 	override void PostBeginPlay()
 	{
 		super.PostBeginPlay();
-		SetAnimation('basepose', flags:SAF_LOOP|SAF_INSTANT);
+		ToM_SetAnimation('basepose', flags:SAF_LOOP|SAF_INSTANT);
 		curWeaponID = AW_NoWeapon;
 
 		s_jump = ResolveState("Jump");
@@ -128,6 +129,33 @@ class ToM_AlicePlayer : DoomPlayer
 	ToM_CrosshairSpot GetCrosshairSpot()
 	{
 		return crosshairSpot;
+	}
+
+	void ToM_SetAnimation(Name animName, double framerate = -1, int startFrame = -1, int loopFrame= -1, int endFrame= -1, int interpolateTics = -1, int flags = 0)
+	{
+		if (aliceShadow)
+		{
+			aliceShadow.SetAnimation(animName, framerate, startFrame, loopFrame, endFrame, interpolateTics, flags);
+		}
+		SetAnimation(animName, framerate, startFrame, loopFrame, endFrame, interpolateTics, flags);
+	}
+
+	void ToM_SetAnimationFrameRate(double framerate)
+	{
+		if (aliceShadow)
+		{
+			aliceShadow.SetAnimationFrameRate(framerate);
+		}
+		SetAnimationFrameRate(framerate);
+	}
+
+	action void ToM_ChangeModel(name modeldef, int modelindex = 0, string modelpath = "", name model = "", int skinindex = 0, string skinpath = "", name skin = "", int flags = 0, int generatorindex = -1, int animationindex = 0, string animationpath = "", name animation = "")
+	{
+		if (invoker.aliceShadow)
+		{
+			invoker.aliceShadow.A_ChangeModel(modeldef, modelindex, modelpath, model, skinindex, skinpath, skin, flags, generatorindex, animationindex, animationpath, animation);
+		}
+		A_ChangeModel(modeldef, modelindex, modelpath, model, skinindex, skinpath, skin, flags, generatorindex, animationindex, animationpath, animation);
 	}
 
 	bool IsPlayerMoving()
@@ -175,8 +203,8 @@ class ToM_AlicePlayer : DoomPlayer
 		// swimming
 		if (waterLevel >= 2)
 		{
-			SetAnimation('swim_loop', interpolateTics: 5, flags:SAF_LOOP|SAF_NOOVERRIDE);
-			SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 3, 18, minFr, maxFr));
+			ToM_SetAnimation('swim_loop', interpolateTics: 5, flags:SAF_LOOP|SAF_NOOVERRIDE);
+			ToM_SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 3, 18, minFr, maxFr));
 		}
 		// falling (not jumping)
 		else if (!player.onground && !coyoteTime && !IsPlayerFlying())
@@ -187,14 +215,14 @@ class ToM_AlicePlayer : DoomPlayer
 			{
 				if (!InStateSequence(curstate, s_jump))
 				{
-					SetAnimation('jump', startframe: 9, loopframe: 9, interpolateTics: 10, flags:SAF_LOOP|SAF_NOOVERRIDE);
+					ToM_SetAnimation('jump', startframe: 9, loopframe: 9, interpolateTics: 10, flags:SAF_LOOP|SAF_NOOVERRIDE);
 					SetState(s_jumpLoop);
 				}
 			}
 			// otherwise slow down current falling animation:
 			else
 			{
-				SetAnimationFrameRate(3);
+				ToM_SetAnimationFrameRate(3);
 			}
 		}
 		else
@@ -203,19 +231,19 @@ class ToM_AlicePlayer : DoomPlayer
 			// standing still
 			if (hvel <= 0.1)
 			{
-				SetAnimation('basepose', interpolateTics: 10, flags:SAF_LOOP|SAF_NOOVERRIDE);
+				ToM_SetAnimation('basepose', interpolateTics: 10, flags:SAF_LOOP|SAF_NOOVERRIDE);
 			}
 			// walking
 			else if (hvel <= 7.5)
 			{
-				SetAnimation(twohanded? 'walk_bigweapon' : 'walk_smallweapon', interpolateTics: 5, flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
-				SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 2, 7.5, minFr, maxFr));
+				ToM_SetAnimation(twohanded? 'walk_bigweapon' : 'walk_smallweapon', interpolateTics: 5, flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
+				ToM_SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 2, 7.5, minFr, maxFr));
 			}
 			// running
 			else
 			{
-				SetAnimation(twohanded? 'run_bigweapon' : 'run_smallweapon', flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
-				SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 7.5, 20, minFr, maxFr));
+				ToM_SetAnimation(twohanded? 'run_bigweapon' : 'run_smallweapon', flags:SAF_LOOP|SAF_NOOVERRIDE|SAF_INSTANT);
+				ToM_SetAnimationFrameRate(ToM_Utils.LinearMap(hvel, 7.5, 20, minFr, maxFr));
 			}
 		}
 	}
@@ -229,7 +257,7 @@ class ToM_AlicePlayer : DoomPlayer
 		if (!weap || weap.wasThrown)
 		{
 			curWeaponID = AW_NoWeapon;
-			A_ChangeModel("", MI_Weapon, flags: CMDL_HIDEMODEL);
+			ToM_ChangeModel("", MI_Weapon, flags: CMDL_HIDEMODEL);
 			return;
 		}
 
@@ -270,7 +298,7 @@ class ToM_AlicePlayer : DoomPlayer
 		if (newmodel != curWeaponID)
 		{
 			curWeaponID = newmodel;
-			A_ChangeModel("", MI_Weapon, "models/alice/weapons", modelnames[newmodel]);
+			ToM_ChangeModel("", MI_Weapon, "models/alice/weapons", modelnames[newmodel]);
 		}
 	}
 
@@ -287,6 +315,12 @@ class ToM_AlicePlayer : DoomPlayer
 		if (!hudface)
 		{
 			hudface = ToM_HUDFaceController.Create(self);
+		}
+
+		if (!aliceShadow)
+		{
+			aliceShadow = ToM_PlayerShadow(Spawn('ToM_PlayerShadow', pos));
+			aliceShadow.master = self;
 		}
 
 		// Make sure these are always there:
@@ -951,12 +985,12 @@ class ToM_AlicePlayer : DoomPlayer
 		goto Spawn;
 	
 	Pain:
-		APLR A 12 SetAnimation('pain');
+		APLR A 12 ToM_SetAnimation('pain');
 		Goto Spawn;
 	
 	Jump:
 		JumpGround:
-			APLR A 8 SetAnimation('jump', 30, loopframe: 9, flags: SAF_LOOP);
+			APLR A 8 ToM_SetAnimation('jump', 30, loopframe: 9, flags: SAF_LOOP|SAF_INSTANT);
 			APLR A 0
 			{
 				return ResolveState("JumpLoop");
@@ -964,7 +998,7 @@ class ToM_AlicePlayer : DoomPlayer
 		JumpAir:
 			APLR A 4 
 			{
-				SetAnimation('jump_air', 20, loopframe: 4, flags: SAF_LOOP);
+				ToM_SetAnimation('jump_air', 20, loopframe: 4, flags: SAF_LOOP);
 				return ResolveState("JumpLoop");
 			}
 		JumpLoop:
@@ -984,7 +1018,7 @@ class ToM_AlicePlayer : DoomPlayer
 		JumpEnd:
 			APLR A 12 
 			{
-				SetAnimation('jump_end', 30);
+				ToM_SetAnimation('jump_end', 30);
 			}
 			goto Spawn;
 		
@@ -993,7 +1027,7 @@ class ToM_AlicePlayer : DoomPlayer
 		{
 			A_PlayerScream();
 			A_NoBlocking();
-			SetAnimation('death_faint');
+			ToM_SetAnimation('death_faint');
 		}
 		Stop;
 	XDeath:
@@ -1001,9 +1035,44 @@ class ToM_AlicePlayer : DoomPlayer
 		{
 			A_PlayerScream();
 			A_NoBlocking();
-			SetAnimation('death_fall');
+			ToM_SetAnimation('death_fall');
 		}
 		Stop;
+	}
+}
+
+class ToM_PlayerShadow : ToM_BaseActor
+{
+	Default
+	{
+		+NOINTERACTION
+		+NOBLOCKMAP
+		+DECOUPLEDANIMATIONS
+		Height 1;
+		Radius 1;
+		Renderstyle 'Stencil';
+		StencilColor '000000';
+	}
+
+	override void Tick()
+	{
+		if (!master)
+		{
+			Destroy();
+			return;
+		}
+		SetZ(min(master.pos.z, master.floorz));
+		SetOrigin((master.pos.xy, pos.z), true);
+		A_SetAngle(master.angle, SPF_INTERPOLATE);
+		spriteRotation = master.spriteRotation;
+		double scf = ToM_Utils.LinearMap(abs(pos.z - master.pos.z), 0, 320, 1.2, 3.5, true);
+		scale = master.scale * scf;
+	}
+
+	States {
+	Spawn:
+		APLR A -1;
+		stop;
 	}
 }
 

@@ -352,7 +352,7 @@ class ToM_BaseWeapon : Weapon abstract
 			{
 				flags |= SAF_INSTANT;
 			}
-			alice.SetAnimation(animName, framerate, startFrame, loopFrame, endFrame, interpolateTics, flags);
+			alice.ToM_SetAnimation(animName, framerate, startFrame, loopFrame, endFrame, interpolateTics, flags);
 		}
 	}
 	

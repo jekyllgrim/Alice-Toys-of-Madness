@@ -696,6 +696,7 @@ class ToM_EyestaffPuff : ToM_BasePuff
 	{
 		+NODAMAGETHRUST
 		+PUFFONACTORS
+		+SKYEXPLODE
 		DamageType 'Eyestaff';
 		ToM_BasePuff.ParticleAmount 15;
 		//ToM_BasePuff.ParticleColor 0xf44dde;

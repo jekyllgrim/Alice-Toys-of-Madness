@@ -1270,6 +1270,9 @@ class ToM_BasePuff : ToM_BaseActor
 	Spawn:
 		TNT1 A 1; //BAl1 A 10 bright NoDelay A_SetScale(1.0 / TexMan.GetSize(curstate.GetSpriteTexture(0)));
 		stop;
+	Death.Sky:
+		TNT1 A 1;
+		stop;
 	}
 }
 

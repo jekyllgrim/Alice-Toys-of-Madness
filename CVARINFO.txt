@@ -4,6 +4,8 @@ user int tom_particles = 2;
 user bool tom_cheshire_map = true;
 user bool tom_cheshire_items = true;
 
+nosave int tom_playershadow = 1;
+
 user int tom_tppCrosshair = 1;
 user int tom_tppCamMode = 2;
 user float tom_tppCamDist = 86;

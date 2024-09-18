@@ -133,7 +133,7 @@ class ToM_AlicePlayer : DoomPlayer
 
 	void ToM_SetAnimation(Name animName, double framerate = -1, int startFrame = -1, int loopFrame= -1, int endFrame= -1, int interpolateTics = -1, int flags = 0)
 	{
-		if (aliceShadow)
+		if (aliceShadow && aliceShadow.shadowmode == ToM_PlayerShadow.SMODE_3D)
 		{
 			aliceShadow.SetAnimation(animName, framerate, startFrame, loopFrame, endFrame, interpolateTics, flags);
 		}
@@ -142,7 +142,7 @@ class ToM_AlicePlayer : DoomPlayer
 
 	void ToM_SetAnimationFrameRate(double framerate)
 	{
-		if (aliceShadow)
+		if (aliceShadow && aliceShadow.shadowmode == ToM_PlayerShadow.SMODE_3D)
 		{
 			aliceShadow.SetAnimationFrameRate(framerate);
 		}
@@ -151,7 +151,7 @@ class ToM_AlicePlayer : DoomPlayer
 
 	action void ToM_ChangeModel(name modeldef, int modelindex = 0, string modelpath = "", name model = "", int skinindex = 0, string skinpath = "", name skin = "", int flags = 0, int generatorindex = -1, int animationindex = 0, string animationpath = "", name animation = "")
 	{
-		if (invoker.aliceShadow)
+		if (invoker.aliceShadow && invoker.aliceShadow.shadowmode == ToM_PlayerShadow.SMODE_3D)
 		{
 			invoker.aliceShadow.A_ChangeModel(modeldef, modelindex, modelpath, model, skinindex, skinpath, skin, flags, generatorindex, animationindex, animationpath, animation);
 		}
@@ -219,7 +219,7 @@ class ToM_AlicePlayer : DoomPlayer
 					SetState(s_jumpLoop);
 				}
 			}
-			// otherwise slow down current falling animation:
+			// otherwise slow down current walk/run animation without switching to jumping:
 			else
 			{
 				ToM_SetAnimationFrameRate(3);
@@ -1041,17 +1041,41 @@ class ToM_AlicePlayer : DoomPlayer
 	}
 }
 
+// Dummy class def just so that I can define a MODELDEF
+// with this name:
+class ToM_PlayerShadowBlob : Actor abstract
+{
+	States {
+	Spawn:
+		APLR A -1;
+		stop;
+	}
+}
+
 class ToM_PlayerShadow : ToM_BaseActor
 {
+	enum EShadowModes
+	{
+		SMODE_Hidden,
+		SMODE_Blob,
+		SMODE_3D,
+	}
+
+	int shadowMode;
+
 	Default
 	{
 		+NOINTERACTION
 		+NOBLOCKMAP
 		+DECOUPLEDANIMATIONS
+		+SYNCHRONIZED
+		+DONTBLAST
+		FloatBobPhase 0;
 		Height 1;
 		Radius 1;
 		Renderstyle 'Stencil';
 		StencilColor '000000';
+		Alpha 1;
 	}
 
 	override void Tick()
@@ -1061,12 +1085,45 @@ class ToM_PlayerShadow : ToM_BaseActor
 			Destroy();
 			return;
 		}
-		SetZ(min(master.pos.z, master.floorz));
+		UpdateMode();
+
+		SetOrigin((pos.xy, min(master.pos.z, master.floorz)), false);
 		SetOrigin((master.pos.xy, pos.z), true);
 		A_SetAngle(master.angle, SPF_INTERPOLATE);
 		spriteRotation = master.spriteRotation;
 		double scf = ToM_Utils.LinearMap(abs(pos.z - master.pos.z), 0, 320, 1.2, 3.5, true);
 		scale = master.scale * scf;
+	}
+
+	void UpdateMode()
+	{
+		// this is not synced, so check for consoleplayer!
+		int mode = CVar.GetCVar('tom_playershadow', players[consoleplayer]).GetInt();
+		if (shadowMode == mode) return;
+	
+		switch (mode)
+		{
+			default:
+				renderRequired = -1;
+				break;
+			case 1:
+				renderRequired = 0;
+				bDECOUPLEDANIMATIONS = false;
+				for (int i = 1; i <= 10; i++)
+				{
+					A_ChangeModel("", modelindex: i, flags: CMDL_HIDEMODEL);
+				}
+				alpha = 0.8;
+				A_ChangeModel("ToM_PlayerShadowBlob");
+				break;
+			case 2:
+				renderRequired = 0;
+				bDECOUPLEDANIMATIONS = true;
+				alpha = default.alpha;
+				A_ChangeModel("");
+				break;
+		}
+		shadowMode = mode;
 	}
 
 	States {

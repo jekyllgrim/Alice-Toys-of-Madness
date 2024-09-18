@@ -56,6 +56,7 @@ OptionMenu "ToM_Settings"
 	Option "$TOM_MENU_PARTICLES", "tom_particles", "ToM_ParticleIntensity"
 	Option "$TOM_MENU_CHESHIRE_MAP", "tom_cheshire_map", "OnOff"
 	Option "$TOM_MENU_CHESHIRE_ITEMS", "tom_cheshire_items", "OnOff"
+	Option "$TOM_MENU_SHADOWMODE", "tom_playershadow", "ToM_ShadowMode"
 	StaticText ""
 
 	Option "$TOM_MENU_CROSSHAIRMODE", "tom_tppCrosshair", "ToM_CrosshairModes"
@@ -90,4 +91,11 @@ OptionValue "ToM_ParticleIntensity"
 	0, "$TOM_MENU_PARTICLES_OFF"
 	1, "$TOM_MENU_PARTICLES_MIN"
 	2, "$TOM_MENU_PARTICLES_MAX"
+}
+
+OptionValue "ToM_ShadowMode"
+{
+	0, "$TOM_MENU_SHADOWMODE_OFF"
+	1, "$TOM_MENU_SHADOWMODE_BLOB"
+	2, "$TOM_MENU_SHADOWMODE_3D"
 }

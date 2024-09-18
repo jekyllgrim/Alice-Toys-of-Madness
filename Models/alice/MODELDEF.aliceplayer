@@ -16,6 +16,21 @@ Model ToM_PlayerShadow
 	Scale 1.0 1.0 0.05
 	MODELSAREATTACHMENTS
 	BaseFrame
+
+	Model 20 "circle.obj"
+	Skin 20 "blobshadow.png"
+	FrameIndex M000 A 20 0
+}
+
+Model ToM_PlayerShadowBlob
+{
+	Path "models/pool"
+	Model 0 "circle.obj"
+	Skin 0 "blobshadow.png"
+	ZOffset 0.25
+	Scale 0.7 0.7 1
+
+	FrameIndex APLR A 0 0
 }
 
 /*

@@ -475,7 +475,10 @@ class ToM_AlicePlayer : DoomPlayer
 					dmgAngle = self.DeltaAngle(self.angle, self.AngleTo(who));
 				}
 			}
-			hudface.PlayerDamaged(dmg, dmgAngle);
+			if (hudface)
+			{
+				hudface.PlayerDamaged(dmg, dmgAngle);
+			}
 		}
 		return dmg;
 	}

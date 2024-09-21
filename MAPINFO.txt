@@ -3,7 +3,7 @@ Gameinfo
 	PlayerClasses = "ToM_AlicePlayer"
 	AddEventhandlers = "ToM_Mainhandler", "ToM_StaticStuffHandler", "ToM_UiHandler"
 	StatusBarClass = "ToM_AliceHUD"
-	ArmorIcons = "ACARM_1", 0.5, "ACARM_2"
+	ArmorIcons = "ABR1A0", 0.5, "ABR2A0"
 	TitleMusic = "music/alice_title.mp3"
 	QuitMessages = "Running away, are we?"
 	QuitSound = "menu/quit"

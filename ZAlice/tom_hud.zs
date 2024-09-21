@@ -144,9 +144,10 @@ class ToM_AliceHUD : BaseStatusBar
 	override void Init() 
 	{
 		super.Init();
-		Font fnt = "INDEXFONT";
-		hfIndexfont = HUDFont.Create(fnt, fnt.GetCharWidth("0"), Mono_CellLeft, 1, 1);
-		hfAsrafel = HUDFont.Create(Font.FindFont('AsrafelComplete'));
+		Font fnt = Font.FindFont('AsrafelComplete');
+		//hfIndexfont = HUDFont.Create(fnt, fnt.GetCharWidth("0"), Mono_CellLeft, 1, 1);
+		hfAsrafel = HUDFont.Create(fnt);
+		hfIndexfont = HUDFont.Create(fnt, shadowx: 2, shadowy: 2);
 
 		invbarstate = InventoryBarstate.Create();
 	}
@@ -464,11 +465,24 @@ class ToM_AliceHUD : BaseStatusBar
 		vector2 ofs = GetSbarOffsets();
 	
 		// armor frame goes first
-		let armor = BasicArmor(CPlayer.mo.FindInventory("BasicArmor"));
-		if (armor && armor.amount > 0)
+		let barm = BasicArmor(CPlayer.mo.FindInventory("BasicArmor"));
+		if (barm && barm.amount > 0)
 		{
-			ToM_DrawInventoryIcon(armor, ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
-			ToM_DrawString(hfIndexfont, String.Format("%d",GetArmorAmount()), (81, -147) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetArmorColor(armor), scale: (1.5, 1.5));
+			String armimg;
+			switch(barm.armortype)
+			{
+				case 'ToM_ArmorBonus':
+					armimg = "graphics/HUD/armor_bronze.png";
+					break;
+				case 'ToM_SilverArmor':
+					armimg = "graphics/HUD/armor_silver.png";
+					break;
+				default:
+					armimg = "graphics/HUD/armor_gold.png";
+					break;
+			}
+			ToM_DrawImage(armimg, ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
+			ToM_DrawString(hfIndexfont, String.Format("%d",GetArmorAmount()), (81, -152) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetArmorColor(barm), scale: (0.5, 0.35));
 		}
 		
 		// mirror's background:
@@ -487,7 +501,7 @@ class ToM_AliceHUD : BaseStatusBar
 		ToM_DrawImage("graphics/HUD/mirror_frame.png", ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		
 		// finally, health numbers:
-		ToM_DrawString(hfIndexfont, String.Format("%d",CPlayer.health), (81, -43) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetHealthColor(), scale: (1.55, 1.55));
+		ToM_DrawString(hfIndexfont, String.Format("%d",CPlayer.health), (81, -43) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetHealthColor(), scale: (0.5, 0.35));
 	}
 	
 	// Draws a single mana vessel (3 of them used in right corner)

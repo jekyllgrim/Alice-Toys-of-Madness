@@ -234,7 +234,7 @@ class ToM_SilverArmor : ToM_ArmorPickup
 	
 	Default
 	{
-		Inventory.icon "ACARM_1";
+		Inventory.icon "ABR1A0";
 		Inventory.pickupsound "pickups/armor/light";
 		Inventory.PickupMessage "$TOM_ITEM_ARMOR_MED";
 		Armor.SavePercent 33.335;
@@ -287,7 +287,7 @@ class ToM_GoldArmor : ToM_SilverArmor
 {	
 	Default
 	{
-		Inventory.icon "ACARM_2";
+		Inventory.icon "ABR2A0";
 		Inventory.pickupsound "pickups/armor/heavy";
 		Inventory.PickupMessage "$TOM_ITEM_ARMOR_BIG";
 		Armor.SavePercent 50;

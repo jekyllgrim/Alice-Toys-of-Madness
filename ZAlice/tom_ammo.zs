@@ -166,6 +166,8 @@ class ToM_WeakMana : ToM_Ammo
 		ammo.backpackmaxamount 300;
 		ToM_Ammo.bigPickupClass "ToM_WeakManaBig";
 		ToM_Ammo.particleColor "ffb100";
+		xscale 0.3;
+		yscale 0.3 / 1.2;
 	}
 	
 	States {
@@ -181,6 +183,8 @@ class ToM_WeakManaBig : ToM_WeakMana
 	{
 		inventory.amount 40;
 		ToM_Ammo.bigPickupClass "";
+		xscale 0.4;
+		yscale 0.4 / 1.2;
 	}
 	
 	States {
@@ -306,7 +310,7 @@ class ToM_EquipmentSpawner : Inventory abstract
 	{
 		let toSpawn = itemToSpawn;
 		
-		if (bigPickupChance >= 1)
+		if (bigPickupChance > 0)
 		{
 			let am = (class<ToM_Ammo>)(itemToSpawn);
 			if (am)
@@ -388,10 +392,12 @@ class ToM_EquipmentSpawner : Inventory abstract
 				tospawn = ammo2;
 			}
 			
-			//ammo dropped by enemies should always be small:
+			// ammo dropped by enemies should always be small
+			// and never spawn two of them:
 			if (bTOSSED)
 			{
 				bigPickupChance = 0;
+				twoPickupsChance = 0;
 			}
 			
 			// Spawn the ammo:
@@ -400,8 +406,9 @@ class ToM_EquipmentSpawner : Inventory abstract
 			// if the chance for two pickups is high enough, 
 			// spawn the other type of ammo:
 			if (twoPickupsChance >= frandom[ammoSpawn](1,100)) {
+				bigPickupChance /= 2; // if spawning two pickups, they should usually be small)
 				class<Ammo> tospawn2 = (tospawn == ammo1) ? ammo2 : ammo1;
-				// If it's dropped by an enemy, throw the second
+				/*// If it's dropped by an enemy, throw the second
 				// pickup at a different angle:
 				if (bTOSSED)
 				{
@@ -416,11 +423,11 @@ class ToM_EquipmentSpawner : Inventory abstract
 				}
 				// Otherwise spawn it in a random position in a 32
 				// radius around it:
-				else 
-				{	
+				else */
+				//{	
 					let spawnpos = ToM_Utils.FindRandomPosAround(pos, 128, mindist: 32, maxHeightDiff: 32);
 					SpawnInvPickup(spawnpos,tospawn2);
-				}
+				//}
 			}
 			return ResolveState(null);
 		}
@@ -442,26 +449,63 @@ class ToM_AmmoSpawner_WeakMedium_Big : ToM_AmmoSpawner_WeakMedium
 {
 	Default 
 	{
-		ToM_EquipmentSpawner.otherPickupChance 30;
-		ToM_EquipmentSpawner.twoPickupsChance 40;
+		ToM_EquipmentSpawner.otherPickupChance 40;
+		ToM_EquipmentSpawner.twoPickupsChance 20;
 		ToM_EquipmentSpawner.bigPickupChance 100;
 	}
 }
 
-class ToM_AmmoSpawner_WeakMedium_Other : ToM_AmmoSpawner_WeakMedium 
+class ToM_AmmoSpawner_MediumWeak : ToM_AmmoSpawner_WeakMedium 
+{
+	Default 
+	{
+		ToM_EquipmentSpawner.otherPickupChance 60;
+	}
+}
+
+class ToM_AmmoSpawner_MediumWeak_Big : ToM_AmmoSpawner_WeakMedium_Big 
+{
+	Default 
+	{
+		ToM_EquipmentSpawner.otherPickupChance 80;
+	}
+}
+
+class ToM_AmmoSpawner_MediumStrong : ToM_EquipmentSpawner 
+{
+	Default 
+	{
+		ToM_EquipmentSpawner.weapon1 "ToM_PepperGrinder";
+		ToM_EquipmentSpawner.weapon2 "ToM_IceWand";
+		ToM_EquipmentSpawner.otherPickupChance 30;
+	}
+}
+
+class ToM_AmmoSpawner_MediumStrong_Big : ToM_AmmoSpawner_MediumStrong 
 {
 	Default 
 	{
 		ToM_EquipmentSpawner.otherPickupChance 50;
-		ToM_EquipmentSpawner.twoPickupsChance 50;
+		ToM_EquipmentSpawner.twoPickupsChance 20;
+		ToM_EquipmentSpawner.bigPickupChance 100;
 	}
 }
 
-class ToM_AmmoSpawner_WeakMedium_Other_Big : ToM_AmmoSpawner_WeakMedium_Other 
+class ToM_AmmoSpawner_StrongMedium : ToM_AmmoSpawner_MediumStrong 
 {
 	Default 
 	{
-		ToM_EquipmentSpawner.bigPickupChance 100;
+		ToM_EquipmentSpawner.otherPickupChance 70;
+		ToM_EquipmentSpawner.twoPickupsChance 30;
+	}
+}
+
+class ToM_AmmoSpawner_StrongMedium_Big : ToM_AmmoSpawner_MediumStrong_Big 
+{
+	Default 
+	{
+		ToM_EquipmentSpawner.otherPickupChance 70;
+		ToM_EquipmentSpawner.twoPickupsChance 30;
 	}
 }
 

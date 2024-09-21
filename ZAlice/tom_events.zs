@@ -282,25 +282,25 @@ class ToM_Mainhandler : EventHandler
 			e.Replacement = "ToM_AmmoSpawner_WeakMedium"; 
 			break;
 		case 'ClipBox':
-			e.Replacement = "ToM_AmmoSpawner_WeakMedium_Other_Big"; 
+			e.Replacement = "ToM_AmmoSpawner_MediumWeak_Big"; 
 			break;
 		case 'Shell':
-			e.Replacement = "ToM_AmmoSpawner_WeakMedium"; 
+			e.Replacement = "ToM_AmmoSpawner_MediumWeak"; 
 			break;
 		case 'ShellBox':
 			e.Replacement = "ToM_AmmoSpawner_WeakMedium_Big"; 
 			break;
 		case 'RocketAmmo':
-			e.Replacement = "ToM_AmmoSpawner_WeakMedium_Other"; 
+			e.Replacement = "ToM_AmmoSpawner_MediumStrong"; 
 			break;
 		case 'RocketBox':
-			e.Replacement = "ToM_AmmoSpawner_WeakMedium_Other_Big"; 
+			e.Replacement = "ToM_AmmoSpawner_MediumStrong_Big"; 
 			break;
 		case 'Cell':
-			e.Replacement = "ToM_StrongMana"; 
+			e.Replacement = "ToM_AmmoSpawner_StrongMedium"; 
 			break;
 		case 'CellPack':
-			e.Replacement = "ToM_StrongManaBig"; 
+			e.Replacement = "ToM_AmmoSpawner_StrongMedium_Big"; 
 			break;
 		}
 	}

@@ -1110,7 +1110,17 @@ class ToM_BaseWeapon : Weapon abstract
 	override void Tick()
 	{
 		super.Tick();
-		if (owner || isFrozen() || bTossed)
+		if (owner || bNoSector || isFrozen())
+		{
+			return;
+		}
+		
+		// blink light level:
+		lightlevel = 128 + int(round(128 * ToM_Utils.SinePulse(TICRATE*2, GetAge())));
+
+		// also spawn pickup particles — but only on weapons not dropped
+		// by monsters:
+		if (bTossed)
 			return;
 		
 		if (GetAge() % 10 == 0)

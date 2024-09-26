@@ -28,24 +28,6 @@ class ToM_Mainhandler : EventHandler
 			alice.isCamShoulderSwapped = !alice.isCamShoulderSwapped;
 			alice.camShoulderSwapTics = ToM_AlicePlayer.SHOULDERSWAPTIME;
 		}
-
-// 		FOV test:
-//		if (e.name.MakeLower().IndexOf("weapfov") >= 0)
-//		{
-//			let weap = plr.player.readyweapon;
-//			if (weap)
-//			{
-//				array < string > fovcmd;
-//				lcname.Split(fovcmd, ":");
-//				double fov;
-//				if (fovcmd.Size() == 2)
-//				{				
-//					fov = fovcmd[1].ToDouble();
-//				}
-//				weap.FOVscale = fov;
-//				console.printf("%s FOVscale: %.2f", weap.GetTag(), weap.FOVScale);
-//			}
-//		}
 	}
 
 	override void WorldTick()
@@ -343,7 +325,6 @@ Class ToM_StaticStuffHandler : StaticEventHandler
 		{
 			if (stake && stake.GetStuckType() & ToM_StakeProjectile.STUCK_SECPLANE)
 			{
-				//Console.Printf("Running \cdStickToWall()\c- on stake projectile \cy%s\c-", stake.GetClassName());
 				stake.StickToWall();
 			}
 		}
@@ -492,6 +473,8 @@ class ToM_UiHandler : StaticEventHandler
 
 	override void RenderOverlay(renderEvent e) 
 	{
+		PrintDebugMessages();
+
 		if (gamestate != GS_LEVEL)
 			return;
 		

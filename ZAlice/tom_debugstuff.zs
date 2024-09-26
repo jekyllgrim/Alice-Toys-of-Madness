@@ -1,3 +1,113 @@
+extend class ToM_UiHandler
+{
+	const DEBUGAREA_X = 1920;
+	const DEBUGAREA_Y = 1080;
+	array<ToM_DebugMessage> debugmessages;
+	ui HUDFont dfont;
+
+	ui void PrintDebugBlock(array<String> strings, Vector2 pos, Vector2 size, HUDfont hfnt, double fntscale = 1.0, int screenflags = 0)
+	{
+		statusbar.Fill(0x30000000, pos.x, pos.y, size.x, size.y, screenflags);
+		int indent = 1;
+		double fntheight = hfnt.mFont.GetHeight() * fntscale;
+		int maxlines = (size.y - indent*2) / (fntheight + indent);
+		double maxlinewidth = (size.x - indent*4);
+		Vector2 strpos = (pos.x + indent * 2, pos.y + size.y - fntheight - 1);
+		int totalLines;
+		double alpha = 1.0;
+		for (int i = strings.Size() - 1; i >= 0; i--)
+		{
+			String str = strings[i];
+			if (!str) continue;
+			int lines = int(ceil((hfnt.mFont.StringWidth(str) * fntscale ) / maxlinewidth));
+			statusbar.DrawString(hfnt,
+				str,
+				(strpos.x, strpos.y - (fntheight + 1) * (lines - 1)),
+				screenflags,
+				alpha: alpha,
+				wrapwidth: maxlinewidth,
+				linespacing: indent);
+			totalLines += lines;
+			if (totalLines > maxlines)
+			{
+				break;
+			}
+
+			strpos.y -= (fntheight + 1) * lines;
+			alpha = 1.0 - 0.5*(double(totalLines) / maxlines);
+		}
+	}
+
+	ui void PrintDebugMessages()
+	{
+		if (tom_debugmessages <= 0) return;
+
+		statusbar.BeginHUD(1.0, true, DEBUGAREA_X, DEBUGAREA_Y);
+		if (!dfont)
+		{
+			Font fnt = Font.FindFont('NewConsoleFont');
+			dfont = HUDFont.Create(fnt, fnt.GetCharWidth("0"), Mono_CellCenter, 0, 1);
+		}
+
+		Vector2 pos = (0, 0);
+		Vector2 areaSize = (DEBUGAREA_X, DEBUGAREA_Y) * 0.25;
+
+		for (int i = 0; i < debugmessages.Size(); i++)
+		{
+			let data = debugmessages[i];
+			if (!data) continue;
+
+			if (data.stringID > tom_debugmessages) continue;
+
+			PrintDebugBlock(data.debugstrings, pos, areaSize, dfont, fntscale: 1.0, screenflags: StatusBarCore.DI_SCREEN_LEFT_TOP);
+
+			pos.x += areaSize.x + 2;
+			if (pos.x >= DEBUGAREA_X)
+			{
+				pos.x = 0;
+				pos.y += areaSize.y + 2;
+			}
+		}
+	}
+}
+
+class ToM_DebugMessage play
+{
+	const STRINGUPDATETIME = 4;
+	int stringID;
+	array<String> debugstrings;
+
+	static void Print(String debugstring, int stringID = 1)
+	{
+		debugstring = String.Format("\cz%d\c- %s", gametic, debugstring);
+		let handler = ToM_UiHandler(StaticEventHandler.Find('ToM_UiHandler'));
+		if (handler)
+		{
+			foreach (data : handler.debugmessages)
+			{
+				if (data && data.stringID == stringID)
+				{
+					data.Update(debugstring);
+					return;
+				}
+			}
+		}
+		let data = new('ToM_DebugMessage');
+		data.debugstrings.Push(debugstring);
+		data.stringID = stringID;
+		handler.debugmessages.Push(data);
+	}
+
+	void Update(String debugstring)
+	{
+		debugstrings.Push(debugstring);
+		if (debugstrings.Size() > 64)
+		{
+			debugstrings.Delete(0, debugstrings.Size() - 64);
+		}
+	}
+}
+
 class ToM_DebugSpot : Actor 
 {	
 	Default 

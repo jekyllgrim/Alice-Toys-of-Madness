@@ -669,8 +669,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				A_WeaponOffset(Clamp(psp.x-2, -68, 0), Clamp(psp.y+2, 32, 68), WOF_INTERPOLATE);
 			}
 			A_HorseSwing(0, 0.05, 0.5);
-			if (tom_debugmessages)
-				console.printf("fall attack force: %d", invoker.fallAttackForce);
+			ToM_DebugMessage.Print(String.Format("fall attack force: %d", invoker.fallAttackForce));
 			if (invoker.fallAttackForce > 25)
 				A_StartSound("weapons/hhorse/freefall", CHAN_BODY, CHANF_LOOPING);
 		}

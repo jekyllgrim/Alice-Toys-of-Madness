@@ -250,8 +250,7 @@ class ToM_Cards : ToM_BaseWeapon
 	
 		if (Cards.Size() <= 0)
 		{
-			if (tom_debugmessages)
-				console.printf("\cyCARDS\c- \cdCards\c- array empty: filling");
+			ToM_DebugMessage.Print(String.Format("\cyCARDS\c- \cdCards\c- array empty: filling"));
 			FillCardsArray();
 		}
 		
@@ -264,8 +263,7 @@ class ToM_Cards : ToM_BaseWeapon
 			Cards.Delete(id);
 		}
 		
-		if (tom_debugmessages)
-			console.printf("\cyCARDS\c- Selected card sprite: \cd%s\c- | value: \cd%d\c-", cardSpriteName, cardValue);
+		ToM_DebugMessage.Print(String.Format("\cyCARDS\c- Selected card sprite: \cd%s\c- | value: \cd%d\c-", cardSpriteName, cardValue));
 		
 		return cardValue, cardSpriteName;
 	}
@@ -285,8 +283,7 @@ class ToM_Cards : ToM_BaseWeapon
 		case APSP_Card2: cardId = 1; break;
 		case APSP_Card3: cardId = 2; break;
 		}
-		if (tom_debugmessages)
-			console.printf("\cyCARDS\c- Attempting to set card for layer \cd%d\c-", layerID);
+		ToM_DebugMessage.Print(String.Format("\cyCARDS\c- Attempting to set card for layer \cd%d\c-", layerID));
 			
 		int dmg; name spriteName;
 		[dmg, spriteName] = invoker.PickRandomCard();
@@ -297,8 +294,7 @@ class ToM_Cards : ToM_BaseWeapon
 		let s = GetSpriteIndex(invoker.cardSpriteName[cardId]);
 		if (s > 0)
 		{
-			if (tom_debugmessages)
-				console.printf("\cyCARDS\c- Selected sprite \cd%s\c- for layer \cd%d\c-", invoker.cardSpriteName[cardID], layerID);
+			ToM_DebugMessage.Print(String.Format("\cyCARDS\c- Selected sprite \cd%s\c- for layer \cd%d\c-", invoker.cardSpriteName[cardID], layerID));
 			return s;
 		}
 		

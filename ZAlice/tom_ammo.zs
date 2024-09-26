@@ -379,8 +379,7 @@ class ToM_EquipmentSpawner : Inventory abstract
 				// if players have neither, both calculations 
 				// will happen, ultimately leaving the chance 
 				// unchanged!
-				if (tom_debugmessages)
-					console.printf("alt set chance: %f",otherPickupChance);
+				ToM_DebugMessage.Print(String.Format("alt set chance: %f",otherPickupChance));
 			}
 			
 			//define two possible ammo pickups to spawn:
@@ -650,8 +649,7 @@ class ToM_WeaponSpawner : ToM_EquipmentSpawner abstract
 			//if there's only current weapon, spawn it:
 			else if (wcount <= 1)
 				toSpawnFinal = toSpawn;
-			if (tom_debugmessages)
-				Console.PrintF("There are at least %d instaces of %s on this map. Spawning %s",wcount,toSpawn.GetClassName(),toSpawnFinal.GetClassName());
+			ToM_DebugMessage.Print(String.Format("There are at least %d instaces of %s on this map. Spawning %s",wcount,toSpawn.GetClassName(),toSpawnFinal.GetClassName()));
 			SpawnInvPickup(pos,toSpawnFinal);
 		}
 		stop;

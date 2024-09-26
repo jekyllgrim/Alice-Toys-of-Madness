@@ -56,8 +56,7 @@ class ToM_CheshireCat : ToM_CheshireCatBase
 		// Start with 0 and go right:
 		for (int i = 0; abs(i) <= abs(anglimit); i += angstep)
 		{
-			if (tom_debugmessages)
-				Console.Printf("Iterating. i = %d, angstep = %d, anglimit = %d", i, angstep, anglimit);
+			ToM_DebugMessage.Print(String.Format("Iterating. i = %d, angstep = %d, anglimit = %d", i, angstep, anglimit));
 			// reached right limit, start going left:
 			if (anglimit == alim1 && i >= anglimit)
 			{
@@ -75,15 +74,13 @@ class ToM_CheshireCat : ToM_CheshireCatBase
 					anglimit = alim2;
 					angstep = -angstep;
 					i = alim1;
-					if (tom_debugmessages)
-						Console.Printf("reached -45. Resetting. i = %d, angstep = %d, anglimit = %d", i, angstep, anglimit);
+					ToM_DebugMessage.Print(String.Format("reached -45. Resetting. i = %d, angstep = %d, anglimit = %d", i, angstep, anglimit));
 					continue;
 				}
 				// otherwise abort:
 				else
 				{
-					if (tom_debugmessages)
-						Console.Printf("reached %d, aborting", anglimit);
+					ToM_DebugMessage.Print(String.Format("reached %d, aborting", anglimit));
 					break;
 				}
 			}
@@ -109,16 +106,14 @@ class ToM_CheshireCat : ToM_CheshireCatBase
 			// stop looking if position is good:
 			if (spawngood)
 			{
-				if (tom_debugmessages)
-					Console.Printf("Found good spawn position");
+				ToM_DebugMessage.Print(String.Format("Found good spawn position"));
 				break;
 			}
 		}
 		// Not a single valid position found:
 		if (spawnpos == pmo.pos)
 		{
-			if (tom_debugmessages)
-				Console.Printf("Can't find any cat positions");
+			ToM_DebugMessage.Print(String.Format("Can't find any cat positions"));
 			return;
 		}
 

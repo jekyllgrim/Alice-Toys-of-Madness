@@ -582,8 +582,7 @@ class ToM_BaseWeapon : Weapon abstract
 		let cont = ToM_PspResetController(ToM_PspResetController.Create(psp, staggertics, tofs, interpolate: interpolate));
 		if (!cont)
 		{
-			if (ToM_debugmessages)
-				console.printf("\cYPSPRC:\c- Error: Couldn't create ToM_PspResetController", tlayer);
+			ToM_DebugMessage.Print(String.Format("\cYPSPRC:\c- Error: Couldn't create ToM_PspResetController", tlayer));
 			return;
 		}
 		
@@ -1725,8 +1724,7 @@ Class ToM_StakeProjectile : ToM_Projectile
 		if (ShouldActivateLines)
 		{
 			FireLineActivator();
-			if (tom_debugmessages)
-				console.printf("%s is firing a line activator", myclass);
+			ToM_DebugMessage.Print(String.Format("%s is firing a line activator", myclass));
 		}
 		
 		// Disable actor collision upon sticking into a wall.
@@ -1768,14 +1766,12 @@ Class ToM_StakeProjectile : ToM_Projectile
 		if (trac.HitLocation.z >= topz) 
 		{
 			stucktype = STUCK_CEILING;
-			if (tom_debugmessages)
-				console.printf("\cy%s\c- hit ceiling at at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,pos.x,pos.y,pos.z);
+			ToM_DebugMessage.Print(String.Format("\cy%s\c- hit ceiling at at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,pos.x,pos.y,pos.z));
 		}
 		else if (trac.HitLocation.z <= botz) 
 		{
 			stucktype = STUCK_FLOOR;
-			if (tom_debugmessages)
-				console.printf("\cy%s\c- hit floor at at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,pos.x,pos.y,pos.z);
+			ToM_DebugMessage.Print(String.Format("\cy%s\c- hit floor at at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,pos.x,pos.y,pos.z));
 		}
 		// If stuck in floor or ceiling, stop here:
 		if (stucktype == STUCK_FLOOR || stucktype == STUCK_CEILING)
@@ -1792,8 +1788,7 @@ Class ToM_StakeProjectile : ToM_Projectile
 			F3DFloor flr = trac.Hit3DFloor;
 			stickplane = flr.top;
 			stickoffset = stickplane.ZAtPoint(sticklocation) - pos.z;
-			if (tom_debugmessages)
-				console.printf("\cy%s\c- hit a 3D floor at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,pos.x,pos.y,pos.z);
+			ToM_DebugMessage.Print(String.Format("\cy%s\c- hit a 3D floor at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,pos.x,pos.y,pos.z));
 			return;
 		}
 		//otherwise see if we hit a line:
@@ -1806,8 +1801,7 @@ Class ToM_StakeProjectile : ToM_Projectile
 			// so don't do anything else:
 			if (!tline.backsector) 
 			{
-				if (tom_debugmessages)
-					console.printf("\cy%s\c- hit one-sided line, not doing anything else",myclass);
+				ToM_DebugMessage.Print(String.Format("\cy%s\c- hit one-sided line, not doing anything else",myclass));
 				return;
 			}
 			stucktype |= STUCK_SECPLANE;
@@ -1833,8 +1827,7 @@ Class ToM_StakeProjectile : ToM_Projectile
 				stickplane = targetsector.ceilingplane;
 				stickoffset = ceilHitZ - pos.z;
 			}
-			if (tom_debugmessages)
-				console.printf("\cy%s\c- hit the %s %s part of the line at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,secpart,sside,pos.x,pos.y,pos.z);
+			ToM_DebugMessage.Print(String.Format("\cy%s\c- hit the %s %s part of the line at \cd%d\c-,\cd%d\c-,\cd%d\c-",myclass,secpart,sside,pos.x,pos.y,pos.z));
 		}
 	}
 	
@@ -1844,8 +1837,7 @@ Class ToM_StakeProjectile : ToM_Projectile
 	virtual void StakeBreak() 
 	{
 		stucktype = STUCK_NONE;
-		if (tom_debugmessages)
-			console.printf("\cy%s\c- destroyed at \cd%d\c-,\cd%d\c-,\cd%d\c-",GetClassName(), pos.x, pos.y, pos.z);
+		ToM_DebugMessage.Print(String.Format("\cy%s\c- destroyed at \cd%d\c-,\cd%d\c-,\cd%d\c-",GetClassName(), pos.x, pos.y, pos.z));
 		if (self)
 			Destroy();
 	}

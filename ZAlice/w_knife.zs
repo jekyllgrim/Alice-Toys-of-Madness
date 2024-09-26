@@ -256,8 +256,7 @@ class ToM_Knife : ToM_BaseWeapon
 				psp.SetState(ResolveState("CatchKnife"));
 		}
 		
-		if (tom_debugmessages)
-			console.printf("Knife successfully recalled");
+		ToM_DebugMessage.Print(String.Format("Knife successfully recalled"));
 	}
 		
 	
@@ -273,8 +272,7 @@ class ToM_Knife : ToM_BaseWeapon
 		// the bool to false:
 		if (wasThrown && !knife)
 		{
-			if (tom_debugmessages)
-				console.printf("Lost pointer to thrown knife; restoring automatically");
+			ToM_DebugMessage.Print(String.Format("Lost pointer to thrown knife; restoring automatically"));
 			wasThrown = false;
 		}
 		
@@ -298,8 +296,7 @@ class ToM_Knife : ToM_BaseWeapon
 				// and restore the knife in our hand:
 				else
 				{
-					if (tom_debugmessages)
-						console.printf("Lost pointer to thrown knife; restoring automatically");
+					ToM_DebugMessage.Print(String.Format("Lost pointer to thrown knife; restoring automatically"));
 					CatchKnife();
 				}
 			}
@@ -407,8 +404,7 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			A_StopPSpriteReset();
 			A_OverlayFlags(OverlayID(), PSPF_ADDBOB, false);
-			if (tom_debugmessages)
-				console.printf("Rage Mode over: deselecting claw");
+			ToM_DebugMessage.Print(String.Format("Rage Mode over: deselecting claw"));
 		}
 		VCLW AAAAA 1 
 		{
@@ -908,13 +904,11 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		// being recalled; do nothing:
 		if (bNOCLIP)
 		{
-			if (tom_debugmessages)
-				console.printf("Knife is already being recalled");
+			ToM_DebugMessage.Print(String.Format("Knife is already being recalled"));
 			return;
 		}
 
-		if (tom_debugmessages)
-			console.printf("Recalling knife");
+		ToM_DebugMessage.Print(String.Format("Recalling knife"));
 		
 		if (tracer && tracer.bISMONSTER && tracer.health <= 0 && !tracer.bNOBLOOD && !tracer.bDORMANT)
 		{
@@ -1039,8 +1033,7 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 			deathDelay++;
 			if (deathDelay >= KV_DEATHRECALLTIME)
 			{
-				if (tom_debugmessages)
-					console.printf("Victim has been dead for %d tics, recalling knife", deathDelay);
+				ToM_DebugMessage.Print(String.Format("Victim has been dead for %d tics, recalling knife", deathDelay));
 				BeginRecall();
 			}
 		}

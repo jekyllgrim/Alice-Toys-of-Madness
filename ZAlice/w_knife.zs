@@ -572,8 +572,7 @@ class ToM_Knife : ToM_BaseWeapon
 			if (invoker.combo > 0 && level.maptime % 5 == 0)
 			{
 				invoker.combo -= 1;
-				if (tom_debugmessages > 1)
-					console.printf("Knife combo counter: %d", invoker.combo);
+				ToM_DebugMessage.Print(String.Format("Knife combo counter: %d", invoker.combo), 2);
 			}
 			
 			// Move this hand away if the claw is currently attacking:

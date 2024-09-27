@@ -59,8 +59,7 @@ class ToM_Utils
 			if (!checkall) 
 			{
 				if (hasItem) {
-					if (tom_debugmessages > 1)
-						console.printf("Player %d has %s",plr.mo.PlayerNumber(),itm.GetClassName());
+					ToM_DebugMessage.Print(String.Format("Player %d has %s",plr.mo.PlayerNumber(),itm.GetClassName()), 2);
 					found = true;
 					break;
 				}
@@ -70,8 +69,7 @@ class ToM_Utils
 			// to NOT have the item, return false:
 			else if (!hasItem) 
 			{
-				if (tom_debugmessages > 1)
-					console.printf("Player %d doesn't have %s.",plr.mo.PlayerNumber(),itm.GetClassName());
+				ToM_DebugMessage.Print(String.Format("Player %d doesn't have %s.",plr.mo.PlayerNumber(),itm.GetClassName()), 2);
 				found = false;
 				break;
 			}

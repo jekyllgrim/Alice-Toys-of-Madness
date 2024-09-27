@@ -581,8 +581,7 @@ class ToM_CardProjectile : ToM_StakeProjectile
 	int SetCardDamage()
 	{
 		int dmg = cardSpecialDamage > 0 ? cardSpecialDamage : 20;
-		if (tom_debugmessages > 1)
-			console.printf("\cyCARDS\c- card damage: %d", dmg);
+		ToM_DebugMessage.Print(String.Format("\cyCARDS\c- card damage: %d", dmg), 2);
 		return dmg;
 	}
 

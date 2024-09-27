@@ -517,8 +517,7 @@ class ToM_RealSeeker : ToM_JackProjectile
 			vel.z = (vdiff + 0.5 * flytime**2) / flytime;
 			vel *= GetGravity();
 			
-			if (tom_debugmessages > 1)
-				console.printf("\cyJACKS\c- victim: %s | Distance: %.1f | Vel: %.1f", tracer.GetClassName(), dist, vel.length());
+			ToM_DebugMessage.Print(String.Format("\cyJACKS\c- victim: %s | Distance: %.1f | Vel: %.1f", tracer.GetClassName(), dist, vel.length()), 2);
 			
 			return MHIT_PASS;
 		}

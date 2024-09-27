@@ -570,7 +570,7 @@ class ToM_WeaponSpawner : ToM_EquipmentSpawner abstract
 				string wclass2 = "weapon2 (not defined)";
 				if (weapon2) wclass2 = weapon2.GetClassName();
 				string dr = bTOSSED ? "It was dropped." : "It was placed on the map.";
-				console.printf("Players %s %s | Players %s %s | Secondary chance: %d, spawning %s. %s",phave1,wclass1,phave2,wclass2,otherPickupChance,tospawn.GetClassName(),dr);
+				ToM_DebugMessage.Print(String.Format("Players %s %s | Players %s %s | Secondary chance: %d, spawning %s. %s",phave1,wclass1,phave2,wclass2,otherPickupChance,tospawn.GetClassName(),dr), 1);
 			}
 			/* 
 			If it was  dropped by an enemy and ALL players have the chosen weapon, 
@@ -588,7 +588,7 @@ class ToM_WeaponSpawner : ToM_EquipmentSpawner abstract
 						reason = String.Format("All players have %s", toSpawn.GetClassName());
 					else if ((toSpawn == weapon1 && onlyMapPlaced1) || (toSpawn == weapon2 && onlyMapPlaced2))
 						reason = String.Format("This was dropped, but %s can only spawn map-placed", toSpawn.GetClassName());
-					Console.Printf("Spawning ammo instead of %s because %s", toSpawn.GetClassName(), reason);
+					ToM_DebugMessage.Print(String.Format("Spawning ammo instead of %s because %s", toSpawn.GetClassName(), reason));
 				}
 				// For ammo drops, recalculate chances again.
 				// Increase chances of dropping ammo for the

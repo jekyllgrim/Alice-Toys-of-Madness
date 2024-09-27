@@ -196,8 +196,7 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 		// If the item class is not in the replacement array,
 		// give it as is:
 		if (!replacement) {
-			if (tom_debugmessages > 1)
-				console.printf("%s doesn't need replacing, giving as is",oldItemClass);
+			ToM_DebugMessage.Print(String.Format("%s doesn't need replacing, giving as is",oldItemClass), 2);
 			return false;
 		}
 		

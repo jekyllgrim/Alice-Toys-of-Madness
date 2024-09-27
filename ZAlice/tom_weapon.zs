@@ -541,8 +541,7 @@ class ToM_BaseWeapon : Weapon abstract
 		let psp = player.FindPSprite(tlayer);
 		if (!psp)
 		{
-			if (ToM_debugmessages > 1)
-				console.printf("\cYPSPRC:\c- PSprite %d doesn't exist", tlayer);
+			ToM_DebugMessage.Print(String.Format("\cYPSPRC:\c- PSprite %d doesn't exist", tlayer), 2);
 			return;
 		}
 		let alice = ToM_AlicePlayer(self);
@@ -588,15 +587,12 @@ class ToM_BaseWeapon : Weapon abstract
 		
 		if (alice.pspcontrols.Find(cont) == alice.pspcontrols.Size())
 		{
-			if (tom_debugmessages > 1)
-			{
-				console.printf("\cYPSPRC:\c- Pushing layer \cd%d\c- into pspcontrols array. Tics: \cd%d\c-, target offsets: \cd(%d, %d)\c-", tlayer, staggertics, tofs.x, tofs.y);
-			}
+			ToM_DebugMessage.Print(String.Format("\cYPSPRC:\c- Pushing layer \cd%d\c- into pspcontrols array. Tics: \cd%d\c-, target offsets: \cd(%d, %d)\c-", tlayer, staggertics, tofs.x, tofs.y), 2);
 			alice.pspcontrols.Push(cont);
 		}
-		else if (tom_debugmessages > 1)
+		else
 		{
-			Console.Printf("\cyPSPRC:\c- Controller for layer \cd%d\c- already exists, not pushing.", tlayer);
+			ToM_DebugMessage.Print(String.Format("\cyPSPRC:\c- Controller for layer \cd%d\c- already exists, not pushing.", tlayer), 2);
 		}
 	}
 	
@@ -610,10 +606,7 @@ class ToM_BaseWeapon : Weapon abstract
 			psp.x = wx;
 			psp.y = wy;
 			psp.ResetInterpolation();
-			if (tom_debugmessages > 1)
-			{
-				Console.Printf("\cYPSPRC:\c- Layer %d reset. Pos: %.1f,%.1f | Scale: %.1f, %.1f", PSP_WEAPON, psp.x, psp.y, psp.scale.x, psp.scale.y);
-			}
+			ToM_DebugMessage.Print(String.Format("\cYPSPRC:\c- Layer %d reset. Pos: %.1f,%.1f | Scale: %.1f, %.1f", PSP_WEAPON, psp.x, psp.y, psp.scale.x, psp.scale.y), 2);
 		}
 	}
 	
@@ -627,8 +620,7 @@ class ToM_BaseWeapon : Weapon abstract
 		
 		if (!psp)
 		{
-			if (ToM_debugmessages > 1)
-				console.printf("\cYPSPRC:\c- PSprite %d doesn't exist", tlayer);
+			ToM_DebugMessage.Print(String.Format("\cYPSPRC:\c- PSprite %d doesn't exist", tlayer), 2);
 			return;
 		}
 		
@@ -640,8 +632,7 @@ class ToM_BaseWeapon : Weapon abstract
 			//Console.Printf("\cgIterating over PSprites.\c- Target id: \cg%d\c- | current id: \cg%d\c-", tlayer, cntrl? cntrl.GetPSprite().id : 000);
 			if (cntrl && cntrl.GetPSprite() == psp)
 			{
-				if (ToM_debugmessages > 1)
-					console.printf("\cYPSPRC:\c- Removing psp controller for PSprite %d", tlayer);
+				ToM_DebugMessage.Print(String.Format("\cYPSPRC:\c- Removing psp controller for PSprite %d", tlayer), 2);
 				if (dropRightThere)
 					cntrl.StopReset();
 				else
@@ -2126,15 +2117,14 @@ class ToM_PspResetController : Thinker
 			ppRC.rotation_step = (trotation - ppRC.rotation) / tics;
 			if (tom_debugmessages > 1)
 			{
-				console.printf(
+				ToM_DebugMessage.Print(String.Format(
 					"\cYPSPRC:\c- Controller created:\n"
 					"ofs: %d, %d | target ofs: %d, %d | step: %d, %d\n"
 					"scale: %.1f, %.1f | target scale: %.1f, %.1f | step: %.1f\n"
 					"rotation: %.1f | target rotation: %.1f | step: %.1f",
 					psp.x, psp.y, ppRC.targetofs.x, ppRC.targetofs.y, ppRC.ofs_step.x, ppRC.ofs_step.y,
 					psp.scale.x, psp.scale.y, ppRC.targetscale.x, ppRC.targetscale.y, ppRC.scale_step.x, ppRC.scale_step.y,
-					psp.rotation, ppRC.targetrotation, ppRC.rotation_step
-				);
+					psp.rotation, ppRC.targetrotation, ppRC.rotation_step), 2);
 			}
 		}
 		return ppRC;
@@ -2145,10 +2135,7 @@ class ToM_PspResetController : Thinker
 		Super.Tick();
 		if (!psp)
 		{
-			if (tom_debugmessages > 1)
-			{
-				console.printf("\cYPSPRC:\c- No PSprite, destroying controller");
-			}
+			ToM_DebugMessage.Print(String.Format("\cYPSPRC:\c- No PSprite, destroying controller"), 2);
 			Destroy();
 			return;
 		}
@@ -2161,18 +2148,12 @@ class ToM_PspResetController : Thinker
 
 		psp.rotation = clamp(psp.rotation + rotation_step, min(sourcerotation, targetrotation), max(sourcerotation, targetrotation));
 		
-		if (tom_debugmessages > 1)
-		{
-			console.printf("\cYPSPRC:\c- Updating PSprite | Pos \cd%.1f, %.1f | Rot \cd%.1f\c- | Scale \cd%.1f,%.1f\c-| Tics left: \cd%d\c-", psp.x, psp.y, psp.rotation, psp.scale.x, psp.scale.y, tics);
-		}
+		ToM_DebugMessage.Print(String.Format("\cYPSPRC:\c- Updating PSprite | Pos \cd%.1f, %.1f | Rot \cd%.1f\c- | Scale \cd%.1f,%.1f\c-| Tics left: \cd%d\c-", psp.x, psp.y, psp.rotation, psp.scale.x, psp.scale.y, tics), 2);
 		
 		tics--;
 		if (tics < 0)
 		{
-			if (tom_debugmessages > 1)
-			{
-				console.printf("\cYPSPRC:\c- PSP reset controller destroyed");
-			}
+			ToM_DebugMessage.Print(String.Format("\cYPSPRC:\c- PSP reset controller destroyed"), 2);
 			Destroy();
 			return;
 		}
@@ -2208,10 +2189,7 @@ class ToM_PspResetController : Thinker
 	
 	override void OnDestroy()
 	{
-		if (tom_debugmessages > 1)
-		{
-			Console.Printf("\cyPSPRC:\c- Controller for layer \cd%s\c- \cgdestroyed\c-", psp? ""..psp.id : "'unknown'");
-		}
+		ToM_DebugMessage.Print(String.Format("\cyPSPRC:\c- Controller for layer \cd%s\c- \cgdestroyed\c-", psp? ""..psp.id : "'unknown'"), 2);
 		Super.OnDestroy();
 	}
 }

@@ -2,24 +2,49 @@ extend class ToM_UiHandler
 {
 	const DEBUGAREA_X = 1920;
 	const DEBUGAREA_Y = 1080;
-	array<ToM_DebugMessage> debugmessages;
+	ui array<ToM_DebugMessage> debugmessages;
 	ui HUDFont dfont;
+
+	override void InterfaceProcess (ConsoleEvent e)
+	{
+		if (e.name.IndexOf("ToM_DebugMessage") >= 0)
+		{
+			array<String> cmd;
+			e.name.Split(cmd, "|");
+			if (cmd.Size() != 2) return;
+			int stringID = e.args[0];
+			String debugstring = String.Format("\cz%d\c- %s", gametic, cmd[1]);
+			//Console.Printf("Processing interface event %s level %d", cmd[1], stringID);
+
+			foreach (data : debugmessages)
+			{
+				if (data && data.stringID == stringID)
+				{
+					data.Update(debugstring);
+					return;
+				}
+			}
+
+			let data = ToM_DebugMessage.Create(debugstring, stringID);
+			debugmessages.Push(data);
+		}
+	}
 
 	ui void PrintDebugBlock(array<String> strings, Vector2 pos, Vector2 size, HUDfont hfnt, double fntscale = 1.0, int screenflags = 0)
 	{
 		statusbar.Fill(0x30000000, pos.x, pos.y, size.x, size.y, screenflags);
 		int indent = 1;
 		double fntheight = hfnt.mFont.GetHeight() * fntscale;
-		int maxlines = (size.y - indent*2) / (fntheight + indent);
+		int maxlines = (size.y - fntheight*2) / (fntheight + indent);
 		double maxlinewidth = (size.x - indent*4);
-		Vector2 strpos = (pos.x + indent * 2, pos.y + size.y - fntheight - 1);
+		Vector2 strpos = (pos.x + fntheight, pos.y + size.y - fntheight*2);
 		int totalLines;
 		double alpha = 1.0;
 		for (int i = strings.Size() - 1; i >= 0; i--)
 		{
 			String str = strings[i];
 			if (!str) continue;
-			int lines = int(ceil((hfnt.mFont.StringWidth(str) * fntscale ) / maxlinewidth));
+			int lines = int(ceil((hfnt.mFont.StringWidth(str) * fntscale ) / maxlinewidth)) + str.IndexOf("\\n");
 			statusbar.DrawString(hfnt,
 				str,
 				(strpos.x, strpos.y - (fntheight + 1) * (lines - 1)),
@@ -71,31 +96,24 @@ extend class ToM_UiHandler
 	}
 }
 
-class ToM_DebugMessage play
+class ToM_DebugMessage ui
 {
 	const STRINGUPDATETIME = 4;
 	int stringID;
 	array<String> debugstrings;
 
-	static void Print(String debugstring, int stringID = 1)
+	static clearscope void Print(String debugstring, int stringID = 1)
 	{
-		debugstring = String.Format("\cz%d\c- %s", gametic, debugstring);
-		let handler = ToM_UiHandler(StaticEventHandler.Find('ToM_UiHandler'));
-		if (handler)
-		{
-			foreach (data : handler.debugmessages)
-			{
-				if (data && data.stringID == stringID)
-				{
-					data.Update(debugstring);
-					return;
-				}
-			}
-		}
+		if (stringID > tom_debugmessages) return;
+		EventHandler.SendInterfaceEvent(consoleplayer, "ToM_DebugMessage|"..debugstring, stringID);
+	}
+
+	static ToM_DebugMessage Create(String debugstring, int stringID = 1)
+	{
 		let data = new('ToM_DebugMessage');
-		data.debugstrings.Push(debugstring);
 		data.stringID = stringID;
-		handler.debugmessages.Push(data);
+		data.Update(debugstring);
+		return data;
 	}
 
 	void Update(String debugstring)

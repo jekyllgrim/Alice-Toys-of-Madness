@@ -63,7 +63,7 @@ class ToM_KickWeapon : CustomInventory
 		Actor hitactor;
 		[hitType, hitactor] = ToM_Utils.GetHitType(tr);
 
-		if (tom_debugmessages > 1)
+		if (tom_debugobjects)
 		{
 			ToM_Utils.DrawParticlesFromTo(level.Vec3Offset(pos, (0, 0, atkheight)), tr.HitLocation, lifetime: 5);
 		}

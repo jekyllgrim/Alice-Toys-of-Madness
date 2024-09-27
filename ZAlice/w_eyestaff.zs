@@ -188,10 +188,7 @@ class ToM_Eyestaff : ToM_BaseWeapon
 	action state A_DoAltCharge()
 	{
 		invoker.charge++;
-		if (tom_debugmessages)
-		{
-			console.printf("Eyestaff visualMode charge: \cd%d\c-/\cq%d\c-", invoker.charge, ES_FULLALTCHARGE);
-		}
+		ToM_DebugMessage.Print(String.Format("Eyestaff visualMode charge: \cd%d\c-/\cq%d\c-", invoker.charge, ES_FULLALTCHARGE));
 
 		bool enoughAmmo = invoker.DepleteAmmo(invoker.bAltFire, true);
 		// consume 1 more ammo every 3 tics:

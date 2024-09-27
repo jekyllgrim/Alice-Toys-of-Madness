@@ -13,7 +13,7 @@ extend class ToM_UiHandler
 			e.name.Split(cmd, "|");
 			if (cmd.Size() != 2) return;
 			int stringID = e.args[0];
-			String debugstring = String.Format("\cz%d\c- %s", gametic, cmd[1]);
+			String debugstring = String.Format("\cm%d\c- %s", gametic, cmd[1]);
 			//Console.Printf("Processing interface event %s level %d", cmd[1], stringID);
 
 			foreach (data : debugmessages)
@@ -25,33 +25,36 @@ extend class ToM_UiHandler
 				}
 			}
 
-			let data = ToM_DebugMessage.Create(debugstring, stringID);
+			let data = ToM_DebugMessage.Create(debugstring, stringID, e.args[1]);
 			debugmessages.Push(data);
 		}
 	}
 
-	ui void PrintDebugBlock(array<String> strings, Vector2 pos, Vector2 size, HUDfont hfnt, double fntscale = 1.0, int screenflags = 0)
+	ui void PrintDebugBlock(array<String> strings, Vector2 pos, Vector2 size, HUDfont hfnt, double fntscale = 1.0, int screenflags = 0, double alpha = 1.0, color fillcolor = 0x30000000)
 	{
-		statusbar.Fill(0x30000000, pos.x, pos.y, size.x, size.y, screenflags);
+		statusbar.Fill(fillcolor, pos.x, pos.y, size.x, size.y, screenflags);
 		int indent = 1;
 		double fntheight = hfnt.mFont.GetHeight() * fntscale;
 		int maxlines = (size.y - fntheight*2) / (fntheight + indent);
-		double maxlinewidth = (size.x - indent*4);
+		double maxlinewidth = (size.x - fntheight*2);
 		Vector2 strpos = (pos.x + fntheight, pos.y + size.y - fntheight*2);
 		int totalLines;
-		double alpha = 1.0;
+		double stralpha = alpha;
 		for (int i = strings.Size() - 1; i >= 0; i--)
 		{
 			String str = strings[i];
 			if (!str) continue;
-			int lines = int(ceil((hfnt.mFont.StringWidth(str) * fntscale ) / maxlinewidth)) + str.IndexOf("\\n");
+
+			int lines = int(ceil((hfnt.mFont.StringWidth(str) * fntscale ) / maxlinewidth));
 			statusbar.DrawString(hfnt,
 				str,
 				(strpos.x, strpos.y - (fntheight + 1) * (lines - 1)),
 				screenflags,
-				alpha: alpha,
-				wrapwidth: maxlinewidth,
-				linespacing: indent);
+				alpha: stralpha,
+				wrapwidth: maxlinewidth / fntscale,
+				linespacing: indent,
+				scale: (fntscale, fntscale));
+
 			totalLines += lines;
 			if (totalLines > maxlines)
 			{
@@ -59,13 +62,13 @@ extend class ToM_UiHandler
 			}
 
 			strpos.y -= (fntheight + 1) * lines;
-			alpha = 1.0 - 0.5*(double(totalLines) / maxlines);
+			stralpha = alpha - alpha*0.5*(double(totalLines) / maxlines);
 		}
 	}
 
 	ui void PrintDebugMessages()
 	{
-		if (tom_debugmessages <= 0) return;
+		if (tom_debugmessages <= 0 || tom_debugMsgMode < 2) return;
 
 		statusbar.BeginHUD(1.0, true, DEBUGAREA_X, DEBUGAREA_Y);
 		if (!dfont)
@@ -74,9 +77,9 @@ extend class ToM_UiHandler
 			dfont = HUDFont.Create(fnt, fnt.GetCharWidth("0"), Mono_CellCenter, 0, 1);
 		}
 
-		Vector2 pos = (0, 0);
-		Vector2 areaSize = (DEBUGAREA_X, DEBUGAREA_Y) * 0.25;
-
+		Vector2 areaSize = (DEBUGAREA_X * tom_debugMsgSizeX, DEBUGAREA_Y * tom_debugMsgSizeY);
+		Vector2 pos = (-areaSize.x, 0);
+		Color fillcolor = color(int(round(255 * tom_debugmsgalpha * 0.2)), 0, 0, 0);
 		for (int i = 0; i < debugmessages.Size(); i++)
 		{
 			let data = debugmessages[i];
@@ -84,12 +87,19 @@ extend class ToM_UiHandler
 
 			if (data.stringID > tom_debugmessages) continue;
 
-			PrintDebugBlock(data.debugstrings, pos, areaSize, dfont, fntscale: 1.0, screenflags: StatusBarCore.DI_SCREEN_LEFT_TOP);
+			PrintDebugBlock(data.debugstrings,
+				pos,
+				areaSize,
+				dfont,
+				fntscale: tom_debugMsgFontScale,
+				screenflags: StatusBarCore.DI_SCREEN_RIGHT_TOP,
+				alpha: tom_debugmsgalpha,
+				fillcolor: fillcolor);
 
-			pos.x += areaSize.x + 2;
-			if (pos.x >= DEBUGAREA_X)
+			pos.x -= areaSize.x + 2;
+			if (pos.x < -DEBUGAREA_X)
 			{
-				pos.x = 0;
+				pos.x = DEBUGAREA_X - areaSize.x;
 				pos.y += areaSize.y + 2;
 			}
 		}
@@ -102,23 +112,47 @@ class ToM_DebugMessage ui
 	int stringID;
 	array<String> debugstrings;
 
-	static clearscope void Print(String debugstring, int stringID = 1)
+	static clearscope void Print(String debugstring, int stringID = 1, bool singular = false)
 	{
 		if (stringID > tom_debugmessages) return;
-		EventHandler.SendInterfaceEvent(consoleplayer, "ToM_DebugMessage|"..debugstring, stringID);
+		switch (tom_debugMsgMode)
+		{
+			default:
+				Console.PrintfEx(PRINT_LOG, debugstring);
+				break;
+			case 1:
+				Console.Printf(debugstring);
+				break;
+			case 2:
+				Console.PrintfEx(PRINT_LOG, debugstring);
+			case 3:
+				EventHandler.SendInterfaceEvent(consoleplayer, "ToM_DebugMessage|"..debugstring, stringID, singular);
+				break;
+		}
 	}
 
-	static ToM_DebugMessage Create(String debugstring, int stringID = 1)
+	static ToM_DebugMessage Create(String debugstring, int stringID = 1, bool singular = false)
 	{
+		if (stringID > tom_debugmessages) return null;
 		let data = new('ToM_DebugMessage');
 		data.stringID = stringID;
 		data.Update(debugstring);
 		return data;
 	}
 
-	void Update(String debugstring)
+	void Update(String debugstring, bool singular = false)
 	{
-		debugstrings.Push(debugstring);
+		if (singular)
+		{
+			debugstrings.Clear();
+		}
+		array<String> strings;
+		debugstring.Split(strings, "\n");
+		for (int i = 0; i < strings.Size(); i++)
+		{
+			String str = strings[i];
+			debugstrings.Push(str);
+		}
 		if (debugstrings.Size() > 64)
 		{
 			debugstrings.Delete(0, debugstrings.Size() - 64);

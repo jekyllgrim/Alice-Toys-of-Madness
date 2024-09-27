@@ -205,9 +205,7 @@ class ToM_InvReplacementControl : ToM_InventoryToken
 			int r_amount = GetDefaultByType(replacement).amount;
 			item.bPickupGood = true;
 			owner.A_GiveInventory(replacement,r_amount);
-			if (tom_debugmessages) {
-				console.printf("Replacing %s with %s (amount: %d)",oldItemClass,replacement.GetClassName(),r_amount);
-			}
+			ToM_DebugMessage.Print(String.Format("Replacing %s with %s (amount: %d)",oldItemClass,replacement.GetClassName(),r_amount));
 			//RecordLastPickup(replacement ? replacement : item.GetClass());
 			return true;
 		}		

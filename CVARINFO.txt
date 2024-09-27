@@ -1,4 +1,10 @@
-server int tom_debugmessages = 0;
+nosave int tom_debugmessages = 0;
+nosave int tom_debugMsgMode = 2;
+nosave float tom_debugmsgalpha = 1.0;
+nosave bool tom_debugobjects = false;
+nosave float tom_debugMsgSizeX = 0.3;
+nosave float tom_debugMsgSizeY = 0.3;
+nosave float tom_debugMsgFontScale = 1.0;
 
 user int tom_particles = 2;
 user bool tom_cheshire_map = true;

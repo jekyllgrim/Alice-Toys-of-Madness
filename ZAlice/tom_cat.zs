@@ -88,7 +88,7 @@ class ToM_CheshireCat : ToM_CheshireCatBase
 			Vector3 ppos;
 			ppos.xy = pmo.pos.xy + Actor.RotateVector((frandom[catspawn](mindist, rad), 0), pmo.angle + i);
 			ppos.z = level.PointInSector(ppos.xy).NextLowestFloorAt(ppos.x, ppos.y, pmo.pos.z);
-			if (tom_debugmessages)
+			if (tom_debugobjects)
 				ToM_DebugSpot.Spawn(ppos, 5, 6);
 
 			if (ppos.z > pmo.pos.z + 160 || ppos.z < pmo.pos.z - 64) continue;

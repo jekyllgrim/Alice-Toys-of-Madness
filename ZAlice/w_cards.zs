@@ -50,10 +50,7 @@ class ToM_Cards : ToM_BaseWeapon
 		if (psp)
 		{
 			player.SetPSPrite(invoker.curCardLayer, ResolveState("FireCard"));
-			if (tom_debugmessages)
-			{
-				Console.Printf("\cyCARDS\c- Playing card attack animation on layer \cd%d\c-", invoker.curCardLayer);
-			}
+			ToM_DebugMessage.Print(String.Format("\cyCARDS\c- Playing card attack animation on layer \cd%d\c-", invoker.curCardLayer));
 		}
 		if (++invoker.cardLayerID >= invoker.cardLayerNum.Size())
 		{
@@ -200,17 +197,11 @@ class ToM_Cards : ToM_BaseWeapon
 				
 				dmg = Clamp(invoker.cardDamage[cardId], 1, 10);
 				spritename = invoker.cardSpriteName[cardId];
-				if (tom_debugmessages)
-				{
-					console.printf("\cyCARDS\c- Card layer \cd%d\c-: sprite \cd%s\c- | damage \cd%d\c-", invoker.curCardLayer, spritename, dmg);
-				}
+				ToM_DebugMessage.Print(String.Format("\cyCARDS\c- Card layer \cd%d\c-: sprite \cd%s\c- | damage \cd%d\c-", invoker.curCardLayer, spritename, dmg));
 			}
 			
 			String newskin = String.Format("models/cards/tx%s.png", spritename);
-			if (tom_debugmessages)
-			{
-				console.printf("\cyCARDS\c- Changing card model's skin to \cd\"%s\"\c- for layer \cd%d\c-", newskin, invoker.curCardLayer);
-			}
+			ToM_DebugMessage.Print(String.Format("\cyCARDS\c- Changing card model's skin to \cd\"%s\"\c- for layer \cd%d\c-", newskin, invoker.curCardLayer));
 			proj.A_ChangeModel("", skin: newskin);
 			proj.cardSpecialDamage = dmg * 3;
 			proj.broll = frandom[card](-2,2);
@@ -298,10 +289,7 @@ class ToM_Cards : ToM_BaseWeapon
 			return s;
 		}
 		
-		if (tom_debugmessages)
-		{
-			console.printf("\cyCARDS\c- \cd%s\c- couldn't resolve a valid sprite index, returning -1 (layer \cd%d\c-", invoker.cardSpriteName[cardID], layerID);
-		}
+		ToM_DebugMessage.Print(String.Format("\cyCARDS\c- \cd%s\c- couldn't resolve a valid sprite index, returning -1 (layer \cd%d\c-", invoker.cardSpriteName[cardID], layerID));
 		
 		return -1;
 	}

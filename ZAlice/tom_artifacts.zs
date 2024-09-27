@@ -701,15 +701,14 @@ class ToM_GrowthPotionEffect : Powerup
 		
 		if (tom_debugmessages)
 		{
-			console.printf(
+			ToM_DebugMessage.Print(String.Format(
 				"Growth potion initialized:\n"
 				"Height: \cD%.1f\c- | step: \cDinstant\c- | target: \cD%.1f\c-\n"
 				"View height: \cD%.1f\c- | step: \cD%.1f\c- | target: \cD%.1f\c-\n"
 				"AttackZOffset: \cD%.1f\c- | step: \cD%.1f\c- | target: \cD%.1f\c-",
 				prevHeight, targetHeight,
 				prevViewHeight, viewHeightStep, targetViewHeight,
-				prevAttackZOffset, attackZOffsetStep, targetAttackZOffset
-			);
+				prevAttackZOffset, attackZOffsetStep, targetAttackZOffset));
 		}
 	}
 
@@ -910,15 +909,14 @@ class ToM_GrowthPotionEffect : Powerup
 			}
 			if (tom_debugmessages)
 			{
-				console.printf(
+				ToM_DebugMessage.Print(String.Format(
 					"Growth potion ended:\n"
 					"height: \cD%.1f\c- | was: \cD%.1f\c-\n"
 					"View height: \cD%.1f\c- | was: \cD%.1f\c-\n"
 					"AttackZOffset: \cD%.1f\c- | was: \cD%.1f\c-",
 					pmo.height, targetHeight,
 					pmo.viewHeight, targetViewHeight,
-					pmo.attackZOffset, targetAttackZOffset
-				);
+					pmo.attackZOffset, targetAttackZOffset));
 			}
 		}
 		Super.EndEffect();
@@ -1120,7 +1118,7 @@ class ToM_PlayerSoundTarget : Actor
 	override void BeginPlay()
 	{
 		super.BeginPlay();
-		if (!tom_debugmessages)
+		if (!tom_debugobjects)
 		{
 			A_SetRenderstyle(alpha, STYLE_None);
 		}

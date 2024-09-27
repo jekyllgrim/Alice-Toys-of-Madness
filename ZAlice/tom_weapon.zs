@@ -207,10 +207,7 @@ class ToM_BaseWeapon : Weapon abstract
 		ToM_SwingController data = invoker.swingdata[id];
 		if (!data)
 		{
-			if (tom_debugmessages)
-			{
-				Console.Printf("\cgSwing data:\c- Controller \cd%d\c- does not exist. Aborting.", id);
-			}
+			ToM_DebugMessage.Print(String.Format("\cgSwing data:\c- Controller \cd%d\c- does not exist. Aborting.", id));
 			return null, null, false;
 		}
 		Vector2 flatOfs = data.ofs;
@@ -232,7 +229,7 @@ class ToM_BaseWeapon : Weapon abstract
 		);
 
 		// Debug spot:
-		if (tom_debugmessages > 1)
+		if (tom_debugobjects)
 		{
 			let spot = Spawn("ToM_DebugSpot", hit.hitlocation);
 			spot.A_SetHealth(1);
@@ -978,15 +975,12 @@ class ToM_BaseWeapon : Weapon abstract
 				btnstr.AppendFormat(str);
 			}
 
-			Console.MidPrint(NewConsoleFont, 
-				String.Format(
-					"\cfPrimary button state:\c- %s"
-					"\n\cfSecondary button state:\c- %s"
-					"\n\cfWeapon state:\c- \cd%s\c-"
-					"\n\cfRecent btns:%s", 
-					absString, absStringAlt, statestr, btnstr
-				)
-			);
+			ToM_DebugMessage.Print(String.Format(
+				"\cfPrimary button state:\c- %s"
+				"\n\cfSecondary button state:\c- %s"
+				"\n\cfWeapon state:\c- \cd%s\c-"
+				"\n\cfRecent btns:%s", 
+				absString, absStringAlt, statestr, btnstr), 3, singular: true);
 		}
 	}
 
@@ -1399,7 +1393,7 @@ Class ToM_Projectile : ToM_BaseActor abstract
 		if (!target)
 			return false;
 					
-		LineAttack(angle, PLAYERMISSILERANGE, pitch, 0, 'Normal', tom_debugmessages > 1 ? "ToM_DebugSpot" : "ToM_NullPuff", LAF_TARGETISSOURCE, offsetforward: radius);
+		LineAttack(angle, PLAYERMISSILERANGE, pitch, 0, 'Normal', tom_debugobjects? "ToM_DebugSpot" : "ToM_NullPuff", LAF_TARGETISSOURCE, offsetforward: radius);
 		
 		return true;
 	}
@@ -1844,10 +1838,7 @@ Class ToM_StakeProjectile : ToM_Projectile
 			stickoffset = pos.z - stickobject.pos.z;
 			stickAngleOfs = DeltaAngle(stickobject.angle, angle);
 			stickDeadPitch = random[sticksfx](60,80);
-			if (tom_debugmessages)
-			{
-				console.printf("\cy%s\c- hit \cy%s\c- at at \cd%d\c-,\cd%d\c-,\cd%d\c-", GetClassName(), stickobject.GetClassName(), pos.x,pos.y,pos.z);
-			}
+			ToM_DebugMessage.Print(String.Format("\cy%s\c- hit \cy%s\c- at at \cd%d\c-,\cd%d\c-,\cd%d\c-", GetClassName(), stickobject.GetClassName(), pos.x,pos.y,pos.z));
 		}
 		return -1;
 	}

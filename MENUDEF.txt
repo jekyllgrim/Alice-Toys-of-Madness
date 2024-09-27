@@ -89,7 +89,8 @@ Optionmenu "ToM_DebugMenu"
 {
 	Slider "Debug message level", "tom_debugmessages", 0, 3, 1, 0
 	Option "Debug message mode", "tom_debugMsgMode", "ToM_DebugModes"
-	Slider "Debug message alpha", "tom_debugmsgalpha", 0.0, 1.0, 0.05, 2
+	Slider "Debug message text alpha", "tom_debugmsgTextAlpha", 0.0, 1.0, 0.05, 2
+	Slider "Debug message background alpha", "tom_debugmsgBackAlpha", 0.0, 1.0, 0.05, 2
 	Slider "Debug message hor. size (% of screen width)", "tom_debugMsgSizeX", 0.0, 1.0, 0.05, 2
 	Slider "Debug message vert. size (% of screen height)", "tom_debugMsgSizeY", 0.0, 1.0, 0.05, 2
 	//Slider "Debug message text scale", "tom_debugMsgFontScale", 0.2, 4.0, 0.05, 2

@@ -33,35 +33,57 @@ extend class ToM_UiHandler
 	ui void PrintDebugBlock(array<String> strings, Vector2 pos, Vector2 size, HUDfont hfnt, double fntscale = 1.0, int screenflags = 0, double alpha = 1.0, color fillcolor = 0x30000000)
 	{
 		statusbar.Fill(fillcolor, pos.x, pos.y, size.x, size.y, screenflags);
+
 		int indent = 1;
-		double fntheight = hfnt.mFont.GetHeight() * fntscale;
-		int maxlines = (size.y - fntheight*2) / (fntheight + indent);
-		double maxlinewidth = (size.x - fntheight*2);
-		Vector2 strpos = (pos.x + fntheight, pos.y + size.y - fntheight*2);
+		Font fnt = hfnt.mFont;
+		double stringHeight = fnt.GetHeight() * fntscale;
+		int maxlines = (size.y - stringHeight*2) / (stringHeight + indent);
+		double maxLineWidth = (size.x - stringHeight*2);
+		
+		for (int i = 0; i < strings.Size(); i++)
+		{
+			String str = strings[i];
+			if (!str) continue;
+
+			if (fnt.StringWidth(str) <= maxLineWidth) continue;
+
+			int skip;
+			strings.Delete(i);
+			let brlines = fnt.BreakLines(str, maxLineWidth);
+			for (int bi = 0; bi < brlines.Count(); bi++)
+			{
+				strings.Insert(i + bi, brlines.StringAt(bi));
+				skip++;
+			}
+
+			i += skip;
+		}
+
+		Vector2 strpos = (pos.x + stringHeight, pos.y + size.y - stringHeight);
 		int totalLines;
 		double stralpha = alpha;
+
 		for (int i = strings.Size() - 1; i >= 0; i--)
 		{
 			String str = strings[i];
 			if (!str) continue;
 
-			int lines = int(ceil((hfnt.mFont.StringWidth(str) * fntscale ) / maxlinewidth));
 			statusbar.DrawString(hfnt,
 				str,
-				(strpos.x, strpos.y - (fntheight + 1) * (lines - 1)),
+				(strpos.x, strpos.y - (stringHeight + 1)),// * (lines - 1)),
 				screenflags,
 				alpha: stralpha,
-				wrapwidth: maxlinewidth / fntscale,
+				//wrapwidth: maxLineWidth / fntscale,
 				linespacing: indent,
 				scale: (fntscale, fntscale));
 
-			totalLines += lines;
+			totalLines += 1;
 			if (totalLines > maxlines)
 			{
 				break;
 			}
 
-			strpos.y -= (fntheight + 1) * lines;
+			strpos.y -= (stringHeight + 1);// * lines;
 			stralpha = alpha - alpha*0.5*(double(totalLines) / maxlines);
 		}
 	}
@@ -79,7 +101,7 @@ extend class ToM_UiHandler
 
 		Vector2 areaSize = (DEBUGAREA_X * tom_debugMsgSizeX, DEBUGAREA_Y * tom_debugMsgSizeY);
 		Vector2 pos = (-areaSize.x, 0);
-		Color fillcolor = color(int(round(255 * tom_debugmsgalpha * 0.2)), 0, 0, 0);
+		Color fillcolor = color(int(round(255 * tom_debugmsgBackAlpha * 0.2)), 0, 0, 0);
 		for (int i = 0; i < debugmessages.Size(); i++)
 		{
 			let data = debugmessages[i];
@@ -93,7 +115,7 @@ extend class ToM_UiHandler
 				dfont,
 				fntscale: tom_debugMsgFontScale,
 				screenflags: StatusBarCore.DI_SCREEN_RIGHT_TOP,
-				alpha: tom_debugmsgalpha,
+				alpha: tom_debugmsgTextAlpha,
 				fillcolor: fillcolor);
 
 			pos.x -= areaSize.x + 2;
@@ -109,6 +131,7 @@ extend class ToM_UiHandler
 class ToM_DebugMessage ui
 {
 	const STRINGUPDATETIME = 4;
+	const MAXSTRINGS = 512;
 	int stringID;
 	array<String> debugstrings;
 
@@ -153,9 +176,9 @@ class ToM_DebugMessage ui
 			String str = strings[i];
 			debugstrings.Push(str);
 		}
-		if (debugstrings.Size() > 64)
+		if (debugstrings.Size() > MAXSTRINGS)
 		{
-			debugstrings.Delete(0, debugstrings.Size() - 64);
+			debugstrings.Delete(0, debugstrings.Size() - MAXSTRINGS);
 		}
 	}
 }

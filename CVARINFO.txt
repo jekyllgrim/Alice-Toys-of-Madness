@@ -1,5 +1,5 @@
-nosave int tom_debugmessages = 0;
-nosave int tom_debugMsgMode = 2;
+nosave int tom_debugmessages = 1;
+nosave int tom_debugMsgMode = 0;
 nosave float tom_debugmsgTextAlpha = 1.0;
 nosave float tom_debugmsgBackAlpha = 0.25;
 nosave bool tom_debugobjects = false;
@@ -18,4 +18,3 @@ user int tom_tppCamMode = 2;
 user float tom_tppCamDist = 86;
 user float tom_tppCamHorOfs = 0;
 user float tom_tppCamVertOfs = 12;
-user bool tom_tppSwapShoulder = false;

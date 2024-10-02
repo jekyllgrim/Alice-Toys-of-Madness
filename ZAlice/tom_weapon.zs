@@ -253,7 +253,7 @@ class ToM_BaseWeapon : Weapon abstract
 
 			if (pufftype && type != ToM_Utils.HT_None)
 			{
-				puff = Spawn(pufftype, puffpos, ALLOW_REPLACE);
+				puff = SpawnPuff(pufftype, puffpos, angle, angle+180, PF_MELEERANGE);
 				if (puff)
 				{
 					puffpos = level.Vec3Offset(puffpos, hitnormal * max(puff.radius, puff.height));

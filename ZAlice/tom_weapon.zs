@@ -1109,26 +1109,28 @@ class ToM_BaseWeapon : Weapon abstract
 		
 		if (GetAge() % 10 == 0)
 			canSeePlayer = CheckPlayerSights(true);
-		if (!canSeePlayer)
-			return;
 			
-		if (players[consoleplayer].mo /*&& players[consoleplayer].mo.CountInv(self.GetClass()) <= 0 */)
+		if (canSeePlayer && players[consoleplayer].mo /*&& players[consoleplayer].mo.CountInv(self.GetClass()) <= 0 */)
 		{
 			TextureID tex = TexMan.CheckForTexture("ACWEZ0");
 			double size = TexMan.GetSize(tex);
+			FSpawnParticleParams pp;
+			pp.flags = SPF_FULLBRIGHT|SPF_ROLL;
+			if (bNoTimeFreeze)
+			{
+				pp.flags |= SPF_NOTIMEFREEZE;
+			}
+			pp.texture = tex;
+			pp.color1 = "";
+			pp.lifetime = 20;
+			pp.size = size*0.25;
+			pp.sizestep = -(pp.size / pp.lifetime);
+			pp.startalpha = 1;
+			pp.fadestep = -1;
 			for (int i = 0; i < 2; i++)
 			{
-				FSpawnParticleParams pp;
-				pp.texture = tex;
-				pp.color1 = "";
-				pp.lifetime = 20;
-				pp.size = size*0.25;
-				pp.sizestep = -(pp.size / pp.lifetime);
-				pp.startalpha = 1;
-				pp.fadestep = -1;
 				pp.startroll = frandom[pickupPartvis](0,360);
 				pp.rollvel = 5 * randompick[pickupPartvis](-1,1);
-				pp.flags = SPF_FULLBRIGHT|SPF_ROLL;
 				pp.style = Style_Add;
 				pp.pos.x = pos.x + frandom[pickupPartvis](-radius, radius);
 				pp.pos.y = pos.y + frandom[pickupPartvis](-radius, radius);

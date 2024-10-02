@@ -964,20 +964,14 @@ class ToM_KnifeProjectile : ToM_StakeProjectile
 		}
 
 		FLineTraceData tr;
-		Vector3 dir; bool success;
-		[dir, success] = ToM_Utils.GetNormalFromPos(self, 64, angle, pitch, tr);
-		let puff = ToM_BasePuff(Spawn('ToM_KnifePuff', pos));
-		if (puff)
+		LineTrace(angle, 64, pitch, data: tr);
+		if (ToM_Utils.GetHitType(tr) == ToM_Utils.HT_Solid)
 		{
-			// hit a plane:
-			if (success)
+			Vector3 puffdir = ToM_Utils.GetNormalFromTrace(tr);
+			let puff = ToM_BasePuff(SpawnPuff('ToM_KnifePuff', self.pos, 0, 0, 0));
+			if (puff)
 			{
-				puff.SpawnPuffEffects(dir, self.pos);
-			}
-			// hit a solid object:
-			else
-			{
-				puff.SpawnPuffEffects(tr.hitDir * -1, self.pos);
+				puff.SpawnPuffEffects(puffdir, self.pos);
 			}
 		}
 	}

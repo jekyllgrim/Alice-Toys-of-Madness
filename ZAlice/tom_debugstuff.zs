@@ -9,12 +9,12 @@ extend class ToM_UiHandler
 	{
 		if (e.name.IndexOf("ToM_DebugMessage") >= 0)
 		{
+			//Console.MidPrint(smallfont, String.Format("Processing interface event: %s", e.name));
 			array<String> cmd;
-			e.name.Split(cmd, "|");
+			e.name.Split(cmd, "::::");
 			if (cmd.Size() != 2) return;
 			int stringID = e.args[0];
 			String debugstring = String.Format("\cm%d\c- %s", gametic, cmd[1]);
-			//Console.Printf("Processing interface event %s level %d", cmd[1], stringID);
 
 			foreach (data : debugmessages)
 			{
@@ -70,10 +70,9 @@ extend class ToM_UiHandler
 
 			statusbar.DrawString(hfnt,
 				str,
-				(strpos.x, strpos.y - (stringHeight + 1)),// * (lines - 1)),
+				(strpos.x, strpos.y - (stringHeight + 1)),
 				screenflags,
 				alpha: stralpha,
-				//wrapwidth: maxLineWidth / fntscale,
 				linespacing: indent,
 				scale: (fntscale, fntscale));
 
@@ -83,7 +82,7 @@ extend class ToM_UiHandler
 				break;
 			}
 
-			strpos.y -= (stringHeight + 1);// * lines;
+			strpos.y -= (stringHeight + 1);
 			stralpha = alpha - alpha*0.5*(double(totalLines) / maxlines);
 		}
 	}
@@ -149,7 +148,7 @@ class ToM_DebugMessage ui
 			case 2:
 				Console.PrintfEx(PRINT_LOG, debugstring);
 			case 3:
-				EventHandler.SendInterfaceEvent(consoleplayer, "ToM_DebugMessage|"..debugstring, stringID, singular);
+				EventHandler.SendInterfaceEvent(consoleplayer, "ToM_DebugMessage::::"..debugstring, stringID, singular);
 				break;
 		}
 	}

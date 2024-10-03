@@ -313,6 +313,14 @@ class ToM_BaseWeapon : Weapon abstract
 				}
 			}
 		}
+
+		ToM_DebugMessage.Print(String.Format(
+			"\cy%s swing attack\c-: step \cd%.1f, %.1f\c- | hit \cd%s\c-  for \cd%d\c- damage | puff \cd%s\c-",
+			invoker.GetClassName(),
+			stepX, stepY,
+			victim? victim.GetClassName() : 'nothing',
+			damaged? damage : 0, 
+			puff? puff.GetClassName() : 'none'));
 		
 		// Add a step:
 		data.Update(flatofs + (stepX, stepY), hit.HitLocation);
@@ -323,14 +331,14 @@ class ToM_BaseWeapon : Weapon abstract
 		{
 			ToM_Utils.DrawParticlesFromTo(
 				from, to, 
-				density:	trailsize * 0.1,
-				size:		trailsize,
-				alpha:		trailalpha,
-				lifetime:	trailtics,
-				texture:	texture,
-				pcolor:		trailcolor,
+				density:     trailsize * 0.1,
+				size:        trailsize,
+				alpha:       trailalpha,
+				lifetime:    trailtics,
+				texture:     texture,
+				pcolor:      trailcolor,
 				renderstyle: rstyle,
-				style:		style);
+				style:       style);
 		}
 
 		return victim, puff, damaged;

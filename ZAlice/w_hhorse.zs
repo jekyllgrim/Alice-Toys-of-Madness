@@ -37,7 +37,8 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	action State A_HoldHorseSwing(StateLabel nextSlashState)
 	{
 		State st = ResolveState(nextSlashState);
-		if (!st)
+		let alice = ToM_AlicePlayer(player.mo);
+		if (!st || !alice)
 		{
 			return ResolveState("Ready");
 		}
@@ -48,11 +49,11 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_OverlayRotate(OverlayID(), invoker.curPSProtation + frandom(-rot, rot), WOF_INTERPOLATE);
 			double sc = ToM_Utils.LinearMap(invoker.swingHoldTime, 0, MAXHOLDTIME, 0, 0.05);
 			A_OverlayScale(OverlayID(), invoker.curPSPscale.x + sc, invoker.curPSPscale.y + sc, WOF_INTERPOLATE);
-			self.SetAnimationFrameRate(0);
+			alice.ToM_SetAnimationFrameRate(0);
 			self.tics = -1;
 			return ResolveState(null);
 		}
-		self.SetAnimationFrameRate(18);
+		alice.ToM_SetAnimationFrameRate(18);
 		self.tics = 15;
 		return st;
 	}

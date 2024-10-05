@@ -177,6 +177,10 @@ class ToM_BaseWeapon : Weapon abstract
 		invoker.swingVictims.Clear();
 		invoker.swingdata[id] = ToM_SwingController.Create((startX, startY));
 		invoker.swingSndCounter = 0;
+		if (id == 0)
+		{
+			ToM_DebugMessage.Print(String.Format("\cy%s swing attack\c-: preparing", invoker.GetClassName()));
+		}
 	}
 	
 	// Do the attack and move the offset one step as defined above
@@ -207,7 +211,7 @@ class ToM_BaseWeapon : Weapon abstract
 		ToM_SwingController data = invoker.swingdata[id];
 		if (!data)
 		{
-			ToM_DebugMessage.Print(String.Format("\cgSwing data:\c- Controller \cd%d\c- does not exist. Aborting.", id));
+			ToM_DebugMessage.Print(String.Format("\cgSwing data:\c- Controller \cd%d\c- does not exist. Aborting.", id), 3);
 			return null, null, false;
 		}
 		Vector2 flatOfs = data.ofs;
@@ -314,13 +318,16 @@ class ToM_BaseWeapon : Weapon abstract
 			}
 		}
 
-		ToM_DebugMessage.Print(String.Format(
-			"\cy%s swing attack\c-: step \cd%.1f, %.1f\c- | hit \cd%s\c-  for \cd%d\c- damage | puff \cd%s\c-",
-			invoker.GetClassName(),
-			stepX, stepY,
-			victim? victim.GetClassName() : 'nothing',
-			damaged? damage : 0, 
-			puff? puff.GetClassName() : 'none'));
+		if (id == 0)
+		{
+			ToM_DebugMessage.Print(String.Format(
+				"\cy%s swing attack\c-: step \cd%.1f, %.1f\c- | hit \cd%s\c-  for \cd%d\c- damage | puff \cd%s\c-",
+				invoker.GetClassName(),
+				stepX, stepY,
+				victim? victim.GetClassName() : 'nothing',
+				damaged? damage : 0, 
+				puff? puff.GetClassName() : 'none'), 3);
+		}
 		
 		// Add a step:
 		data.Update(flatofs + (stepX, stepY), hit.HitLocation);
@@ -988,7 +995,7 @@ class ToM_BaseWeapon : Weapon abstract
 				"\n\cfSecondary button state:\c- %s"
 				"\n\cfWeapon state:\c- \cd%s\c-"
 				"\n\cfRecent btns:%s", 
-				absString, absStringAlt, statestr, btnstr), 3, singular: true);
+				absString, absStringAlt, statestr, btnstr), 4, singular: true);
 		}
 	}
 
@@ -1049,6 +1056,10 @@ class ToM_BaseWeapon : Weapon abstract
 		if (swingSndCounter)
 		{
 			swingSndCounter--;
+			if (isSelected)
+			{
+				ToM_DebugMessage.Print(String.Format("\cy%s \c- swingSndCounter: \cd%d\c-", (self.GetClassName()), swingSndCounter), 3);
+			}
 		}
 		
 		let player = owner.player;

@@ -87,7 +87,7 @@ OptionMenu "ToM_Settings"
 
 Optionmenu "ToM_DebugMenu"
 {
-	Slider "Debug message level", "tom_debugmessages", 0, 3, 1, 0
+	NumberField "Debug message level", "tom_debugmessages", 0, 4, 1, 0
 	Option "Debug message mode", "tom_debugMsgMode", "ToM_DebugModes"
 	Slider "Debug message text alpha", "tom_debugmsgTextAlpha", 0.0, 1.0, 0.05, 2
 	Slider "Debug message background alpha", "tom_debugmsgBackAlpha", 0.0, 1.0, 0.05, 2

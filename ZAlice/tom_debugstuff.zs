@@ -2,7 +2,8 @@ extend class ToM_UiHandler
 {
 	const DEBUGAREA_X = 1920;
 	const DEBUGAREA_Y = 1080;
-	ui array<ToM_DebugMessage> debugmessages;
+	const DEBUGLEVELS = 4;
+	ui ToM_DebugMessage debugmessages[DEBUGLEVELS];
 	ui HUDFont dfont;
 
 	override void InterfaceProcess (ConsoleEvent e)
@@ -13,20 +14,17 @@ extend class ToM_UiHandler
 			array<String> cmd;
 			e.name.Split(cmd, "::::");
 			if (cmd.Size() != 2) return;
-			int stringID = e.args[0];
+			int stringID = Clamp(e.args[0] - 1, 0, DEBUGLEVELS-1);
 			String debugstring = String.Format("\cm%d\c- %s", gametic, cmd[1]);
 
-			foreach (data : debugmessages)
+			if (!debugmessages[stringID])
 			{
-				if (data && data.stringID == stringID)
-				{
-					data.Update(debugstring);
-					return;
-				}
+				debugmessages[stringID] =  ToM_DebugMessage.Create(debugstring, stringID, e.args[1]);
 			}
-
-			let data = ToM_DebugMessage.Create(debugstring, stringID, e.args[1]);
-			debugmessages.Push(data);
+			else
+			{
+				debugmessages[stringID].Update(debugstring);
+			}
 		}
 	}
 
@@ -98,15 +96,21 @@ extend class ToM_UiHandler
 			dfont = HUDFont.Create(fnt, fnt.GetCharWidth("0"), Mono_CellCenter, 0, 1);
 		}
 
+		double realHUDWidth = DEBUGAREA_Y * Screen.GetAspectRatio();
+
 		Vector2 areaSize = (DEBUGAREA_X * tom_debugMsgSizeX, DEBUGAREA_Y * tom_debugMsgSizeY);
 		Vector2 pos = (-areaSize.x, 0);
 		Color fillcolor = color(int(round(255 * tom_debugmsgBackAlpha * 0.2)), 0, 0, 0);
-		for (int i = 0; i < debugmessages.Size(); i++)
+		for (int i = min(tom_debugmessages, debugmessages.Size()) - 1; i >= 0; i--)
 		{
 			let data = debugmessages[i];
 			if (!data) continue;
 
-			if (data.stringID > tom_debugmessages) continue;
+			statusbar.DrawString(dfont,
+				"Level "..i+1,
+				pos,
+				flags: StatusBarCore.DI_SCREEN_RIGHT_TOP|StatusBarCore.DI_TEXT_ALIGN_LEFT,
+				translation: Font.CR_White);
 
 			PrintDebugBlock(data.debugstrings,
 				pos,
@@ -118,7 +122,7 @@ extend class ToM_UiHandler
 				fillcolor: fillcolor);
 
 			pos.x -= areaSize.x + 2;
-			if (pos.x < -DEBUGAREA_X)
+			if (pos.x < -realHUDWidth)
 			{
 				pos.x = DEBUGAREA_X - areaSize.x;
 				pos.y += areaSize.y + 2;

@@ -20,6 +20,17 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		Weapon.slotpriority 1;
 	}
 
+	action void A_HorseReady(int flags = 0)
+	{
+		invoker.swingHoldTime = 0;
+		if (invoker.totalcombo > 0 && level.maptime % 3 == 0)
+		{
+			invoker.totalcombo--;
+		}
+		A_SpawnHorseEyeFire();
+		A_WeaponReady();
+	}
+
 	action void A_PrepareHorseSwing(Vector2 eye1start, Vector2 eye2start)
 	{
 		A_PrepareSwing(eye1start.x, eye1start.y, 0);
@@ -51,6 +62,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_OverlayScale(OverlayID(), invoker.curPSPscale.x + sc, invoker.curPSPscale.y + sc, WOF_INTERPOLATE);
 			alice.ToM_SetAnimationFrameRate(0);
 			self.tics = -1;
+			ToM_DebugMessage.Print("\cyHobby Horse holding\c-: holdtime \cd"..invoker.swingHoldTime);
 			return ResolveState(null);
 		}
 		alice.ToM_SetAnimationFrameRate(18);
@@ -76,21 +88,28 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		let psp = player.FindPSprite(PSP_WEAPON);
 		if (!psp) return;
 		name decaltype;
-		switch (invoker.combo)
+		if (invoker.bAltFire)
 		{
-			case 0:
-			case 1:
-				decaltype = 'HorseDecalLeft';
-				break;
-			case 2:
-				decaltype = 'HorseDecalRight';
-				break;
-			default:
-				decaltype = 'HorseDecalDown';
-				break;
+			decaltype = 'HorseDecalDown';
+		}
+		else
+		{
+			switch (invoker.combo)
+			{
+				case 0:
+				case 1:
+					decaltype = 'HorseDecalLeft';
+					break;
+				case 2:
+					decaltype = 'HorseDecalRight';
+					break;
+				default:
+					decaltype = 'HorseDecalDown';
+					break;
+			}
 		}
 
-		if (invoker.swingHoldTime > 0)
+		if (damage > 0 && invoker.swingHoldTime > 0)
 		{
 			damage += int(round(ToM_Utils.LinearMap(invoker.swingHoldTime, 0, MAXHOLDTIME, 0, 20, true)));
 		}
@@ -104,6 +123,8 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				stepX, stepY,
 				range: 80, 
 				pufftype: (i == 0)? 'ToM_HorsePuff' : '',
+				fleshsound: "weapons/hhorse/hitflesh",
+				wallsound: "weapons/hhorse/hitwall",
 				trailcolor: 0xff00BB,
 				trailsize: 8,
 				style: PBS_Fade|PBS_Fullbright,
@@ -429,17 +450,8 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		TNT1 A 0 A_Lower;
 		wait;
 	Ready:
-		HHRS A 1 
-		{
-			A_WeaponReady();
-			invoker.swingHoldTime = 0;
-			if (invoker.totalcombo > 0 && level.maptime % 3 == 0)
-			{
-				invoker.totalcombo--;
-			}
-			A_SpawnHorseEyeFire();
-		}
-		wait;
+		HHRS A 1 A_HorseReady();
+		loop;
 	HorseReadyParticleBase:
 		TNT1 A 0 
 		{
@@ -711,8 +723,6 @@ class ToM_HorsePuff : ToM_BasePuff
 	{
 		+NOINTERACTION
 		+PUFFONACTORS
-		seesound "weapons/hhorse/hitflesh";
-		attacksound "weapons/hhorse/hitwall";
 		ToM_BasePuff.ParticleAmount 4;
 		ToM_BasePuff.ParticleSpeed 3;
 	}

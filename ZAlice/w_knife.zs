@@ -127,13 +127,13 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			decaltype = 'VKnifeDown';
 		}
-		Actor victim, puff;
-		bool damaged;
-		[victim, puff, damaged] = A_SwingAttack(
+		let [victim, puff, damaged] = A_SwingAttack(
 			damage, 
 			stepX, stepY,
 			range: 60,
 			pufftype: 'ToM_KnifePuff',
+			fleshsound: "weapons/knife/hitflesh",
+			wallsound: "weapons/knife/hitwall",
 			trailcolor: HasRageBox() ? 0xFFCC0000 : 0xFFFFFFFF,
 			trailalpha: 0.65,
 			trailsize: 1.5,
@@ -141,14 +141,6 @@ class ToM_Knife : ToM_BaseWeapon
 			style: PBS_Fade|PBS_Fullbright|PBS_Untextured,
 			decaltype: decaltype,
 			id: 0);
-		/*if (victim && damaged && victim.health > 0 && random[knifepain](0, 100) <= ToM_Utils.LinearMap(invoker.combo, 0, 5, 15, 80))
-		{
-			let st = victim.FindState("Pain");
-			if (st)
-			{
-				victim.SetState(st);
-			}
-		}*/
 	}
 
 	action void A_ClawSwing(int damage, double stepX, double stepY)
@@ -170,7 +162,9 @@ class ToM_Knife : ToM_BaseWeapon
 				(i == 0)? damage : 0,
 				stepX, stepY,
 				range: 60,
-				pufftype: (i == 0)? 'ToM_ClawPuff' : '',
+				pufftype: (i == 0)? 'ToM_KnifePuff' : '',
+				fleshsound: "weapons/knife/hitflesh",
+				wallsound: "weapons/claw/scrape",
 				trailcolor: 0xFFCC0000,
 				trailalpha: 0.65,
 				trailsize: 1.5,
@@ -830,19 +824,9 @@ class ToM_KnifePuff : ToM_BasePuff
 	{
 		+NOINTERACTION
 		+PUFFONACTORS
-		seesound "weapons/knife/hitflesh";
-		attacksound "weapons/knife/hitwall";
 		ToM_BasePuff.ParticleAmount 20;
 		ToM_BasePuff.ParticleColor 0xd4b856;
 		ToM_BasePuff.ParticleSize 10;
-	}
-}
-
-class ToM_ClawPuff : ToM_KnifePuff
-{
-	Default
-	{
-		attacksound "weapons/claw/scrape";
 	}
 }
 

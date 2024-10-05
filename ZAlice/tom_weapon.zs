@@ -192,6 +192,8 @@ class ToM_BaseWeapon : Weapon abstract
 							double stepX, double stepY,
 							double range = 0,
 							class<Actor> pufftype = null,
+							sound fleshsound = "",
+							sound wallsound = "",
 							color trailcolor = 0xFFFFFFFF,
 							double trailalpha = 1.0,
 							double trailsize = 12,
@@ -257,7 +259,7 @@ class ToM_BaseWeapon : Weapon abstract
 
 			if (pufftype && type != ToM_Utils.HT_None)
 			{
-				puff = SpawnPuff(pufftype, puffpos, angle, angle+180, PF_MELEERANGE);
+				puff = SpawnPuff(pufftype, puffpos, angle, angle+180, PF_NORANDOMZ);
 				if (puff)
 				{
 					puffpos = level.Vec3Offset(puffpos, hitnormal * max(puff.radius, puff.height));
@@ -265,18 +267,17 @@ class ToM_BaseWeapon : Weapon abstract
 					puff.target = self;
 					puff.A_Face(self, 0, 0);
 					puff.tracer = victim;
-					if (type == ToM_Utils.HT_ShootableThing)
-					{
-						puff.A_StartSound(puff.seesound);
-					}
 				}
 			}
 			
-			// Do this if we hit geometry:
+			// Do this if we hit geometry or a solid actor:
 			if (puff && type == ToM_Utils.HT_Solid && invoker.swingSndCounter <= 0)
 			{
 				invoker.swingSndCounter = SWING_SoundStagger;
-				puff.A_StartSound(puff.attacksound, CHAN_AUTO);
+				if (wallsound)
+				{
+					puff.A_StartSound(wallsound, CHAN_AUTO);
+				}
 				if (decaltype != 'none')
 				{
 					puff.A_SprayDecal(decaltype, 8, direction: -hitnormal);
@@ -292,7 +293,7 @@ class ToM_BaseWeapon : Weapon abstract
 				}
 			}
 			
-			// Do this if we hit an actor:
+			// Do this if we hit a shootable actor:
 			else if (damage > 0 && type == ToM_Utils.HT_ShootableThing && victim && invoker.swingVictims.Find(victim) == invoker.swingVictims.Size())
 			{
 				if (pos.z > floorz && invoker.swingVictims.Size() == 0 && (victim.bFloat || victim.bNoGravity) && !self.bNoGravity && !self.bFloat && !self.bFLYCHEAT && !(player.cheats & CF_FLY) && !(player.cheats & CF_NOCLIP2))
@@ -305,10 +306,10 @@ class ToM_BaseWeapon : Weapon abstract
 				invoker.swingVictims.Push(victim);
 				victim.DamageMobj(puff? puff : self, self, damage, 'normal');
 				damaged = true;
-				/*if (fleshsound)
+				if (fleshsound)
 				{
-					A_StartSound(fleshsound, CHAN_WEAPON);
-				}*/
+					puff.A_StartSound(fleshsound);
+				}
 				// Bleed:
 				if (!victim.bNOBLOOD)
 				{

@@ -61,6 +61,17 @@ class ToM_Mainhandler : EventHandler
 			allmonsters.Push(thing);
 		}
 
+		// Slow down projectiles fired by monsters currently being
+		// slowed down by the ice wand:
+		if (thing.bMissile && thing.speed > 0 && thing.target && thing.target.bIsMonster)
+		{
+			let frz = ToM_FreezeController(thing.target.FindInventory('ToM_FreezeController'));
+			if (frz && frz.effectTics)
+			{
+				thing.vel /= frz.GetFreezeFactor();
+			}
+		}
+
 		let stake = ToM_StakeProjectile(thing);
 		if (stake)
 		{

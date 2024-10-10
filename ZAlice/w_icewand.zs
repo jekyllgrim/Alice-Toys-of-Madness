@@ -445,6 +445,7 @@ class ToM_FreezeController : Powerup
 	Vector2 ownerSpriteOffset;
 	ToM_FrozenCase frozenCase;
 	protected State slowstate;
+	protected double slowfactor;
 	protected ToM_FreezeColorLayer colorLayer;
 	protected class<Actor> lastInflictor;
 
@@ -486,6 +487,11 @@ class ToM_FreezeController : Powerup
 		}
 	}
 
+	clearscope double GetFreezeFactor()
+	{
+		return max(1.0, slowfactor);
+	}
+
 	override void InitEffect()
 	{
 		Super.InitEffect();
@@ -522,12 +528,21 @@ class ToM_FreezeController : Powerup
 		Super.DoEffect();
 		if (!owner) return;
 
+		if (effectTics)
+		{
+			slowfactor = ToM_Utils.LinearMap(effectTics, 0, MAXDURATION, 1.5, 3);
+		}
+		else
+		{
+			slowfactor = 1.0;
+		}
+
 		if (effectTics && owner.health > 0 && owner.curstate != slowstate)
 		{
 			slowstate = owner.curstate;
 			if (owner.curstate.tics > 0)
 			{
-				owner.tics = round(owner.curstate.tics * ToM_Utils.LinearMap(effectTics, 0, MAXDURATION, 2, 4));
+				owner.tics = int(round(owner.curstate.tics * slowfactor));
 			}
 			if (colorLayer)
 			{

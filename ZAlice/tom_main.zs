@@ -1201,6 +1201,8 @@ class ToM_ReflectionCamera : Actor
 
 	static ToM_ReflectionCamera Create(PlayerPawn ppawn, double fov = 90, Vector3 offset = (0,0,0), Vector3 angles = (0,0,0), class<ToM_ReflectionCamera> cameraClass = 'ToM_ReflectionCamera')
 	{
+		if (!ppawn || !ppawn.player || !ppawn.player.mo || ppawn.player.mo != ppawn) return null;
+		
 		let cam = ToM_ReflectionCamera(Spawn(cameraClass, ppawn.pos));
 		if (cam)
 		{
@@ -1234,7 +1236,7 @@ class ToM_ReflectionCamera : Actor
 			ppawn, 
 			xofs: cam_offset.x, 
 			yofs: cam_offset.y,
-			zofs: ppawn.player.viewz + cam_offset.z
+			zofs: ppawn.player.viewz - ppawn.pos.z + cam_offset.z
 		);
 	}
 

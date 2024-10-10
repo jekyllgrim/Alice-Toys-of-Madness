@@ -127,6 +127,12 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			decaltype = 'VKnifeDown';
 		}
+		// Rage box:
+		if (CountInv('ToM_RageBoxEffect'))
+		{
+			damage = int(round(damage * ToM_RageBoxEffect.DMGFACTOR));
+		}
+
 		let [victim, puff, damaged] = A_SwingAttack(
 			damage, 
 			stepX, stepY,
@@ -156,6 +162,13 @@ class ToM_Knife : ToM_BaseWeapon
 		{
 			decaltype = 'VClawDown';
 		}
+		
+		// Rage box:
+		if (CountInv('ToM_RageBoxEffect'))
+		{
+			damage = int(round(damage * ToM_RageBoxEffect.DMGFACTOR));
+		}
+
 		for (int i = 0; i < 4; i++)
 		{
 			A_SwingAttack(

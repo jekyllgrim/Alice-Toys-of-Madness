@@ -318,25 +318,12 @@ class ToM_RageBoxEffect : ToM_Powerup
 		}
 	}
 
-	// Increase outgoing damage and reduce incoming damage:
+	// Reduce incoming damage:
 	override void ModifyDamage(int damage, Name damageType, out int newdamage, bool passive, Actor inflictor, Actor source, int flags)
-	{
-		if (damage <= 0 || waitForSelector)
-		{
-			return;
-		}
-		
-		if (passive)
+	{	
+		if (passive && damage && !waitForSelector)
 		{
 			newdamage = max(0, ApplyDamageFactors(GetClass(), damageType, damage, int(damage  * PROTFACTOR)));
-		}
-		else
-		{
-			newdamage = max(1, ApplyDamageFactors(GetClass(), damageType, damage, damage * DMGFACTOR));
-			if (owner && newdamage > damage) 
-			{
-				owner.A_StartSound(ActiveSound, CHAN_AUTO, CHANF_DEFAULT, 1.0, ATTN_NONE);
-			}
 		}
 	}
 

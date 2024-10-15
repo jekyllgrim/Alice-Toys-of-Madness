@@ -392,42 +392,6 @@ class ToM_Utils
 		return finalpos;
 	}
 
-	static play double, bool GetWaterHeight(Sector sec, vector3 pos)
-	{
-		if (sec.MoreFlags & Sector.SECMF_UNDERWATER)
-			return sec.ceilingPlane.ZAtPoint(pos.xy), true;
-
-		let hsec = sec.GetHeightSec();
-		if (hsec)
-		{
-			double top = hsec.floorPlane.ZAtPoint(pos.xy);
-			if ((hsec.MoreFlags & Sector.SECMF_UNDERWATERMASK)
-				&& (pos.z < top || (!(hsec.MoreFlags & Sector.SECMF_FAKEFLOORONLY) && pos.z > hsec.ceilingPlane.ZAtPoint(pos.xy)))
-			)
-			{
-				return top, true;
-			}
-		}
-		else
-		{
-			for (int i = 0; i < sec.Get3DFloorCount(); ++i)
-			{
-				let ffloor = sec.Get3DFloor(i);
-				if (!(ffloor.flags & F3DFloor.FF_EXISTS)
-					|| (ffloor.flags & F3DFloor.FF_SOLID)
-					|| !(ffloor.flags & F3DFloor.FF_SWIMMABLE))
-				{
-					continue;
-				}
-					
-				double top = ffloor.top.ZAtPoint(pos.xy);
-				if (top > pos.z && ffloor.bottom.ZAtPoint(pos.xy) <= pos.z)
-					return top, true;
-			}
-		}
-		return 0, false;
-	}
-
 	static play double GetPlayerAtkHeight(PlayerPawn ppawn, bool absolute = false)
 	{
 		if (!ppawn)

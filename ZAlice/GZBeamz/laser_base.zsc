@@ -117,11 +117,11 @@ class ToM_LaserBeam : Actor
 		if(!enabled || !source) 
 		{
 			ontics = 0;
-			renderRequired = -1;
+			bInvisible = true;
 			return;
 		}
 		ontics++;
-		renderRequired = (ontics < 3)? -1 : 0;
+		bInvisible = (ontics < 3)? true : false;
 		if(shade) SetShade(shade);
 				
 		// PSprite tracking?

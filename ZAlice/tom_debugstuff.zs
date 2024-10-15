@@ -187,7 +187,9 @@ class ToM_DebugMessage ui
 }
 
 class ToM_DebugSpot : Actor 
-{	
+{
+	double spotDuration;
+
 	Default 
 	{
 		+NOINTERACTION
@@ -205,12 +207,12 @@ class ToM_DebugSpot : Actor
 		StencilColor "00FF00";
 	}
 
-	static ToM_DebugSpot Spawn(Vector3 location, int duration, double size = 1)
+	static ToM_DebugSpot Spawn(Vector3 location, double seconds, double size = 1)
 	{
 		let t = ToM_DebugSpot(Actor.Spawn('ToM_DebugSpot', location));
 		if (t)
 		{
-			t.A_SetHealth(duration);
+			t.spotDuration = seconds;
 			t.scale *= size;
 		}
 		return t;
@@ -222,7 +224,7 @@ class ToM_DebugSpot : Actor
 		{
 			SetOrigin(Vec3Offset(vel.x, vel.y, vel.z), true);
 		}
-		if (GetAge() > TICRATE * health)
+		if (GetAge() > TICRATE * spotDuration)
 		{
 			Destroy();
 		}

@@ -552,54 +552,113 @@ class ToM_TeapotAimHook : Actor
 {
 	Default
 	{
-		+MISSILE
 		+NOBLOCKMAP
-		+BRIGHT
-		Damage 0;
 	}
 
 	override void Tick()
 	{
-		while (InStateSequence(curstate, spawnstate))
+		while (self && !self.bDestroyed)
 		{
+			A_FaceMovementDirection();
 			Vector3 nextpos = Vec3Offset(vel.x, vel.y, vel.z);
-			if (!CheckMove(nextpos.xy) || !level.IsPointInLevel(nextpos) || !TestMobjLocation())
+			FCheckPosition checkpos;
+			if (!TryMove(nextpos.xy, 0, true, tm: checkpos) || !level.IsPointInLevel(nextpos) || !TestMobjLocation())
 			{
-				A_Stop();
-				SetStateLabel("Death");
-				break;
+				SecPlane plane;
+				Line hitline;
+				/*String report;
+				// Try detecting the line/plane this collided with
+				// with a linetrace first:
+				FLineTraceData tr;
+				LineTrace(angle, vel.Length () + radius * 2, pitch, data: tr);
+				switch (tr.HitType)
+				{
+				case TRACE_HitWall:
+					hitline = tr.hitline;
+					report = "a wall";
+					break;
+				case TRACE_HitFloor:
+					if (tr.Hit3DFloor)
+					{
+						plane = tr.hitsector.ceilingplane;
+						report = "a 3D floor top";
+					}
+					else
+					{
+						plane = tr.hitsector.floorplane;
+						report = "a regular floor";
+					}
+					break;
+				case TRACE_HitCeiling:
+					if (tr.Hit3DFloor)
+					{
+						plane = tr.hitsector.floorplane;
+						report = "a 3D floor bottom";
+					}
+					else
+					{
+						plane = tr.hitsector.ceilingplane;
+						report = "a regular ceiling";
+					}
+					break;
+				// If that didn't work, try reading relevant data
+				// off the actor:
+				default:
+					hitline = checkpos.ceilingline? checkpos.ceilingline : blockingline;
+					if (!hitline)
+					{
+						if (blockingFloor)
+						{
+							plane = blockingFloor.floorplane;
+							report = "a blockingFloor";
+						}
+						else if (blockingCeiling)
+						{
+							plane = blockingceiling.ceilingplane;
+							report = "a blockingCeiling";
+						}
+					}
+					else
+					{
+						report = checkpos.ceilingline? "a FCheckPosition ceilingline" : "a blockingline";
+					}
+					break;
+				}
+				ToM_DebugMessage.Print(String.Format("Teapot Aim Hook hit %s", report));
+				if (tom_debugobjects)
+				{
+					ToM_DebugSpot.Spawn(pos, 0.2, 2);
+				}*/
+				HookDie(hitline, plane);
+				Destroy();
+				return;
 			}
+			SetZ(pos.z + vel.z);
 			vel.z -= GetGravity();
-			SetOrigin(nextpos, false);
-		}
-		if (InStateSequence(curstate, FindState("Death")))
-		{
-			Super.Tick();
 		}
 	}
 
-	States {
-	Spawn:
-		TNT1 A -1;
-		stop;
-	Death:
-		TNT1 A 1
+	void HookDie(Line hitline = null, SecPlane hitplane = null)
+	{
+		let alice = ToM_AlicePlayer(target);
+		if (target)
 		{
-			if (pos.z < floorz) 
+			let spot = alice.GetCrosshairSpot();
+			if (spot)
 			{
-				SetZ(floorz);
-			}
-			let alice = ToM_AlicePlayer(target);
-			if (target)
-			{
-				let spot = alice.GetCrosshairSpot();
-				if (spot)
+				Vector3 dir = (0,0,1);
+				/*if (hitline)
 				{
-					spot.Update(ToM_CrosshairSpot.CMODE_AoE, newRadius: 64, newPos: pos);
+					dir.xy = ToM_Utils.GetLineNormal(pos.xy, hitline);
+					dir.z = 0.1;
 				}
+				else if (hitplane)
+				{
+					dir = hitplane.normal;
+				}*/
+				spot.Update(ToM_CrosshairSpot.CMODE_AoE, newRadius: 64, newPos: pos, newDir: dir);
 			}
 		}
-		stop;
 	}
 }
 	

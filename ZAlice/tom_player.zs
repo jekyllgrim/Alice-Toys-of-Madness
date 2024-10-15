@@ -1237,6 +1237,7 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 	protected double crosshairRotAngle;
 	protected Actor crosshairAimActor;
 	protected TextureID crosshairTexture;
+	protected Vector3 crosshairDir;
 	private Vector3 prevParticlePos;
 	private TextureID defGraphic;
 	ECRosshairModes crosshairMode;
@@ -1244,6 +1245,7 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 	enum ECRosshairModes
 	{
 		CMODE_Normal, //regular spot
+		CMODE_Circular,
 		CMODE_AoE, //circular around a specific point
 		CMODE_Seeker, //circular around a target
 		CMODE_Hidden,
@@ -1281,8 +1283,15 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 		return spot;
 	}
 
-	void Update(int newMode = -1, double newRadius = -1, Actor newTarget = null, Vector3 newPos = (0,0,0), String specialsprite = "")
+	override void BeginPlay()
 	{
+		Super.BeginPlay();
+		crosshairDir = (0,0,1);
+	}
+
+	void Update(int newMode = -1, double newRadius = -1, Actor newTarget = null, Vector3 newPos = (0,0,0), Vector3 newDir = (0, 0, 1), String specialsprite = "")
+	{
+
 		if (newMode > -1)
 			crosshairMode = newMode;
 		if (newRadius > -1)
@@ -1301,6 +1310,28 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 			{
 				crosshairTexture = tex;
 			}
+		}
+		crosshairDir = newDir;
+
+		if (tom_debugmessages >= 3 && 
+			(newMode  > -1 || 
+			newRadius > -1 ||
+			newTarget ||
+			newPos != (0,0,0) ||
+			specialSprite != ""))
+		{
+			String dstr = "TPP crosshair updated:";
+			if (newMode > -1)
+				dstr.AppendFormat("\nMode: \cd%d\c-", crosshairMode);
+			if (newRadius > -1)
+				dstr.AppendFormat("\nRadius: \cd%.1f\c-", crosshairRadius);
+			if (newTarget)
+				dstr.AppendFormat("\nTarget: \cd%p\c-", crosshairAimActor);
+			if (newPos != (0,0,0))
+				dstr.AppendFormat("\nPos: \cd%.1f, %.1f, %.1f\c-", crosshairTargetPos.x, crosshairTargetPos.y, crosshairTargetPos.z);
+			if (specialsprite != "")
+				dstr.AppendFormat("\nSpecial sprite: \cd%s\c-", TexMan.GetName(crosshairTexture));
+			ToM_DebugMessage.Print(dstr, 3);
 		}
 	}
 
@@ -1404,62 +1435,79 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 		p.size = TexMan.GetSize(tex) * scale.x;
 		p.style = STYLE_Add;
 
-		switch (crosshairMode)
+		if (crosshairMode == CMODE_Normal)
 		{
-			default:
-				alpha = 1;
-				p.fadestep = -1;
-				p.pos = prev;
-				p.lifetime = 10;
-				Level.SpawnParticle(p);
-				break;
-			case CMODE_AoE:
-			case CMODE_Seeker:
-				alpha = 0;
-				p.fadestep = 0;
-				p.lifetime = 2;
-				double angSec;
-				double angStep = 4;
-				double rad;
-				Vector3 targetpos;
-				if (crosshairMode == CMODE_Seeker && crosshairAimActor)
-				{
-					targetpos = crosshairAimActor.Vec3Offset(0, 0, crosshairAimActor.height*0.5);
-					crosshairRadius = crosshairAimActor.radius * 1.5;
-					angSec = 45;
-				}
-				else
-				{
-					targetpos = pos;
-					crosshairRadius = crosshairRadius > 0? crosshairRadius : 32;
-					angSec = 90;
-				}
-				if (prevParticlePos == (0,0,0))
-				{
-					prevParticlePos = targetpos;
-				}
-				p.size *= ToM_Utils.LinearMap(crosshairRadius, 16, 128, 0.3, 1.0, true);
-				// set position to prev, then give vel towards current
-				// to force interpolation:
-				p.vel = level.Vec3Diff(prevParticlePos, targetpos);
-				p.pos.z = prevParticlePos.z;
-				for (double i = 0; i < angSec; i += angStep)
-				{
-					Vector2 ofs = Actor.RotateVector((crosshairRadius, 0), crosshairRotAngle + i);
-					p.pos.xy = Level.Vec2Offset(prevParticlePos.xy, ofs);
-					Level.SpawnParticle(p);
-					p.pos.xy = Level.Vec2Offset(prevParticlePos.xy, -ofs);
-					Level.SpawnParticle(p);
-					p.startalpha -= 1.0 / (angSec / angStep);
-				}
-				crosshairRotAngle -= 8;
+			alpha = 1;
+			p.fadestep = -1;
+			p.pos = prev;
+			p.lifetime = 10;
+			Level.SpawnParticle(p);
+		}
+		else
+		{
+			alpha = 0;
+			p.fadestep = 0;
+			p.lifetime = 2;
+			Vector3 targetpos;
+			double angSec;
+			double angStep = 4;
+			double rad;
+
+			if (crosshairMode == CMODE_AoE || !crosshairAimActor)
+			{
+				targetpos = pos;
+				crosshairRadius = max(crosshairRadius, 32);
+				angSec = 90;
+			}
+			else
+			{
+				targetpos = crosshairAimActor.Vec3Offset(0, 0, crosshairAimActor.height*0.5);
+				crosshairRadius = crosshairAimActor.radius * 1.5;
+				angSec = 45;
+			}
+
+			if (prevParticlePos == (0,0,0))
+			{
 				prevParticlePos = targetpos;
+			}
+
+			p.size *= ToM_Utils.LinearMap(crosshairRadius, 16, 128, 0.3, 1.0, true);
+			// set velocity from prev to current position
+			// to force faux interpolation:
+			p.vel = level.Vec3Diff(prevParticlePos, targetpos);
+			p.pos.z = prevParticlePos.z;
+			Vector3 forward = (1,0,0);
+			Vector3 up = (0,0,1);
+			Quat base;
+			if (abs(crosshairDir.z) ~== 1)
+			{
+				base = Quat.AxisAngle(up, 0);
+			}
+			else
+			{
+				crosshairDir = crosshairDir cross (crosshairDir.y,-crosshairDir.x,0).Unit();
+				base = Quat.FromAngles(atan2(crosshairDir.y,crosshairDir.x), -asin(crosshairDir.z), 0);
+			}
+			for (double i = 0; i < angSec; i += angStep)
+			{
+				Quat rot = Quat.AxisAngle(up, crosshairRotAngle + i);
+				p.pos = level.Vec3Offset(prevParticlePos, (base*rot*forward) * crosshairRadius);
+				level.SpawnParticle(p);
+				rot = Quat.AxisAngle(up, crosshairRotAngle + i + 180);
+				p.pos = level.Vec3Offset(prevParticlePos, (base*rot*forward) * crosshairRadius);
+				level.SpawnParticle(p);
+				p.startalpha -= 1.0 / (angSec / angStep);
+			}
+
+			crosshairRotAngle -= 8;
+			prevParticlePos = targetpos;
 		}
 		// reset everything
 		// weapons need to call UpdateCrosshairSpot() every tic
 		// in order to override this and apply custom mode:
 		crosshairMode = CMODE_Normal;
 		crosshairAimActor = Actor(null);
+		crosshairDir = (0,0,1);
 	}
 	
 	States

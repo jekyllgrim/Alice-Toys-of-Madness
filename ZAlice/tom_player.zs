@@ -368,7 +368,7 @@ class ToM_AlicePlayer : DoomPlayer
 		// alt jump attack:
 		let weap = player.readyweapon;
 		let psp = player.FindPSprite(PSP_WEAPON);
-		doingPlungingAttack = weap && psp && weap is 'ToM_HobbyHorse' && InStateSequence(psp.curstate, weap.FindState("AltFireDo"));
+		doingPlungingAttack = weap && psp && weap is 'ToM_HobbyHorse' && InStateSequence(psp.curstate, weap.FindState("AltFire"));
 		if (!doingPlungingAttack)
 		{
 			for (int i = collideFilter.Size() - 1; i >= 0; i--)
@@ -1228,7 +1228,7 @@ class ToM_PlayerCamera : Actor
 	}
 }
 
-class ToM_CrosshairSpot : ToM_BaseDebris
+class ToM_CrosshairSpot : ToM_BaseActor
 {
 	ToM_AlicePlayer alice;
 	protected Vector3 crosshairTargetPos;
@@ -1258,7 +1258,7 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 		+BRIGHT
 		+FORCEXYBILLBOARD
 		+INVISIBLEINMIRRORS
-		scale 0.24;
+		Scale 0.24;
 		Renderstyle 'Add';
 		+NOTIMEFREEZE
 		radius 4;
@@ -1287,6 +1287,7 @@ class ToM_CrosshairSpot : ToM_BaseDebris
 	{
 		Super.BeginPlay();
 		crosshairDir = (0,0,1);
+		scale.y = scale.x / level.pixelstretch;
 	}
 
 	void Update(int newMode = -1, double newRadius = -1, Actor newTarget = null, Vector3 newPos = (0,0,0), Vector3 newDir = (0, 0, 1), String specialsprite = "")

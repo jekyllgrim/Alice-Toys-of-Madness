@@ -124,7 +124,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				range: 80, 
 				pufftype: (i == 0)? 'ToM_HorsePuff' : '',
 				fleshsound: "weapons/hhorse/hitflesh",
-				wallsound: "weapons/hhorse/hitwall",
+				wallsound: invoker.bAltFire? "" : "weapons/hhorse/hitwall",
 				trailcolor: 0xff00BB,
 				trailsize: 8,
 				style: PBS_Fade|PBS_Fullbright,
@@ -132,7 +132,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				decaltype: (i == 0)? decaltype : 'none',
 				id: i);
 			
-			if (i != 0 || !victim || !wasHit || !(victim.bIsMonster || victim.player))
+			if (i != 0 || invoker.bAltFire || !victim || !wasHit || !(victim.bIsMonster || victim.player))
 			{
 				continue;
 			}
@@ -293,14 +293,60 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		A_StartSound("weapons/hhorse/jumpattack", CHAN_BODY);
 		vector3 forwarddir = (cos(angle), sin(angle), 0);
 		double fwdvel = vel dot forwarddir;
+		ToM_AlicePlayer(self).doingPlungingAttack = true;
 		VelFromAngle(fwdvel + 7);
 		// jump has to be reset to not mess with jumping/falling-after-jump gravity:
 		player.jumptics = 0;
+		// throw monsters next to the player around:
 		if (player.onGround)
 		{
 			vel.z += 12;
+			double dist = 128;
+			let bt = BlockThingsIterator.Create(self, dist);
+			while (bt.Next())
+			{
+				let t = bt.thing;
+				if (t && t != self &&
+					t.bShootable &&
+					!t.bDontThrust &&
+					!t.bNoGravity &&
+					//!t.bBoss &&
+					self.Distance2D(t) <= dist &&
+					abs(DeltaAngle(self.angle, self.AngleTo(t))) <= 45 &&
+					t.pos.z <= t.floorz && 
+					t.pos.z >= self.pos.z - 32 && t.pos.z <= self.pos.z + self.height*0.5)
+				{
+					double throwfactor = ToM_Utils.LinearMap(t.mass, 100, 1000, 0.9, 0.5);
+					if (throwfactor > 0)
+					{
+						t.VelFromAngle(self.vel.xy.Length() * throwfactor, self.AngleTo(t));
+						t.vel.z = self.vel.z * throwfactor;
+					}
+				}
+			}
 		}
 	}
+
+	/*action void A_PushEnemies(double dist = 256)
+	{
+		let bt = BlockThingsIterator.Create(self, dist);
+		double mindist;
+		while (bt.Next())
+		{
+			let t = bt.thing;
+			if (t && t != self && 
+				t.bShootable && 
+				!t.bDontThrust &&
+				self.CanCollideWith(t, false) && 
+				self.Distance2D(t) < (t.radius + self.radius) &&
+				t.pos.z >= self.pos.z - t.height && t.pos.z <= self.pos.z + self.height )
+			{
+				double offsetDist = (self.radius + t.radius);
+				Vector2 offset = RotateVector((offsetDist, 0), self.AngleTo(t));
+				t.SetOrigin(t.Vec3Offset(offset.x, offset.y, self.vel.z), true);
+			}
+		}
+	}*/
 
 	action void A_LandAttack()
 	{
@@ -647,17 +693,19 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		}
 		HHRS KKKKLLLL 1 
 		{
+			//A_PushEnemies();
 			A_WeaponOffset(1.2, -4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -0.3, WOF_ADD);
 			A_ScalePSprite(OverlayID(), 0.0025, 0.0025,WOF_ADD);
 		}
 		HHRS MMMMMMMM 1 
 		{
+			//A_PushEnemies();
 			A_WeaponOffset(0.6, -1.5, WOF_ADD);
 			A_RotatePSprite(OverlayID(), -0.3, WOF_ADD);
 			A_ScalePSprite(OverlayID(), 0.0025, 0.0025,WOF_ADD);
 		}
-		TNT1 A 0 
+		#### # 0 
 		{
 			A_PrepareHorseSwing((-2, -30), (-18, -30));
 			A_StartSound("weapons/hhorse/altswing", CHAN_AUTO);
@@ -667,7 +715,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	AltFireDo:
 		HHRS NNNOOOOOOO 1 
 		{
-			A_HorseSwing(0, 0.5, 8);
+			A_HorseSwing(10, 0.5, 6);
 			A_WeaponOffset(-4, 4, WOF_ADD);
 			A_RotatePSprite(OverlayID(), 0.03, WOF_ADD);
 			A_ScalePSprite(OverlayID(), -0.001, -0.001, WOF_ADD);
@@ -681,7 +729,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			{
 				A_WeaponOffset(Clamp(psp.x-2, -68, 0), Clamp(psp.y+2, 32, 68), WOF_INTERPOLATE);
 			}
-			A_HorseSwing(0, 0.05, 0.5);
+			A_HorseSwing(50, 0.0, 0);
 			ToM_DebugMessage.Print(String.Format("fall attack force: %d", invoker.fallAttackForce));
 			if (invoker.fallAttackForce > 25)
 				A_StartSound("weapons/hhorse/freefall", CHAN_BODY, CHANF_LOOPING);

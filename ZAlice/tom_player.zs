@@ -249,22 +249,23 @@ class ToM_AlicePlayer : DoomPlayer
 			// spawn dust devils:
 			if (hvel > 0.1)
 			{
-				FSpawnParticleParams p;
-				p.startalpha = 1.0;
-				p.fadestep = -1;
-				p.size = frandom[dust](15, 20);
-				p.lifetime = random[dust](18, 25);
-				p.texture = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
-				p.color1 = 0xeec0a1;
-				p.pos = Vec3Offset(frandom[dust](-10, 10), frandom[dust](-10, 10), p.size*0.5);
-				double v = 0.2;
-				p.vel = (frandom(-v, v), frandom(-v, v), frandom(0, v));
 				int frec = int(round(ToM_Utils.LinearMap(hvel, 0.1, 18, 12, 4, true)));
-				p.flags = SPF_ROLL;
-				p.startroll = frandom[dust](0, 360);
-				p.rollvel = frandom[dust](-3, 3);
 				if (GetAge() % frec == 0)
 				{
+					FSpawnParticleParams p;
+					p.startalpha = 1.0;
+					p.fadestep = -1;
+					p.size = frandom[dust](15, 20);
+					p.lifetime = random[dust](18, 25);
+					p.texture = TexMan.CheckForTexture(ToM_BaseActor.GetRandomWhiteSmoke());
+					p.color1 = 0xeec0a1;
+					p.pos = Vec3Offset(frandom[dust](-10, 10), frandom[dust](-10, 10), p.size*0.5);
+					double v = 0.2;
+					p.vel = (frandom(-v, v), frandom(-v, v), frandom(0, v));
+					p.flags = SPF_ROLL;
+					p.startroll = frandom[dust](0, 360);
+					p.rollvel = frandom[dust](-3, 3);
+					p.flags = SPF_NOTIMEFREEZE;
 					Level.SpawnParticle(p);
 				}
 			}

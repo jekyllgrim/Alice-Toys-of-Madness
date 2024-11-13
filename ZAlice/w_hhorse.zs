@@ -456,7 +456,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				
 				if (InStateSequence(psp.curstate, ResolveState("AltFire")))
 				{
-					fallAttackForce = int(ceil( (abs(owner.vel.x) + abs(owner.vel.y)) * 0.15 + abs(owner.vel.z) ));
+					fallAttackForce = int(ceil( (abs(owner.vel.x) + abs(owner.vel.y)) * 0.15 + abs(owner.vel.z)*1.5 ));
 				}
 			}
 		}

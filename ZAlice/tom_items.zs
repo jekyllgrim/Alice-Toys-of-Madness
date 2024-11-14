@@ -301,7 +301,6 @@ class ToM_GoldArmor : ToM_SilverArmor
 class ToM_ArmorBonus : ArmorBonus
 {
 	mixin ToM_PickupSound;
-	mixin ToM_ComplexPickupmessage;
 	
 	Default
 	{
@@ -312,10 +311,9 @@ class ToM_ArmorBonus : ArmorBonus
 		YScale 0.5 / 1.2;
 	}
 
-	override void BeginPlay()
-	{
-		Super.BeginPlay();
-		pickupNote = String.Format("(\cy+%d %s\c-)", amount, StringTable.Localize("$TOM_UNIT_ARMOR"));
+	override string PickupMessage()
+	{		
+		return String.Format("%s (\cy+%d %s\c-)", StringTable.Localize(pickupMsg), amount, StringTable.Localize("$TOM_UNIT_ARMOR"));;
 	}
 	
 	States

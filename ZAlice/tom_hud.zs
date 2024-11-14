@@ -482,7 +482,7 @@ class ToM_AliceHUD : BaseStatusBar
 					break;
 			}
 			ToM_DrawImage(armimg, ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
-			ToM_DrawString(hfIndexfont, String.Format("%d",GetArmorAmount()), (81, -152) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetArmorColor(barm), scale: (0.5, 0.35));
+			ToM_DrawString(hfIndexfont, String.Format("%d",GetArmorAmount()), (79, -156) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetArmorColor(barm), scale: (0.5, 0.35));
 		}
 		
 		// mirror's background:
@@ -501,7 +501,7 @@ class ToM_AliceHUD : BaseStatusBar
 		ToM_DrawImage("graphics/HUD/mirror_frame.png", ofs, DI_SCREEN_LEFT_BOTTOM|DI_ITEM_LEFT_BOTTOM);
 		
 		// finally, health numbers:
-		ToM_DrawString(hfIndexfont, String.Format("%d",CPlayer.health), (81, -43) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetHealthColor(), scale: (0.5, 0.35));
+		ToM_DrawString(hfIndexfont, String.Format("%d",CPlayer.health), (79, -47) + ofs, DI_SCREEN_LEFT_BOTTOM|DI_TEXT_ALIGN_CENTER, translation: GetHealthColor(), scale: (0.5, 0.35));
 	}
 	
 	// Draws a single mana vessel (3 of them used in right corner)
@@ -680,7 +680,7 @@ class ToM_AliceHUD : BaseStatusBar
 			ToM_Fill(0xaaa0a0a0, pos + (-size.x, -size.y*fac), (size.x, size.y*fac), flags);
 		}
 		ToM_DrawTexture(front, pos, flags, scale:(scale, scale));
-		ToM_DrawString(hfAsrafel, ""..jackbomb.amount, pos - size + (15,10)*scale, flags|DI_TEXT_ALIGN_CENTER, scale: (0.4, 0.4) * scale);
+		ToM_DrawString(hfAsrafel, ""..jackbomb.amount, pos - size + (15, 6)*scale, flags|DI_TEXT_ALIGN_CENTER, scale: (0.4, 0.4) * scale);
 	}
 	
 	void DrawRightcorner()

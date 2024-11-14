@@ -1,65 +1,65 @@
 default,identifier,remarks,ru
 HP,TOM_UNIT_HP,Units,ОЗ
 Armor,TOM_UNIT_ARMOR,Units,ед. брони
-Rose petals,TOM_ITEM_HEALTH1,Alice items,
-Small rose,TOM_ITEM_HEALTH10,Alice items,
-Large rose,TOM_ITEM_HEALTH25,Alice items,
-Magic rose,TOM_ITEM_HEALTH100,Alice items,
-Large magic rose,TOM_ITEM_HEALTH200,Alice items,
-Armor Sigil,TOM_ITEM_ARMOR_SMALL,Alice items,
-Silver Armor,TOM_ITEM_ARMOR_MED,Alice items,
-Golden Armor,TOM_ITEM_ARMOR_BIG,Alice items,
-Mana chest!,TOM_ITEM_BACKPACK,Alice items,
-Mad Vision. \ciLook and thou shalt see!,TOM_ITEM_INFRARED,Alice items,
-Book of Mazes. \ciAll is revealed!,TOM_ITEM_ALLMAP,Alice items,
-"Mock Turtle shell. \ciBreathe underwater, walk on acid!",TOM_ITEM_RADSUIT,Alice items,
-Delicious cake!,TOM_ITEM_CAKE,Alice items,
-Looking-glass mirror,TOM_ITEM_MIRROR,Alice items,
-Jackbomb,TOM_ITEM_JACKBOMB,Alice items,
-Throw a Jackbomb,TOM_JACKBOMB_THROW,,
-Mischief Energy,TOM_MANA_WEAK,Alice ammo,
-Mettle Energy,TOM_MANA_MEDIUM,Alice ammo,
-Malice Energy,TOM_MANA_STRONG,Alice ammo,
-Vorpal Knife,TOM_WEAPON_KNIFE,Alice weapons,
-Hobby Horse,TOM_WEAPON_HORSE,Alice weapons,
-Playing Cards,TOM_WEAPON_CARDS,Alice weapons,
-Jacks,TOM_WEAPON_JACKS,Alice weapons,
-Pepper Grinder,TOM_WEAPON_PGRINDER,Alice weapons,
-Teapot Cannon,TOM_WEAPON_TEAPOT,Alice weapons,
-Ice Wand,TOM_WEAPON_ICEWAND,Alice weapons,
-Jabberwock's Eye Staff,TOM_WEAPON_EYESTAFF,Alice weapons,
-Blunderbuss,TOM_WEAPON_BLUNDERBUSS,Alice weapons,
-\ciGo snicker-snack!,TOM_WEAPONMSG_KNIFE1,Weapon pickup extra messages,
-\ciAlways ready for service.,TOM_WEAPONMSG_KNIFE2,Weapon pickup extra messages,
-\ciPowerful... but not sufficient.,TOM_WEAPONMSG_KNIFE3,Weapon pickup extra messages,
-Alice: Toys of Madness Settings,TOM_MENU_ALICESETTINGS,Menu,
-Mod settings,TOM_MENU_MODSETTINGS,Menu,
-FX particle intensity,TOM_MENU_PARTICLES,Menu,
-None,TOM_MENU_PARTICLES_OFF,Menu,
-Reduced,TOM_MENU_PARTICLES_MIN,Menu,
-Full,TOM_MENU_PARTICLES_MAX,Menu,
-Cheshire Cat VO - map events,TOM_MENU_CHESHIRE_MAP,Menu,
-Cheshire Cat VO - item pickups,TOM_MENU_CHESHIRE_ITEMS,Menu,
-Quick kick,TOM_MENU_QKICK,Menu,
-3rd-person camera mode,TOM_MENU_TPP_MODE,,
-Custom camera mode options:,TOM_MENU_TPP_CUSTOMOPTIONS,,
-Distance,TOM_MENU_TPP_DIST,,
-Horizontal offset,TOM_MENU_TPP_HOFS,,
-Vertical offset,TOM_MENU_TPP_VOFS,,
-Standard chasecam,TOM_MENU_TPP_MODE_CHASECAM,,
-Over the shoulder,TOM_MENU_TPP_MODE_SHOULDER,,
-Classic,TOM_MENU_TPP_MODE_CLASSIC,,
-Custom,TOM_MENU_TPP_MODE_CUSTOM,,
-Swap shoulder button,TOM_MENU_TPP_SHOULDERBUT,,
-Fix Doom's slippery movement,TOM_MENU_FRICTION,,
-Only when landing (better control after jumping),TOM_MENU_FRICTION_LAND,,
-"3rd person - always, 1st person - only when landing",TOM_MENU_FRICTION_TPP,,
-Always,TOM_MENU_FRICTION_FPP,,
-In-world crosshair replaces reticle,TOM_MENU_CROSSHAIRMODE,,
+Rose petals,TOM_ITEM_HEALTH1,Alice items,Розовые лепестки
+Small rose,TOM_ITEM_HEALTH10,Alice items,Розочка
+Large rose,TOM_ITEM_HEALTH25,Alice items,Большая роза
+Magic rose,TOM_ITEM_HEALTH100,Alice items,Волшебная роза
+Large magic rose,TOM_ITEM_HEALTH200,Alice items,Большая волшебная роза
+Armor Sigil,TOM_ITEM_ARMOR_SMALL,Alice items,Бронированный герб
+Silver Armor,TOM_ITEM_ARMOR_MED,Alice items,Серебряный доспех
+Golden Armor,TOM_ITEM_ARMOR_BIG,Alice items,Золотой доспех
+Mana chest!,TOM_ITEM_BACKPACK,Alice items,Сундук маны!
+Mad Vision. \ciLook and thou shalt see!,TOM_ITEM_INFRARED,Alice items,Безумное зрение. \ciСмотрящему да откроется!
+Book of Mazes. \ciAll is revealed!,TOM_ITEM_ALLMAP,Alice items,Книга лабиринтов. \ciВсё будет открыто!
+"Mock Turtle shell. \ciBreathe underwater, walk on acid!",TOM_ITEM_RADSUIT,Alice items,"Панцирь Черепаха. \ciДыши под водой, ходи по кислоте!"
+Delicious cake!,TOM_ITEM_CAKE,Alice items,Вкуснейший торт!
+Looking-glass mirror,TOM_ITEM_MIRROR,Alice items,Зеркальце
+Jackbomb,TOM_ITEM_JACKBOMB,Alice items,Бомбочка в коробке
+Throw a Jackbomb,TOM_JACKBOMB_THROW,,Бросить бомбочку
+Mischief Energy,TOM_MANA_WEAK,Alice ammo,Энергия озорства
+Mettle Energy,TOM_MANA_MEDIUM,Alice ammo,Энергия стойкости
+Malice Energy,TOM_MANA_STRONG,Alice ammo,Энергия гнева
+Vorpal Knife,TOM_WEAPON_KNIFE,Alice weapons,Стрижающий нож
+Hobby Horse,TOM_WEAPON_HORSE,Alice weapons,Лошадка
+Playing Cards,TOM_WEAPON_CARDS,Alice weapons,Игральные карты
+Jacks,TOM_WEAPON_JACKS,Alice weapons,Игральные камешки
+Pepper Grinder,TOM_WEAPON_PGRINDER,Alice weapons,Перечница
+Teapot Cannon,TOM_WEAPON_TEAPOT,Alice weapons,Чайник-пушка
+Ice Wand,TOM_WEAPON_ICEWAND,Alice weapons,Ледяной посох
+Jabberwock's Eye Staff,TOM_WEAPON_EYESTAFF,Alice weapons,Жезл с глазом Бармаглота
+Blunderbuss,TOM_WEAPON_BLUNDERBUSS,Alice weapons,Мушкетон
+\ciGo snicker-snack!,TOM_WEAPONMSG_KNIFE1,Weapon pickup extra messages,\ciВзы-взы!
+\ciAlways ready for service.,TOM_WEAPONMSG_KNIFE2,Weapon pickup extra messages,\ciВсегда к твоим услугам.
+\ciPowerful... but not sufficient.,TOM_WEAPONMSG_KNIFE3,Weapon pickup extra messages,\ciМощное оружие... но его недостаточно.
+Alice: Toys of Madness Settings,TOM_MENU_ALICESETTINGS,Menu,Настройки Alice: Toys of Madness
+Mod settings,TOM_MENU_MODSETTINGS,Menu,Настройки мода
+FX particle intensity,TOM_MENU_PARTICLES,Menu,Интенсивность частиц
+None,TOM_MENU_PARTICLES_OFF,Menu,Откл.
+Reduced,TOM_MENU_PARTICLES_MIN,Menu,Сниженная
+Full,TOM_MENU_PARTICLES_MAX,Menu,Полная
+Cheshire Cat VO - map events,TOM_MENU_CHESHIRE_MAP,Menu,Реплики Чеширского кота в начале уровня
+Cheshire Cat VO - item pickups,TOM_MENU_CHESHIRE_ITEMS,Menu,Реплики Чеширского кота при взятии предметов
+Quick kick,TOM_MENU_QKICK,Menu,Быстрый пинок
+3rd-person camera mode,TOM_MENU_TPP_MODE,,Режим камеры от 3-го лица
+Custom camera mode options:,TOM_MENU_TPP_CUSTOMOPTIONS,,Персональные настройки камеры:
+Distance,TOM_MENU_TPP_DIST,,Расстояние
+Horizontal offset,TOM_MENU_TPP_HOFS,,Горизонтальный сдвиг
+Vertical offset,TOM_MENU_TPP_VOFS,,Вертикальный сдвиг
+Standard chasecam,TOM_MENU_TPP_MODE_CHASECAM,,Стандартная (как в GZDoom)
+Over the shoulder,TOM_MENU_TPP_MODE_SHOULDER,,Заплечная
+Classic,TOM_MENU_TPP_MODE_CLASSIC,,Классическая
+Custom,TOM_MENU_TPP_MODE_CUSTOM,,Персональная
+Swap shoulder button,TOM_MENU_TPP_SHOULDERBUT,,Кнопка для смены плеча
+Fix Doom's slippery movement,TOM_MENU_FRICTION,,Блокировка скольжения после остановки
+Only when landing (better control after jumping),TOM_MENU_FRICTION_LAND,,Только при приземлении (улучшенный платформинг)
+"3rd person - always, 1st person - only when landing",TOM_MENU_FRICTION_TPP,,"От 3-го лица — всегда, от 1-го — при приземлении"
+Always,TOM_MENU_FRICTION_FPP,,Всегда
+In-world crosshair replaces reticle,TOM_MENU_CROSSHAIRMODE,,Физический прицел заменяет экранный
 $OPTVAL_OFF,TOM_MENU_CROSSHAIRMODE_OFF,,
-Only in 3rd person,TOM_MENU_CROSSHAIRMODE_TPP,,
-Always,TOM_MENU_CROSSHAIRMODE_ALWAYS,,
-Shadow under Alice,TOM_MENU_SHADOWMODE,,
+Only in 3rd person,TOM_MENU_CROSSHAIRMODE_TPP,,Только от 3-го лица
+Always,TOM_MENU_CROSSHAIRMODE_ALWAYS,,Всегда
+Shadow under Alice,TOM_MENU_SHADOWMODE,,Тень под Алисой
 $OPTVAL_OFF,TOM_MENU_SHADOWMODE_OFF,,
-Round blob,TOM_MENU_SHADOWMODE_BLOB,,
-Fully 3D,TOM_MENU_SHADOWMODE_3D,,
+Round blob,TOM_MENU_SHADOWMODE_BLOB,,Простой круг
+Fully 3D,TOM_MENU_SHADOWMODE_3D,,Трёхмерная

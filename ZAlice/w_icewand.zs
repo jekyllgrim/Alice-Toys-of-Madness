@@ -104,37 +104,26 @@ class ToM_Icewand : ToM_BaseWeapon
 		return Super.DepleteAmmo(altFire, checkEnough, ammouse, forceammouse);
 	}
 
+	override void OnDeselect(Actor dropper)
+	{
+		Super.OnDeselect(dropper);
+		if (cam) cam.Destroy();
+	}
+
 	override void DoEffect()
 	{
 		super.DoEffect();
-		if (!owner || !owner.player)
+		if (isSelected && !cam)
 		{
-			if (cam) cam.Destroy();
-			return;
-		}
-		
-		let weap = owner.player.readyweapon;
-		if (weap == self)
-		{
-			if (!cam)
-			{
-				cam = ToM_ReflectionCamera.Create(
-					PlayerPawn(owner), owner.player.fov,
-					(owner.radius * 0.5, -12, -15),
-					(-20, 15, 0),
-					cameraClass: 'ToM_IceWandReflectionCamera');
-			}
-		}
-		else
-		{
-			if (cam)
-			{
-				cam.Destroy();
-			}
+			cam = ToM_ReflectionCamera.Create(
+				PlayerPawn(owner), owner.player.fov,
+				(owner.radius * 0.5, -12, -15),
+				(-20, 15, 0),
+				cameraClass: 'ToM_IceWandReflectionCamera');
 		}
 
 		let psp = owner.player.FindPSprite(PSP_WEAPON);
-		if ((weap == self) && psp && psp.curstate.InStateSequence(GetAtkState(true)) && owner.player.refire > 0)
+		if (isSelected && psp && psp.curstate.InStateSequence(GetAtkState(true)) && owner.player.refire > 0)
 		{
 			iceWaveSoundVolume = ToM_Utils.LinearMap(owner.player.refire, 1, 16, 0.1, 1.0, true);
 			if (owner.IsActorPlayingSound(CHAN_WEAPON, LoopedAttackSound))
@@ -259,6 +248,13 @@ class ToM_Icewand : ToM_BaseWeapon
 
 class ToM_IceWandReflectionCamera : ToM_ReflectionCamera
 {
+	Default
+	{
+		// This helps avoid cases where parts of the player model
+		// can be seen in the Ice Wand's crystal:
+		ToM_ReflectionCamera.canSeePlayer false;
+	}
+
 	override void UpdateCameraAngles()
 	{
 		A_SetAngle(ppawn.angle + cam_angles.x, SPF_INTERPOLATE);

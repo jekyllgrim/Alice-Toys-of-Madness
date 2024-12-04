@@ -1186,9 +1186,12 @@ class ToM_ReflectionCamera : Actor
 	Vector3 cam_offset; //forward/back, left/right, up/down
 	Vector3 cam_angles; //angle, pitch, roll
 	const TOM_CAMERATEXTURE = "AliceWeapon.camtex";
+	bool cam_canSeePlayer;
+	property CanSeePlayer : cam_canSeePlayer;
 
 	Default	
 	{
+		ToM_ReflectionCamera.canSeePlayer true;
 		+NOINTERACTION
 		+NOBLOCKMAP
 		+NOTIMEFREEZE
@@ -1227,6 +1230,10 @@ class ToM_ReflectionCamera : Actor
 		{
 			handler.weaponCameras[ppawnNumber] = null;
 		}
+		if (ppawn)
+		{
+			ppawn.bOnlyVisibleInMirrors = ppawn.default.bOnlyVisibleInMirrors;
+		}
 		Super.OnDestroy();
 	}
 
@@ -1258,5 +1265,10 @@ class ToM_ReflectionCamera : Actor
 		}
 		UpdateCameraPosition();
 		UpdateCameraAngles();
+		// Disable the camera's ability to see the player, if set:
+		if (!cam_canSeePlayer)
+		{
+			ppawn.bOnlyVisibleInMirrors = (ppawnNumber == consoleplayer && !(ppawn.player.cheats & CF_CHASECAM) && ppawn.player.camera == ppawn);
+		}
 	}
 }

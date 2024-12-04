@@ -17,6 +17,7 @@ class ToM_BaseWeapon : Weapon abstract
 	const TRACKED_ATK_BUTTONS_MAX = 10;
 
 	ToM_CrosshairSpot crosshairSpot;
+	transient CVar c_tppcrosshair;
 	
 	color pickupParticleColor;
 	Property PickupParticleColor : pickupParticleColor;
@@ -1078,7 +1079,12 @@ class ToM_BaseWeapon : Weapon abstract
 			isSelected = true;
 			if (crosshairSpot)
 			{
-				UpdateCrosshairSpot();
+				if (!c_tppcrosshair) c_tppcrosshair = CVar.GetCvar('tom_tppCrosshair', owner.player);
+				int mode = c_tppcrosshair.GetInt();
+				if ( (mode == ToM_CrosshairSpot.CS_ALWAYS) || (mode == ToM_CrosshairSpot.CS_TPP && (owner.player.cheats & CF_CHASECAM)) )
+				{
+					UpdateCrosshairSpot();
+				}
 			}
 		}
 		else

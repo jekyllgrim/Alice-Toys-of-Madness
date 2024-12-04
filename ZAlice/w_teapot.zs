@@ -553,6 +553,8 @@ class ToM_TeapotAimHook : Actor
 	Default
 	{
 		+NOBLOCKMAP
+		+NOTELEPORT
+		+DROPOFF
 	}
 
 	override void Tick()

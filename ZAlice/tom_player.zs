@@ -1251,6 +1251,13 @@ class ToM_CrosshairSpot : ToM_BaseActor
 		CMODE_Seeker, //circular around a target
 		CMODE_Hidden,
 	}
+	
+	enum ECrosshairSetting
+	{
+		CS_None,
+		CS_TPP,
+		CS_Always,
+	}
 
 	Default
 	{
@@ -1364,10 +1371,10 @@ class ToM_CrosshairSpot : ToM_BaseActor
 				default:
 					renderRequired = -1;
 					break;
-				case 1:
+				case CS_TPP:
 					renderRequired = (alice.player.cheats & CF_CHASECAM)? 0 : -1;
 					break;
-				case 2:
+				case CS_ALWAYS:
 					renderRequired = 0;
 					break;
 			}

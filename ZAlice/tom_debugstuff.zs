@@ -186,7 +186,7 @@ class ToM_DebugMessage ui
 	}
 }
 
-class ToM_DebugSpot : Actor 
+class ToM_DebugSpot : Actor
 {
 	double spotDuration;
 

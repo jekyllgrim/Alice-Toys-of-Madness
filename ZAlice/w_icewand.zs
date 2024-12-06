@@ -75,6 +75,52 @@ class ToM_Icewand : ToM_BaseWeapon
 			}
 		}
 	}
+
+	const MAXSTEAMLAYERS = 80;
+	protected Vector3 prevViewAngles[MAXSTEAMLAYERS];
+	protected Vector3 prevRelMove[MAXSTEAMLAYERS];
+	protected Vector3 curRelMove;
+
+	action void A_MakeSteamLayer()
+	{
+		invoker.curRelMove = (RotateVector(vel.xy, -angle), vel.z);
+		A_SpawnPSParticle("SteamParticle", bottom: false, xofs: 30, yofs: 15, chance: 50, maxlayers: MAXSTEAMLAYERS);
+	}
+
+	action void A_AnimateSteamLayer()
+	{
+		int ovid = OverlayID();
+		let psp = player.FindPSprite(ovid);
+		if (!psp) return;
+		
+		let psw = player.FindPSprite(PSP_WEAPON);
+		if (!psw || InStateSequence(psw.curstate, ResolveState("Fire")) || psp.scale.x <= 0 || psp.scale.y <= 0 || psp.alpha <= 0)
+		{
+			psp.Destroy();
+			return;
+		}
+
+		int i = Clamp(ovid - APSP_TopParticle, 0, MAXSTEAMLAYERS-1);
+		Vector3 hm = invoker.prevRelMove[i] * 0.5; //X - relative forward, Y - relative sideways
+		Vector3 vm = invoker.prevViewAngles[i];
+
+		Vector3 baseMove = (0, 0, -0.4); //scale/depth (forward/backward), horizontal, vertical
+		baseMove.x += hm.x; //forward/back
+		baseMove.y += hm.y - (vm.x - angle); //horizontal
+		baseMove.z += vm.y - pitch + hm.z*0.5; //vertical
+
+		let [ofs, sc] = ToM_Utils.WorldToPSpriteCoords(baseMove.x, baseMove.y, baseMove.z, self.pitch, 0.08);
+
+		psp.x += ofs.x; //horizontal
+		psp.y += ofs.y; //vertical
+		psp.scale += sc;
+		
+		// update cached values:
+		invoker.prevViewAngles[i] = (angle, pitch, roll);
+		invoker.prevRelMove[i] = invoker.curRelMove;
+
+		psp.rotation += 0.4;
+	}
 	
 	// Negate damage from explosive projectiles that exploded
 	// with the ice wall hitbox between it and the owner:
@@ -179,8 +225,51 @@ class ToM_Icewand : ToM_BaseWeapon
 		TNT1 A 0 A_Lower;
 		wait;
 	Ready:
-		AICW A 1 A_WeaponReady(player.onGround? 0 : WRF_NOSECONDARY);
+		AICW A 1 
+		{
+			A_MakeSteamLayer();
+			A_WeaponReady(player.onGround? 0 : WRF_NOSECONDARY);
+		}
 		loop;
+	SteamParticle:
+		AICW Z 0
+		{
+			int ovid = OverlayID();
+			let psp = player.FindPSprite(ovid);
+			A_OverlayFlags(ovid, PSPF_RENDERSTYLE|PSPF_FORCESTYLE|PSPF_FORCEALPHA, true);
+			A_OverlayFlags(ovid, PSPF_ADDWEAPON, false);
+			psp.y += WEAPONTOP;
+			A_OverlayPivotAlign(ovid, PSPA_CENTER, PSPA_CENTER);
+			A_OverlayRenderstyle(ovid, STYLE_Translucent);
+			psp.alpha = 0.001;
+			psp.scale.x = psp.scale.y = frandom[sfx](0.5, 1.0);
+			psp.rotation = frandom[sfx](0, 360);
+			psp.bInterpolate = false;
+			int i = Clamp(ovid - APSP_TopParticle, 0, MAXSTEAMLAYERS-1);
+			invoker.prevViewAngles[i] = (angle, pitch, roll);
+			invoker.prevRelMove[i] = invoker.curRelMove;
+		}
+		#### ########## 1 bright
+		{
+			let psp = player.FindPSprite(OverlayID());
+			psp.alpha += 0.015;
+			A_AnimateSteamLayer();
+		}
+		#### # 1 bright
+		{
+			let psp = player.FindPSprite(OverlayID());
+			psp.alpha -= 0.0015;
+			if (psp.scale.x > 1.0)
+			{
+				psp.alpha *= ToM_Utils.LinearMap(psp.scale.x, 1.0, 3.0, 1.0, 0.0);
+			}
+			else if (psp.scale.x < 0.5)
+			{
+				psp.alpha *= ToM_Utils.LinearMap(psp.scale.x, 0.5, 0.0, 1.0, 0.0);
+			}
+			A_AnimateSteamLayer();
+		}
+		wait;
 	Fire:
 		TNT1 A 0 
 		{
@@ -273,19 +362,19 @@ class ToM_IceSplashDetector : LineTracer
 {
 	bool hitIceWall;
 	
-    override ETraceStatus TraceCallback()
-    {
-        if (results.HitType == TRACE_HitActor)
-        {
+	override ETraceStatus TraceCallback()
+	{
+		if (results.HitType == TRACE_HitActor)
+		{
 			let iw = ToM_IceWallHitBox(results.hitActor);
 			if (iw)
 			{
 				hitIceWall = true;
 				return TRACE_Stop;
 			}
-        }
-        return TRACE_Skip;
-    }
+		}
+		return TRACE_Skip;
+	}
 }
 
 class ToM_IceWandProjectileReal : ToM_PiercingProjectile

@@ -1,14 +1,37 @@
-// Skill menu is a simple black background with white text-only elements
+// Skill/episode menu. Uses a simple black background with text-only elements:
 
 class ToM_SkillMenu : ListMenu 
 {
+	double textElementScale;
+
+	override void Init(Menu parent, ListMenuDescriptor desc)
+	{
+		Super.Init(parent, desc);
+		// Workaround to manually scale down the list of elements
+		// if it becomes too long. This is mainly intended for
+		// Wadsmooth users with a gigantic list of episodes:
+		textElementScale = 1.0;
+		if (mDesc)
+		{
+			int totalElements = mDesc.mItems.Size();
+			double resFactor = mDesc.mVirtHeight / double(Screen.GetHeight());
+			double totalHeightElements = (mDesc.mFont.GetHeight() + mDesc.mLinespacing) * resFactor * totalElements;
+			double totalHeightMenu = mDesc.mVirtHeight * 0.75; //elements begin drawing 1/4th down from the top
+			if (totalHeightElements > mDesc.mVirtHeight)
+			{
+				textElementScale = totalHeightElements / totalHeightMenu;
+			}
+			//Console.Printf("Total elements: %d | total height of elements: %.1f | total height of menu: %.1f | font scale factor: %.2f",totalElements, totalHeightElements, totalHeightMenu, textElementScale);
+		}
+	}
+
 	override void Drawer()
 	{
 		Screen.Dim(0x000000, 1.0, 0, 0, Screen.GetWidth(), Screen.GetHeight());
 
-		int vHeight = mDesc.mVirtHeight;
-		int vWidth = mDesc.mVirtWidth / 2; //center of the menu
-		int y = vHeight / 4;
+		double vHeight = mDesc.mVirtHeight * textElementScale;
+		double vWidth = (mDesc.mVirtWidth * textElementScale) / 2; //center of the menu
+		int y = vHeight / 4; //elements (except the title) begin drawing 1/4th down from the top
 		let mFont = mDesc.mFont;
 
 		for (int i = 0; i < mDesc.mItems.Size(); ++i)
@@ -17,20 +40,26 @@ class ToM_SkillMenu : ListMenu
 			if (!mItem)
 				continue;
 	
-			// Draw the title at the top:
-			let title = ListMenuItemStaticText(mItem);
+			// Draw the title:
+			let title = ListMenuItemStaticTextCentered(mItem);
 			if (title)
 			{
 				string text = StringTable.Localize(title.mText);
-				vector2 textpos = ( (vWidth / 2) - (mFont.StringWidth(text) / 2), y / 2);
+				// we'll use the title's own position, but forcibly centered
+				// (if we pass title.GetX(), it won't be properly centered,
+				// since that's the raw position).
+				// Note, title is never scaled like other elements, since it
+				// always has enough position due to occupying the top 1/4th
+				// of the menu screen:
+				vector2 textpos = ( (mDesc.mVirtWidth / 2) - (mFont.StringWidth(text) / 2), title.GetY());
 				// draw the actual text:
 				Screen.DrawText(
 					mFont, 
 					Font.CR_Untranslated,
-					textpos.x, textpos.y, 
+					textpos.x, textpos.y,
 					text, 
-					DTA_VirtualWidth, vWidth,
-					DTA_VirtualHeight, vHeight,
+					DTA_VirtualWidth, mDesc.mVirtWidth,
+					DTA_VirtualHeight, mDesc.mVirtHeight,
 					DTA_FullscreenScale, FSMode_ScaleToFit43
 				);
 			}
@@ -44,6 +73,7 @@ class ToM_SkillMenu : ListMenu
 				item.mHeight = mDesc.mLinespacing;
 
 				string text = StringTable.Localize(item.mText);
+				text.StripRight("."); //full stops at the end of titles are just WRONG!
 				double textwidth = mFont.StringWidth(text);
 				vector2 textpos = ( (vWidth / 2) - (mFont.StringWidth(text) / 2), y);
 				
@@ -53,8 +83,8 @@ class ToM_SkillMenu : ListMenu
 					mDesc.mSelectedItem == i ? item.mColorSelected : mDesc.mFontColor,
 					textpos.x, textpos.y, 
 					text,
-					DTA_VirtualWidth, vWidth,
-					DTA_VirtualHeight, vHeight,
+					DTA_VirtualWidthF, vWidth,
+					DTA_VirtualHeightF, vHeight,
 					DTA_FullscreenScale, FSMode_ScaleToFit43
 				);
 
@@ -181,6 +211,26 @@ class ToM_MenuBackGroundHandler : EventHandler
 			MMD_Init();
 		else
 			MMD_Tick();
+		
+		/*let mnu = Menu.GetCurrentMenu();
+		if (mnu)
+		{
+			String mnuName, mnuClassname;
+			let opmnu = OptionMenu(mnu);
+			if (opmnu)
+			{
+				mnuClassname = ""..opmnu.GetClassName();
+				let desc = opmnu.mDesc;
+				if (desc)
+				{
+					mnuName = desc.mTitle;
+				}
+			}
+			if (mnuName)
+			{
+				Console.Printf("opened menu: %s - %s", mnuName, mnuClassname);
+			}
+		}*/
 	}
 
 	override void RenderOverlay(RenderEvent e)

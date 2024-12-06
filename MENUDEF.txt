@@ -32,6 +32,8 @@ ListMenu "SkillMenu"
 	size 860, 480
 	LineSpacing 56
 	ForceList
+
+	StaticTextCentered 440, 20, "$MNU_CHOOSESKILL"
 }
 
 ListMenu "EpisodeMenu"
@@ -40,7 +42,8 @@ ListMenu "EpisodeMenu"
 	size 860, 480
 	LineSpacing 56
 	ForceList
-	//StaticTextCentered 440, 32, "$MNU_CHOOSESKILL", "White"
+
+	StaticTextCentered 440, 20, "$MNU_EPISODE"
 }
 
 AddOptionMenu "OptionsMenu"

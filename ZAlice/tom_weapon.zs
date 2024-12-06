@@ -737,16 +737,14 @@ class ToM_BaseWeapon : Weapon abstract
 			A_OverlayOffset(layer,frandom[pspart](-xofs,xofs),frandom[pspart](-yofs, yofs));
 			if (bottom)
 			{
-				invoker.particleLayer_bottom++;
-				if (invoker.particleLayer_bottom >= maxlayers)
+				if (++invoker.particleLayer_bottom >= maxlayers)
 				{
 					invoker.particleLayer_bottom = 0;
 				}
 			}
 			else
 			{
-				invoker.particleLayer_top++;
-				if (invoker.particleLayer_top >= maxlayers)
+				if (++invoker.particleLayer_top >= maxlayers)
 				{
 					invoker.particleLayer_top = 0;
 				}

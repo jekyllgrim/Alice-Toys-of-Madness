@@ -51,7 +51,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		let alice = ToM_AlicePlayer(player.mo);
 		if (!st || !alice)
 		{
-			return ResolveState("Ready");
+			return invoker.GetReadyState();
 		}
 		if (invoker.atkButtonState == ABS_Held)
 		{
@@ -197,8 +197,6 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 	}
 
 	const MAXEYEFIRE = 20;
-	/*uint curFirePos;
-	Vector3 eyeFirePos[MAXEYEFIRE];*/
 	protected Vector3 prevViewAngles[MAXEYEFIRE];
 	protected Vector3 prevRelMove[MAXEYEFIRE];
 	protected Vector3 curRelMove;
@@ -217,7 +215,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		let psp = player.FindPSprite(ovid);
 		if (!psp) return;
 		let psw = player.FindPSprite(PSP_WEAPON);
-		if (!psw || !InStateSequence(psw.curstate, ResolveState("Ready")))
+		if (!psw || !InStateSequence(psw.curstate, invoker.GetReadyState()))
 		{
 			psp.Destroy();
 			return;
@@ -227,10 +225,10 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		// if this has been done yet):
 		if (psp.alpha >= 1.0)
 		{
-			A_OverlayFlags(ovid,PSPF_RENDERSTYLE|PSPF_FORCESTYLE|PSPF_FORCEALPHA,true);
-			A_OverlayPivotAlign(ovid,PSPA_CENTER,PSPA_CENTER);
-			A_OverlayRenderstyle(ovid,Style_Add);
-			psp.scale = (1.5,1.5);
+			A_OverlayFlags(ovid, PSPF_RENDERSTYLE|PSPF_FORCESTYLE|PSPF_FORCEALPHA, true);
+			A_OverlayPivotAlign(ovid, PSPA_CENTER, PSPA_CENTER);
+			A_OverlayRenderstyle(ovid, STYLE_Add);
+			psp.scale = (1.5, 1.5);
 			psp.alpha = 0.3;
 			psp.bInterpolate = false;
 			if (ovid > 0)
@@ -253,8 +251,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			baseMove.y += hm.y - (vm.x - angle); //horizontal
 			baseMove.z += vm.y - pitch + hm.z*0.5; //vertical
 
-			Vector2 ofs, sc;
-			[ofs, sc] = ToM_Utils.WorldToPSpriteCoords(baseMove.x, baseMove.y, baseMove.z, self.pitch, 0.2);
+			let [ofs, sc] = ToM_Utils.WorldToPSpriteCoords(baseMove.x, baseMove.y, baseMove.z, self.pitch, 0.2);
 
 			psp.x += ofs.x; //horizontal
 			psp.y += ofs.y; //vertical
@@ -445,19 +442,15 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 		if (!owner || !owner.player)
 			return;
 		
-		if (!owner.player.onGround)
+		if (isSelected && !owner.player.onGround)
 		{
-			let weap = owner.player.readyweapon;
-			if (weap && weap == self)
+			let psp = owner.player.FindPSprite(PSP_WEAPON);
+			if (!psp)
+				return;
+			
+			if (InStateSequence(psp.curstate, ResolveState("AltFire")))
 			{
-				let psp = owner.player.FindPSprite(PSP_WEAPON);
-				if (!psp)
-					return;
-				
-				if (InStateSequence(psp.curstate, ResolveState("AltFire")))
-				{
-					fallAttackForce = int(ceil( (abs(owner.vel.x) + abs(owner.vel.y)) * 0.15 + abs(owner.vel.z)*1.5 ));
-				}
+				fallAttackForce = int(ceil( (abs(owner.vel.x) + abs(owner.vel.y)) * 0.15 + abs(owner.vel.z)*1.5 ));
 			}
 		}
 	}
@@ -515,10 +508,8 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				psp.scale.x = psp.scale.y = 1.9 + 0.3 * ToM_Utils.SinePulse();
 				psp.alpha = 0.4 + 0.2 * ToM_Utils.SinePulse();
 			}
-			//Vector2 hmove = RotateVector(vel.xy, -angle);
-			//Console.Printf("Forward/back: %.1f | Left/Right: %.1f", hmove.x, hmove.y);
 			psp = player.FindPSprite(PSP_WEAPON);
-			if (!psp || !InStateSequence(psp.curstate, ResolveState("Ready")))
+			if (!psp || !InStateSequence(psp.curstate, invoker.GetReadyState()))
 			{
 				return ResolveState("Null");
 			}

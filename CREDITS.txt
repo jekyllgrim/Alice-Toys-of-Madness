@@ -6,7 +6,7 @@ Spicy Horse: Alice: Madness Returns
 
 Scriptorium: Asrafel font
 
-Nelbosaj: lots of playtesting
+Nelbosaj: lots of playtesting and bug reports
 
 Serious Cacodemon: bug reports
 
@@ -16,7 +16,7 @@ Gutawer: Gutamatics API (https://gitlab.com/Gutawer/gzdoom-gutamatics/)
 
 Cherno: model rips from American McGee's Alice
 
-Marisa the Magician, Cherno, Lewisk3, Boondolr: scripting help
+Cherno, Lewisk3, Boondolr: scripting help
 
 Umair Ahmad Khan: Aphrodite 3D model (https://www.cgtrader.com/free-3d-models/character/woman/aphrodite-rigged-3d-model) - the arms were used
 

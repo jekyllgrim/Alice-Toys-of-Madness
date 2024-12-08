@@ -1526,3 +1526,38 @@ class ToM_CrosshairSpot : ToM_BaseActor
 		stop;
 	}
 }
+
+class ToM_PlayerDoll : ToM_BaseActor
+{
+	Default
+	{
+		+DECOUPLEDANIMATIONS
+		+NOINTERACTION
+		+NOBLOCKMAP
+		+BRIGHT
+		+SYNCHRONIZED
+		+DONTBLAST
+		FloatBobPhase 0;
+	}
+
+	override void PostBeginPlay()
+	{
+		Super.PostBeginPlay();
+		SetAnimation('idle', flags:SAF_LOOP|SAF_INSTANT);
+
+		String pcTex = ToM_PCANTEX_BODY..consoleplayer;
+		A_ChangeModel("", skinindex: ToM_AlicePlayer.SI_TorsoLegs, skin: pcTex, flags: CMDL_USESURFACESKIN);
+
+		pcTex = ToM_PCANTEX_BODY2..consoleplayer;
+		A_ChangeModel("", skinindex: ToM_AlicePlayer.SI_Skirt, skin: pcTex, flags: CMDL_USESURFACESKIN);
+
+		pcTex = ToM_PCANTEX_ARM..consoleplayer;
+		A_ChangeModel("", skinindex: ToM_AlicePlayer.SI_Arms, skin: pcTex, flags: CMDL_USESURFACESKIN);
+	}
+
+	States {
+	Spawn:
+		M000 A -1;
+		stop;
+	}
+}

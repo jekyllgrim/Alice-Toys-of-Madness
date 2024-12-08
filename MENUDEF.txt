@@ -7,7 +7,7 @@ DefaultListMenu
 ListMenu "MainMenuTextOnly"
 {
 	size 860, 480
-	LineSpacing 32
+	LineSpacing 48
 	ForceList
 
 	ToM_DrawMainMenuBackground 0, 0

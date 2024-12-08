@@ -5,8 +5,8 @@ Gameinfo
 	StatusBarClass = "ToM_AliceHUD"
 	ArmorIcons = "ABR1A0", 0.5, "ABR2A0"
 	TitleMusic = "music/alice_title.mp3"
-	QuitMessages = "Running away, are we?"
 	QuitSound = "menu/quit"
+	QuitMessages = "$TOM_MENU_QUITMESSAGE"
 	ForceTextInMenus = true
 }
 

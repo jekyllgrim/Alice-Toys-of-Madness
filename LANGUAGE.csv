@@ -63,3 +63,4 @@ Shadow under Alice,TOM_MENU_SHADOWMODE,,Тень под Алисой
 $OPTVAL_OFF,TOM_MENU_SHADOWMODE_OFF,,
 Round blob,TOM_MENU_SHADOWMODE_BLOB,,Простой круг
 Fully 3D,TOM_MENU_SHADOWMODE_3D,,Трёхмерная
+"Running away, are we?",TOM_MENU_QUITMESSAGE,,Хочешь сбежать?

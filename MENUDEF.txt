@@ -7,23 +7,21 @@ DefaultListMenu
 ListMenu "MainMenuTextOnly"
 {
 	size 860, 480
-	LineSpacing 48
+	LineSpacing 52
 	ForceList
 
-	ToM_DrawMainMenuBackground 0, 0
-
 	Position 70, 33
-	TextItem  "$MNU_NEWGAME", "", "PlayerclassMenu"
+	ToM_TextItem  "$MNU_NEWGAME", "", "PlayerclassMenu"
 	Position 155, 100
-	TextItem  "$MNU_LOADGAME", "", "LoadGameMenu"
+	ToM_TextItem  "$MNU_LOADGAME", "", "LoadGameMenu"
 	Position 30, 160
-	TextItem  "$MNU_SAVEGAME", "", "SaveGameMenu"
+	ToM_TextItem  "$MNU_SAVEGAME", "", "SaveGameMenu"
 	Position 85, 235
-	TextItem  "$TOM_MENU_MODSETTINGS", "", "ToM_Settings"
+	ToM_TextItem  "$TOM_MENU_MODSETTINGS", "", "ToM_Settings"
 	Position 115, 325
-	TextItem  "$MNU_OPTIONS", "", "OptionsMenu"
+	ToM_TextItem  "$MNU_OPTIONS", "", "OptionsMenu"
 	Position 155, 410
-	TextItem  "$MNU_QUITGAME", "", "QuitMenu"
+	ToM_TextItem  "$MNU_QUITGAME", "", "QuitMenu"
 }
 
 ListMenu "SkillMenu"

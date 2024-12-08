@@ -1,15 +1,40 @@
 class ToM_Mainhandler : EventHandler
-{
-	int playerCheshireTimers[MAXPLAYERS];
-	array < Class<Weapon> > mapweapons;
-	array < Actor > allmonsters;
-	array < ToM_StakeProjectile > stakeprojectiles;
-	array < ToM_JackBombPickup > jackbombPickups;
+{ 
+	int playerCheshireTimers[MAXPLAYERS]; //individual timer for per-player Chesire Cat animations
+	array < Class<Weapon> > mapweapons; //all weapons on the map
+	array < Actor > allmonsters; //all monsters on the map
+	array < ToM_StakeProjectile > stakeprojectiles; //projectiles that can stick into walls need to reacquire their SecPlane
+	array < ToM_JackBombPickup > jackbombPickups; //keeps track of dynamically spawned Jackbomb pickups
 	
 	bool IsVoodooDoll(PlayerPawn mo) 
 	{
 		return ToM_Utils.IsVoodooDoll(mo);
 	}
+
+	// Attempted solution for drawing an Alice 3d model
+	// behind the option menu screen. Removed for now,
+	// since it's impossible to animate a 3d model when
+	// the menu is open and the game is paused.
+	// For now this is only done in TITLEMAP.
+	/*override void WorldLoaded(WorldEvent e)
+	{
+		double left, right, top, bottom;
+		foreach (vert : level.Vertexes)
+		{
+			left = min(left, vert.p.x);
+			right = max(right, vert.p.x);
+			top = max(top, vert.p.y);
+			bottom = min(top, vert.p.y);
+		}
+
+		let visualPlayerDoll = ToM_PlayerDoll(Actor.Spawn('ToM_PlayerDoll', (left - 128, top + 128, 0)));
+		visualPlayerDoll.angle = -90;
+		Vector2 cameraOfs = Actor.RotateVector((50, 0), visualPlayerDoll.angle);
+		let cam = SecurityCamera(Actor.Spawn('SecurityCamera', level.Vec3Offset(visualPlayerDoll.pos, (cameraOfs, 40))));
+		cam.angle = visualPlayerDoll.angle + 180 + 28;
+		cam.pitch = 15;
+		TexMan.SetCameraToTexture(cam, "AlicePlayer.menuMirror", 80);
+	}*/
 
 	override void NetworkProcess(consoleevent e)
 	{
@@ -486,17 +511,22 @@ class ToM_UiHandler : StaticEventHandler
 	{
 		PrintDebugMessages();
 
-		if (gamestate != GS_LEVEL)
-			return;
-		
-		if (weaponCameras[consoleplayer])
+		if (mainMenuBackgroundStarted)
 		{
-			if (!mirrortex || !mirrortex.IsValid())
-				mirrortex = TexMan.CheckForTexture(ToM_ReflectionCamera.TOM_CAMERATEXTURE, TexMan.Type_Any);
-			let pmo = players[consoleplayer].mo;
-			if (pmo && pmo.player.camera == pmo)
+			MMD_Draw(); //see tom_menu.zs
+		}
+
+		if (gamestate == GS_LEVEL)
+		{
+			if (weaponCameras[consoleplayer])
 			{
-				Screen.DrawTexture(mirrortex, false, 0.0, 0.0, DTA_Alpha, 0.0);
+				if (!mirrortex || !mirrortex.IsValid())
+					mirrortex = TexMan.CheckForTexture(ToM_ReflectionCamera.TOM_CAMERATEXTURE, TexMan.Type_Any);
+				let pmo = players[consoleplayer].mo;
+				if (pmo && pmo.player.camera == pmo)
+				{
+					Screen.DrawTexture(mirrortex, false, 0.0, 0.0, DTA_Alpha, 0.0);
+				}
 			}
 		}
 	}
@@ -549,6 +579,11 @@ class ToM_UiHandler : StaticEventHandler
 
 	override void UiTick()
 	{
+		if (!mainMenuBackgroundStarted)
+			MMD_Init();
+		else
+			MMD_Tick();
+
 		// Update canvases representing player colors
 		for (int i = 0; i < MAXPLAYERS; i++)
 		{
@@ -563,8 +598,10 @@ class ToM_UiHandler : StaticEventHandler
 			UpdatePlayerColorCanvas(pcCanv_arm[i], tex, playerCol);
 		}
 
+		let currentMenu = Menu.GetCurrentMenu();
+
 		// Update portrait showing Player Menu:
-		if (Menu.GetCurrentMenu())
+		if (currentMenu)
 		{
 			mainMenuOpened = true;
 

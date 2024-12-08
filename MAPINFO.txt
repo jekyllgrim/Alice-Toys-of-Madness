@@ -12,6 +12,5 @@ Gameinfo
 
 Map TITLEMAP ""
 {
-	EventHandlers = "ToM_MenuBackGroundHandler"
 	Music = "music/alice_title.mp3"
 }

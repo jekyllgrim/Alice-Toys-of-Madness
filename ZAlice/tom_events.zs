@@ -5,6 +5,8 @@ class ToM_Mainhandler : EventHandler
 	array < Actor > allmonsters; //all monsters on the map
 	array < ToM_StakeProjectile > stakeprojectiles; //projectiles that can stick into walls need to reacquire their SecPlane
 	array < ToM_JackBombPickup > jackbombPickups; //keeps track of dynamically spawned Jackbomb pickups
+
+	ToM_PlayerDoll alicePlayerDoll;
 	
 	bool IsVoodooDoll(PlayerPawn mo) 
 	{
@@ -16,7 +18,7 @@ class ToM_Mainhandler : EventHandler
 	// since it's impossible to animate a 3d model when
 	// the menu is open and the game is paused.
 	// For now this is only done in TITLEMAP.
-	/*override void WorldLoaded(WorldEvent e)
+	override void WorldLoaded(WorldEvent e)
 	{
 		double left, right, top, bottom;
 		foreach (vert : level.Vertexes)
@@ -27,17 +29,57 @@ class ToM_Mainhandler : EventHandler
 			bottom = min(top, vert.p.y);
 		}
 
-		let visualPlayerDoll = ToM_PlayerDoll(Actor.Spawn('ToM_PlayerDoll', (left - 128, top + 128, 0)));
-		visualPlayerDoll.angle = -90;
-		Vector2 cameraOfs = Actor.RotateVector((50, 0), visualPlayerDoll.angle);
-		let cam = SecurityCamera(Actor.Spawn('SecurityCamera', level.Vec3Offset(visualPlayerDoll.pos, (cameraOfs, 40))));
-		cam.angle = visualPlayerDoll.angle + 180 + 28;
-		cam.pitch = 15;
-		TexMan.SetCameraToTexture(cam, "AlicePlayer.menuMirror", 80);
-	}*/
+		alicePlayerDoll = ToM_PlayerDoll(Actor.Spawn('ToM_PlayerDoll', (left - 128, top + 128, 0)));
+		if (alicePlayerDoll)
+		{
+			alicePlayerDoll.SetZ(alicePlayerDoll.cursector.NextLowestFloorAt(alicePlayerDoll.pos.x, alicePlayerDoll.pos.y, alicePlayerDoll.pos.z));
+			alicePlayerDoll.angle = -90;
+			Vector2 cameraOfs = Actor.RotateVector((50, 0), alicePlayerDoll.angle);
+			let cam = SecurityCamera(Actor.Spawn('SecurityCamera', level.Vec3Offset(alicePlayerDoll.pos, (cameraOfs, 40))));
+			cam.angle = alicePlayerDoll.angle + 180 + 28;
+			cam.pitch = 15;
+			TexMan.SetCameraToTexture(cam, "AlicePlayer.menuMirror", 80);
+		}
+	}
 
 	override void NetworkProcess(consoleevent e)
 	{
+		if (e.Player == consoleplayer)
+		{
+			if (e.name == "AnimatePlayerDoll" && alicePlayerDoll)
+			{
+				alicePlayerDoll.Tick();
+			}
+			if (e.name.IndexOf("StartAliceDollAnimation") >= 0)
+			{
+				if (!alicePlayerDoll) return;
+
+				array<String> cmd;
+				e.name.Split(cmd, "|");
+				if (cmd.Size() != 2) return;
+				
+				String mAction = cmd[1];
+				mAction.Replace("+", "");
+				State st = alicePlayerDoll.FindStateByString(String.Format("Anim_%s", mAction));
+				if (st)
+				{
+					alicePlayerDoll.SetState(st);
+				}
+				else if (alicePlayerDoll.curstate != alicePlayerDoll.spawnstate)
+				{
+					alicePlayerDoll.SetState(alicePlayerDoll.spawnstate);
+				}
+			}
+
+			if (e.name == "ResetAliceDollAnimation")
+			{
+				if (alicePlayerDoll && !Actor.InstateSequence(alicePlayerDoll.curstate, alicePlayerDoll.spawnstate))
+				{
+					alicePlayerDoll.SetState(alicePlayerDoll.spawnstate);
+				}
+			}
+		}
+
 		if (!PlayerInGame[e.Player] || e.Player < 0)
 			return;
 		
@@ -509,8 +551,6 @@ class ToM_UiHandler : StaticEventHandler
 
 	override void RenderOverlay(renderEvent e) 
 	{
-		PrintDebugMessages();
-
 		if (mainMenuBackgroundStarted)
 		{
 			MMD_Draw(); //see tom_menu.zs
@@ -529,6 +569,8 @@ class ToM_UiHandler : StaticEventHandler
 				}
 			}
 		}
+
+		PrintDebugMessages();
 	}
 
 	override void WorldTick()

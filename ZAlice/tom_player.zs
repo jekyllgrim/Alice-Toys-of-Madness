@@ -1531,7 +1531,6 @@ class ToM_PlayerDoll : ToM_BaseActor
 {
 	Default
 	{
-		+DECOUPLEDANIMATIONS
 		+NOINTERACTION
 		+NOBLOCKMAP
 		+BRIGHT
@@ -1543,7 +1542,6 @@ class ToM_PlayerDoll : ToM_BaseActor
 	override void PostBeginPlay()
 	{
 		Super.PostBeginPlay();
-		SetAnimation('idle', flags:SAF_LOOP|SAF_INSTANT);
 
 		String pcTex = ToM_PCANTEX_BODY..consoleplayer;
 		A_ChangeModel("", skinindex: ToM_AlicePlayer.SI_TorsoLegs, skin: pcTex, flags: CMDL_USESURFACESKIN);
@@ -1553,11 +1551,133 @@ class ToM_PlayerDoll : ToM_BaseActor
 
 		pcTex = ToM_PCANTEX_ARM..consoleplayer;
 		A_ChangeModel("", skinindex: ToM_AlicePlayer.SI_Arms, skin: pcTex, flags: CMDL_USESURFACESKIN);
+		spawnAngle = angle;
+		spawnPoint = pos;
+	}
+
+	override void Tick()
+	{
+		if (tics != -1) 
+		{
+			if (tics > 0) 
+				tics--;
+			while (!tics) 
+			{
+				SetState (CurState.NextState);
+			}
+		}
 	}
 
 	States {
 	Spawn:
-		M000 A -1;
-		stop;
+		#### # 0
+		{
+			SetZ(spawnPoint.z);
+			angle = spawnangle;
+			pitch = 0;
+		}
+		M001 ABCDEFGHIJKLMNOPQRSTUV 2;
+		loop;
+	Anim_attack:
+		#### # 0
+		{
+			SetZ(spawnPoint.z);
+			angle = spawnangle;
+			pitch = 0;
+		}
+		M002 ABCDEFGHIJKLMNOPQRST 2;
+		#### # 20;
+		loop;
+	Anim_altattack:
+		#### # 0
+		{
+			SetZ(spawnPoint.z);
+			angle = spawnangle;
+			pitch = 0;
+		}
+		M003 ABCDEFGHIJKLMNOPQRSTUV 2;
+		#### # 20;
+		loop;
+	Anim_moveleft:
+		#### # 0 A_SetAngle(spawnangle - 90);
+		goto Anim_move;
+	Anim_moveright:
+		#### # 0 A_SetAngle(spawnangle + 90);
+		goto Anim_move;
+	Anim_back:
+		#### # 0 A_SetAngle(spawnangle + 180);
+		goto Anim_move;
+	Anim_forward:
+		#### # 0 A_SetAngle(spawnangle);
+		goto Anim_move;
+	Anim_move:
+		#### # 0
+		{
+			pitch = 0;
+			SetZ(spawnPoint.z);
+		}
+		M004 ABCDEFGHIJKL 2;
+		loop;
+	Anim_jump:
+		#### # 0
+		{
+			SetZ(spawnPoint.z);
+			angle = spawnangle;
+			pitch = 0;
+		}
+		M005 ABCDEFGHIJKLMN 2;
+		M005 KLMNKLMNKLMN 2;
+		M006 ABCDEFGHIJKLM 2;
+		#### # 35;
+		loop;
+	Anim_ThrowJackbomb:
+		#### # 0
+		{
+			SetZ(spawnPoint.z);
+			angle = spawnangle;
+			pitch = 0;
+		}
+		M007 ABCDEFGHIJKLMN 2;
+		#### # 20;
+		loop;
+	Anim_right:
+		#### # 0
+		{
+			SetZ(spawnPoint.z);
+			pitch = 0;
+		}
+		M008 AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSS 1
+		{
+			angle += 2;
+		}
+	Anim_left:
+		#### # 0
+		{
+			SetZ(spawnPoint.z);
+			pitch = 0;
+		}
+		M008 AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSS 1
+		{
+			angle -= 2;
+		}
+		loop;
+	Anim_moveup:
+		#### # 0
+		{
+			SetZ(spawnPoint.z + 20);
+			angle = spawnangle;
+			pitch = -45;
+		}
+		M009 ABCDEFGHIJKLMNOPQRS 2;
+		loop;
+	Anim_movedown:
+		#### # 0
+		{
+			SetZ(spawnPoint.z + 20);
+			angle = spawnangle;
+			pitch = 45;
+		}
+		M009 ABCDEFGHIJKLMNOPQRS 2;
+		loop;
 	}
 }

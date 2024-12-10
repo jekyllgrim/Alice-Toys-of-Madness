@@ -160,9 +160,10 @@ class ListMenuItemToM_TextItem : ListMenuItemTextItem
 {
 	mixin ToM_DeltaTime;
 	array<ToM_TextItemHighlight> itemHighlights;
-	bool itemSelected;
-	ListMenuDescriptor mDesc;
+	ListMenuDescriptor mDesc; // why don't elements already have a pointer to their menu or its descriptor??
 
+	// Basically, extended DrawText() from ListMenu, that accepts scale,
+	// alpha and color:
 	void DrawTextHighlight(ListMenuDescriptor desc, Font fnt, int color, double x, double y, String text, bool ontop = false, Vector2 scale = (1,1), double alpha = 1.0, Color fillcolor = 0)
 	{
 		int w = desc ? desc.DisplayWidth() : ListMenuDescriptor.CleanScale;
@@ -189,15 +190,21 @@ class ListMenuItemToM_TextItem : ListMenuItemTextItem
 	override void Ticker()
 	{
 		Super.Ticker();
-		if (mDesc && itemSelected && level.totaltime % 4 == 0)
+		if (mDesc)
 		{
-			Vector2 pos = (0, 0);
-			Vector2 scale = (1, frandom[menusfx](1,1.5));
-			pos.y -= mDesc.mLinespacing * (scale.y - 1) * 0.5;
-			double alpha = frandom[menusfx](0.15, 0.25);
-			itemHighlights.Push(ToM_TextItemHighlight.Create(pos, scale, alpha));
+			if (mDesc.mSelectedItem < 0)
+			{
+				itemHighlights.Clear();
+			}
+			else if (level.totaltime % 4 == 0)
+			{
+				Vector2 pos = (0, 0);
+				Vector2 scale = (1, frandom[menusfx](1,1.5));
+				pos.y -= mDesc.mLinespacing * (scale.y - 1) * 0.5;
+				double alpha = frandom[menusfx](0.15, 0.25);
+				itemHighlights.Push(ToM_TextItemHighlight.Create(pos, scale, alpha));
+			}
 		}
-		itemSelected = false;
 	}
 
 	override void Draw(bool selected, ListMenuDescriptor desc)
@@ -207,7 +214,6 @@ class ListMenuItemToM_TextItem : ListMenuItemTextItem
 		let font = menuDelegate.PickFont(mFont);
 		if (selected)
 		{
-			itemSelected = true;
 			for (int i = itemHighlights.Size() - 1; i >= 0; i--)
 			{
 				let hlight = itemHighlights[i];
@@ -265,6 +271,8 @@ extend class ToM_UiHandler
 	ui double candleLightAlphaDir;
 	ui double candleLightAlphaTarget;
 
+	ui name prevSelectedControl;
+
 	ui array < ToM_MenuCandleSmokeController > smokeElements;
 
 	ui void MMD_Init()
@@ -292,16 +300,22 @@ extend class ToM_UiHandler
 		// MessageBoxMenu!
 		if (quitmnu && quitmnu.mMessage && quitmnu.mMessage.StringAt(0) == StringTable.Localize("$TOM_MENU_QUITMESSAGE"))
 		{
+			// I want to delete the "press Y to quit" line, because
+			// it doesn't look nice and everyone knows anyway.
+			// Since that line is a second line in the message, I
+			// check for the current number of lines. If more than one,
+			// do some initial setup:
 			if (quitmnu.mMessage.Count() > 1)
 			{
-				//quitmnu.textfont = Font.FindFont('AsrafelComplete');
-				// Redefine the BrokenLines class because this is
-				// the only way to delete the ugly second line:
+				// I have to redefine the BrokenLines pointer in order to
+				// make sure it only contains one string (my quit message):
 				quitmnu.mMessage = quitmnu.textfont.BreakLines(StringTable.Localize("$TOM_MENU_QUITMESSAGE"), 600);
-				// redefine selector:
+				// redefine selector (because it forcibly uses smallfont
+				// by default):
 				quitmnu.arrowfont = smallfont;
-				quitmnu.selector = "{";
-				quitmnu.destheight * 2;
+				quitmnu.selector = "{"; //Baldur Nuveau uses a pointing hand for this character
+				quitmnu.destheight /= 2;
+				quitmnu.destwidth /= 2;
 			}
 			TextureID texOpt = TexMan.CheckForTexture("graphics/menu/quitmenu_background.png");
 			Vector2 size;
@@ -316,13 +330,40 @@ extend class ToM_UiHandler
 		}
 
 		// Are we in titlemap and is this an option menu?
-		else if (gamestate == GS_TITLELEVEL && mnu && mnu is 'OptionMenu')
+		else if (/*gamestate == GS_TITLELEVEL && */mnu && (mnu is 'OptionMenu' || mnu is 'EnterKey'))
 		{
-			TextureID texOpt = TexMan.CheckForTexture("graphics/menu/optionmenu_background.png");
-			Vector2 size;
-			[size.x, size.y] = TexMan.GetSize(texOpt);
+			// We're in Customize Controls menu and currently hovering over a control bind element:
+			OptionMenuItemControlBase controlItem;
+			if (mnu is 'OptionMenu')
+			{
+				let desc = OptionMenu(mnu).mDesc;
+				if (desc && desc.mSelectedItem >= 0)
+				{
+					controlItem = OptionMenuItemControlBase(desc.mItems[desc.mSelectedItem]);
+				}
+			}
+			// We've just clicked on a control element to change its bind
+			// (yes, it's a different menu, despite being drawn on top
+			// of the previous one):
+			else
+			{
+				controlItem = EnterKey(mnu).mOwner;
+			}
+			if (controlitem)
+			{
+				if (controlItem.GetAction() != prevSelectedControl)
+				{
+					prevSelectedControl = controlItem.GetAction();
+					EventHandler.SendNetworkEvent(String.Format("StartAliceDollAnimation|%s", prevSelectedControl));
+				}
+			}
+			else
+			{
+				prevSelectedControl = 'none';
+				EventHandler.SendNetworkEvent("ResetAliceDollAnimation");
+			}
 
-			/*TextureID mirrorTex = TexMan.CheckForTexture("AlicePlayer.menuMirror");
+			TextureID mirrorTex = TexMan.CheckForTexture("AlicePlayer.menuMirror");
 			Vector2 camSize;
 			[camSize.x, camSize.y] = TexMan.GetSize(mirrorTex);
 			Screen.DrawTexture(mirrorTex,
@@ -330,7 +371,11 @@ extend class ToM_UiHandler
 				0, 0,
 				DTA_VirtualWidthF, camSize.X,
 				DTA_VirtualheightF, camSize.Y,
-				DTA_FullScreenScale, FSMode_ScaleToFit43);*/
+				DTA_FullScreenScale, FSMode_ScaleToFit43);
+
+			TextureID texOpt = TexMan.CheckForTexture("graphics/menu/optionmenu_background.png");
+			Vector2 size;
+			[size.x, size.y] = TexMan.GetSize(texOpt);
 
 			Screen.DrawTexture(texOpt,
 				false,
@@ -355,7 +400,6 @@ extend class ToM_UiHandler
 			vector2 size;
 			[size.x, size.y] = TexMan.GetSize(tex_bg);
 
-			vector2 baseRes = (ToM_StatusBarScreen.statscr_base_width, ToM_StatusBarScreen.statscr_base_height);
 			vector2 screenRes = (Screen.GetWidth(), screen.GetHeight());
 			vector2 scale = (screenRes.x / size.x, screenRes.y / size.y);
 
@@ -416,7 +460,11 @@ extend class ToM_UiHandler
 
 	ui void MMD_Tick()
 	{
-
+		let mnu = Menu.GetCurrentMenu();
+		if (mnu && menuactive != Menu.OnNoPause && gamestate != GS_TITLELEVEL)
+		{
+			EventHandler.SendNetworkEvent("AnimatePlayerDoll");
+		}
 		// create a new smoke element:
 		let csc = ToM_MenuCandleSmokeController.Create(
 			//pos 

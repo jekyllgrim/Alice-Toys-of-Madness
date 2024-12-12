@@ -1527,6 +1527,26 @@ class ToM_CrosshairSpot : ToM_BaseActor
 	}
 }
 
+class ToM_PlayerDollBackground : ToM_BaseActor
+{
+	Default
+	{
+		+NOINTERACTION
+		+NOBLOCKMAP
+		+BRIGHT
+		+SYNCHRONIZED
+		+DONTBLAST
+		FloatBobPhase 0;
+	}
+
+	States {
+	Spawn:
+		M000 A -1;
+		stop;
+	}
+}
+	
+
 class ToM_PlayerDoll : ToM_BaseActor
 {
 	Default
@@ -1559,8 +1579,10 @@ class ToM_PlayerDoll : ToM_BaseActor
 	{
 		if (tics != -1) 
 		{
-			if (tics > 0) 
+			if (tics > 0)
+			{
 				tics--;
+			}
 			while (!tics) 
 			{
 				SetState (CurState.NextState);
@@ -1576,8 +1598,78 @@ class ToM_PlayerDoll : ToM_BaseActor
 			angle = spawnangle;
 			pitch = 0;
 		}
-		M001 ABCDEFGHIJKLMNOPQRSTUV 2;
-		loop;
+		Idle1:
+			M100 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M101 ABC 2;
+			M100 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M101 ABC 2;
+			#### # 0 A_Jump(120, "Idle1_dirtkick", "Idle1_heelkick", "Idle1_nails", "Idle1_to2");
+			#### # 0 { return FindState("Idle1"); }
+		Idle1_dirtkick:
+			M102 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M103 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M104 ABCDEFGHIJ 2;
+			#### # 0 { return FindState("Idle1"); }
+		Idle1_heelkick:
+			M105 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M106 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M107 ABCDEFGHIJKLMN 2;
+			#### # 0 { return FindState("Idle1"); }
+		Idle1_nails:
+			M108 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M109 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M110 ABCDEFGHIJKLMNOPQRSTUVWXY 2;
+			#### # 0 { return FindState("Idle1"); }
+		Idle1_to2:
+			M111 ABCDEFGHIJKLMNOPQRSTU 2;
+		Idle2:
+			M112 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M113 ABC 2;
+			M112 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M113 ABC 2;
+			#### # 0 A_Jump(120, "Idle2_armsbehind", "Idle_foldarms", "Idle2_to3");
+			#### # 0 { return FindState("Idle2"); }
+		Idle2_armsbehind:
+			M114 ABCDEFGHIJKLM 2;
+		Idle2_armsbehind_stand:
+			M117 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M118 ABC 2;
+			M117 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M118 ABC 2;
+			#### # 0 A_Jump(120, "Idle2_armsbehind_rocktoes", "Idle2_armsbehind_back");
+			#### # 0 { return FindState("Idle2_armsbehind_stand"); }
+		Idle2_armsbehind_back:
+			M114 MLKJIHGFEDCBA 2;
+			#### # 0 { return FindState("Idle2"); }
+		Idle2_armsbehind_rocktoes:
+			M115 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M116 ABCDEFGHIJKLMNOPQRSTUVWXY 2;
+			#### # 0 { return FindState("Idle2_armsbehind_stand"); }
+		Idle2_foldarms:
+			M119 ABCDEFGHIJKLMNOPQ 2;
+		Idle2_foldarms_stand:
+			M120 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M121 ABCDEFG 2;
+			M120 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M121 ABCDEFG 2;
+			#### # 0 A_Jump(120, "Idle2_foldarms_back");
+			#### # 0 { return FindState("Idle2_armsbehind_stand"); }
+		Idle2_foldarms_back:
+			M119 QPONMLKJIHGFEDCBA 2;
+			#### # 0 { return FindState("Idle2"); }
+		Idle2_to3:
+			M122 ABCDEFGHIJKLMNOPQRSTU 2;
+		Idle3:
+			M123 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M124 ABC 2;
+			M123 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+			M124 ABC 2;
+			#### # 0 A_Jump(120, "Idle3_to1");
+			#### # 0 { return FindState("Idle3"); }
+		Idle3_to1:
+			M125 ABCDEFGHIJKLMNOPQRST 2;
+			goto Idle1;
+
 	Anim_attack:
 		#### # 0
 		{

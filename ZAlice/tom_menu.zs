@@ -292,6 +292,7 @@ extend class ToM_UiHandler
 		// no menu (obviously):
 		if (!mnu && gamestate != GS_TITLELEVEL) return;
 
+		vector2 screenRes = (Screen.GetWidth(), screen.GetHeight());
 		// Is this a quit menu?
 		let quitmnu = MessageBoxMenu(mnu);
 		// Yep, the only way to detect it's a quit message
@@ -300,6 +301,7 @@ extend class ToM_UiHandler
 		// MessageBoxMenu!
 		if (quitmnu && quitmnu.mMessage && quitmnu.mMessage.StringAt(0) == StringTable.Localize("$TOM_MENU_QUITMESSAGE"))
 		{
+			Screen.Dim("000000", 1, 0, 0, int(screenRes.x), int(screenRes.y));
 			// I want to delete the "press Y to quit" line, because
 			// it doesn't look nice and everyone knows anyway.
 			// Since that line is a second line in the message, I
@@ -330,8 +332,9 @@ extend class ToM_UiHandler
 		}
 
 		// Are we in titlemap and is this an option menu?
-		else if (/*gamestate == GS_TITLELEVEL && */mnu && (mnu is 'OptionMenu' || mnu is 'EnterKey'))
+		else if (mnu is 'OptionMenu' || mnu is 'EnterKey')
 		{
+			Screen.Dim("000000", 1, 0, 0, int(screenRes.x), int(screenRes.y));
 			// We're in Customize Controls menu and currently hovering over a control bind element:
 			OptionMenuItemControlBase controlItem;
 			if (mnu is 'OptionMenu')
@@ -363,6 +366,7 @@ extend class ToM_UiHandler
 				EventHandler.SendNetworkEvent("ResetAliceDollAnimation");
 			}
 
+			// The camera texture showing Alice:
 			TextureID mirrorTex = TexMan.CheckForTexture("AlicePlayer.menuMirror");
 			Vector2 camSize;
 			[camSize.x, camSize.y] = TexMan.GetSize(mirrorTex);
@@ -373,22 +377,43 @@ extend class ToM_UiHandler
 				DTA_VirtualheightF, camSize.Y,
 				DTA_FullScreenScale, FSMode_ScaleToFit43);
 
+			// Now the foreground with a mirror:
 			TextureID texOpt = TexMan.CheckForTexture("graphics/menu/optionmenu_background.png");
 			Vector2 size;
 			[size.x, size.y] = TexMan.GetSize(texOpt);
-
 			Screen.DrawTexture(texOpt,
 				false,
 				0, 0,
 				DTA_VirtualWidthF, size.X,
 				DTA_VirtualheightF, size.Y,
 				DTA_FullScreenScale, FSMode_ScaleToFit43);
+			
+			// Now process the canvas for the reflection behind Alice
+			// (the reflection itself is an actor with a model spawned
+			// behind her model):
+			Canvas refCanvas = TexMan.GetCanvas("AlicePlayer.menuMirrorReflection");
+			TextureID refTex = TexMan.CheckForTexture("Graphics/Menu/optionmenu_reflection.png");
+			Vector2 rSize;
+			[rSize.x, rSize.y] = TexMan.GetSize(refTex);
+			refCanvas.Clear(0, 0, rSize.x, rSize.y, 0xff000000);
+			refCanvas.DrawTexture(refTex, false,
+				0, 0,
+				DTA_FlipY, true,
+				DTA_DestWidthF, rSize.x,
+				DTA_DestHeightF, rSize.y);
+			refCanvas.DrawTexture(TexMan.CheckForTexture("Graphics/Menu/optionmenu_reflection_lightning.png"),false,
+				0, 0,
+				DTA_FlipY, true,
+				DTA_DestWidthF, rSize.x,
+				DTA_DestHeightF, rSize.y,
+				DTA_Alpha, lightAlpha);
 		}
 
 		// Otherwise, if it's a list menu, OR we're in a title level,
 		// draw the main menu background:
 		else if (gamestate == GS_TITLELEVEL || (mnu && mnu is 'ListMenu'))
 		{
+			Screen.Dim("000000", 1, 0, 0, int(screenRes.x), int(screenRes.y));
 			// Textures for regular background, and another version of it
 			// lit by a lightning strike, with different shadows and visible
 			// window outlines:
@@ -400,10 +425,7 @@ extend class ToM_UiHandler
 			vector2 size;
 			[size.x, size.y] = TexMan.GetSize(tex_bg);
 
-			vector2 screenRes = (Screen.GetWidth(), screen.GetHeight());
 			vector2 scale = (screenRes.x / size.x, screenRes.y / size.y);
-
-			Screen.Dim("000000", 1, 0, 0, int(screenRes.x), int(screenRes.y));
 
 			// The base background is always drawn:
 			Screen.DrawTexture(tex_bg, false,

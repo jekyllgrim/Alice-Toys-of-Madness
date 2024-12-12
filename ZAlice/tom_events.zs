@@ -29,16 +29,23 @@ class ToM_Mainhandler : EventHandler
 			bottom = min(top, vert.p.y);
 		}
 
-		alicePlayerDoll = ToM_PlayerDoll(Actor.Spawn('ToM_PlayerDoll', (left - 128, top + 128, 0)));
-		if (alicePlayerDoll)
+		let doll = ToM_PlayerDoll(Actor.Spawn('ToM_PlayerDoll', (left - 128, top + 128, 0)));
+		if (doll)
 		{
-			alicePlayerDoll.SetZ(alicePlayerDoll.cursector.NextLowestFloorAt(alicePlayerDoll.pos.x, alicePlayerDoll.pos.y, alicePlayerDoll.pos.z));
-			alicePlayerDoll.angle = -90;
-			Vector2 cameraOfs = Actor.RotateVector((50, 0), alicePlayerDoll.angle);
-			let cam = SecurityCamera(Actor.Spawn('SecurityCamera', level.Vec3Offset(alicePlayerDoll.pos, (cameraOfs, 40))));
-			cam.angle = alicePlayerDoll.angle + 180 + 28;
+			doll.SetZ(doll.cursector.NextLowestFloorAt(doll.pos.x, doll.pos.y, doll.pos.z));
+			doll.angle = -90;
+			Vector2 cameraOfs = Actor.RotateVector((50, 0), doll.angle);
+			let cam = SecurityCamera(Actor.Spawn('SecurityCamera', level.Vec3Offset(doll.pos, (cameraOfs, 40))));
+			cam.angle = doll.angle + 180 + 28;
 			cam.pitch = 15;
 			TexMan.SetCameraToTexture(cam, "AlicePlayer.menuMirror", 80);
+
+			Vector2 bgOfs = Actor.RotateVector((128, 0), doll.angle + 180);
+			let dollbg = Actor.Spawn('ToM_PlayerDollBackground', level.Vec3Offset(doll.pos, (bgOfs, -32)));
+			dollbg.angle += 28;
+			dollbg.A_ChangeModel("", skin: "AlicePlayer.menuMirrorReflection");
+
+			alicePlayerDoll = doll;
 		}
 	}
 

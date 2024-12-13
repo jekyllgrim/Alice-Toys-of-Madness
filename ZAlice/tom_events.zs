@@ -34,11 +34,12 @@ class ToM_Mainhandler : EventHandler
 
 	override void NetworkProcess(consoleevent e)
 	{
-		if (e.Player == consoleplayer)
+		if (!e.isManual && e.Player == consoleplayer)
 		{
 			if (e.name == "AnimatePlayerDoll" && alicePlayerDoll)
 			{
 				alicePlayerDoll.Tick();
+				alicePlayerDoll.lightlevel = alicePlayerDoll.default.lightlevel + e.args[0];
 			}
 			if (e.name.IndexOf("StartAliceDollAnimation") >= 0)
 			{

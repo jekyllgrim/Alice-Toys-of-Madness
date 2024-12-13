@@ -260,7 +260,7 @@ extend class ToM_UiHandler
 
 	ui int lightningDelay;
 	ui int lightningPhase;
-	ui double lightAlpha;
+	ui double lightningAlpha;
 	const LIGHT_FREQUENCY = 5;
 	const LIGHT_MAXALPHA = 1.0;
 	const LIGHT_FADETIME = TICRATE / 2;
@@ -407,7 +407,7 @@ extend class ToM_UiHandler
 				DTA_FlipY, true,
 				DTA_DestWidthF, rSize.x,
 				DTA_DestHeightF, rSize.y,
-				DTA_Alpha, lightAlpha);
+				DTA_Alpha, lightningAlpha);
 		}
 
 		// Otherwise, if it's a list menu, OR we're in a title level,
@@ -442,7 +442,7 @@ extend class ToM_UiHandler
 				0, 0,
 				DTA_VirtualWidthF, size.X,
 				DTA_VirtualheightF, size.Y,
-				DTA_Alpha, lightAlpha,
+				DTA_Alpha, lightningAlpha,
 				DTA_FullscreenScale, FSMode_ScaleToFit43
 			);
 
@@ -479,6 +479,24 @@ extend class ToM_UiHandler
 				DTA_FullscreenScale, FSMode_ScaleToFit43
 			);
 		}
+
+		if (mnu is 'LoadSaveMenu')
+		{
+			let savemnu = LoadSaveMenu(mnu);
+			TextureID tex = TexMan.CheckForTexture("graphics/menu/menu_loadsave.png");
+			Screen.DrawTexture(tex, false,
+				savemnu.savePicLeft - 45, savemnu.savePicTop - 35,
+				DTA_DestWidth, savemnu.savePicWidth + 45 + 45,
+				DTA_Destheight, savemnu.savePicHeight + 35 + 48);
+			Screen.DrawTexture(tex, false,
+				savemnu.commentLeft - 45, savemnu.commentTop - 35,
+				DTA_DestWidth, savemnu.commentWidth + 45 + 45,
+				DTA_Destheight, savemnu.commentHeight + 35 + 48);
+			Screen.DrawTexture(tex, false,
+				savemnu.listboxLeft - 45, savemnu.listboxTop - 35,
+				DTA_DestWidth, savemnu.listboxWidth + 45 + 45,
+				DTA_Destheight, savemnu.listboxHeight + 35 + 48);
+		}
 	}
 
 	ui void MMD_Tick()
@@ -486,7 +504,7 @@ extend class ToM_UiHandler
 		let mnu = Menu.GetCurrentMenu();
 		if (mnu && menuactive != Menu.OnNoPause && gamestate != GS_TITLELEVEL)
 		{
-			EventHandler.SendNetworkEvent("AnimatePlayerDoll");
+			EventHandler.SendNetworkEvent("AnimatePlayerDoll", int(round(55 * lightningAlpha)));
 		}
 		// create a new smoke element:
 		let csc = ToM_MenuCandleSmokeController.Create(
@@ -551,21 +569,21 @@ extend class ToM_UiHandler
 			lightningPhase--;
 			if (lightningPhase % LIGHT_FREQUENCY == 0)
 			{
-				lightAlpha = LIGHT_MAXALPHA;
+				lightningAlpha = LIGHT_MAXALPHA;
 			}
 			else 
 			{
-				lightAlpha = 0;
+				lightningAlpha = 0;
 			}
 			if (lightningPhase <= 0)
 			{
-				lightAlpha = LIGHT_MAXALPHA;
+				lightningAlpha = LIGHT_MAXALPHA;
 				lightningDelay = TICRATE*random[tomMenu](3, 8);
 			}
 		}
-		else if (lightAlpha > 0.)
+		else if (lightningAlpha > 0.)
 		{
-			lightAlpha -= LIGHT_FADESTEP;
+			lightningAlpha -= LIGHT_FADESTEP;
 		}
 	}
 }

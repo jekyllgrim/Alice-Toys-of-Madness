@@ -1569,10 +1569,10 @@ class ToM_PlayerDoll : ToM_BaseActor
 	{
 		+NOINTERACTION
 		+NOBLOCKMAP
-		+BRIGHT
 		+SYNCHRONIZED
 		+DONTBLAST
 		FloatBobPhase 0;
+		LightLevel 200;
 	}
 
 	static ToM_PlayerDoll SpawnDoll(Vector3 pos, double angle)

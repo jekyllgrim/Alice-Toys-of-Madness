@@ -631,7 +631,7 @@ class ToM_AlicePlayer : DoomPlayer
 		return bob;
 	}
 
-	override void CrouchMove(int direction)
+	/*override void CrouchMove(int direction)
 	{
 		Super.CrouchMove(direction);
 		if (direction < 0)
@@ -642,7 +642,7 @@ class ToM_AlicePlayer : DoomPlayer
 		{
 			scale /= 0.9;
 		}
-	}
+	}*/
 
 	override void CheckJump()
 	{

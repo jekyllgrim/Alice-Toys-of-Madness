@@ -1714,6 +1714,10 @@ class ToM_PlayerDoll : ToM_BaseActor
 			M125 ABCDEFGHIJKLMNOPQRST 2;
 			goto Idle1;
 
+	Anim_basepose:
+		M000 AB 35;
+		loop;
+
 	Anim_attack:
 		#### # 0
 		{
@@ -1762,7 +1766,7 @@ class ToM_PlayerDoll : ToM_BaseActor
 			pitch = 0;
 		}
 		M005 ABCDEFGHIJKLMN 2;
-		M005 KLMNKLMNKLMN 2;
+		M005 KLMN 2;
 		M006 ABCDEFGHIJKLM 2;
 		#### # 35;
 		loop;

@@ -84,6 +84,11 @@ class ToM_Mainhandler : EventHandler
 					if (modelID >= 0)
 					{
 						alicePlayerDoll.A_ChangeModel("", ToM_AlicePlayer.MI_Weapon, "models/alice/weapons", ToM_AlicePlayer.modelnames[modelID]);
+						State st = alicePlayerDoll.FindState("Anim_basepose");
+						if (st && !Actor.InStateSequence(alicePlayerDoll.curstate, st))
+						{
+							alicePlayerDoll.SetState(st);
+						}
 					}
 				}
 
@@ -104,6 +109,7 @@ class ToM_Mainhandler : EventHandler
 
 			if (e.name == "ResetAliceDollAnimation")
 			{
+				alicePlayerDoll.A_ChangeModel("", ToM_AlicePlayer.MI_Weapon, flags: CMDL_HIDEMODEL);
 				if (alicePlayerDoll && !Actor.InstateSequence(alicePlayerDoll.curstate, alicePlayerDoll.spawnstate))
 				{
 					alicePlayerDoll.SetState(alicePlayerDoll.spawnstate);

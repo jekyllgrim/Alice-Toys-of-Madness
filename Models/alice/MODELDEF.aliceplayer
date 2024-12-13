@@ -102,6 +102,9 @@ Model ToM_PlayerDoll
 	UseActorPitch
 	MODELSAREATTACHMENTS
 
+	Frame	M000	A	0	"basepose:0"
+	Frame	M000	B	0	"basepose:30"
+
 	Frame M002 A 0 "attack_knife:0"
 	Frame M002 B 0 "attack_knife:1"
 	Frame M002 C 0 "attack_knife:2"

@@ -664,6 +664,8 @@ class ToM_UiHandler : StaticEventHandler
 		else
 			MMD_Tick();
 
+		let currentMenu = Menu.GetCurrentMenu();
+
 		// Update canvases representing player colors
 		for (int i = 0; i < MAXPLAYERS; i++)
 		{
@@ -674,11 +676,14 @@ class ToM_UiHandler : StaticEventHandler
 			Color playerCol = players[i].GetColor();
 			UpdatePlayerColorCanvas(pcCanv_body[i], pcTex_body_top, playerCol);
 			UpdatePlayerColorCanvas(pcCanv_body2[i], pcTex_body2_top, playerCol);
-			TextureID tex = ToM_RageBox.HasRageBox(pmo)? pcTex_arm_top_rage : pcTex_arm_top;
+			TextureID tex = pcTex_arm_top;
+			if (ToM_RageBox.HasRageBox(pmo) && (i != consoleplayer || !currentMenu))
+			{
+				tex = pcTex_arm_top_rage;
+			}
 			UpdatePlayerColorCanvas(pcCanv_arm[i], tex, playerCol);
 		}
 
-		let currentMenu = Menu.GetCurrentMenu();
 
 		// Update portrait showing Player Menu:
 		if (currentMenu)

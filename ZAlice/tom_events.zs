@@ -50,14 +50,55 @@ class ToM_Mainhandler : EventHandler
 				
 				String mAction = cmd[1];
 				mAction.Replace("+", "");
-				State st = alicePlayerDoll.FindStateByString(String.Format("Anim_%s", mAction));
-				if (st)
+				if (mAction.IndexOf("slot") >= 0)
 				{
-					alicePlayerDoll.SetState(st);
+					int slot = mAction.Mid(mAction.Length()-1, 1).ToInt();
+					int modelID = -1;
+					switch (slot)
+					{
+						case 1:
+							modelID = ToM_AlicePlayer.AW_Knife;
+							break;
+						case 2:
+							modelID = ToM_AlicePlayer.AW_Cards;
+							break;
+						case 3:
+							modelID = ToM_AlicePlayer.AW_Jacks;
+							break;
+						case 4:
+							modelID = ToM_AlicePlayer.AW_PGrinder;
+							break;
+						case 5:
+							modelID = ToM_AlicePlayer.AW_Teapot;
+							break;
+						case 6:
+							modelID = ToM_AlicePlayer.AW_IceWand;
+							break;
+						case 7:
+							modelID = ToM_AlicePlayer.AW_Eyestaff;
+							break;
+						case 8:
+							modelID = ToM_AlicePlayer.AW_Blunderbuss;
+							break;
+					}
+					if (modelID >= 0)
+					{
+						alicePlayerDoll.A_ChangeModel("", ToM_AlicePlayer.MI_Weapon, "models/alice/weapons", ToM_AlicePlayer.modelnames[modelID]);
+					}
 				}
-				else if (alicePlayerDoll.curstate != alicePlayerDoll.spawnstate)
+
+				else 
 				{
-					alicePlayerDoll.SetState(alicePlayerDoll.spawnstate);
+					alicePlayerDoll.A_ChangeModel("", ToM_AlicePlayer.MI_Weapon, flags: CMDL_HIDEMODEL);
+					State st = alicePlayerDoll.FindStateByString(String.Format("Anim_%s", mAction));
+					if (st)
+					{
+						alicePlayerDoll.SetState(st);
+					}
+					else if (alicePlayerDoll.curstate != alicePlayerDoll.spawnstate)
+					{
+						alicePlayerDoll.SetState(alicePlayerDoll.spawnstate);
+					}
 				}
 			}
 

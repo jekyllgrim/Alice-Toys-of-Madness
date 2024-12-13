@@ -480,7 +480,7 @@ extend class ToM_UiHandler
 			);
 		}
 
-		if (mnu is 'LoadSaveMenu')
+		/*if (mnu is 'LoadSaveMenu')
 		{
 			let savemnu = LoadSaveMenu(mnu);
 			TextureID tex = TexMan.CheckForTexture("graphics/menu/menu_loadsave.png");
@@ -496,7 +496,7 @@ extend class ToM_UiHandler
 				savemnu.listboxLeft - 45, savemnu.listboxTop - 35,
 				DTA_DestWidth, savemnu.listboxWidth + 45 + 45,
 				DTA_Destheight, savemnu.listboxHeight + 35 + 48);
-		}
+		}*/
 	}
 
 	ui void MMD_Tick()

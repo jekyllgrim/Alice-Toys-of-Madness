@@ -358,6 +358,7 @@ extend class ToM_UiHandler
 				{
 					prevSelectedControl = controlItem.GetAction();
 					EventHandler.SendNetworkEvent(String.Format("StartAliceDollAnimation|%s", prevSelectedControl));
+					ToM_DebugMessage.Print(String.Format("Hovered control: \cd%s\c-", prevSelectedControl));
 				}
 			}
 			else

@@ -631,6 +631,19 @@ class ToM_AlicePlayer : DoomPlayer
 		return bob;
 	}
 
+	override void CrouchMove(int direction)
+	{
+		Super.CrouchMove(direction);
+		if (direction < 0)
+		{
+			scale *= 0.9;
+		}
+		else
+		{
+			scale /= 0.9;
+		}
+	}
+
 	override void CheckJump()
 	{
 		let player = self.player;
@@ -1549,6 +1562,9 @@ class ToM_PlayerDollBackground : ToM_BaseActor
 
 class ToM_PlayerDoll : ToM_BaseActor
 {
+	private double dollSpawnangle;
+	bool dollSpawnValid;
+
 	Default
 	{
 		+NOINTERACTION
@@ -1559,9 +1575,39 @@ class ToM_PlayerDoll : ToM_BaseActor
 		FloatBobPhase 0;
 	}
 
+	static ToM_PlayerDoll SpawnDoll(Vector3 pos, double angle)
+	{
+		let doll = ToM_PlayerDoll(Actor.Spawn('ToM_PlayerDoll', pos));
+		if (doll)
+		{
+			doll.dollSpawnValid = true;
+			doll.SetZ(doll.cursector.NextLowestFloorAt(doll.pos.x, doll.pos.y, doll.pos.z));
+			doll.angle = angle;
+			doll.dollSpawnangle = doll.angle;
+			doll.spawnPoint = doll.pos;
+
+			Vector2 cameraOfs = Actor.RotateVector((50, 0), doll.angle);
+			let cam = SecurityCamera(Actor.Spawn('SecurityCamera', level.Vec3Offset(doll.pos, (cameraOfs, 40))));
+			cam.angle = doll.angle + 180 + 28;
+			cam.pitch = 15;
+			TexMan.SetCameraToTexture(cam, "AlicePlayer.menuMirror", 80);
+
+			Vector2 bgOfs = Actor.RotateVector((128, 0), doll.angle + 180);
+			let dollbg = Actor.Spawn('ToM_PlayerDollBackground', level.Vec3Offset(doll.pos, (bgOfs, -32)));
+			dollbg.angle += 28;
+			dollbg.A_ChangeModel("", skin: "AlicePlayer.menuMirrorReflection");
+		}
+		return doll;
+	}
+
 	override void PostBeginPlay()
 	{
 		Super.PostBeginPlay();
+		if (!dollSpawnValid)
+		{
+			Destroy();
+			return;
+		}
 
 		String pcTex = ToM_PCANTEX_BODY..consoleplayer;
 		A_ChangeModel("", skinindex: ToM_AlicePlayer.SI_TorsoLegs, skin: pcTex, flags: CMDL_USESURFACESKIN);
@@ -1571,8 +1617,6 @@ class ToM_PlayerDoll : ToM_BaseActor
 
 		pcTex = ToM_PCANTEX_ARM..consoleplayer;
 		A_ChangeModel("", skinindex: ToM_AlicePlayer.SI_Arms, skin: pcTex, flags: CMDL_USESURFACESKIN);
-		spawnAngle = angle;
-		spawnPoint = pos;
 	}
 
 	override void Tick()
@@ -1595,7 +1639,7 @@ class ToM_PlayerDoll : ToM_BaseActor
 		#### # 0
 		{
 			SetZ(spawnPoint.z);
-			angle = spawnangle;
+			angle = dollSpawnAngle;
 			pitch = 0;
 		}
 		Idle1:
@@ -1674,7 +1718,7 @@ class ToM_PlayerDoll : ToM_BaseActor
 		#### # 0
 		{
 			SetZ(spawnPoint.z);
-			angle = spawnangle;
+			angle = dollSpawnAngle;
 			pitch = 0;
 		}
 		M002 ABCDEFGHIJKLMNOPQRST 2;
@@ -1684,23 +1728,23 @@ class ToM_PlayerDoll : ToM_BaseActor
 		#### # 0
 		{
 			SetZ(spawnPoint.z);
-			angle = spawnangle;
+			angle = dollSpawnAngle;
 			pitch = 0;
 		}
 		M003 ABCDEFGHIJKLMNOPQRSTUV 2;
 		#### # 20;
 		loop;
 	Anim_moveleft:
-		#### # 0 A_SetAngle(spawnangle - 90);
+		#### # 0 A_SetAngle(dollSpawnAngle - 90);
 		goto Anim_move;
 	Anim_moveright:
-		#### # 0 A_SetAngle(spawnangle + 90);
+		#### # 0 A_SetAngle(dollSpawnAngle + 90);
 		goto Anim_move;
 	Anim_back:
-		#### # 0 A_SetAngle(spawnangle + 180);
+		#### # 0 A_SetAngle(dollSpawnAngle + 180);
 		goto Anim_move;
 	Anim_forward:
-		#### # 0 A_SetAngle(spawnangle);
+		#### # 0 A_SetAngle(dollSpawnAngle);
 		goto Anim_move;
 	Anim_move:
 		#### # 0
@@ -1714,7 +1758,7 @@ class ToM_PlayerDoll : ToM_BaseActor
 		#### # 0
 		{
 			SetZ(spawnPoint.z);
-			angle = spawnangle;
+			angle = dollSpawnAngle;
 			pitch = 0;
 		}
 		M005 ABCDEFGHIJKLMN 2;
@@ -1726,11 +1770,11 @@ class ToM_PlayerDoll : ToM_BaseActor
 		#### # 0
 		{
 			SetZ(spawnPoint.z);
-			angle = spawnangle;
+			angle = dollSpawnAngle;
 			pitch = 0;
 		}
 		M007 ABCDEFGHIJKLMN 2;
-		#### # 20;
+		M007 A 20;
 		loop;
 	Anim_right:
 		#### # 0
@@ -1740,8 +1784,9 @@ class ToM_PlayerDoll : ToM_BaseActor
 		}
 		M008 AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSS 1
 		{
-			angle += 2;
+			angle = Normalize180(angle + 1);
 		}
+		loop;
 	Anim_left:
 		#### # 0
 		{
@@ -1750,14 +1795,14 @@ class ToM_PlayerDoll : ToM_BaseActor
 		}
 		M008 AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPPQQRRSS 1
 		{
-			angle -= 2;
+			angle = Normalize180(angle - 1);
 		}
 		loop;
 	Anim_moveup:
 		#### # 0
 		{
 			SetZ(spawnPoint.z + 20);
-			angle = spawnangle;
+			angle = dollSpawnAngle;
 			pitch = -45;
 		}
 		M009 ABCDEFGHIJKLMNOPQRS 2;
@@ -1766,10 +1811,20 @@ class ToM_PlayerDoll : ToM_BaseActor
 		#### # 0
 		{
 			SetZ(spawnPoint.z + 20);
-			angle = spawnangle;
+			angle = dollSpawnAngle;
 			pitch = 45;
 		}
 		M009 ABCDEFGHIJKLMNOPQRS 2;
+		loop;
+	Anim_User4: //kick
+		#### # 0
+		{
+			SetZ(spawnPoint.z);
+			angle = dollSpawnAngle;
+			pitch = 0;
+		}
+		M126 ABCDEFGHIJKLMNOPQRSTUVWXYZ 2;
+		M127 ABCD 2;
 		loop;
 	}
 }

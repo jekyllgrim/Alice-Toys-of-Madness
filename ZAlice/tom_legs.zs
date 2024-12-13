@@ -12,6 +12,8 @@
 
 class ToM_KickWeapon : CustomInventory
 {
+	mixin ToM_PlayerAttackAnim;
+
 	// safety to track that we were kicking (kicking slows down speed,
 	// so this is used as a check to make sure the speed was reset
 	// post-kick):
@@ -364,7 +366,7 @@ class ToM_KickWeapon : CustomInventory
 				}
 				return ResolveState(null);
 			}
-			FEK1 A 1;
+			FEK1 A 1 A_PlayerAttackAnim(18, 'attack_kick', 58);
 			TNT1 A 0 
 			{
 				A_StartSound("weapons/kick/whip", CHAN_AUTO);

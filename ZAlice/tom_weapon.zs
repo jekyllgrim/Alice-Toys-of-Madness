@@ -1,5 +1,27 @@
+// used in BaseWeapon and in ToM_KickWeapon (see tom_legs.zs)
+mixin class ToM_PlayerAttackAnim
+{
+	action void A_PlayerAttackAnim(int animTics, Name animName, double framerate = -1, int startFrame = -1, int loopFrame= -1, int endFrame = -1, int interpolateTics = -1, int flags = 0)
+	{
+		let player = self.player;
+		let alice = ToM_AlicePlayer(player.mo);
+		if (alice && !ToM_Utils.IsVoodooDoll(alice))
+		{
+			//Console.Printf("Applying player animation \cd%s\c-", animName);
+			alice.SetState(alice.MissileState);
+			alice.A_SetTics(animTics);
+			if (interpolateTics <= 0)
+			{
+				flags |= SAF_INSTANT;
+			}
+			alice.ToM_SetAnimation(animName, framerate, startFrame, loopFrame, endFrame, interpolateTics, flags);
+		}
+	}
+}
+
 class ToM_BaseWeapon : Weapon abstract
 {
+	mixin ToM_PlayerAttackAnim;
 	mixin ToM_PlayerSightCheck;
 	mixin ToM_CheckParticles;
 	
@@ -351,23 +373,6 @@ class ToM_BaseWeapon : Weapon abstract
 		}
 
 		return victim, puff, damaged;
-	}
-
-	action void A_PlayerAttackAnim(int animTics, Name animName, double framerate = -1, int startFrame = -1, int loopFrame= -1, int endFrame = -1, int interpolateTics = -1, int flags = 0)
-	{
-		let player = self.player;
-		let alice = ToM_AlicePlayer(player.mo);
-		if (alice && !ToM_Utils.IsVoodooDoll(alice))
-		{
-			//Console.Printf("Applying player animation \cd%s\c-", animName);
-			alice.SetState(alice.MissileState);
-			alice.A_SetTics(animTics);
-			if (interpolateTics <= 0)
-			{
-				flags |= SAF_INSTANT;
-			}
-			alice.ToM_SetAnimation(animName, framerate, startFrame, loopFrame, endFrame, interpolateTics, flags);
-		}
 	}
 	
 	action void A_AttackZoom(double step = 0.001, double limit = 0.03, double jitter = 0.002)

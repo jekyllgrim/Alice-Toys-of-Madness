@@ -1,3 +1,8 @@
+Texture "Models/alice/alice_body3.png"
+	pic "Models/alice/alice_body3.png" rand 35 140
+	pic "Models/alice/alice_blinkface2.png" tics 2
+	pic "Models/alice/alice_blinkface1.png" tics 2
+
 CameraTexture "AliceWeapon.camtex" 400 400
 
 CanvasTexture "AlicePlayer.PlayerColor.Body.0" 512 512

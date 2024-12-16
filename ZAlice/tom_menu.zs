@@ -274,6 +274,7 @@ extend class ToM_UiHandler
 	ui name prevSelectedControl;
 
 	ui array < ToM_MenuCandleSmokeController > smokeElements;
+	ui int smokeFlickerTics;
 
 	ui void MMD_Init()
 	{
@@ -458,8 +459,8 @@ extend class ToM_UiHandler
 				if (!csc)
 					continue;
 				Screen.DrawTexture(smokeTex, false,
-					size.X / 2 + (smokePos.x + csc.ofs.x),// * scale.x, 
-					size.Y / 2 + (smokePos.y + csc.ofs.y),// * scale.y,
+					size.X / 2 + (smokePos.x + csc.pos.x),// * scale.x, 
+					size.Y / 2 + (smokePos.y + csc.pos.y),// * scale.y,
 					DTA_VirtualWidthF, size.X,
 					DTA_VirtualheightF, size.Y,
 					DTA_ScaleX, csc.scale,
@@ -515,25 +516,30 @@ extend class ToM_UiHandler
 			EventHandler.SendNetworkEvent("AnimatePlayerDoll", int(round(55 * lightningAlpha)));
 		}
 		// create a new smoke element:
+		if (smokeFlickerTics <= 0 && random[smokeflicker](0, 255) >= 253)
+		{
+			smokeFlickerTics = 50;
+		}
+		int smokeSineTime = !smokeFlickerTics? TICRATE * 10 : 20;
+		double smokeHorOfs = !smokeFlickerTics? (0.85) : (2.5 * (smokeFlickerTics / 50.0));
 		let csc = ToM_MenuCandleSmokeController.Create(
-			//pos 
-			(frandom[tomMenu](-2.5,2.5), frandom[tomMenu](-2,2)), 
-			//ofs each step
-			(frandom[tomMenu](-0.2,0.2), frandom[tomMenu](-0.4, -0.5)),
+			//pos X and Y:
+			(frandom[tomMenu](-0.5,0.5), frandom[tomMenu](-0.5,0.5)), 
+			//pos step X and Y:
+			(smokeHorOfs * sin(360.0 * Menu.MenuTime() / smokeSineTime), -0.5),
 			// scale
-			frandom[tomMenu](0.04, 0.08), -0.002,
+			frandom[tomMenu](0.03, 0.06), -0.003,
 			// alpha
-			frandom[tomMenu](0.025, 0.1), -0.006,
+			frandom[tomMenu](0.025, 0.05), -0.003,
 			//rotation
-			frandom[tomMenu](0, 360), frandom[tomMenu](-1, -4),
-			//return steps
-			random[tomMenu](30, 90)
+			frandom[tomMenu](0, 360), frandom[tomMenu](-1, -4)
 		);
 		if (csc)
 		{
 			smokeElements.Push(csc);
 			//smoketime += 1;
 		}
+		if (smokeFlickerTics) smokeFlickerTics--;
 
 		// candle light flickering:
 		candleLightAlpha += candleLightAlphaStep * candleLightAlphaDir;
@@ -601,29 +607,27 @@ extend class ToM_UiHandler
 class ToM_MenuCandleSmokeController ui
 {
 	int age;
-	vector2 ofs;
+	Vector2 pos;
 	double scale;
 	double alpha;
 	double rotation;
-	int returnsteps;
 
-	protected vector2 ofs_step;
+	protected Vector2 pos_step;
 	protected double scale_step;
 	protected double alpha_step;
 	protected double rotation_step;
 
-	static ToM_MenuCandleSmokeController Create(vector2 ofs, vector2 ofs_step, double scale, double scale_step, double alpha, double alpha_step, double rotation, double rotation_step, int returnsteps)
+	static ToM_MenuCandleSmokeController Create(vector2 pos, vector2 pos_step, double scale, double scale_step, double alpha, double alpha_step, double rotation, double rotation_step)
 	{
 		let csc = ToM_MenuCandleSmokeController(New("ToM_MenuCandleSmokeController"));
 		if (csc)
 		{
-			csc.ofs = ofs;
+			csc.pos = pos;
 			csc.scale = scale;
 			csc.alpha = alpha;
 			csc.rotation = rotation;
-			csc.returnsteps = returnsteps;
 			
-			csc.ofs_step = ofs_step;
+			csc.pos_step = pos_step;
 			csc.rotation_step = rotation_step;
 			// scale and alpha are additive:
 			csc.scale_step = scale * scale_step;
@@ -641,17 +645,14 @@ class ToM_MenuCandleSmokeController ui
 		}
 
 		age++;
-		// horizontal movement (removed):
-		/*if (age >= returnsteps)
-		{
-			ofs.x *= 0.95;
-		}
-		else 
-		{
-			ofs.x += ofs_step.x;
-		}*/
-		ofs.y += ofs_step.y;
-		ofs_step *= 0.999;
+
+		//pos.x = pos_step.x * sin(360.0 * age / (TICRATE*3));
+		//pos_step.x *= 0.999;
+		pos.x += pos_step.x;
+		pos_step.x *= 0.82;
+
+		pos.y += pos_step.y;
+		pos_step.y *= 0.999;
 
 		alpha += alpha_step;
 		scale = Clamp(scale + scale_step, 0, 100);

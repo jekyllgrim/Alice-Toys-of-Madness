@@ -656,11 +656,6 @@ class ToM_UiHandler : StaticEventHandler
 
 	override void UiTick()
 	{
-		if (!mainMenuBackgroundStarted)
-			MMD_Init();
-		else
-			MMD_Tick();
-
 		let currentMenu = Menu.GetCurrentMenu();
 
 		// Update canvases representing player colors

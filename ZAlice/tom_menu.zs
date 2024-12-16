@@ -196,7 +196,7 @@ class ListMenuItemToM_TextItem : ListMenuItemTextItem
 			{
 				itemHighlights.Clear();
 			}
-			else if (level.totaltime % 4 == 0)
+			else if (Menu.MenuTime() % 4 == 0)
 			{
 				Vector2 pos = (0, 0);
 				Vector2 scale = (1, frandom[menusfx](1,1.5));

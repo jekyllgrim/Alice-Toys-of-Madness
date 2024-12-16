@@ -286,6 +286,8 @@ extend class ToM_UiHandler
 
 	ui void MMD_Draw()
 	{
+		if (!mainMenuBackgroundStarted) return;
+
 		let mnu = Menu.GetCurrentMenu();
 		// Draw the background at all times in a titlemap.
 		// In non-titlemap, we will not draw it if there's
@@ -501,6 +503,12 @@ extend class ToM_UiHandler
 
 	ui void MMD_Tick()
 	{
+		if (!mainMenuBackgroundStarted)
+		{
+			MMD_Init();
+			return;
+		}
+
 		let mnu = Menu.GetCurrentMenu();
 		if (mnu && menuactive != Menu.OnNoPause && gamestate != GS_TITLELEVEL)
 		{

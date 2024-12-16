@@ -589,10 +589,7 @@ class ToM_UiHandler : StaticEventHandler
 
 	override void RenderOverlay(renderEvent e) 
 	{
-		if (mainMenuBackgroundStarted)
-		{
-			MMD_Draw(); //see tom_menu.zs
-		}
+		MMD_Draw(); //see tom_menu.zs
 
 		if (gamestate == GS_LEVEL)
 		{
@@ -677,19 +674,26 @@ class ToM_UiHandler : StaticEventHandler
 			UpdatePlayerColorCanvas(pcCanv_body[i], pcTex_body_top, playerCol);
 			UpdatePlayerColorCanvas(pcCanv_body2[i], pcTex_body2_top, playerCol);
 			TextureID tex = pcTex_arm_top;
-			if (ToM_RageBox.HasRageBox(pmo) && (i != consoleplayer || !currentMenu))
+			// Apply rage texture on the arms only for other players
+			// or while console player does NOT have the menu open.
+			// This is done to avoid applying rage textures to the 
+			// player doll model seen in the Options menu background,
+			// which still uses canvas textures to have the colors
+			// applied:
+			if (ToM_RageBox.HasRageBox(pmo) && (i != consoleplayer || !currentMenu || !(currentMenu is 'OptionMenu')))
 			{
 				tex = pcTex_arm_top_rage;
 			}
 			UpdatePlayerColorCanvas(pcCanv_arm[i], tex, playerCol);
 		}
 
-
-		// Update portrait showing Player Menu:
 		if (currentMenu)
 		{
+			MMD_Tick();
+
 			mainMenuOpened = true;
 
+			// Update portrait showing Player Menu:
 			let player = players[consoleplayer];
 			if (!portraitTex)
 			{
@@ -710,6 +714,8 @@ class ToM_UiHandler : StaticEventHandler
 			portraitCanvas.DrawTexture(portraitTex, false, 0, 0);
 		}
 
+		// auto-opem main menu when the title level loads in
+		// (because by default GZDoom doesn't do that):
 		else if (!mainMenuOpened && gamestate == GS_TITLELEVEL)
 		{
 			Menu.SetMenu("MainMenu");

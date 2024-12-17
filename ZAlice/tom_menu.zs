@@ -272,9 +272,11 @@ extend class ToM_UiHandler
 	ui double candleLightAlphaTarget;
 
 	ui name prevSelectedControl;
+	ui Menu prevSelectedMenu;
 
 	ui array < ToM_MenuCandleSmokeController > smokeElements;
 	ui int smokeFlickerTics;
+	ui int smokeFlickerDuration;
 
 	ui void MMD_Init()
 	{
@@ -295,6 +297,18 @@ extend class ToM_UiHandler
 		// no menu (obviously):
 		if (!mnu && gamestate != GS_TITLELEVEL) return;
 
+		if (mnu != prevSelectedMenu && tom_debugmessages > 0)
+		{
+			prevSelectedMenu = mnu;
+			String title;
+			let omnu = OptionMenu(mnu);
+			if (omnu && omnu.mDesc)
+			{
+				title = " - \cy"..omnu.mDesc.mTitle;
+			}
+			ToM_DebugMessage.Print(String.Format("Entered menu: \cd%s\c-%s", mnu.GetClassName(), title));
+		}
+
 		vector2 screenRes = (Screen.GetWidth(), screen.GetHeight());
 		// Is this a quit menu?
 		let quitmnu = MessageBoxMenu(mnu);
@@ -304,7 +318,7 @@ extend class ToM_UiHandler
 		// MessageBoxMenu!
 		if (quitmnu && quitmnu.mMessage && quitmnu.mMessage.StringAt(0) == StringTable.Localize("$TOM_MENU_QUITMESSAGE"))
 		{
-			Screen.Dim("000000", 1, 0, 0, int(screenRes.x), int(screenRes.y));
+			Screen.Dim(0x000000, 1, 0, 0, int(screenRes.x), int(screenRes.y));
 			// I want to delete the "press Y to quit" line, because
 			// it doesn't look nice and everyone knows anyway.
 			// Since that line is a second line in the message, I
@@ -334,10 +348,10 @@ extend class ToM_UiHandler
 				DTA_FullScreenScale, FSMode_ScaleToFit43);
 		}
 
-		// Are we in titlemap and is this an option menu?
+		// Are we in the controls menu?
 		else if (mnu is 'OptionMenu' || mnu is 'EnterKey')
 		{
-			Screen.Dim("000000", 1, 0, 0, int(screenRes.x), int(screenRes.y));
+			Screen.Dim(0x000000, 1, 0, 0, int(screenRes.x), int(screenRes.y));
 			// We're in Customize Controls menu and currently hovering over a control bind element:
 			OptionMenuItemControlBase controlItem;
 			if (mnu is 'OptionMenu')
@@ -355,6 +369,7 @@ extend class ToM_UiHandler
 			{
 				controlItem = EnterKey(mnu).mOwner;
 			}
+			// This is a newly-hovered control item:
 			if (controlitem)
 			{
 				if (controlItem.GetAction() != prevSelectedControl)
@@ -417,7 +432,7 @@ extend class ToM_UiHandler
 		// draw the main menu background:
 		else if (gamestate == GS_TITLELEVEL || (mnu && mnu is 'ListMenu'))
 		{
-			Screen.Dim("000000", 1, 0, 0, int(screenRes.x), int(screenRes.y));
+			Screen.Dim(0x000000, 1, 0, 0, int(screenRes.x), int(screenRes.y));
 			// Textures for regular background, and another version of it
 			// lit by a lightning strike, with different shadows and visible
 			// window outlines:
@@ -511,17 +526,23 @@ extend class ToM_UiHandler
 		}
 
 		let mnu = Menu.GetCurrentMenu();
-		if (mnu && menuactive != Menu.OnNoPause && gamestate != GS_TITLELEVEL)
+		// Animate the player doll:
+		if (mnu)
 		{
-			EventHandler.SendNetworkEvent("AnimatePlayerDoll", int(round(55 * lightningAlpha)));
+			// This will cause the doll to call Tick() if the menu pauses
+			// the game. In addition it'll also change its lightlevel even
+			// if the menu is non-pausing, to reflect the lightning in the
+			// background:
+			EventHandler.SendNetworkEvent("AnimatePlayerDoll", int(round(55 * lightningAlpha)), menuactive != Menu.OnNoPause && gamestate != GS_TITLELEVEL);
 		}
 		// create a new smoke element:
 		if (smokeFlickerTics <= 0 && random[smokeflicker](0, 255) >= 253)
 		{
-			smokeFlickerTics = 50;
+			smokeFlickerDuration = random[smokeflicker](30, 60);
+			smokeFlickerTics = smokeFlickerDuration;
 		}
-		int smokeSineTime = !smokeFlickerTics? TICRATE * 10 : 20;
-		double smokeHorOfs = !smokeFlickerTics? (0.85) : (2.5 * (smokeFlickerTics / 50.0));
+		int smokeSineTime = !smokeFlickerTics? (TICRATE * 10) : (20);
+		double smokeHorOfs = !smokeFlickerTics? (0.85) : (3.0 * sin(180.0 * (smokeFlickerTics / double(smokeFlickerDuration)))); //weaker fluctuations closer to the beginning and end of flicker sequence
 		let csc = ToM_MenuCandleSmokeController.Create(
 			//pos X and Y:
 			(frandom[tomMenu](-0.5,0.5), frandom[tomMenu](-0.5,0.5)), 
@@ -568,10 +589,9 @@ extend class ToM_UiHandler
 		// count down lightning delay:
 		if (lightningDelay > 0)
 		{
-			lightningDelay--;
 			// after lightning countdown has ended, start
 			// the lightning phase:
-			if (lightningDelay <= 0)
+			if (--lightningDelay <= 0)
 			{
 				lightningPhase = LIGHT_FREQUENCY*random[tomMenu](4,6);
 			}

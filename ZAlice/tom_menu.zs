@@ -253,10 +253,22 @@ class ToM_TextItemHighlight ui
 extend class ToM_UiHandler
 {
 	ui bool mainMenuBackgroundStarted;
+	ui name prevSelectedControl;
+	ui Menu prevSelectedMenu;
+
 	ui TextureID tex_bg;
 	ui TextureID tex_lightning;
 	ui TextureID smokeTex;
 	ui TextureID candleLighTex;
+	ui TextureID quitMenu_bg;
+	ui Vector2 quitMenu_bg_size;
+	ui TextureID optMenu_bg;
+	ui Vector2 optMenu_bg_size;
+	ui TextureID optMenu_mirrortex;
+	ui TextureID optMenu_refTex;
+	ui TextureID optMenu_refTex_lit;
+	ui Vector2 optMenu_refSize;
+	ui Canvas optMenu_refCanvas;
 
 	ui int lightningDelay;
 	ui int lightningPhase;
@@ -270,9 +282,6 @@ extend class ToM_UiHandler
 	ui double candleLightAlphaStep;
 	ui double candleLightAlphaDir;
 	ui double candleLightAlphaTarget;
-
-	ui name prevSelectedControl;
-	ui Menu prevSelectedMenu;
 
 	ui array < ToM_MenuCandleSmokeController > smokeElements;
 	ui int smokeFlickerTics;
@@ -336,15 +345,16 @@ extend class ToM_UiHandler
 				quitmnu.destheight /= 2;
 				quitmnu.destwidth /= 2;
 			}
-			TextureID texOpt = TexMan.CheckForTexture("graphics/menu/quitmenu_background.png");
-			Vector2 size;
-			[size.x, size.y] = TexMan.GetSize(texOpt);
-
-			Screen.DrawTexture(texOpt,
+			if (!quitMenu_bg || !quitMenu_bg.IsValid())
+			{
+				quitMenu_bg = TexMan.CheckForTexture("graphics/menu/quitmenu_background.png");
+				[quitMenu_bg_size.x, quitMenu_bg_size.y] = TexMan.GetSize(quitMenu_bg);
+			}
+			Screen.DrawTexture(quitMenu_bg,
 				false,
 				0, 0,
-				DTA_VirtualWidthF, size.X,
-				DTA_VirtualHeightF, size.Y,
+				DTA_VirtualWidthF, quitMenu_bg_size.X,
+				DTA_VirtualHeightF, quitMenu_bg_size.Y,
 				DTA_FullScreenScale, FSMode_ScaleToFit43);
 		}
 
@@ -385,62 +395,66 @@ extend class ToM_UiHandler
 				EventHandler.SendNetworkEvent("ResetAliceDollAnimation");
 			}
 
-			/*TextureID mirrorTex = TexMan.CheckForTexture("AlicePlayer.menuMirror");
-			Vector2 camSize;
-			[camSize.x, camSize.y] = TexMan.GetSize(mirrorTex);
-			Screen.DrawTexture(mirrorTex,
-				false,
-				45, 74,
-				DTA_VirtualWidthF, camSize.X,
-				DTA_VirtualHeightF, camSize.Y,
-				DTA_FullScreenScale, FSMode_ScaleToFit43);*/
-
-			TextureID texOpt = TexMan.CheckForTexture("graphics/menu/optionmenu_background.png");
-			Vector2 size;
-			[size.x, size.y] = TexMan.GetSize(texOpt);
+			if (!optMenu_bg || !optMenu_bg.IsValid())
+			{
+				optMenu_bg = TexMan.CheckForTexture("graphics/menu/optionmenu_background.png");
+				[optMenu_bg_size.x, optMenu_bg_size.y] = TexMan.GetSize(optMenu_bg);
+			}
 
 			// The camera texture showing Alice:
-			TextureID mirrorTex = TexMan.CheckForTexture("AlicePlayer.menuMirror");
-			Screen.DrawTexture(mirrorTex,
+			if (!optMenu_mirrortex && !optMenu_mirrortex.IsValid())
+			{
+				optMenu_mirrortex = TexMan.CheckForTexture("AlicePlayer.menuMirror");
+			}
+			Screen.DrawTexture(optMenu_mirrortex,
 				false,
 				// Virtual resolution same as the background.
 				// Other values are fixed, hand-picked to match
 				// so the camera texture is exactly behind the
 				// mirror in the background:
-				size.X / 2 + 45, 74,
-				DTA_VirtualWidthF, size.X,
-				DTA_VirtualHeightF, size.Y,
+				optMenu_bg_size.X / 2 + 45, 74,
+				DTA_VirtualWidthF, optMenu_bg_size.X,
+				DTA_VirtualHeightF, optMenu_bg_size.Y,
 				DTA_DestWidth, 230,
 				DTA_DestHeightF, 378,
 				DTA_FullScreenScale, FSMode_ScaleToFit43);
 
 			// Now the foreground with a mirror (the mirror area is translucent):
-			Screen.DrawTexture(texOpt,
+			Screen.DrawTexture(optMenu_bg,
 				false,
 				0, 0,
-				DTA_VirtualWidthF, size.X,
-				DTA_VirtualHeightF, size.Y,
+				DTA_VirtualWidthF, optMenu_bg_size.X,
+				DTA_VirtualHeightF, optMenu_bg_size.Y,
 				DTA_FullScreenScale, FSMode_ScaleToFit43);
 			
 			// Now process the canvas for the background plane behind Alice
 			// (the background itself is an actor with a flat plane model
 			// placed behind her):
-			Canvas refCanvas = TexMan.GetCanvas("AlicePlayer.menuMirrorReflection");
-			TextureID refTex = TexMan.CheckForTexture("Graphics/Menu/optionmenu_reflection.png");
-			Vector2 rSize;
-			[rSize.x, rSize.y] = TexMan.GetSize(refTex);
-			refCanvas.Clear(0, 0, rSize.x, rSize.y, 0xff000000);
-			refCanvas.DrawTexture(refTex, false,
+			if (!optMenu_refTex && !optMenu_refTex.IsValid())
+			{
+				optMenu_refTex = TexMan.CheckForTexture("Graphics/Menu/optionmenu_reflection.png");
+				[optMenu_refSize.x, optMenu_refSize.y] = TexMan.GetSize(optMenu_refTex);
+			}
+			if (!optMenu_refCanvas)
+			{
+				optMenu_refCanvas = TexMan.GetCanvas("AlicePlayer.menuMirrorReflection");
+			}
+			optMenu_refCanvas.Clear(0, 0, optMenu_refSize.x, optMenu_refSize.y, 0xff000000);
+			optMenu_refCanvas.DrawTexture(optMenu_refTex, false,
 				0, 0,
 				DTA_FlipY, true,
-				DTA_DestWidthF, rSize.x,
-				DTA_DestHeightF, rSize.y);
+				DTA_DestWidthF, optMenu_refSize.x,
+				DTA_DestHeightF, optMenu_refSize.y);
 			// lit up by lightning, just like the main menu:
-			refCanvas.DrawTexture(TexMan.CheckForTexture("Graphics/Menu/optionmenu_reflection_lightning.png"),false,
+			if (!optMenu_refTex_lit && !optMenu_refTex_lit.IsValid())
+			{
+				optMenu_refTex_lit = TexMan.CheckForTexture("Graphics/Menu/optionmenu_reflection_lightning.png");
+			}
+			optMenu_refCanvas.DrawTexture(optMenu_refTex_lit,false,
 				0, 0,
 				DTA_FlipY, true,
-				DTA_DestWidthF, rSize.x,
-				DTA_DestHeightF, rSize.y,
+				DTA_DestWidthF, optMenu_refSize.x,
+				DTA_DestHeightF, optMenu_refSize.y,
 				DTA_Alpha, lightningAlpha);
 		}
 

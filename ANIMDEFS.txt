@@ -31,7 +31,7 @@ CanvasTexture "AlicePlayer.PlayerColor.Body2.7" 512 5122
 CanvasTexture "AlicePlayer.PlayerColor.Arm.7" 512 512
 
 CanvasTexture "AlicePlayer.menuPortrait" 401 777
-CameraTexture "AlicePlayer.menuMirror" 1024 1024
+CameraTexture "AlicePlayer.menuMirror" 920 1512
 CanvasTexture "AlicePlayer.menuMirrorReflection" 256 346
 
 CanvasTexture "EyestaffAimCircle00" 512 512

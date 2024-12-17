@@ -344,7 +344,7 @@ extend class ToM_UiHandler
 				false,
 				0, 0,
 				DTA_VirtualWidthF, size.X,
-				DTA_VirtualheightF, size.Y,
+				DTA_VirtualHeightF, size.Y,
 				DTA_FullScreenScale, FSMode_ScaleToFit43);
 		}
 
@@ -385,26 +385,37 @@ extend class ToM_UiHandler
 				EventHandler.SendNetworkEvent("ResetAliceDollAnimation");
 			}
 
-			// The camera texture showing Alice:
-			TextureID mirrorTex = TexMan.CheckForTexture("AlicePlayer.menuMirror");
+			/*TextureID mirrorTex = TexMan.CheckForTexture("AlicePlayer.menuMirror");
 			Vector2 camSize;
 			[camSize.x, camSize.y] = TexMan.GetSize(mirrorTex);
 			Screen.DrawTexture(mirrorTex,
 				false,
-				0, 0,
+				45, 74,
 				DTA_VirtualWidthF, camSize.X,
-				DTA_VirtualheightF, camSize.Y,
-				DTA_FullScreenScale, FSMode_ScaleToFit43);
+				DTA_VirtualHeightF, camSize.Y,
+				DTA_FullScreenScale, FSMode_ScaleToFit43);*/
 
-			// Now the foreground with a mirror:
 			TextureID texOpt = TexMan.CheckForTexture("graphics/menu/optionmenu_background.png");
 			Vector2 size;
 			[size.x, size.y] = TexMan.GetSize(texOpt);
+
+			// The camera texture showing Alice:
+			TextureID mirrorTex = TexMan.CheckForTexture("AlicePlayer.menuMirror");
+			Screen.DrawTexture(mirrorTex,
+				false,
+				size.X / 2 + 45, 74,
+				DTA_VirtualWidthF, size.X,
+				DTA_VirtualHeightF, size.Y,
+				DTA_DestWidth, 230,
+				DTA_DestHeightF, 378,
+				DTA_FullScreenScale, FSMode_ScaleToFit43);
+
+			// Now the foreground with a mirror:
 			Screen.DrawTexture(texOpt,
 				false,
 				0, 0,
 				DTA_VirtualWidthF, size.X,
-				DTA_VirtualheightF, size.Y,
+				DTA_VirtualHeightF, size.Y,
 				DTA_FullScreenScale, FSMode_ScaleToFit43);
 			
 			// Now process the canvas for the reflection behind Alice
@@ -450,7 +461,7 @@ extend class ToM_UiHandler
 			Screen.DrawTexture(tex_bg, false,
 				0, 0,
 				DTA_VirtualWidthF, size.X,
-				DTA_VirtualheightF, size.Y,
+				DTA_VirtualHeightF, size.Y,
 				DTA_FullscreenScale, FSMode_ScaleToFit43
 			);
 
@@ -459,7 +470,7 @@ extend class ToM_UiHandler
 			Screen.DrawTexture(tex_lightning, false,
 				0, 0,
 				DTA_VirtualWidthF, size.X,
-				DTA_VirtualheightF, size.Y,
+				DTA_VirtualHeightF, size.Y,
 				DTA_Alpha, lightningAlpha,
 				DTA_FullscreenScale, FSMode_ScaleToFit43
 			);
@@ -477,7 +488,7 @@ extend class ToM_UiHandler
 					size.X / 2 + (smokePos.x + csc.pos.x),// * scale.x, 
 					size.Y / 2 + (smokePos.y + csc.pos.y),// * scale.y,
 					DTA_VirtualWidthF, size.X,
-					DTA_VirtualheightF, size.Y,
+					DTA_VirtualHeightF, size.Y,
 					DTA_ScaleX, csc.scale,
 					DTA_ScaleY, csc.scale,
 					DTA_Alpha, csc.alpha,
@@ -492,7 +503,7 @@ extend class ToM_UiHandler
 			Screen.DrawTexture(candleLighTex, false,
 				0, 0,
 				DTA_VirtualWidthF, size.X,
-				DTA_VirtualheightF, size.Y,
+				DTA_VirtualHeightF, size.Y,
 				DTA_Alpha, candleLightAlpha,
 				DTA_FullscreenScale, FSMode_ScaleToFit43
 			);

@@ -1580,20 +1580,20 @@ class ToM_PlayerDoll : ToM_BaseActor
 	static ToM_PlayerDoll SpawnDoll(Vector3 pos, double angle)
 	{
 		let cam = Actor.Spawn('ToM_DollViewCamera', pos);
-		cam.angle = 118;
+		cam.angle = 90;
 
 		let doll = ToM_PlayerDoll(Actor.Spawn('ToM_PlayerDoll', pos + (0, 50, -34)));
-		doll.angle = -90;
 		doll.dollSpawnValid = true;
+		doll.angle = -90;
 		doll.angle = angle;
 		doll.dollSpawnangle = doll.angle;
 		doll.spawnPoint = doll.pos;
 
-		let dollbg = Actor.Spawn('ToM_PlayerDollBackground', doll.pos + (0, 128, -25));
+		let dollbg = Actor.Spawn('ToM_PlayerDollBackground', doll.pos + (0, 128, -35));
 		dollbg.angle = cam.angle - 90;
 		dollbg.A_ChangeModel("", skin: "AlicePlayer.menuMirrorReflection");
 
-		TexMan.SetCameraToTexture(cam, "AlicePlayer.menuMirror", 80);
+		TexMan.SetCameraToTexture(cam, "AlicePlayer.menuMirror", 40);
 
 		//Console.Printf("doll Z \cd%.1f\c- | doll sector floor/ceiling: \cd%.1f, %.1f\c- | camera Z \cd%.1f\c- | camera sector floor/ceiling: \cd%.1f, %.1f\c-", doll.pos.z, doll.floorz, doll.ceilingz, cam.pos.z, cam.floorz, cam.ceilingz);
 
@@ -1632,7 +1632,6 @@ class ToM_PlayerDoll : ToM_BaseActor
 				SetState (CurState.NextState);
 			}
 		}
-		SetViewPos((dollcamX, dollcamY, dollcamZ));
 	}
 
 	States {
@@ -1842,6 +1841,7 @@ class ToM_DollViewCamera : ToM_BaseActor
 		+NOBLOCKMAP
 		+SYNCHRONIZED
 		+DONTBLAST
+		FloatBobPhase 0;
 	}
 
 	override void Tick() {}

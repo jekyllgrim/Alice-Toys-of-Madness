@@ -403,6 +403,10 @@ extend class ToM_UiHandler
 			TextureID mirrorTex = TexMan.CheckForTexture("AlicePlayer.menuMirror");
 			Screen.DrawTexture(mirrorTex,
 				false,
+				// Virtual resolution same as the background.
+				// Other values are fixed, hand-picked to match
+				// so the camera texture is exactly behind the
+				// mirror in the background:
 				size.X / 2 + 45, 74,
 				DTA_VirtualWidthF, size.X,
 				DTA_VirtualHeightF, size.Y,
@@ -410,7 +414,7 @@ extend class ToM_UiHandler
 				DTA_DestHeightF, 378,
 				DTA_FullScreenScale, FSMode_ScaleToFit43);
 
-			// Now the foreground with a mirror:
+			// Now the foreground with a mirror (the mirror area is translucent):
 			Screen.DrawTexture(texOpt,
 				false,
 				0, 0,
@@ -418,9 +422,9 @@ extend class ToM_UiHandler
 				DTA_VirtualHeightF, size.Y,
 				DTA_FullScreenScale, FSMode_ScaleToFit43);
 			
-			// Now process the canvas for the reflection behind Alice
-			// (the reflection itself is an actor with a model spawned
-			// behind her model):
+			// Now process the canvas for the background plane behind Alice
+			// (the background itself is an actor with a flat plane model
+			// placed behind her):
 			Canvas refCanvas = TexMan.GetCanvas("AlicePlayer.menuMirrorReflection");
 			TextureID refTex = TexMan.CheckForTexture("Graphics/Menu/optionmenu_reflection.png");
 			Vector2 rSize;
@@ -431,6 +435,7 @@ extend class ToM_UiHandler
 				DTA_FlipY, true,
 				DTA_DestWidthF, rSize.x,
 				DTA_DestHeightF, rSize.y);
+			// lit up by lightning, just like the main menu:
 			refCanvas.DrawTexture(TexMan.CheckForTexture("Graphics/Menu/optionmenu_reflection_lightning.png"),false,
 				0, 0,
 				DTA_FlipY, true,
@@ -604,6 +609,7 @@ extend class ToM_UiHandler
 			// the lightning phase:
 			if (--lightningDelay <= 0)
 			{
+				S_StartSound("menu/thunder", CHAN_AUTO, flags:CHANF_UI|CHANF_LOCAL);
 				lightningPhase = LIGHT_FREQUENCY*random[tomMenu](4,6);
 			}
 		}

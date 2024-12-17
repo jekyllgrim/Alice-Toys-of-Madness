@@ -8,6 +8,10 @@ menu/choose		"sounds/menu/gong.wav"
 menu/backup		"sounds/menu/click_4.wav"
 menu/clear		"sounds/menu/click_4.wav"
 menu/quit		"sounds/menu/click_1.wav"
+$random menu/thunder { menu/thunder1 menu/thunder2 menu/thunder3 }
+menu/thunder1	"sounds/thunder_1.wav"
+menu/thunder2	"sounds/thunder_2.wav"
+menu/thunder3	"sounds/thunder_3.wav"
 
 // ALICE
 

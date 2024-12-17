@@ -278,6 +278,11 @@ extend class ToM_UiHandler
 	const LIGHT_FADETIME = TICRATE / 2;
 	const LIGHT_FADESTEP = LIGHT_MAXALPHA / LIGHT_FADETIME;
 
+	ui double lampFlickerAlpha;
+	ui double lampFlickerAlphaTics;
+	ui LinearValueInterpolator lampFlickerInterpolator;
+	ui TextureID lampFlickerTex;
+
 	ui double candleLightAlpha;
 	ui double candleLightAlphaStep;
 	ui double candleLightAlphaDir;
@@ -426,6 +431,22 @@ extend class ToM_UiHandler
 				DTA_VirtualWidthF, optMenu_bg_size.X,
 				DTA_VirtualHeightF, optMenu_bg_size.Y,
 				DTA_FullScreenScale, FSMode_ScaleToFit43);
+
+			// Now the flickering of the light bulb:
+			if (lampFlickerInterpolator)
+			{
+				if (!lampFlickerTex || !lampFlickerTex.IsValid())
+				{
+					lampFlickerTex = TexMan.CheckForTexture("graphics/menu/optionmenu_background_light.png");
+				}
+				Screen.DrawTexture(lampFlickerTex,
+					false,
+					0, 0,
+					DTA_VirtualWidthF, optMenu_bg_size.X,
+					DTA_VirtualHeightF, optMenu_bg_size.Y,
+					DTA_Alpha, lampFlickerInterpolator.GetValue() * 0.01,
+					DTA_FullScreenScale, FSMode_ScaleToFit43);
+			}
 			
 			// Now process the canvas for the background plane behind Alice
 			// (the background itself is an actor with a flat plane model
@@ -592,6 +613,18 @@ extend class ToM_UiHandler
 		}
 		if (smokeFlickerTics) smokeFlickerTics--;
 
+		// Tick smoke elements:
+		for (int i = smokeElements.Size() -1; i >= 0; i--)
+		{
+			let csc = smokeElements[i];
+			if (!csc)
+			{
+				smokeElements.Delete(i);
+				continue;
+			}
+			csc.Ticker();
+		}
+
 		// candle light flickering:
 		candleLightAlpha += candleLightAlphaStep * candleLightAlphaDir;
 		if (candleLightAlpha <= candleLightAlphaTarget || candleLightAlpha >= 1.0)
@@ -604,16 +637,19 @@ extend class ToM_UiHandler
 			}
 		}
 
-		// Tick smoke elements:
-		for (int i = smokeElements.Size() -1; i >= 0; i--)
+		// option menu light bulb flickering:
+		if (mnu is 'OptionMenu')
 		{
-			let csc = smokeElements[i];
-			if (!csc)
+			if (--lampFlickerAlphaTics <= 0)
 			{
-				smokeElements.Delete(i);
-				continue;
+				lampFlickerAlpha = random[tomMenu](0,255) <= 250? frandom[tomMenu](0.6, 0.9) : frandom[tomMenu](0.1, 0.3);
+				lampFlickerAlphaTics = random[tomMenu](10, 60);
 			}
-			csc.Ticker();
+			if (!lampFlickerInterpolator)
+			{
+				lampFlickerInterpolator = LinearValueInterpolator.Create(50, 1);
+			}
+			lampFlickerInterpolator.Update(lampFlickerAlpha * 100);
 		}
 
 		// count down lightning delay:

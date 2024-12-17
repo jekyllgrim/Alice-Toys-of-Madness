@@ -1579,20 +1579,25 @@ class ToM_PlayerDoll : ToM_BaseActor
 
 	static ToM_PlayerDoll SpawnDoll(Vector3 pos, double angle)
 	{
+		// spawn camera:
 		let cam = Actor.Spawn('ToM_DollViewCamera', pos);
 		cam.angle = 90;
 
+		// spawn doll relative to it:
 		let doll = ToM_PlayerDoll(Actor.Spawn('ToM_PlayerDoll', pos + (0, 50, -34)));
-		doll.dollSpawnValid = true;
+		doll.dollSpawnValid = true; //without this the doll is destroyed
 		doll.angle = -90;
 		doll.angle = angle;
-		doll.dollSpawnangle = doll.angle;
-		doll.spawnPoint = doll.pos;
+		doll.dollSpawnangle = doll.angle; //store spawn angle
+		doll.spawnPoint = doll.pos; //update spawn point just in case
 
+		// spawn background:
 		let dollbg = Actor.Spawn('ToM_PlayerDollBackground', doll.pos + (0, 128, -35));
 		dollbg.angle = cam.angle - 90;
+		// set background's texture to a canvas texture that will update with the lightning:
 		dollbg.A_ChangeModel("", skin: "AlicePlayer.menuMirrorReflection");
 
+		// set camera to texture (low fov):
 		TexMan.SetCameraToTexture(cam, "AlicePlayer.menuMirror", 40);
 
 		//Console.Printf("doll Z \cd%.1f\c- | doll sector floor/ceiling: \cd%.1f, %.1f\c- | camera Z \cd%.1f\c- | camera sector floor/ceiling: \cd%.1f, %.1f\c-", doll.pos.z, doll.floorz, doll.ceilingz, cam.pos.z, cam.floorz, cam.ceilingz);

@@ -34,17 +34,18 @@ class ToM_Mainhandler : EventHandler
 
 	override void NetworkProcess(consoleevent e)
 	{
-		if (!e.isManual && e.Player == consoleplayer)
+		if (!e.isManual && e.Player == consoleplayer && alicePlayerDoll)
 		{
 			if (e.name == "AnimatePlayerDoll" && alicePlayerDoll)
 			{
-				alicePlayerDoll.Tick();
+				if (e.args[1])
+				{
+					alicePlayerDoll.Tick();
+				}
 				alicePlayerDoll.lightlevel = alicePlayerDoll.default.lightlevel + e.args[0];
 			}
 			if (e.name.IndexOf("StartAliceDollAnimation") >= 0)
 			{
-				if (!alicePlayerDoll) return;
-
 				array<String> cmd;
 				e.name.Split(cmd, "|");
 				if (cmd.Size() != 2) return;

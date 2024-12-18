@@ -379,7 +379,7 @@ class ToM_EquipmentSpawner : Inventory abstract
 				// if players have neither, both calculations 
 				// will happen, ultimately leaving the chance 
 				// unchanged!
-				ToM_DebugMessage.Print(String.Format("alt set chance: %f",otherPickupChance));
+				ToM_DebugMessage.Print(String.Format("alt set chance: %f", otherPickupChance), 2);
 			}
 			
 			//define two possible ammo pickups to spawn:
@@ -570,7 +570,7 @@ class ToM_WeaponSpawner : ToM_EquipmentSpawner abstract
 				string wclass2 = "weapon2 (not defined)";
 				if (weapon2) wclass2 = weapon2.GetClassName();
 				string dr = bTOSSED ? "It was dropped." : "It was placed on the map.";
-				ToM_DebugMessage.Print(String.Format("Players %s %s | Players %s %s | Secondary chance: %d, spawning %s. %s",phave1,wclass1,phave2,wclass2,otherPickupChance,tospawn.GetClassName(),dr), 1);
+				ToM_DebugMessage.Print(String.Format("Players %s %s | Players %s %s | Secondary chance: %d, spawning %s. %s",phave1,wclass1,phave2,wclass2,otherPickupChance,tospawn.GetClassName(),dr), 2);
 			}
 			/* 
 			If it was  dropped by an enemy and ALL players have the chosen weapon, 
@@ -588,7 +588,7 @@ class ToM_WeaponSpawner : ToM_EquipmentSpawner abstract
 						reason = String.Format("All players have %s", toSpawn.GetClassName());
 					else if ((toSpawn == weapon1 && onlyMapPlaced1) || (toSpawn == weapon2 && onlyMapPlaced2))
 						reason = String.Format("This was dropped, but %s can only spawn map-placed", toSpawn.GetClassName());
-					ToM_DebugMessage.Print(String.Format("Spawning ammo instead of %s because %s", toSpawn.GetClassName(), reason));
+					ToM_DebugMessage.Print(String.Format("Spawning ammo instead of %s because %s", toSpawn.GetClassName(), reason), 2);
 				}
 				// For ammo drops, recalculate chances again.
 				// Increase chances of dropping ammo for the
@@ -649,7 +649,7 @@ class ToM_WeaponSpawner : ToM_EquipmentSpawner abstract
 			//if there's only current weapon, spawn it:
 			else if (wcount <= 1)
 				toSpawnFinal = toSpawn;
-			ToM_DebugMessage.Print(String.Format("There are at least %d instaces of %s on this map. Spawning %s",wcount,toSpawn.GetClassName(),toSpawnFinal.GetClassName()));
+			ToM_DebugMessage.Print(String.Format("There are at least %d instaces of %s on this map. Spawning %s",wcount,toSpawn.GetClassName(),toSpawnFinal.GetClassName()), 2);
 			SpawnInvPickup(pos,toSpawnFinal);
 		}
 		stop;

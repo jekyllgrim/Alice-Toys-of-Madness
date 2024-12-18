@@ -28,15 +28,78 @@ class ToM_Mainhandler : EventHandler
 			top = max(top, vert.p.y);
 			bottom = min(top, vert.p.y);
 		}
+		
+		Vector2 dollpos[4];
+		dollpos[0] = (left - 128, top + 128);
+		dollpos[1] = (left - 128, bottom - 128);
+		dollpos[2] = (right + 128, top + 128);
+		dollpos[3] = (right + 128, bottom - 128);
 
-		alicePlayerDoll = ToM_PlayerDoll.SpawnDoll((left - 128, top + 128, 0), -90);
+		int goodSec = -1;
+		for (int i = 0; i < 4; i++)
+		{
+			Sector sec = level.PointInSector(dollpos[i]);
+			double ceilingpos = sec.HighestCeilingAt(dollpos[i]);
+			double floorpos = sec.LowestFloorAt(dollpos[i]);
+			double secheight = ceilingpos - floorpos;
+			ToM_DebugMessage.Print(String.Format(
+				"Spawning player doll attempt \cy%d\c-:\n"
+				"floor \cd%d\c-\n"
+				"ceiling \cd%d\c-\n"
+				"sector height \cd%d\c-",
+				i,
+				floorpos,
+				ceilingpos,
+				secheight)
+			);
+			if (secheight >= 128)
+			{
+				goodSec = i;
+				break;
+			}
+		}
+		Vector3 dollSpawnSpot;
+		if (goodSec >= 0)
+		{
+			dollSpawnSpot = (dollpos[goodSec], 40);
+			alicePlayerDoll = ToM_PlayerDoll.SpawnDoll(dollSpawnSpot);
+		}
+		else
+		{
+			foreach (sec : level.sectors)
+			{
+				double ceilingpos = sec.HighestCeilingAt(sec.centerspot);
+				double floorpos = sec.LowestFloorAt(sec.centerspot);
+				double secheight = ceilingpos - floorpos;
+				if (secheight >= 320)
+				{
+					dollSpawnSpot = (sec.centerspot, secheight - 80);
+					alicePlayerDoll = ToM_PlayerDoll.SpawnDoll(dollSpawnSpot);
+					if (alicePlayerDoll) break;
+				}
+			}
+		}
+		if (alicePlayerDoll)
+		{
+			ToM_DebugMessage.Print(String.Format("Spawned doll at \cd%.1f, %.1f, %.1f\c-", alicePlayerDoll.pos.x, alicePlayerDoll.pos.y, alicePlayerDoll.pos.z));
+		}
 	}
 
 	override void NetworkProcess(consoleevent e)
 	{
 		if (!e.isManual && e.Player == consoleplayer && alicePlayerDoll)
 		{
-			if (e.name == "AnimatePlayerDoll" && alicePlayerDoll)
+			if (e.name == "HidePlayerDoll")
+			{
+				alicePlayerDoll.HideDoll();
+			}
+
+			if (e.name == "ShowPlayerDoll")
+			{
+				alicePlayerDoll.ShowDoll();
+			}
+
+			if (e.name == "AnimatePlayerDoll")
 			{
 				if (e.args[1])
 				{

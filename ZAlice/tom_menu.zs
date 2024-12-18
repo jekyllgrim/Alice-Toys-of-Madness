@@ -292,6 +292,7 @@ extend class ToM_UiHandler
 	ui int smokeFlickerTics;
 	ui int smokeFlickerDuration;
 
+	ui Actor alicePlayerDoll;
 	transient String buildinfo;
 
 	override void OnRegister()
@@ -317,10 +318,18 @@ extend class ToM_UiHandler
 		if (!mainMenuBackgroundStarted) return;
 
 		let mnu = Menu.GetCurrentMenu();
+
 		// Draw the background at all times in a titlemap.
 		// In non-titlemap, we will not draw it if there's
 		// no menu (obviously):
-		if (!mnu && gamestate != GS_TITLELEVEL) return;
+		if (!mnu && gamestate != GS_TITLELEVEL)
+		{
+			if (alicePlayerDoll && alicePlayerDoll.renderRequired >= 0)
+			{
+				EventHandler.SendNetworkEvent("HidePlayerDoll");
+			}
+			return;
+		}
 
 		if (mnu != prevSelectedMenu && tom_debugmessages > 0)
 		{
@@ -375,8 +384,12 @@ extend class ToM_UiHandler
 		}
 
 		// Are we in the controls menu?
-		else if (mnu is 'OptionMenu' || mnu is 'EnterKey')
+		else if (mnu is 'OptionMenu' || mnu is 'EnterKey' || mnu is 'MessageBoxMenu')
 		{
+			if (alicePlayerDoll && alicePlayerDoll.renderRequired < 0)
+			{
+				EventHandler.SendNetworkEvent("ShowPlayerDoll");
+			}
 			Screen.Dim(0x000000, 1, 0, 0, int(screenRes.x), int(screenRes.y));
 			// We're in Customize Controls menu and currently hovering over a control bind element:
 			OptionMenuItemControlBase controlItem;
@@ -391,7 +404,7 @@ extend class ToM_UiHandler
 			// We've just clicked on a control element to change its bind
 			// (yes, it's a different menu, despite being drawn on top
 			// of the previous one):
-			else
+			else if (mnu is 'EnterKey')
 			{
 				controlItem = EnterKey(mnu).mOwner;
 			}
@@ -494,74 +507,81 @@ extend class ToM_UiHandler
 
 		// Otherwise, if it's a list menu, OR we're in a title level,
 		// draw the main menu background:
-		else if (gamestate == GS_TITLELEVEL || (mnu && mnu is 'ListMenu'))
+		else
 		{
-			Screen.Dim(0x000000, 1, 0, 0, int(screenRes.x), int(screenRes.y));
-			// Textures for regular background, and another version of it
-			// lit by a lightning strike, with different shadows and visible
-			// window outlines:
-			if (!tex_bg)
-				tex_bg = TexMan.CheckForTexture("graphics/menu/menu_background.png");
-			if (!tex_lightning)
-				tex_lightning = TexMan.CheckForTexture("graphics/menu/menu_background_lit.png");
-
-			vector2 size;
-			[size.x, size.y] = TexMan.GetSize(tex_bg);
-
-			vector2 scale = (screenRes.x / size.x, screenRes.y / size.y);
-
-			// The base background is always drawn:
-			Screen.DrawTexture(tex_bg, false,
-				0, 0,
-				DTA_VirtualWidthF, size.X,
-				DTA_VirtualHeightF, size.Y,
-				DTA_FullscreenScale, FSMode_ScaleToFit43
-			);
-
-			// The lit background is drawn on top whenever
-			// lightning triggers, and gradually fades out:
-			Screen.DrawTexture(tex_lightning, false,
-				0, 0,
-				DTA_VirtualWidthF, size.X,
-				DTA_VirtualHeightF, size.Y,
-				DTA_Alpha, lightningAlpha,
-				DTA_FullscreenScale, FSMode_ScaleToFit43
-			);
-
-			// Draw smoke elements rising above the candle:
-			if (!smokeTex)
-				smokeTex = TexMan.CheckForTexture("SMO2C0");
-			vector2 smokePos = (-60, 46);
-			for (int i = 0; i < smokeElements.Size(); i++)
+			if (alicePlayerDoll && alicePlayerDoll.renderRequired >= 0)
 			{
-				let csc = smokeElements[i];
-				if (!csc)
-					continue;
-				Screen.DrawTexture(smokeTex, false,
-					size.X / 2 + (smokePos.x + csc.pos.x),// * scale.x, 
-					size.Y / 2 + (smokePos.y + csc.pos.y),// * scale.y,
+				EventHandler.SendNetworkEvent("HidePlayerDoll");
+			}
+			if (gamestate == GS_TITLELEVEL || (mnu && mnu is 'ListMenu'))
+			{
+				Screen.Dim(0x000000, 1, 0, 0, int(screenRes.x), int(screenRes.y));
+				// Textures for regular background, and another version of it
+				// lit by a lightning strike, with different shadows and visible
+				// window outlines:
+				if (!tex_bg)
+					tex_bg = TexMan.CheckForTexture("graphics/menu/menu_background.png");
+				if (!tex_lightning)
+					tex_lightning = TexMan.CheckForTexture("graphics/menu/menu_background_lit.png");
+
+				vector2 size;
+				[size.x, size.y] = TexMan.GetSize(tex_bg);
+
+				vector2 scale = (screenRes.x / size.x, screenRes.y / size.y);
+
+				// The base background is always drawn:
+				Screen.DrawTexture(tex_bg, false,
+					0, 0,
 					DTA_VirtualWidthF, size.X,
 					DTA_VirtualHeightF, size.Y,
-					DTA_ScaleX, csc.scale,
-					DTA_ScaleY, csc.scale,
-					DTA_Alpha, csc.alpha,
 					DTA_FullscreenScale, FSMode_ScaleToFit43
 				);
+
+				// The lit background is drawn on top whenever
+				// lightning triggers, and gradually fades out:
+				Screen.DrawTexture(tex_lightning, false,
+					0, 0,
+					DTA_VirtualWidthF, size.X,
+					DTA_VirtualHeightF, size.Y,
+					DTA_Alpha, lightningAlpha,
+					DTA_FullscreenScale, FSMode_ScaleToFit43
+				);
+
+				// Draw smoke elements rising above the candle:
+				if (!smokeTex)
+					smokeTex = TexMan.CheckForTexture("SMO2C0");
+				vector2 smokePos = (-60, 46);
+				for (int i = 0; i < smokeElements.Size(); i++)
+				{
+					let csc = smokeElements[i];
+					if (!csc)
+						continue;
+					Screen.DrawTexture(smokeTex, false,
+						size.X / 2 + (smokePos.x + csc.pos.x),// * scale.x, 
+						size.Y / 2 + (smokePos.y + csc.pos.y),// * scale.y,
+						DTA_VirtualWidthF, size.X,
+						DTA_VirtualHeightF, size.Y,
+						DTA_ScaleX, csc.scale,
+						DTA_ScaleY, csc.scale,
+						DTA_Alpha, csc.alpha,
+						DTA_FullscreenScale, FSMode_ScaleToFit43
+					);
+				}
+
+				// Draw flickering light spot on top of
+				// the candle's wick:
+				if (!candleLighTex)
+					candleLighTex = TexMan.CheckForTexture("graphics/menu/menu_background_candlelight.png");
+				Screen.DrawTexture(candleLighTex, false,
+					0, 0,
+					DTA_VirtualWidthF, size.X,
+					DTA_VirtualHeightF, size.Y,
+					DTA_Alpha, candleLightAlpha,
+					DTA_FullscreenScale, FSMode_ScaleToFit43
+				);
+
+				PrintBuildInfo();
 			}
-
-			// Draw flickering light spot on top of
-			// the candle's wick:
-			if (!candleLighTex)
-				candleLighTex = TexMan.CheckForTexture("graphics/menu/menu_background_candlelight.png");
-			Screen.DrawTexture(candleLighTex, false,
-				0, 0,
-				DTA_VirtualWidthF, size.X,
-				DTA_VirtualHeightF, size.Y,
-				DTA_Alpha, candleLightAlpha,
-				DTA_FullscreenScale, FSMode_ScaleToFit43
-			);
-
-			PrintBuildInfo();
 		}
 
 		/*if (mnu is 'LoadSaveMenu')
@@ -598,6 +618,15 @@ extend class ToM_UiHandler
 		{
 			MMD_Init();
 			return;
+		}
+
+		if (!alicePlayerDoll)
+		{
+			let handler = ToM_Mainhandler(EventHandler.Find('ToM_Mainhandler'));
+			if (handler)
+			{
+				alicePlayerDoll = handler.alicePlayerDoll;
+			}
 		}
 
 		let mnu = Menu.GetCurrentMenu();
@@ -683,7 +712,10 @@ extend class ToM_UiHandler
 			// the lightning phase:
 			if (--lightningDelay <= 0)
 			{
-				S_StartSound("menu/thunder", CHAN_AUTO, flags:CHANF_UI|CHANF_LOCAL);
+				if (gamestate == GS_TITLELEVEL) //do not play with actual map in the background
+				{
+					S_StartSound("menu/thunder", CHAN_AUTO, flags:CHANF_UI|CHANF_LOCAL);
+				}
 				lightningPhase = LIGHT_FREQUENCY*random[tomMenu](4,6);
 			}
 		}

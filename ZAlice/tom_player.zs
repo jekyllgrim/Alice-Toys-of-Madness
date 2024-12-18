@@ -1279,6 +1279,7 @@ class ToM_CrosshairSpot : ToM_BaseActor
 		+BRIGHT
 		+FORCEXYBILLBOARD
 		+INVISIBLEINMIRRORS
+		+NOTONAUTOMAP
 		Scale 0.24;
 		Renderstyle 'Add';
 		+NOTIMEFREEZE
@@ -1560,12 +1561,26 @@ class ToM_PlayerDollBackground : ToM_BaseActor
 		stop;
 	}
 }
-	
+
+class ToM_PlayerDollCollision : ToM_BaseActor
+{
+	Default
+	{
+		+SYNCHRONIZED
+		+DONTBLAST
+		+NOTONAUTOMAP
+		+SOLID
+		FloatBobPhase 0;
+		Radius 128;
+		Height 128;
+	}
+}
 
 class ToM_PlayerDoll : ToM_BaseActor
 {
 	private double dollSpawnangle;
 	bool dollSpawnValid;
+	Actor dollBackround;
 
 	Default
 	{
@@ -1573,12 +1588,24 @@ class ToM_PlayerDoll : ToM_BaseActor
 		+NOBLOCKMAP
 		+SYNCHRONIZED
 		+DONTBLAST
+		+NOTONAUTOMAP
 		FloatBobPhase 0;
 		LightLevel 200;
 	}
 
-	static ToM_PlayerDoll SpawnDoll(Vector3 pos, double angle)
+	static ToM_PlayerDoll SpawnDoll(Vector3 pos)
 	{
+		let collision = Actor.Spawn('ToM_PlayerDoll', pos + (0, 64, -40));
+		if (!collision || !collision.TestMobjLocation())
+		{
+			if (collision) collision.Destroy();
+			return null;
+		}
+		else
+		{
+			collision.Destroy();
+		}
+
 		// spawn camera:
 		let cam = Actor.Spawn('ToM_DollViewCamera', pos);
 		cam.angle = 90;
@@ -1587,7 +1614,6 @@ class ToM_PlayerDoll : ToM_BaseActor
 		let doll = ToM_PlayerDoll(Actor.Spawn('ToM_PlayerDoll', pos + (0, 50, -34)));
 		doll.dollSpawnValid = true; //without this the doll is destroyed
 		doll.angle = -90;
-		doll.angle = angle;
 		doll.dollSpawnangle = doll.angle; //store spawn angle
 		doll.spawnPoint = doll.pos; //update spawn point just in case
 
@@ -1596,13 +1622,32 @@ class ToM_PlayerDoll : ToM_BaseActor
 		dollbg.angle = cam.angle - 90;
 		// set background's texture to a canvas texture that will update with the lightning:
 		dollbg.A_ChangeModel("", skin: "AlicePlayer.menuMirrorReflection");
+		doll.dollBackround = dollbg;
 
 		// set camera to texture (low fov):
 		TexMan.SetCameraToTexture(cam, "AlicePlayer.menuMirror", 40);
 
-		//Console.Printf("doll Z \cd%.1f\c- | doll sector floor/ceiling: \cd%.1f, %.1f\c- | camera Z \cd%.1f\c- | camera sector floor/ceiling: \cd%.1f, %.1f\c-", doll.pos.z, doll.floorz, doll.ceilingz, cam.pos.z, cam.floorz, cam.ceilingz);
+		doll.HideDoll();
 
 		return doll;
+	}
+
+	void HideDoll()
+	{
+		renderRequired = -1;
+		if (dollBackround)
+		{
+			dollBackround.renderRequired = -1;
+		}
+	}
+
+	void ShowDoll()
+	{
+		renderRequired = 0;
+		if (dollBackround)
+		{
+			dollBackround.renderRequired = 0;
+		}
 	}
 
 	override void PostBeginPlay()
@@ -1846,7 +1891,9 @@ class ToM_DollViewCamera : ToM_BaseActor
 		+NOBLOCKMAP
 		+SYNCHRONIZED
 		+DONTBLAST
+		+NOTONAUTOMAP
 		FloatBobPhase 0;
+		RenderStyle 'None';
 	}
 
 	override void Tick() {}

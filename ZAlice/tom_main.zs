@@ -38,6 +38,7 @@ class ToM_NullActor : Actor
 		+NOBLOCKMAP
 		+SYNCHRONIZED
 		+DONTBLAST
+		+NOTONAUTOMAP
 		FloatBobPhase 0;
 		radius 0;
 		height 0;
@@ -205,6 +206,7 @@ Class ToM_BaseDebris : ToM_BaseActor abstract
 		-ALLOWPARTICLES
 		+SYNCHRONIZED
 		+DONTBLAST
+		+NOTONAUTOMAP
 		FloatBobPhase 0;
 		renderstyle 'Translucent';
 		alpha 1.0;

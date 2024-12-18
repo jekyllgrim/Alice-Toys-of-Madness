@@ -292,6 +292,17 @@ extend class ToM_UiHandler
 	ui int smokeFlickerTics;
 	ui int smokeFlickerDuration;
 
+	transient String buildinfo;
+
+	override void OnRegister()
+	{
+		let lump = Wads.FindLump("atombuild.txt");
+		if (lump >= 0)
+		{
+			buildinfo = String.Format("Alice: Toys of Madness build %s", Wads.ReadLump(lump));
+		}
+	}
+
 	ui void MMD_Init()
 	{
 		lightningDelay = TICRATE*4;
@@ -477,6 +488,8 @@ extend class ToM_UiHandler
 				DTA_DestWidthF, optMenu_refSize.x,
 				DTA_DestHeightF, optMenu_refSize.y,
 				DTA_Alpha, lightningAlpha);
+			
+			PrintBuildInfo();
 		}
 
 		// Otherwise, if it's a list menu, OR we're in a title level,
@@ -547,6 +560,8 @@ extend class ToM_UiHandler
 				DTA_Alpha, candleLightAlpha,
 				DTA_FullscreenScale, FSMode_ScaleToFit43
 			);
+
+			PrintBuildInfo();
 		}
 
 		/*if (mnu is 'LoadSaveMenu')
@@ -566,6 +581,15 @@ extend class ToM_UiHandler
 				DTA_DestWidth, savemnu.listboxWidth + 45 + 45,
 				DTA_Destheight, savemnu.listboxHeight + 35 + 48);
 		}*/
+	}
+
+	ui void PrintBuildInfo()
+	{
+		Screen.DrawText(newConsoleFont, Font.CR_White,
+			Screen.GetWidth() - newConsoleFont.StringWidth(buildinfo), Screen.GetHeight() - newConsoleFont.GetHeight() - 2,
+			buildinfo,
+			DTA_Alpha, 0.6
+		);
 	}
 
 	ui void MMD_Tick()

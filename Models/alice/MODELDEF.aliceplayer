@@ -86,9 +86,8 @@ idle3_to1
 
 Model ToM_PlayerDollBackground
 {
-	path "Models/pool"
-	Model 0 "standingplane.obj"
-	Skin 0 "Graphics/Menu/optionmenu_reflection.png"
+	path "Models/alice"
+	Model 0 "MenuMirrorPlane.obj"
 	AngleOffset -90
 	Scale 66 1 128
 	FrameIndex M000 A 0 0

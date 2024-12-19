@@ -1620,8 +1620,6 @@ class ToM_PlayerDoll : ToM_BaseActor
 		// spawn background:
 		let dollbg = Actor.Spawn('ToM_PlayerDollBackground', doll.pos + (0, 128, -35));
 		dollbg.angle = cam.angle - 90;
-		// set background's texture to a canvas texture that will update with the lightning:
-		dollbg.A_ChangeModel("", skin: "AlicePlayer.menuMirrorReflection");
 		doll.dollBackround = dollbg;
 
 		// set camera to texture (low fov):

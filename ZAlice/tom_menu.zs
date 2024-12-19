@@ -30,7 +30,7 @@ class ToM_SkillMenu : ListMenu
 	override void Ticker()
 	{
 		Super.Ticker();
-		if (mDesc && mDesc.mSelectedItem >= 0 && level.totaltime % 4 == 0)
+		if (mDesc && mDesc.mSelectedItem >= 0 && Menu.MenuTime() % 4 == 0)
 		{
 			Vector2 pos = (0, 0);
 			Vector2 scale = (1, frandom[menusfx](1,1.5));
@@ -357,7 +357,21 @@ extend class ToM_UiHandler
 		MessageBoxMenu quitmnu = MessageBoxMenu(mnu);
 		if (!mnu)
 		{
-			tom_currentMenustate = gamestate == GS_TITLELEVEL? MS_MainMenu : MS_None;
+			if (gamestate == GS_TITLELEVEL)
+			{
+				tom_currentMenustate = MS_MainMenu;
+				// If we just opened the game and are in the title level,
+				// open the main menu (because it doesn't open automatically):
+				if (!mainMenuOpened)
+				{
+					Menu.SetMenu("MainMenu");
+					mainMenuOpened = true;
+				}
+			}
+			else
+			{
+				tom_currentMenustate = MS_None;
+			}
 		}
 		// Quit menu:
 		// (yes, the only way to determine it's a quit menu
@@ -626,7 +640,7 @@ extend class ToM_UiHandler
 	ui void MMD_Tick()
 	{
 		MMD_Init();
-		
+
 		if (!alicePlayerDoll)
 		{
 			let handler = ToM_Mainhandler(EventHandler.Find('ToM_Mainhandler'));

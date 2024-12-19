@@ -720,7 +720,7 @@ class ToM_UiHandler : StaticEventHandler
 
 	override void UiTick()
 	{
-		let currentMenu = Menu.GetCurrentMenu();
+		MMD_Tick();
 
 		// Update canvases representing player colors
 		for (int i = 0; i < MAXPLAYERS; i++)
@@ -739,19 +739,15 @@ class ToM_UiHandler : StaticEventHandler
 			// player doll model seen in the Options menu background,
 			// which still uses canvas textures to have the colors
 			// applied:
-			if (ToM_RageBox.HasRageBox(pmo) && (i != consoleplayer || !currentMenu || !(currentMenu is 'OptionMenu')))
+			if (ToM_RageBox.HasRageBox(pmo) && (i != consoleplayer || !alicePlayerDoll || alicePlayerDoll.renderRequired < 0))
 			{
 				tex = pcTex_arm_top_rage;
 			}
 			UpdatePlayerColorCanvas(pcCanv_arm[i], tex, playerCol);
 		}
 
-		if (currentMenu)
+		if (tom_currentMenustate == MS_Options)
 		{
-			MMD_Tick();
-
-			mainMenuOpened = true;
-
 			// Update portrait showing Player Menu:
 			let player = players[consoleplayer];
 			if (!portraitTex)
@@ -771,13 +767,6 @@ class ToM_UiHandler : StaticEventHandler
 			portraitCanvas.Clear(0, 0, portraitSize.x, portraitSize.y, 0xff000000);
 			portraitCanvas.DrawTexture(portraitTexBase, false, 0, 0, DTA_FillColor, player.GetColor());
 			portraitCanvas.DrawTexture(portraitTex, false, 0, 0);
-		}
-
-		// auto-opem main menu when the title level loads in
-		// (because by default GZDoom doesn't do that):
-		else if (!mainMenuOpened && gamestate == GS_TITLELEVEL)
-		{
-			Menu.SetMenu("MainMenu");
 		}
 	}
 }

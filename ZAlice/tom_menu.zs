@@ -252,14 +252,24 @@ class ToM_TextItemHighlight ui
 // and into TITLEMAP-specific event handler:
 extend class ToM_UiHandler
 {
-	ui bool mainMenuBackgroundStarted;
+	ui bool tom_menuInitalized;
+
+	ui int tom_currentMenustate;
 	ui name prevSelectedControl;
 	ui Menu prevSelectedMenu;
+	enum EMenuStates
+	{
+		MS_None,
+		MS_MainMenu,
+		MS_Options,
+		MS_QuitMenu,
+		MS_LoadSave,
+	}
 
 	ui TextureID tex_bg;
 	ui TextureID tex_lightning;
-	ui TextureID smokeTex;
-	ui TextureID candleLighTex;
+	ui TextureID candleSmokeTex;
+	ui TextureID candleWickTex;
 	ui TextureID quitMenu_bg;
 	ui Vector2 quitMenu_bg_size;
 	ui TextureID optMenu_bg;
@@ -289,8 +299,8 @@ extend class ToM_UiHandler
 	ui double candleLightAlphaTarget;
 
 	ui array < ToM_MenuCandleSmokeController > smokeElements;
-	ui int smokeFlickerTics;
-	ui int smokeFlickerDuration;
+	ui int smokeJitterTics;
+	ui int smokeJitterDuration;
 
 	ui Actor alicePlayerDoll;
 	transient String buildinfo;
@@ -306,31 +316,91 @@ extend class ToM_UiHandler
 
 	ui void MMD_Init()
 	{
+		if (tom_menuInitalized) return;
+
+		// quit menu background:
+		quitMenu_bg = TexMan.CheckForTexture("graphics/menu/quitmenu_background.png");
+		[quitMenu_bg_size.x, quitMenu_bg_size.y] = TexMan.GetSize(quitMenu_bg);
+		// option menu background:
+		optMenu_bg = TexMan.CheckForTexture("graphics/menu/optionmenu_background.png");
+		[optMenu_bg_size.x, optMenu_bg_size.y] = TexMan.GetSize(optMenu_bg);
+		// option menu mirror textures and cavas:
+		optMenu_mirrortex = TexMan.CheckForTexture("AlicePlayer.menuMirror");
+		optMenu_refTex = TexMan.CheckForTexture("Graphics/Menu/optionmenu_reflection.png");
+		[optMenu_refSize.x, optMenu_refSize.y] = TexMan.GetSize(optMenu_refTex);
+		optMenu_refTex_lit = TexMan.CheckForTexture("Graphics/Menu/optionmenu_reflection_lightning.png");
+		optMenu_refCanvas = TexMan.GetCanvas("AlicePlayer.menuMirrorReflection");
+		// option menu lamp flickering
+		lampFlickerTex = TexMan.CheckForTexture("graphics/menu/optionmenu_background_light.png");
+		// main menu backgrounds - regular background and another version of it,
+		// lit up by lighting:
+		tex_bg = TexMan.CheckForTexture("graphics/menu/menu_background.png");
+		tex_lightning = TexMan.CheckForTexture("graphics/menu/menu_background_lit.png");
+		// main menu - candle smoke elements' texture:
+		candleSmokeTex = TexMan.CheckForTexture("SMO2C0");
+		candleWickTex = TexMan.CheckForTexture("graphics/menu/menu_background_candlelight.png");
+		// main menu - values:
 		lightningDelay = TICRATE*4;
 		candleLightAlphaTarget = frandom[tomMenu](0.4, 0.6);
 		candleLightAlphaDir = -1;
 		candleLightAlpha = 1.0;
-		mainMenuBackgroundStarted = true;
+
+		tom_menuInitalized = true;
 	}
 
 	ui void MMD_Draw()
 	{
-		if (!mainMenuBackgroundStarted) return;
+		MMD_Init();
 
-		let mnu = Menu.GetCurrentMenu();
+		// First, determine which menu we're in.
+		Menu mnu = Menu.GetCurrentMenu();
+		MessageBoxMenu quitmnu = MessageBoxMenu(mnu);
+		if (!mnu)
+		{
+			tom_currentMenustate = gamestate == GS_TITLELEVEL? MS_MainMenu : MS_None;
+		}
+		// Quit menu:
+		// (yes, the only way to determine it's a quit menu
+		// is to check its mMessage, since aside from that
+		// it's just a generic MessageBoxMenu):
+		else if (quitmnu && quitmnu.mMessage && quitmnu.mMessage.StringAt(0) == StringTable.Localize("$TOM_MENU_QUITMESSAGE"))
+		{
+			tom_currentMenustate = MS_QuitMenu;
+		}
+		// Options - which is either OptionMenu (the main options menu), or
+		// EnterKey (a control key rebind interface), or MesageBoxMenu
+		// (one of the many confirmation message boxes):
+		else if (mnu is 'OptionMenu' || mnu is 'EnterKey' || mnu is 'MessageBoxMenu')
+		{
+			tom_currentMenustate = MS_Options;
+		}
+		else if (mnu is 'ListMenu')
+		{
+			tom_currentMenustate = MS_MainMenu;
+		}
 
-		// Draw the background at all times in a titlemap.
-		// In non-titlemap, we will not draw it if there's
-		// no menu (obviously):
-		if (!mnu && gamestate != GS_TITLELEVEL)
+		// Show player doll in options menu, otherwise hide it:
+		if (tom_currentMenustate == MS_Options)
+		{
+			if (alicePlayerDoll && alicePlayerDoll.renderRequired < 0)
+			{
+				EventHandler.SendNetworkEvent("ShowPlayerDoll");
+			}
+		}
+		else
 		{
 			if (alicePlayerDoll && alicePlayerDoll.renderRequired >= 0)
 			{
 				EventHandler.SendNetworkEvent("HidePlayerDoll");
 			}
-			return;
+			// Do nothing else if no menu conditions are met:
+			if (tom_currentMenustate == MS_None)
+			{
+				return;
+			}
 		}
-
+		
+		// debug notification when we open a new menu:
 		if (mnu != prevSelectedMenu && tom_debugmessages > 0)
 		{
 			prevSelectedMenu = mnu;
@@ -344,13 +414,8 @@ extend class ToM_UiHandler
 		}
 
 		vector2 screenRes = (Screen.GetWidth(), screen.GetHeight());
-		// Is this a quit menu?
-		let quitmnu = MessageBoxMenu(mnu);
-		// Yep, the only way to detect it's a quit message
-		// is to literally compare its string to the quit
-		// message string. Because otherwise it's a regular
-		// MessageBoxMenu!
-		if (quitmnu && quitmnu.mMessage && quitmnu.mMessage.StringAt(0) == StringTable.Localize("$TOM_MENU_QUITMESSAGE"))
+		// Quit menu:
+		if (tom_currentMenustate == MS_QuitMenu)
 		{
 			Screen.Dim(0x000000, 1, 0, 0, int(screenRes.x), int(screenRes.y));
 			// I want to delete the "press Y to quit" line, because
@@ -370,11 +435,6 @@ extend class ToM_UiHandler
 				quitmnu.destheight /= 2;
 				quitmnu.destwidth /= 2;
 			}
-			if (!quitMenu_bg || !quitMenu_bg.IsValid())
-			{
-				quitMenu_bg = TexMan.CheckForTexture("graphics/menu/quitmenu_background.png");
-				[quitMenu_bg_size.x, quitMenu_bg_size.y] = TexMan.GetSize(quitMenu_bg);
-			}
 			Screen.DrawTexture(quitMenu_bg,
 				false,
 				0, 0,
@@ -383,13 +443,9 @@ extend class ToM_UiHandler
 				DTA_FullScreenScale, FSMode_ScaleToFit43);
 		}
 
-		// Are we in the controls menu?
-		else if (mnu is 'OptionMenu' || mnu is 'EnterKey' || mnu is 'MessageBoxMenu')
+		// Options menu:
+		else if (tom_currentMenustate == MS_Options)
 		{
-			if (alicePlayerDoll && alicePlayerDoll.renderRequired < 0)
-			{
-				EventHandler.SendNetworkEvent("ShowPlayerDoll");
-			}
 			Screen.Dim(0x000000, 1, 0, 0, int(screenRes.x), int(screenRes.y));
 			// We're in Customize Controls menu and currently hovering over a control bind element:
 			OptionMenuItemControlBase controlItem;
@@ -424,17 +480,7 @@ extend class ToM_UiHandler
 				EventHandler.SendNetworkEvent("ResetAliceDollAnimation");
 			}
 
-			if (!optMenu_bg || !optMenu_bg.IsValid())
-			{
-				optMenu_bg = TexMan.CheckForTexture("graphics/menu/optionmenu_background.png");
-				[optMenu_bg_size.x, optMenu_bg_size.y] = TexMan.GetSize(optMenu_bg);
-			}
-
 			// The camera texture showing Alice:
-			if (!optMenu_mirrortex && !optMenu_mirrortex.IsValid())
-			{
-				optMenu_mirrortex = TexMan.CheckForTexture("AlicePlayer.menuMirror");
-			}
 			Screen.DrawTexture(optMenu_mirrortex,
 				false,
 				// Virtual resolution same as the background.
@@ -459,10 +505,6 @@ extend class ToM_UiHandler
 			// Now the flickering of the light bulb:
 			if (lampFlickerInterpolator)
 			{
-				if (!lampFlickerTex || !lampFlickerTex.IsValid())
-				{
-					lampFlickerTex = TexMan.CheckForTexture("graphics/menu/optionmenu_background_light.png");
-				}
 				Screen.DrawTexture(lampFlickerTex,
 					false,
 					0, 0,
@@ -475,15 +517,6 @@ extend class ToM_UiHandler
 			// Now process the canvas for the background plane behind Alice
 			// (the background itself is an actor with a flat plane model
 			// placed behind her):
-			if (!optMenu_refTex && !optMenu_refTex.IsValid())
-			{
-				optMenu_refTex = TexMan.CheckForTexture("Graphics/Menu/optionmenu_reflection.png");
-				[optMenu_refSize.x, optMenu_refSize.y] = TexMan.GetSize(optMenu_refTex);
-			}
-			if (!optMenu_refCanvas)
-			{
-				optMenu_refCanvas = TexMan.GetCanvas("AlicePlayer.menuMirrorReflection");
-			}
 			optMenu_refCanvas.Clear(0, 0, optMenu_refSize.x, optMenu_refSize.y, 0xff000000);
 			optMenu_refCanvas.DrawTexture(optMenu_refTex, false,
 				0, 0,
@@ -491,10 +524,6 @@ extend class ToM_UiHandler
 				DTA_DestWidthF, optMenu_refSize.x,
 				DTA_DestHeightF, optMenu_refSize.y);
 			// lit up by lightning, just like the main menu:
-			if (!optMenu_refTex_lit && !optMenu_refTex_lit.IsValid())
-			{
-				optMenu_refTex_lit = TexMan.CheckForTexture("Graphics/Menu/optionmenu_reflection_lightning.png");
-			}
 			optMenu_refCanvas.DrawTexture(optMenu_refTex_lit,false,
 				0, 0,
 				DTA_FlipY, true,
@@ -507,81 +536,58 @@ extend class ToM_UiHandler
 
 		// Otherwise, if it's a list menu, OR we're in a title level,
 		// draw the main menu background:
-		else
+		else if (tom_currentMenustate == MS_MainMenu)
 		{
-			if (alicePlayerDoll && alicePlayerDoll.renderRequired >= 0)
+			Screen.Dim(0x000000, 1, 0, 0, int(screenRes.x), int(screenRes.y));
+			vector2 size;
+			[size.x, size.y] = TexMan.GetSize(tex_bg);
+
+			// The base background is always drawn:
+			Screen.DrawTexture(tex_bg, false,
+				0, 0,
+				DTA_VirtualWidthF, size.X,
+				DTA_VirtualHeightF, size.Y,
+				DTA_FullscreenScale, FSMode_ScaleToFit43
+			);
+
+			// The lit background is drawn on top whenever
+			// lightning triggers, and gradually fades out:
+			Screen.DrawTexture(tex_lightning, false,
+				0, 0,
+				DTA_VirtualWidthF, size.X,
+				DTA_VirtualHeightF, size.Y,
+				DTA_Alpha, lightningAlpha,
+				DTA_FullscreenScale, FSMode_ScaleToFit43
+			);
+
+			// Draw smoke elements rising above the candle:
+			vector2 smokePos = (-60, 46);
+			for (int i = 0; i < smokeElements.Size(); i++)
 			{
-				EventHandler.SendNetworkEvent("HidePlayerDoll");
+				let csc = smokeElements[i];
+				if (!csc)
+					continue;
+				Screen.DrawTexture(candleSmokeTex, false,
+					size.X / 2 + (smokePos.x + csc.pos.x),
+					size.Y / 2 + (smokePos.y + csc.pos.y),
+					DTA_VirtualWidthF, size.X,
+					DTA_VirtualHeightF, size.Y,
+					DTA_ScaleX, csc.scale,
+					DTA_ScaleY, csc.scale,
+					DTA_Alpha, csc.alpha,
+					DTA_FullscreenScale, FSMode_ScaleToFit43
+				);
 			}
-			if (gamestate == GS_TITLELEVEL || (mnu && mnu is 'ListMenu'))
-			{
-				Screen.Dim(0x000000, 1, 0, 0, int(screenRes.x), int(screenRes.y));
-				// Textures for regular background, and another version of it
-				// lit by a lightning strike, with different shadows and visible
-				// window outlines:
-				if (!tex_bg)
-					tex_bg = TexMan.CheckForTexture("graphics/menu/menu_background.png");
-				if (!tex_lightning)
-					tex_lightning = TexMan.CheckForTexture("graphics/menu/menu_background_lit.png");
 
-				vector2 size;
-				[size.x, size.y] = TexMan.GetSize(tex_bg);
-
-				vector2 scale = (screenRes.x / size.x, screenRes.y / size.y);
-
-				// The base background is always drawn:
-				Screen.DrawTexture(tex_bg, false,
-					0, 0,
-					DTA_VirtualWidthF, size.X,
-					DTA_VirtualHeightF, size.Y,
-					DTA_FullscreenScale, FSMode_ScaleToFit43
-				);
-
-				// The lit background is drawn on top whenever
-				// lightning triggers, and gradually fades out:
-				Screen.DrawTexture(tex_lightning, false,
-					0, 0,
-					DTA_VirtualWidthF, size.X,
-					DTA_VirtualHeightF, size.Y,
-					DTA_Alpha, lightningAlpha,
-					DTA_FullscreenScale, FSMode_ScaleToFit43
-				);
-
-				// Draw smoke elements rising above the candle:
-				if (!smokeTex)
-					smokeTex = TexMan.CheckForTexture("SMO2C0");
-				vector2 smokePos = (-60, 46);
-				for (int i = 0; i < smokeElements.Size(); i++)
-				{
-					let csc = smokeElements[i];
-					if (!csc)
-						continue;
-					Screen.DrawTexture(smokeTex, false,
-						size.X / 2 + (smokePos.x + csc.pos.x),// * scale.x, 
-						size.Y / 2 + (smokePos.y + csc.pos.y),// * scale.y,
-						DTA_VirtualWidthF, size.X,
-						DTA_VirtualHeightF, size.Y,
-						DTA_ScaleX, csc.scale,
-						DTA_ScaleY, csc.scale,
-						DTA_Alpha, csc.alpha,
-						DTA_FullscreenScale, FSMode_ScaleToFit43
-					);
-				}
-
-				// Draw flickering light spot on top of
-				// the candle's wick:
-				if (!candleLighTex)
-					candleLighTex = TexMan.CheckForTexture("graphics/menu/menu_background_candlelight.png");
-				Screen.DrawTexture(candleLighTex, false,
-					0, 0,
-					DTA_VirtualWidthF, size.X,
-					DTA_VirtualHeightF, size.Y,
-					DTA_Alpha, candleLightAlpha,
-					DTA_FullscreenScale, FSMode_ScaleToFit43
-				);
-
-				PrintBuildInfo();
-			}
+			// Draw flickering light spot on top of
+			// the candle's wick:
+			Screen.DrawTexture(candleWickTex, false,
+				0, 0,
+				DTA_VirtualWidthF, size.X,
+				DTA_VirtualHeightF, size.Y,
+				DTA_Alpha, candleLightAlpha,
+				DTA_FullscreenScale, FSMode_ScaleToFit43
+			);
 		}
 
 		/*if (mnu is 'LoadSaveMenu')
@@ -601,6 +607,11 @@ extend class ToM_UiHandler
 				DTA_DestWidth, savemnu.listboxWidth + 45 + 45,
 				DTA_Destheight, savemnu.listboxHeight + 35 + 48);
 		}*/
+
+		if (tom_currentMenustate == MS_MainMenu || tom_currentMenustate == MS_Options)
+		{
+			PrintBuildInfo();
+		}
 	}
 
 	ui void PrintBuildInfo()
@@ -614,12 +625,8 @@ extend class ToM_UiHandler
 
 	ui void MMD_Tick()
 	{
-		if (!mainMenuBackgroundStarted)
-		{
-			MMD_Init();
-			return;
-		}
-
+		MMD_Init();
+		
 		if (!alicePlayerDoll)
 		{
 			let handler = ToM_Mainhandler(EventHandler.Find('ToM_Mainhandler'));
@@ -629,70 +636,16 @@ extend class ToM_UiHandler
 			}
 		}
 
-		let mnu = Menu.GetCurrentMenu();
 		// Animate the player doll:
-		if (mnu)
+		if (tom_currentMenustate == MS_Options)
 		{
 			// This will cause the doll to call Tick() if the menu pauses
 			// the game. In addition it'll also change its lightlevel even
 			// if the menu is non-pausing, to reflect the lightning in the
 			// background:
 			EventHandler.SendNetworkEvent("AnimatePlayerDoll", int(round(55 * lightningAlpha)), menuactive != Menu.OnNoPause && gamestate != GS_TITLELEVEL);
-		}
-		// create a new smoke element:
-		if (smokeFlickerTics <= 0 && random[smokeflicker](0, 255) >= 253)
-		{
-			smokeFlickerDuration = random[smokeflicker](30, 60);
-			smokeFlickerTics = smokeFlickerDuration;
-		}
-		int smokeSineTime = !smokeFlickerTics? (TICRATE * 10) : (20);
-		double smokeHorOfs = !smokeFlickerTics? (0.85) : (3.0 * sin(180.0 * (smokeFlickerTics / double(smokeFlickerDuration)))); //weaker fluctuations closer to the beginning and end of flicker sequence
-		let csc = ToM_MenuCandleSmokeController.Create(
-			//pos X and Y:
-			(frandom[tomMenu](-0.5,0.5), frandom[tomMenu](-0.5,0.5)), 
-			//pos step X and Y:
-			(smokeHorOfs * sin(360.0 * Menu.MenuTime() / smokeSineTime), -0.5),
-			// scale
-			frandom[tomMenu](0.03, 0.06), -0.003,
-			// alpha
-			frandom[tomMenu](0.025, 0.05), -0.003,
-			//rotation
-			frandom[tomMenu](0, 360), frandom[tomMenu](-1, -4)
-		);
-		if (csc)
-		{
-			smokeElements.Push(csc);
-			//smoketime += 1;
-		}
-		if (smokeFlickerTics) smokeFlickerTics--;
 
-		// Tick smoke elements:
-		for (int i = smokeElements.Size() -1; i >= 0; i--)
-		{
-			let csc = smokeElements[i];
-			if (!csc)
-			{
-				smokeElements.Delete(i);
-				continue;
-			}
-			csc.Ticker();
-		}
-
-		// candle light flickering:
-		candleLightAlpha += candleLightAlphaStep * candleLightAlphaDir;
-		if (candleLightAlpha <= candleLightAlphaTarget || candleLightAlpha >= 1.0)
-		{
-			candleLightAlphaDir *= -1;
-			if (candleLightAlpha >= 1.0)
-			{
-				candleLightAlphaTarget = frandom[tomMenu](0.3, 0.8);
-				candleLightAlphaStep = frandom[tomMenu](0.01, 0.005);
-			}
-		}
-
-		// option menu light bulb flickering:
-		if (mnu is 'OptionMenu')
-		{
+			// option menu light bulb flickering:
 			if (--lampFlickerAlphaTics <= 0)
 			{
 				lampFlickerAlpha = random[tomMenu](0,255) <= 250? frandom[tomMenu](0.6, 0.9) : frandom[tomMenu](0.1, 0.3);
@@ -705,42 +658,101 @@ extend class ToM_UiHandler
 			lampFlickerInterpolator.Update(lampFlickerAlpha * 100);
 		}
 
-		// count down lightning delay:
-		if (lightningDelay > 0)
+		if (tom_currentMenustate == MS_MainMenu)
 		{
-			// after lightning countdown has ended, start
-			// the lightning phase:
-			if (--lightningDelay <= 0)
+			// create a new smoke element:
+			if (smokeJitterTics <= 0 && random[smokeJitter](0, 255) >= 253)
 			{
-				if (gamestate == GS_TITLELEVEL) //do not play with actual map in the background
+				smokeJitterDuration = random[smokeJitter](30, 60);
+				smokeJitterTics = smokeJitterDuration;
+			}
+			int smokeSineTime = !smokeJitterTics? (TICRATE * 10) : (20);
+			double smokeHorOfs = !smokeJitterTics? (0.85) : (3.0 * sin(180.0 * (smokeJitterTics / double(smokeJitterDuration)))); //weaker fluctuations closer to the beginning and end of flicker sequence
+			let csc = ToM_MenuCandleSmokeController.Create(
+				//pos X and Y:
+				(frandom[tomMenu](-0.5,0.5), frandom[tomMenu](-0.5,0.5)), 
+				//pos step X and Y:
+				(smokeHorOfs * sin(360.0 * Menu.MenuTime() / smokeSineTime), -0.5),
+				// scale
+				frandom[tomMenu](0.03, 0.06), -0.003,
+				// alpha
+				frandom[tomMenu](0.025, 0.05), -0.003,
+				//rotation
+				frandom[tomMenu](0, 360), frandom[tomMenu](-1, -4)
+			);
+			if (csc)
+			{
+				smokeElements.Push(csc);
+				//smoketime += 1;
+			}
+			if (smokeJitterTics) smokeJitterTics--;
+
+			// Tick smoke elements:
+			for (int i = smokeElements.Size() -1; i >= 0; i--)
+			{
+				let csc = smokeElements[i];
+				if (!csc)
 				{
-					S_StartSound("menu/thunder", CHAN_AUTO, flags:CHANF_UI|CHANF_LOCAL);
+					smokeElements.Delete(i);
+					continue;
 				}
-				lightningPhase = LIGHT_FREQUENCY*random[tomMenu](4,6);
+				csc.Ticker();
+			}
+
+			// candle light flickering:
+			candleLightAlpha += candleLightAlphaStep * candleLightAlphaDir;
+			if (candleLightAlpha <= candleLightAlphaTarget || candleLightAlpha >= 1.0)
+			{
+				candleLightAlphaDir *= -1;
+				if (candleLightAlpha >= 1.0)
+				{
+					candleLightAlphaTarget = frandom[tomMenu](0.3, 0.8);
+					candleLightAlphaStep = frandom[tomMenu](0.01, 0.005);
+				}
 			}
 		}
-		
-		// count down lightning phase:
-		if (lightningPhase > 0)
+
+		// lightning is handled in all menus, since its effects can be seen
+		// both in main an in options menu:
+		if (tom_currentMenustate != MS_None)
 		{
-			lightningPhase--;
-			if (lightningPhase % LIGHT_FREQUENCY == 0)
+			// count down lightning delay:
+			if (lightningDelay > 0)
 			{
-				lightningAlpha = LIGHT_MAXALPHA;
+				// after lightning countdown has ended, start
+				// the lightning phase:
+				if (--lightningDelay <= 0)
+				{
+					if (gamestate == GS_TITLELEVEL) //do not play with actual map in the background
+					{
+						S_StartSound("menu/thunder", CHAN_AUTO, flags:CHANF_UI|CHANF_LOCAL);
+					}
+					lightningPhase = LIGHT_FREQUENCY*random[tomMenu](4,6);
+				}
 			}
-			else 
+			
+			// count down lightning phase:
+			if (lightningPhase > 0)
 			{
-				lightningAlpha = 0;
+				lightningPhase--;
+				if (lightningPhase % LIGHT_FREQUENCY == 0)
+				{
+					lightningAlpha = LIGHT_MAXALPHA;
+				}
+				else 
+				{
+					lightningAlpha = 0;
+				}
+				if (lightningPhase <= 0)
+				{
+					lightningAlpha = LIGHT_MAXALPHA;
+					lightningDelay = TICRATE*random[tomMenu](3, 8);
+				}
 			}
-			if (lightningPhase <= 0)
+			else if (lightningAlpha > 0.)
 			{
-				lightningAlpha = LIGHT_MAXALPHA;
-				lightningDelay = TICRATE*random[tomMenu](3, 8);
+				lightningAlpha -= LIGHT_FADESTEP;
 			}
-		}
-		else if (lightningAlpha > 0.)
-		{
-			lightningAlpha -= LIGHT_FADESTEP;
 		}
 	}
 }

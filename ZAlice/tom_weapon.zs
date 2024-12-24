@@ -225,7 +225,8 @@ class ToM_BaseWeapon : Weapon abstract
 							ERenderStyle rstyle = STYLE_Shaded,
 							String texture = "LEGYA0",
 							name decaltype = 'none',
-							int id = 0)
+							int id = 0,
+							bool dontpush = false)
 	{
 		id = Clamp(id, 0, SWING_MaxIDs);
 		if (range == 0) range = self.MeleeRange;
@@ -327,8 +328,9 @@ class ToM_BaseWeapon : Weapon abstract
 				}
 
 				invoker.swingVictims.Push(victim);
-				victim.DamageMobj(puff? puff : self, self, damage, 'normal');
-				damaged = true;
+				int damageflags = DMG_PLAYERATTACK;
+				if (dontpush) damageflags |= DMG_THRUSTLESS;
+				damaged = victim.DamageMobj(puff? puff : self, self, damage, 'normal', damageflags) > 0;
 				if (fleshsound)
 				{
 					puff.A_StartSound(fleshsound);

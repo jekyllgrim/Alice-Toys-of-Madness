@@ -299,8 +299,12 @@ extend class ToM_UiHandler
 	ui double candleLightAlphaTarget;
 
 	ui array < ToM_MenuCandleSmokeController > smokeElements;
+	ui double smokeTics;
+	ui double smokeJitterIntensity;
 	ui int smokeJitterTics;
 	ui int smokeJitterDuration;
+	ui int smokeJitterDelay;
+	const SMOKESINEFREQUENCY = TICRATE * 10.0;
 
 	ui Actor alicePlayerDoll;
 	transient String buildinfo;
@@ -672,25 +676,38 @@ extend class ToM_UiHandler
 			lampFlickerInterpolator.Update(lampFlickerAlpha * 100);
 		}
 
-		if (tom_currentMenustate == MS_MainMenu)
+		if (tom_currentMenustate != MS_None)
 		{
-			// create a new smoke element:
-			if (smokeJitterTics <= 0 && random[smokeJitter](0, 255) >= 253)
+			smokeJitterTics--;
+
+			if (smokeJitterTics <= smokeJitterDelay)
 			{
-				smokeJitterDuration = random[smokeJitter](30, 60);
+				smokeJitterDuration = random[smokejitter](20, TICRATE * 2);
 				smokeJitterTics = smokeJitterDuration;
+				smokeJitterIntensity = frandom[smokejitter](5, 20);
+				smokeJitterDelay = -(random[smokejitter](TICRATE * 2, TICRATE * 10));
 			}
-			int smokeSineTime = !smokeJitterTics? (TICRATE * 10) : (20);
-			double smokeHorOfs = !smokeJitterTics? (0.85) : (3.0 * sin(180.0 * (smokeJitterTics / double(smokeJitterDuration)))); //weaker fluctuations closer to the beginning and end of flicker sequence
+
+			double curve = 0.0;
+			if (smokeJitterTics >= 0)
+			{
+				curve = ToM_Utils.LinearMap(smokeJitterTics, 0, smokeJitterDuration, 0.0, 1.0, true);
+			}
+
+			ToM_DebugMessage.Print("curve "..curve);
+			smokeTics += 1 + smokeJitterIntensity * curve;
+			double smokeHorVel = 0.5 + 1.2 * curve;
+
+			// create a new smoke element:
 			let csc = ToM_MenuCandleSmokeController.Create(
 				//pos X and Y:
 				(frandom[tomMenu](-0.5,0.5), frandom[tomMenu](-0.5,0.5)), 
 				//pos step X and Y:
-				(smokeHorOfs * sin(360.0 * Menu.MenuTime() / smokeSineTime), -0.5),
+				(smokeHorVel * ToM_Utils.SinePulse(SMOKESINEFREQUENCY, smokeTics, positive: false), -0.5),
 				// scale
-				frandom[tomMenu](0.03, 0.06), -0.003,
+				frandom[tomMenu](0.03, 0.05), -0.003,
 				// alpha
-				frandom[tomMenu](0.025, 0.05), -0.003,
+				frandom[tomMenu](0.05, 0.075), -0.003,
 				//rotation
 				frandom[tomMenu](0, 360), frandom[tomMenu](-1, -4)
 			);
@@ -699,7 +716,6 @@ extend class ToM_UiHandler
 				smokeElements.Push(csc);
 				//smoketime += 1;
 			}
-			if (smokeJitterTics) smokeJitterTics--;
 
 			// Tick smoke elements:
 			for (int i = smokeElements.Size() -1; i >= 0; i--)
@@ -724,12 +740,7 @@ extend class ToM_UiHandler
 					candleLightAlphaStep = frandom[tomMenu](0.01, 0.005);
 				}
 			}
-		}
 
-		// lightning is handled in all menus, since its effects can be seen
-		// both in main an in options menu:
-		if (tom_currentMenustate != MS_None)
-		{
 			// count down lightning delay:
 			if (lightningDelay > 0)
 			{

@@ -130,7 +130,8 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				style: PBS_Fade|PBS_Fullbright,
 				rstyle: Style_Add,
 				decaltype: (i == 0)? decaltype : 'none',
-				id: i);
+				id: i,
+				dontpush: true);
 			
 			if (i != 0 || invoker.bAltFire || !victim || !wasHit || !(victim.bIsMonster || victim.player))
 			{
@@ -145,7 +146,7 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			
 			if (!victim.bNogravity && !victim.bDontThrust)
 			{
-				double pushspeed = ToM_Utils.LinearMap(victim.mass, 100, 800, 5, 0, true);
+				double pushspeed = ToM_Utils.LinearMap(victim.mass, 100, 800, 6, 1, true);
 				if (victim.health < 0)
 				{
 					pushspeed *= 2;
@@ -171,31 +172,13 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 				victim.vel = pushdir;
 			}
 
-			if (victim.health <= 0)
-			{
-				victim.freezeTics = 0;
-			}
-			else
+			if (victim.health > 0)
 			{
 				int freezebonus = int(round(ToM_Utils.LinearMap(invoker.swingHoldTime, 0, MAXHOLDTIME, 0, 13, true)));
-				victim.freezeTics = max(victim.freezeTics, int(ToM_Utils.LinearMap(invoker.totalcombo, 1, 8, 12 + freezebonus, 35 + freezebonus, true)));
-				if (victim.freezeTics > 0)
-				{
-					let stunflash = ToM_ActorLayer.Create(victim, STYLE_TranslucentStencil, alpha: 0.7, fade: 0.7 / victim.freezeTics, fullbright: true);
-					if (stunflash)
-					{
-						stunflash.SetShade(0xffffff);
-					}
-				}
-				State pst = victim.FindState("Pain");
-				if (victim.freezeTics > 12 && pst && !InStateSequence(victim.curstate, pst))
-				{
-					victim.SetState(pst);
-				}
+				ToM_StunController.UpdateStunDuration(victim, max(ToM_StunController.GetStunDuration(victim), int(ToM_Utils.LinearMap(invoker.totalcombo, 1, 8, 12 + freezebonus, 35 + freezebonus, true))));
 			}
 		}
 	}
-
 	const MAXEYEFIRE = 20;
 	protected Vector3 prevViewAngles[MAXEYEFIRE];
 	protected Vector3 prevRelMove[MAXEYEFIRE];
@@ -753,6 +736,96 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 			A_RotatePSprite(OverlayID(), 2, WOF_ADD);
 		}
 		goto AttackEnd;
+	}
+}
+
+class ToM_StunController : Powerup
+{
+	ToM_ActorLayer stunflash;
+
+	Default
+	{
+		Powerup.duration 35;
+		Inventory.icon "";
+	}
+
+	static void UpdateStunDuration(Actor victim, int duration)
+	{
+		if (!victim) return;
+		if (duration <= 0)
+		{
+			victim.A_TakeInventory('ToM_StunController', 1);
+		}
+		else
+		{
+			let ctrl = ToM_StunController(victim.FindInventory('ToM_StunController'));
+			if (!ctrl)
+			{
+				ctrl = ToM_StunController(victim.GiveInventoryType('ToM_StunController'));
+			}
+			
+			ctrl.effectTics = duration;
+			State pst = victim.FindState("Pain");
+			if (ctrl.effectTics > 12 && pst && !InStateSequence(victim.curstate, pst))
+			{
+				victim.SetState(pst);
+			}
+			if (!ctrl.stunflash)
+			{
+				ctrl.stunflash = ToM_ActorLayer.Create(victim, STYLE_TranslucentStencil, alpha: 0.7, fade: 0.7 / ctrl.effectTics, fullbright: true);
+				if (ctrl.stunflash)
+				{
+					ctrl.stunflash.SetShade(0xffffff);
+				}
+			}
+			else
+			{
+				ctrl.stunflash.alpha = 0.7;
+				ctrl.stunflash.fade = ctrl.stunflash.alpha / ctrl.effectTics;
+			}
+		}
+	}
+
+	static clearscope int GetStunDuration(Actor victim)
+	{
+		if (!victim) return 0;
+		
+		let ctrl = ToM_StunController(victim.FindInventory('ToM_StunController'));
+		if (ctrl)
+		{
+			return ctrl.effectTics;
+		}
+		return 0;
+	}
+
+	override void InitEffect()
+	{
+		if (owner)
+		{
+			owner.bNoPain = true;
+			owner.bInConversation = true;
+		}
+	}
+
+	override void DoEffect()
+	{
+		if (owner)
+		{
+			if (owner.curstate.tics > 0)
+				owner.tics = -1;
+			owner.bNoPain = true;
+			owner.bInConversation = true;
+		}
+	}
+
+	override void EndEffect()
+	{
+		if (owner)
+		{
+			owner.tics = owner.curstate.tics;
+			owner.bNoPain = owner.default.bNoPain;
+			owner.bInConversation = false;
+		}
 	}
 }
 

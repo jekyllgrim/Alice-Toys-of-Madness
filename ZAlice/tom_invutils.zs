@@ -41,6 +41,8 @@ class ToM_ControlToken : ToM_InventoryToken abstract
 	{
 		ToM_ControlToken.duration 35;
 		ToM_ControlToken.EffectFrequency 35;
+		Inventory.amount 1;
+		Inventory.maxAmount 1;
 	}
 	
 	virtual void ResetTimer()
@@ -48,9 +50,19 @@ class ToM_ControlToken : ToM_InventoryToken abstract
 		timer = 0;
 	}
 	
-	int GetTimer()
+	clearscope int GetTimer()
 	{
 		return timer;
+	}
+
+	void SetDuration(int time)
+	{
+		duration = time;
+	}
+
+	clearscope int GetDuration()
+	{
+		return duration;
 	}
 
 	// Gives the specified controller to the actor,
@@ -63,7 +75,6 @@ class ToM_ControlToken : ToM_InventoryToken abstract
 		if (!cont)
 		{
 			cont = ToM_ControlToken(victim.GiveInventoryType(controller));
-			cont.amount = 1;
 		}
 		if (newinflictor)
 		{
@@ -109,17 +120,15 @@ class ToM_ControlToken : ToM_InventoryToken abstract
 		super.DoEffect();
 		if (self && owner && !owner.isFrozen())
 		{
-			timer++;
+			if (++timer > duration)
+			{
+				Destroy();
+				return;
+			}
 			
 			if (effectFreq > 0 && (timer % effectFreq == 0))
 			{
 				DoControlEffect();
-			}
-			
-			if (timer >= duration)
-			{
-				Destroy();
-				return;
 			}
 		}
 	}

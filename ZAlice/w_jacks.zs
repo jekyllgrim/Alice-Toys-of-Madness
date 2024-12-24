@@ -621,7 +621,7 @@ class ToM_JackBall : ToM_BaseActor
 
 		// Vertical position:
 		double top = master.height * 1.2;
-		double ofsZ = top * ToM_Utils.SinePulse(counter:age);
+		double ofsZ = top * ToM_Utils.SinePulse(time:age);
 		posOffset.z = master.pos.z + ofsZ;
 
 		if (ofsZ <= 0.1)

@@ -94,11 +94,26 @@ class ToM_Utils
 		return d;
 	}
 
-	static play double SinePulse(double frequency = TICRATE, int counter = -1)
+	static clearscope double SinePulse(double frequency = TICRATE, int time = -1, bool positive = true)
 	{
-		double time = counter >= 0 ? counter : Level.mapTime;
-		return 0.5 + 0.5 * sin(360.0 * time / frequency);
+		if (time < 0) time = level.mapTime;
+		double pulse = sin(360.0 * time / frequency);
+		if (positive)
+			pulse = pulse*0.5 + 0.5; //return as 0.0-1.0
+		return pulse; //return as -1.0-1.0
 	}
+
+	// rise and fall: lower = smoother, higher = more rapid
+	static clearscope double CubicBezierPulse(double frequency = TICRATE, int time = -1, double startVal = 1.0, double rise = 0.2, double fall = 0.8, double endVal = 1.0)
+	{
+		if (time < 0) time = level.mapTime;
+
+		// Normalize time:
+		double t = (time / frequency) - floor(time / frequency);
+
+		return (1 - t) * (1 - t) * (1 - t) * startVal + 3 * (1 - t) * (1 - t) * t * rise + 3 * (1 - t) * t * t * fall + t * t * t * endVal;
+	}
+
 		
 	// Checks which side of a lindef the actor is on:
 	// Unnecessary wrapper, since PointOnLineSide has since been

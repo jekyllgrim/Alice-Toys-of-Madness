@@ -531,8 +531,8 @@ class ToM_GrowthPotion : PowerupGiver
 					);
 				}
 			}
-			scale.y = default.scale.y + default.scale.y * -0.2 * ToM_Utils.SinePulse(counter: waitBounce);
-			scale.x = default.scale.x + default.scale.x * 0.2 * ToM_Utils.SinePulse(counter: waitBounce-2);
+			scale.y = default.scale.y + default.scale.y * -0.2 * ToM_Utils.SinePulse(time: waitBounce);
+			scale.x = default.scale.x + default.scale.x * 0.2 * ToM_Utils.SinePulse(time: waitBounce-2);
 			waitBounce++;
 			return ResolveState(null);
 		}

@@ -742,10 +742,13 @@ class ToM_HobbyHorse : ToM_BaseWeapon
 class ToM_StunController : Powerup
 {
 	ToM_ActorLayer stunflash;
+	State freezestate;
+	protected double stunStarsAngle;
+	TextureID stunStarsTexture;
 
 	Default
 	{
-		Powerup.duration 35;
+		Powerup.duration 70;
 		Inventory.icon "";
 	}
 
@@ -770,6 +773,7 @@ class ToM_StunController : Powerup
 			{
 				victim.SetState(pst);
 			}
+			ctrl.freezestate = victim.curstate;
 			if (!ctrl.stunflash)
 			{
 				ctrl.stunflash = ToM_ActorLayer.Create(victim, STYLE_TranslucentStencil, alpha: 0.7, fade: 0.7 / ctrl.effectTics, fullbright: true);
@@ -783,6 +787,7 @@ class ToM_StunController : Powerup
 				ctrl.stunflash.alpha = 0.7;
 				ctrl.stunflash.fade = ctrl.stunflash.alpha / ctrl.effectTics;
 			}
+			ctrl.stunStarsTexture = TexMan.CheckForTexture("ACWEZ0");
 		}
 	}
 
@@ -798,23 +803,47 @@ class ToM_StunController : Powerup
 		return 0;
 	}
 
-	override void InitEffect()
-	{
-		if (owner)
-		{
-			owner.bNoPain = true;
-			owner.bInConversation = true;
-		}
-	}
-
 	override void DoEffect()
 	{
-		if (owner)
+		if (owner && owner.health > 0)
 		{
-			if (owner.curstate.tics > 0)
-				owner.tics = -1;
-			owner.bNoPain = true;
-			owner.bInConversation = true;
+			if (freezestate && owner.curstate != freezestate)
+			{
+				owner.SetState(freezestate);
+			}
+			if (owner.tics > 0)
+			{
+				owner.tics = effectTics;
+			}
+
+			if (owner.isFrozen()) return;
+
+			FSpawnParticleParams p;
+			TextureID cursprt = owner.curstate.GetSpriteTexture(0);
+			Vector2 cursprtSize = TexMan.GetScaledSize(cursprt);
+			p.color1 = 0xFFFF00;
+			p.texture = stunStarsTexture;
+			p.style = STYLE_Stencil;
+			p.flags = SPF_FULLBRIGHT|SPF_ROLL;
+			p.vel = level.Vec3Diff(owner.pos, owner.prev);
+			p.lifetime = 1;
+			p.pos.z = owner.pos.z + cursprtSize.y * owner.scale.y * 0.9;
+			Vector2 startOfs = (cursprtSize.x * owner.scale.x * 0.5, 0);
+			for (int i = 0; i < 3; i++)
+			{
+				p.startalpha = ToM_Utils.LinearMap(effectTics, 0, 10, 0.0, 1.0, true);
+				for (double ang = 0; ang < 60; ang += 10)
+				{
+					double fac = 1.0 - ang / 60.0;
+					double angOfs = stunStarsAngle + 120*i - ang;
+					p.pos.xy = level.Vec2Offset(owner.pos.xy, Actor.RotateVector(startOfs, angOfs));
+					p.startroll = angOfs;
+					p.startalpha *= fac;
+					p.size = 8.5 * fac;
+					level.SpawnParticle(p);
+				}
+				stunStarsAngle += 2;
+			}
 		}
 	}
 
@@ -823,9 +852,8 @@ class ToM_StunController : Powerup
 		if (owner)
 		{
 			owner.tics = owner.curstate.tics;
-			owner.bNoPain = owner.default.bNoPain;
-			owner.bInConversation = false;
 		}
+		Super.EndEffect();
 	}
 }
 

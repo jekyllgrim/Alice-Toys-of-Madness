@@ -523,7 +523,7 @@ class ToM_TeaBurnControl : ToM_BurnController
 	{
 		super.DoEffect();
 
-		if (self && owner && target && (timer % TICRATE == 0))
+		if (self && owner && owner.health > 0 && target && (timer % TICRATE == 0))
 		{
 			int fl = (random[tsfx](1,3) == 1) ? 0 : DMG_NO_PAIN;
 			owner.DamageMobj(self, target, 4, "Normal", flags:DMG_THRUSTLESS|fl);

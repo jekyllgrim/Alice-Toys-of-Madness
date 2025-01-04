@@ -413,6 +413,9 @@ pickups/cake	"sounds/pickups/cake_eat.ogg"
 giantstep1	"sounds/player/giant_step01.ogg"
 giantstep2	"sounds/player/giant_step02.ogg"
 giantstep3	"sounds/player/giant_step03.ogg"
+$limit giantstep1 0
+$limit giantstep2 0
+$limit giantstep3 0
 
 pickups/manachest "sounds/pickups/shrinkflower_open.ogg"
 pickups/allmap	"sounds/pickups/book_open.wav"

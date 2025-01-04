@@ -694,7 +694,7 @@ extend class ToM_UiHandler
 				curve = ToM_Utils.LinearMap(smokeJitterTics, 0, smokeJitterDuration, 0.0, 1.0, true);
 			}
 
-			ToM_DebugMessage.Print("curve "..curve);
+			//ToM_DebugMessage.Print("curve "..curve);
 			smokeTics += 1 + smokeJitterIntensity * curve;
 			double smokeHorVel = 0.5 + 1.2 * curve;
 

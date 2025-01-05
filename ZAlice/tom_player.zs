@@ -1113,9 +1113,14 @@ class ToM_PlayerShadow : ToM_BaseActor
 		FloatBobPhase 0;
 		Height 1;
 		Radius 1;
-		Renderstyle 'Stencil';
 		StencilColor '000000';
 		Alpha 1;
+	}
+
+	override void PostBeginPlay()
+	{
+		Super.PostBeginPlay();
+		A_SetRenderstyle(alpha, STYLE_TranslucentStencil);
 	}
 
 	override void Tick()
@@ -1130,6 +1135,7 @@ class ToM_PlayerShadow : ToM_BaseActor
 		SetOrigin((pos.xy, min(master.pos.z, master.floorz)), false);
 		SetOrigin((master.pos.xy, pos.z), true);
 		A_SetAngle(master.angle, SPF_INTERPOLATE);
+		alpha = master.alpha;
 		spriteRotation = master.spriteRotation;
 		double scf = ToM_Utils.LinearMap(abs(pos.z - master.pos.z), 0, 320, 1.2, 3.5, true);
 		scale = master.scale * scf;

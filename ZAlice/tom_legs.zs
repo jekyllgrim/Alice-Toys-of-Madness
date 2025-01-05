@@ -106,7 +106,7 @@ class ToM_KickWeapon : CustomInventory
 				let spot = Spawn('ToM_DebugSpot', puffpos);
 				if (spot)
 				{
-					spot.A_StartSound("weapons/kick/hitwall");
+					spot.A_StartSound("weapons/kick/hitwall", CHAN_AUTO);
 					spot.Destroy();
 				}
 				FSpawnParticleParams pp;
@@ -154,9 +154,9 @@ class ToM_KickWeapon : CustomInventory
 		arcKickAngle = 90;
 	}
 
-	override void BeginPlay()
+	override void PostBeginPlay()
 	{
-		Super.BeginPlay();
+		Super.PostBeginPlay();
 		ResetKick();
 		s_standing		= FindState("Standing");
 		s_idlestates	= FindState("IdleStates");
@@ -179,8 +179,9 @@ class ToM_KickWeapon : CustomInventory
 		super.DoEffect();
 		if (!owner || !self) return;
 
-		alice = ToM_AlicePlayer(owner);
-		if (!alice || !alice.player || ToM_Utils.IsVoodooDoll(alice))
+		if (!alice)
+			alice = ToM_AlicePlayer(owner);
+		if (!alice || !alice.player || !alice.player.mo || alice.player.mo != alice)
 		{
 			Destroy();
 			return;
@@ -200,7 +201,7 @@ class ToM_KickWeapon : CustomInventory
 			plegs.bAddWeapon = false;
 			plegs.bAddBob = false;
 			plegs.y = 320;
-			plegs.SetState(s_standing);
+			plegs.SetState(FindState("FirstInit"));
 		}
 
 		plegs.bInterpolate = true;
@@ -309,6 +310,9 @@ class ToM_KickWeapon : CustomInventory
 	Use:
 		TNT1 A 0;
 		fail;
+	FirstInit:
+		TNT1 A 1;
+		goto Standing;
 	IdleStates:
 		FinishJumping:
 			FJE1 ABCDEFGHIJKLMNOPQRSTUVWXYZ 1;
@@ -382,6 +386,7 @@ class ToM_KickWeapon : CustomInventory
 			FEK1 NOPQR 1;
 			TNT1 A 0 { return ResolveState("FinishKick"); }
 		Stomp:
+			#### A 0 A_PlayerAttackAnim(30, 'attack_stomp', 20);
 			FES1 ABCDEFGHIJKLMNO 1;
 			FES1 P 2 A_AliceStomp();
 			FES1 QRSTUVWXYZ 1;

@@ -527,7 +527,6 @@ class ToM_FreezeController : Powerup
 	const FREEZEDEATHTIME = TICRATE * 10;
 	const MAXDURATION = TICRATE * 6;
 	int freezeDeathTics;
-	Vector2 ownerSpriteOffset;
 	ToM_FrozenCase frozenCase;
 	protected State slowstate;
 	protected double slowfactor;
@@ -583,7 +582,6 @@ class ToM_FreezeController : Powerup
 		if (owner)
 		{
 			owner.speed *= SPEEDFACTOR;
-			ownerSpriteOffset = owner.SpriteOffset;
 			colorLayer = ToM_FreezeColorLayer(Spawn('ToM_FreezeColorLayer', owner.pos));
 			if (colorlayer)
 			{
@@ -639,12 +637,10 @@ class ToM_FreezeController : Powerup
 		if (freezeDeathTics > 0 && !owner.IsFrozen())
 		{
 			freezeDeathTics--;
-			if (owner.FindState("Pain"))
-			{
-				owner.SetStateLabel("Pain");
-			}
 			owner.A_SetTics(-1);
 			owner.A_StopAllSounds();
+			if (owner.bDECOUPLEDANIMATIONS)
+				owner.SetAnimationFramerate(0);
 			//owner.freezetics = freezeDeathTics;
 			if (!frozenCase)
 			{
@@ -665,7 +661,7 @@ class ToM_FreezeController : Powerup
 			}
 			else if (freezeDeathTics <= FREEZEDEATHTIME*0.5)
 			{
-				owner.SpriteOffset.y = ToM_Utils.LinearMap(freezeDeathTics, 0, FREEZEDEATHTIME*0.5, ownerSpriteOffset.y + owner.default.height, ownerSpriteOffset.y);
+				owner.floorclip = ToM_Utils.LinearMap(freezeDeathTics, FREEZEDEATHTIME*0.5, 0, owner.default.floorclip, owner.default.height);
 				frozenCase.scale.x *= 1.003;
 				owner.scale.x *= 1.002;
 				frozenCase.scale.y = ToM_Utils.LinearMap(freezeDeathTics, 0, FREEZEDEATHTIME*0.5, 0, frozenCase.baseScale.y);
@@ -758,7 +754,7 @@ class ToM_IceCluster : Actor
 			Warp(master, 
 				masterOfs.x,
 				masterOfs.y,
-				masterOfs.z - (master.SpriteOffset.y - master.default.SpriteOffset.y),
+				masterOfs.z - master.floorclip,
 				flags: WARPF_NOCHECKPOSITION|WARPF_INTERPOLATE);
 			if (controller.EffectTics > 0 && controller.owner && controller.owner.health > 0)
 			{

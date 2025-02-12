@@ -645,12 +645,7 @@ class ToM_GrowthPotionEffect : Powerup
 			prevWeaponScale = (dweap.WeaponScaleX, dweap.WeaponScaleY);
 			curWeaponScale = prevWeaponScale;
 		}
-		/*PSprite psp = pmo.player.psprites;
-		if (psp)
-		{
-			prevWeaponScale = curWeaponScale = psp.basescale;
-		}*/
-
+		
 		// slower view bob:
 		pmo.ViewBobSpeed *= VIEWFACTOR;
 		
@@ -662,9 +657,9 @@ class ToM_GrowthPotionEffect : Powerup
 		viewHeightStep = (targetViewHeight - prevViewHeight) / GROWTIME;
 		
 		// target scale and scale step (to be set in DoEffect):
-		targetScale = prevScale * GROWFACTOR;
+		/*targetScale = prevScale * GROWFACTOR;
 		scaleStep.x = (targetScale.x - prevScale.x) / GROWTIME;
-		scaleStep.y = (targetScale.y - prevScale.y) / GROWTIME;
+		scaleStep.y = (targetScale.y - prevScale.y) / GROWTIME;*/
 
 		// target AttackZOffset and AttackZOffset step (to be set in DoEffect):
 		double diff = prevViewHeight - prevHeight*0.5 - prevAttackZOffset;
@@ -782,14 +777,14 @@ class ToM_GrowthPotionEffect : Powerup
 		}
 		
 		// gradually modify scale:
-		pmo.scale.x = Clamp(
+		/*pmo.scale.x = Clamp(
 			pmo.scale.x + scaleStep.x * stepFactor,
 			prevScale.x, targetScale.x
 		);
 		pmo.scale.y = Clamp(
 			pmo.scale.y + scaleStep.y * stepFactor,
 			prevScale.y, targetScale.y
-		);
+		);*/
 		
 		// keep trying to instantly change size:
 		if (!heightChangeSuccess && pmo.height < targetHeight)
@@ -878,7 +873,7 @@ class ToM_GrowthPotionEffect : Powerup
 			pmo.viewHeight = prevViewHeight;
 			pmo.player.viewHeight = pmo.viewHeight;
 			pmo.attackZOffset = prevAttackZOffset;
-			pmo.scale = prevScale;
+			//pmo.scale = prevScale;
 			pmo.player.desiredFov = prevZoom;
 			pmo.speed /= SPEEDFACTOR;
 			for (Inventory item = owner.inv; item; item = item.inv)

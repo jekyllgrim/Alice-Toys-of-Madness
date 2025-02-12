@@ -331,6 +331,8 @@ class ToM_AlicePlayer : DoomPlayer
 		Super.Tick();
 		if (!player || !player.mo || player.mo != self) return;
 
+		scale = default.scale * ( (viewheight / default.viewheight) * player.crouchfactor);
+
 		if (coyoteTime)
 		{
 			coyoteTime--;

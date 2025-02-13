@@ -803,10 +803,11 @@ class ToM_GrowthPotionEffect : Powerup
 		// Walking:
 		if (growthState == GROWTH_Growing)
 		{
-			if (pmo.player.onground && pmo.Vel.Length() > 4) 
+			if (pmo.player.onground && pmo.Vel.Length() > 4 && player.crouchfactor >= 1.0)
 			{
 				stepCycle++;
-				if (stepCycle % 20 == 0) {
+				if (stepCycle % 20 == 0)
+				{
 					//do the damage:
 					DoStepDamage(pmo, damage: 20, visualImpact: false);
 				}
